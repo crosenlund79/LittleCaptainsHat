@@ -5,6 +5,12 @@ extends Node2D
 ## is the same after loading, sleeping or coming back from the deck or chart.
 ## Exactly one exists, because it is part of the cabin scene.
 ##
+## Where it rests comes from the cabin's layout: the marker named after the
+## spot under `spots_path` (Layout/CompanionSpots), so every vessel places its
+## own spots. The look is procedural unless a sprite exists at
+## res://assets/companions/<kind>.png (drawn facing +x, centred on the
+## animal); then that is shown instead, with the same breathing and reactions.
+##
 ## It moves instantly between its resting spots when the schedule says so
 ## (no walking, no pathfinding, no collision, so it never blocks the player).
 ## Petting it (E, via its Interactable) plays a short sound on the SFX bus and
@@ -31,11 +37,14 @@ const HEART := Color("#E07A6A")
 ## A preview (e.g. in the New Game dialog): just the drawing, no
 ## interaction and no session state.
 @export var preview := false
+## The cabin's resting-spot markers (one Marker2D per CompanionState spot id).
+@export var spots_path := ^"../Layout/CompanionSpots"
 
 var kind: StringName = CompanionState.DEFAULT_KIND
 var spot: StringName = &""
 var interactable: Interactable
 
+var _textures := {}
 var _time := 0.0
 var _reaction := 0.0
 
@@ -99,13 +108,40 @@ func _sync() -> void:
 	visible = true
 	kind = companion.kind
 	spot = companion.spot
-	position = companion.get_position()
+	position = get_spot_position(spot)
 	# Each spot has its own (fixed) lying direction.
 	rotation = deg_to_rad(float(absi(hash(String(spot))) % 360))
 	interactable.prompt = "Pet %s" % CompanionState.display_name(kind)
 
 
+## The resting position of `spot_id` in this cabin (its marker), or the
+## current position when the cabin has no such marker.
+func get_spot_position(spot_id: StringName) -> Vector2:
+	var spots := get_node_or_null(spots_path)
+	var marker := spots.get_node_or_null(NodePath(String(spot_id))) as Node2D if spots else null
+	if marker == null:
+		push_warning("ShipCompanion: no resting spot marker '%s'" % spot_id)
+		return position
+	return marker.position
+
+
+## The optional sprite for `companion_kind` (null: draw procedurally).
+func get_texture(companion_kind: StringName) -> Texture2D:
+	if not _textures.has(companion_kind):
+		var path := "res://assets/companions/%s.png" % companion_kind
+		_textures[companion_kind] = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	return _textures[companion_kind]
+
+
 func _draw() -> void:
+	var texture := get_texture(kind)
+	if texture:
+		var swell := 1.0 + 0.025 * sin(_time * TAU * 0.25) + (0.03 * sin(_time * TAU * 1.8) if is_reacting() else 0.0)
+		var size := texture.get_size() * swell
+		draw_texture_rect(texture, Rect2(-size / 2.0, size), false)
+		if is_reacting() and kind == CompanionState.KIND_CAT:
+			_draw_hearts()
+		return
 	# Breathing: a slow, very small swell; a little deeper while reacting.
 	var breath := 1.0 + 0.025 * sin(_time * TAU * 0.25) + (0.03 * sin(_time * TAU * 1.8) if is_reacting() else 0.0)
 	if kind == CompanionState.KIND_DOG:

@@ -1,15 +1,19 @@
 @tool
 class_name BoatFixture
 extends StaticBody2D
-## Placeholder geometry for furniture and fittings: draws a filled shape with
-## an outline and an optional label, and gives it matching collision.
+## Gameplay layout: the collision of a piece of furniture or a fitting.
 ##
 ## The shape is either a centred rectangle (`size`) or, when set, a custom
-## `polygon` in local coordinates. Collision is created from the same shape so
-## visuals and physics never drift apart. Set `solid` to false for things the
-## player can walk over (hatches, floor panels).
+## `polygon` in local coordinates; collision is created from it. Set `solid`
+## to false for things the player can walk over (hatches, floor panels).
+##
+## Fixtures draw nothing in the game: what the player sees comes from the
+## scene's Visual (procedural art or sprites, see VesselVisual). In the editor
+## a translucent outline is drawn so the layout can be seen and edited.
 
-const LABEL_FONT: Font = preload("res://assets/fonts/Barlow-SemiBold.ttf")
+const EDITOR_FILL := Color(0.9, 0.35, 0.3, 0.18)
+const EDITOR_OUTLINE := Color(0.9, 0.35, 0.3, 0.8)
+const EDITOR_WALKABLE := Color(0.3, 0.8, 0.5, 0.7)
 
 @export var size := Vector2(100, 60):
 	set(value):
@@ -19,20 +23,6 @@ const LABEL_FONT: Font = preload("res://assets/fonts/Barlow-SemiBold.ttf")
 	set(value):
 		polygon = value
 		_rebuild()
-@export var fill_color := Color("#7D6650"):
-	set(value):
-		fill_color = value
-		queue_redraw()
-@export var outline_color := Color(0.06, 0.12, 0.16, 0.6):
-	set(value):
-		outline_color = value
-		queue_redraw()
-@export var label := "":
-	set(value):
-		label = value
-		queue_redraw()
-@export var label_color := Color(0.94, 0.9, 0.8, 0.85)
-@export var label_size := 15
 @export var solid := true:
 	set(value):
 		solid = value
@@ -68,18 +58,11 @@ func _rebuild() -> void:
 
 
 func _draw() -> void:
+	if not Engine.is_editor_hint():
+		return
 	var points := get_points()
-	draw_colored_polygon(points, fill_color)
+	if solid:
+		draw_colored_polygon(points, EDITOR_FILL)
 	var outline := points.duplicate()
 	outline.append(points[0])
-	draw_polyline(outline, outline_color, 2.0, true)
-	if label.is_empty():
-		return
-	var text := label.to_upper()
-	var text_size := LABEL_FONT.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, label_size)
-	var center := Vector2.ZERO
-	for p in points:
-		center += p
-	center /= points.size()
-	var origin := center + Vector2(-text_size.x / 2.0, label_size * 0.35)
-	draw_string(LABEL_FONT, origin, text, HORIZONTAL_ALIGNMENT_LEFT, -1, label_size, label_color)
+	draw_polyline(outline, EDITOR_OUTLINE if solid else EDITOR_WALKABLE, 2.0)

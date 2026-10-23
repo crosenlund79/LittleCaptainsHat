@@ -12,21 +12,25 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 003b: Stabilization, Sail Polish & Life Aboard**, a
-refinement of Iteration 003 (wind, sails, automatic propulsion), Iteration 002 (sea
-routes, voyages, game clock, sleep, weather warnings) and Iteration 001 (boat, menus,
-save/load, settings, audio, visual identity). Europe has a deterministic wind, which
-the chart shows. The boat sails with it, up to about 10 knots, or motors automatically
-when the wind is too light or on the nose. Iteration 003b adds:
-- a ship's **cat or dog** in the cabin;
-- adjustable **sleep** (also from the chart), always waking at the V-berth;
-- a **sail check** at the helm;
-- a steady chart side panel;
-- gently moving sails and a refined spinnaker.
+Current state: **Iteration 004: The Boatyard & Sprite-Ready Vessel Architecture**.
+It builds on Iteration 003b (ship's cat or dog, adjustable sleep, sail check, chart
+sidebar, simulation pause), 003 (wind, sails, automatic propulsion), 002 (sea routes,
+voyages, game clock, weather warnings) and 001 (boat, menus, save/load, settings,
+audio). Iteration 004 adds:
+- **three boats**: the Starling 33 monohull (the boat you start with), the Halcyon 40
+  catamaran and the Petrel 36 trimaran. Each has its own deck, cabin, sailing
+  performance and engine;
+- a **boatyard**, reached from the pontoon while moored in harbour, to browse the
+  boats (preview, specs, a performance comparison) and move aboard another one for
+  free;
+- a **sprite-ready art architecture**: every boat's art is in named visual slots that
+  take drawn PNGs without code changes, with procedural art as a fallback. There are
+  per-vessel art templates; see [ART_PIPELINE.md](ART_PIPELINE.md).
 
-![The spinnaker set on a broad reach](docs/screenshots/21_deck_spinnaker.png)
-![Wind on the chart](docs/screenshots/23_chart_wind_europe.png)
-![The ship's cat in the cabin](docs/screenshots/26_pet_cat.png)
+![The boatyard](docs/screenshots/40_boatyard_halcyon_40.png)
+![The catamaran with its spinnaker set](docs/screenshots/44_deck_spinnaker_halcyon_40.png)
+![The trimaran on a beam reach](docs/screenshots/43_deck_sailing_petrel_36.png)
+![The catamaran's saloon and hulls](docs/screenshots/42_cabin_halcyon_40.png)
 
 ## Engine
 
@@ -54,7 +58,8 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Action | Keys / mouse |
 |---|---|
 | Move | **W A S D** or **arrow keys** |
-| Interact | **E** (e.g. pet the cat or dog, sleep at the berth, check the sails at the helm) |
+| Interact | **E** (e.g. pet the cat or dog, sleep at the berth, check the sails at the helm, visit the boatyard from the pontoon side of the deck) |
+| Boatyard: browse boats | **Up / Down** (or click a boat), **Move aboard …** to choose |
 | Pause menu / back | **Esc** |
 | Pause / time acceleration | **Pause** and **1× / 5× / 20×** in the time bar at the top (on deck, in the cabin and on the chart). Pause stops the clock; Pause again, or a speed, continues |
 | Chart: pan | drag with the mouse, or **W A S D** / arrows |
@@ -140,8 +145,19 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
 
 - **Main menu** with the Next Harbor logo: New Game, Continue (most recent valid save),
   Load Game, Settings, Quit.
-- **The boat**, a ~33 ft cruising sloop in two separate scenes (cabin and deck), with
-  player movement, collision and interactions (berth, navigation table, helm, companionway).
+- **Three boats**, each with its own deck and cabin, player movement, collision and
+  interactions (berth, navigation table, helm, companionway, boatyard):
+  - **Starling 33**, the monohull you start with: up to 10 kn, 5 kn under engine;
+  - **Halcyon 40**, a catamaran with a bridgedeck saloon and two hulls: fast reaching,
+    poorer upwind, 6.5 kn under its twin engines;
+  - **Petrel 36**, a trimaran with a central cabin hull and two floats: the fastest,
+    up to 14 kn, 5.5 kn under its outboard.
+- **Boatyard** (in harbour only): the station by the pontoon opens it. It shows each
+  boat's preview, hull type, description, specs and a comparison table (top speed,
+  speed in 12 kn of wind at 45°, 90° and 150°, engine speed), all computed from the
+  boats' sailing data. Changing boats is free and keeps the time, the harbour, the
+  companion and your progress; you step aboard on deck. Underway the boatyard is
+  closed.
 - **European chart** (Iceland to Cyprus, North Cape to North Africa) from Natural Earth
   coastlines. It has zoom, pan, "All Europe", "Find boat", a cursor coordinate readout
   and **15 ports**: Copenhagen, Kiel, Gothenburg, Bergen, Helsinki, Portsmouth, Dublin,
@@ -181,9 +197,13 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - sail or engine and the automatic controller's state, and the wind seed;
   - the weather warnings already given;
   - the boat area and player position;
-  - the ship's companion (cat or dog, resting spot and when it next moves).
+  - the ship's companion (cat or dog, resting spot and when it next moves);
+  - the boat you sail (by its stable id, e.g. `halcyon_40`).
 - Loading resumes exactly where you saved. **No time passes while the game is closed.**
-- Save format version 4. **Older saves still load:**
+- Save format version 5. **Older saves still load:**
+  - Iteration 003b saves (v4) load aboard the Starling 33 monohull.
+  - A save naming a boat this version does not know loads aboard the Starling 33,
+    and you are told.
   - Iteration 003 saves (v3) get a ship's cat (the default companion).
   - Iteration 002 saves (v2) keep their voyage. Sail or engine is decided from the
     wind where and when the boat was saved.
@@ -203,13 +223,16 @@ Borderless fullscreen. Interface scale 80–130% scales menus and HUD only.
 ## Project layout
 
 ```
-assets/          branding, fonts (Barlow, OFL), UI theme, placeholder audio
+assets/          branding, fonts (Barlow, OFL), UI theme, placeholder audio,
+                 vessel art folders and templates (assets/vessels/<id>/)
 data/navigation/ ports, coastlines, navigation raster and sea-route graph (generated)
 data/weather/    demonstration weather areas, wind climatology
-data/vessel/     vessel profile (sailing performance, engine, controller thresholds)
+data/vessel/     sailing performance profiles (polar, engine, controller thresholds)
+data/vessels/    vessel definitions, the vessel catalog and visual profiles
 src/app/         application shell (main scene) and screen transitions
 src/core/        game session state and the simulation (game clock, voyages)
-src/boat/        cabin and deck scenes, boat area logic, fixture geometry, sail rig
+src/boat/        boat area logic, collision fixtures, sail rig, visual slots (visuals/)
+src/vessels/     vessel definition and catalog; deck/cabin scenes per vessel (<id>/)
 src/companion/   ship's companion: its state (kind, resting spot) and the cabin animal
 src/player/      player token
 src/interaction/ interactables and the player's interaction sensor
@@ -218,15 +241,18 @@ src/sailing/     propulsion state and the automatic sail/engine controller
 src/weather/     weather conditions, wind field
 src/ui/          menus, HUD, time controls, new-game and sleep dialogs, notifications, dialogs
 src/audio/       audio manager
-src/persistence/ save manager (format v3 + migration)
+src/persistence/ save manager (format v5 + migration)
 src/settings/    settings manager
 tests/           self-contained test runner and suites
-tools/           generators for the theme, logo exports, placeholder audio and navigation data
+tools/           generators for the theme, logo exports, placeholder audio, navigation data,
+                 vessel scenes, art templates and the demo sprite (tools/vessels/)
 docs/            screenshots
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
-[ITERATION_003B_REPORT.md](ITERATION_003B_REPORT.md) (and the reports for
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together,
+[ART_PIPELINE.md](ART_PIPELINE.md) for replacing the art, and
+[ITERATION_004_REPORT.md](ITERATION_004_REPORT.md) (and the reports for
+[003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
 [003](ITERATION_003_REPORT.md),
 [002](ITERATION_002_REPORT.md) and [001](ITERATION_001_REPORT.md)) for what was
 built and verified.
@@ -256,7 +282,11 @@ built and verified.
   harbour approach**: up to 2 nm from the berth and at most 10 nm through mostly-water
   cells, which may graze the simplified coastline. All other legs stay strictly clear of land.
 - The chart and the save files are game data, **not for real navigation**.
-- All audio is temporary synthetic test sound. Boat graphics are simple placeholders.
+- All audio is temporary synthetic test sound. Boat graphics are still procedural
+  placeholders: the sprite pipeline is ready, but only one demo sprite exists (the
+  Starling's coachroof, not enabled by default).
+- Boats are only swapped, never bought: there is no money, maintenance, upgrades or
+  decoration yet. The catamaran's and trimaran's layouts are first versions.
 - Tested on Linux with Godot 4.7.2 (headless and under a virtual display with software
   OpenGL). Not run on Windows yet. VSync could not be verified in that environment.
 

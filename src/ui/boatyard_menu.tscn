@@ -1,0 +1,134 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/boatyard_menu.gd" id="1_yard"]
+
+[node name="BoatyardMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yard")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.09, 0.12, 0.6)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Boatyard"
+
+[node name="Info" type="Label" parent="Center/Panel/VBox"]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Choose the boat you sail. Changing boats is free; your harbour, the time and your companion come with you."
+autowrap_mode = 3
+
+[node name="Body" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="VesselList" type="VBoxContainer" parent="Center/Panel/VBox/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Details" type="VBoxContainer" parent="Center/Panel/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="PreviewFrame" type="PanelContainer" parent="Center/Panel/VBox/Body/Details"]
+layout_mode = 2
+theme_type_variation = &"SectionPanel"
+
+[node name="PreviewContainer" type="SubViewportContainer" parent="Center/Panel/VBox/Body/Details/PreviewFrame"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 250)
+layout_mode = 2
+size_flags_horizontal = 4
+stretch = true
+
+[node name="PreviewViewport" type="SubViewport" parent="Center/Panel/VBox/Body/Details/PreviewFrame/PreviewContainer"]
+unique_name_in_owner = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(560, 250)
+render_target_update_mode = 4
+
+[node name="NameRow" type="HBoxContainer" parent="Center/Panel/VBox/Body/Details"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="NameLabel" type="Label" parent="Center/Panel/VBox/Body/Details/NameRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+[node name="HullLabel" type="Label" parent="Center/Panel/VBox/Body/Details/NameRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+theme_type_variation = &"MutedLabel"
+
+[node name="Description" type="Label" parent="Center/Panel/VBox/Body/Details"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Specs" type="GridContainer" parent="Center/Panel/VBox/Body/Details"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 18
+columns = 2
+
+[node name="CompareTitle" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "How they sail"
+
+[node name="Comparison" type="GridContainer" parent="Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 28
+columns = 4
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ChooseButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"BigButton"
+text = "Move aboard"
+
+[node name="CloseButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Close"

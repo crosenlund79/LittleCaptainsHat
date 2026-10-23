@@ -1,6 +1,6 @@
 # Next Harbor: Architecture
 
-This document describes how Next Harbor is put together (as of Iteration 003b)
+This document describes how Next Harbor is put together (as of Iteration 004)
 and where future systems are meant to plug in. It is kept short on purpose; the scripts have
 doc comments for details.
 
@@ -53,7 +53,7 @@ App (src/app/app.tscn, main scene, PROCESS_MODE_ALWAYS)
 │   └── MainMenu | Interior | Exterior | WorldMap
 ├── SceneRouter         ← swaps the screen with a fade (FadeLayer, layer 100)
 ├── HudLayer (10)       ← Hud, visible only in boat areas
-├── ModalLayer (20)     ← ModalStack: pause, settings, save/load, confirmations
+├── ModalLayer (20)     ← ModalStack: pause, settings, save/load, sleep, boatyard, confirmations
 └── ToastLayer (30)     ← Toasts (notifications)
 ```
 
@@ -65,9 +65,11 @@ App (src/app/app.tscn, main scene, PROCESS_MODE_ALWAYS)
   *before* instantiating the new one, so there is never a second player or screen.
   It ignores requests while a transition is running and calls `begin_exit()` on the
   outgoing screen if it has one, which stops player input during the fade.
-- Screens are registered in `app.tscn` as exported `PackedScene`s, and boat areas
-  in a typed dictionary `area id → scene`. Scripts contain no scene paths, except
-  `PortCatalog.DEFAULT_PATH` (the one shared data file).
+- Screens and menus are registered in `app.tscn` as exported `PackedScene`s. Boat
+  areas come from the active `VesselDefinition`
+  (`GameSession.get_vessel_definition().get_area_scene(area)`). Scripts contain no
+  scene paths, except the shared data files `PortCatalog.DEFAULT_PATH` and
+  `VesselCatalog.DEFAULT_PATH`.
 
 ### UI layers and scaling
 
@@ -134,14 +136,34 @@ chart is open and no boat scene exists.
 
 ## Boat scenes, player and interactions
 
-- `Interior` / `Exterior` (`src/boat/*.tscn`) share `BoatArea` (`boat_area.gd`).
-  On `_ready` it places the player from the session (position, or the named spawn
-  `Marker2D` under `SpawnPoints`; a restored position outside `walkable_bounds`
-  falls back to the default spawn), connects every `Interactable` in the scene and
-  starts the area's ambience.
-- `BoatFixture` (`boat_fixture.gd`, `@tool`) is placeholder furniture: one rectangle
-  or convex polygon that is both drawn and used as the collision shape. Hull
-  boundaries are `CollisionPolygon2D` in segment mode.
+- Each vessel has a deck (`Exterior`) and a cabin (`Interior`) scene in
+  `src/vessels/<id>/`, both using `BoatArea` (`boat_area.gd`). Every one of them has
+  the same structure (see *Vessels and the boatyard*):
+
+  ```
+  Exterior / Interior (BoatArea)
+    Surroundings (deck: water, Mooring) | Backdrop (cabin: darkness)
+    Visual       instance of the vessel's art-only scene (VesselVisual)
+    Layout
+      Collision        BoatFixture shapes, hull boundary (CollisionPolygon2D, segments)
+      Stations         Interactables (companionway, helm, boatyard | nav_table, bed)
+      SpawnPoints      Marker2D per spawn id
+      SailMarkers      (deck) Mast, Tack, BoomEnd, Traveller, JibSheetLead, SpinnakerSheetLead
+      CompanionSpots   (cabin) Marker2D per resting spot id
+    SailRig (deck) | Companion (cabin)
+    Player, Camera2D
+  ```
+
+- On `_ready`, `BoatArea` does the following:
+  - it applies the active vessel's visual profile to `Visual` and the `SailRig`;
+  - it places the player from the session (the saved position, or the named spawn
+    under `Layout/SpawnPoints`; a restored position outside `walkable_bounds` falls
+    back to the default spawn);
+  - it connects every `Interactable` and starts the area's ambience.
+- `BoatFixture` (`boat_fixture.gd`, `@tool`) is **collision only**: one rectangle or
+  convex polygon, with `solid = false` for walkable things. It draws an outline in
+  the editor and nothing in the game. Hull boundaries are `CollisionPolygon2D` in
+  segment mode. **Collision is never derived from art.**
 - `Player` (`src/player/`) is a `CharacterBody2D` (floating motion) using
   `Input.get_vector`, which normalizes diagonals. Physics layers: 1 world, 2 player,
   3 interactables.
@@ -150,14 +172,24 @@ chart is open and no boat scene exists.
     `enabled`, highlight of its parent while focused. It only emits `interacted`.
   - `InteractionSensor` (`Area2D` on the player) keeps one focused interactable: the
     nearest one in range, with ties broken by node name, so the choice is predictable.
-  - `BoatArea` routes by id: `companionway` → `area_change_requested`,
-    `nav_table` → `chart_requested`, `bed` → `sleep_requested`,
-    `helm` → `helm_requested` (App: depart, or report the autopilot course),
-    anything with a `message` → notification.
+  - `BoatArea` routes by id:
+    - `companionway` → `area_change_requested`;
+    - `nav_table` → `chart_requested`;
+    - `bed` → `sleep_requested`;
+    - `helm` → `helm_requested` (App: depart, or report the autopilot course);
+    - `boatyard` → `boatyard_requested` (App opens the boatyard);
+    - `pet` → the companion;
+    - anything with a `message` → notification.
+
+    Stations have an empty `highlight_target`: the focused one draws a brass ring
+    sized from its shape, so the feedback does not depend on the art. The
+    boatyard station is enabled and visible only while `can_change_vessel()`.
   - The deck's `mooring` node (pontoon, lines, port name) is visible only in port.
     A new "flavour" object therefore needs no code, only an `Interactable` with a message.
-- **Sail rig** (`src/boat/sail_rig.gd`, `Fittings/SailRig` on deck, z below the
-  player and labels): draws the mainsail on its boom, the jib and the spinnaker
+- **Sail rig** (`src/boat/sail_rig.gd`, `SailRig` on deck, z below the player and
+  labels). Its attachment points come from the deck's `Layout/SailMarkers` (the
+  starter sloop's constants are only a fallback); the jib foot is mast→tack, and the
+  spinnaker pole (×0.94) and depth (×1.945) scale with it. It draws the mainsail on its boom, the jib and the spinnaker
   from `GameSession.get_propulsion()` every frame. Sails lie to leeward
   (wind from starboard → sails to port; the deck has the bow at +x, port at −y).
   Boom angle = clamp(|twa| × 0.55 − 17°, 5°, 50°); jib = clamp(|twa| × 0.4 − 10°,
@@ -171,8 +203,8 @@ chart is open and no boat scene exists.
   was open when the state changed.
   - **Geometry** (Iteration 003b) lives in `get_shape(time)`, which draws and tests
     share. The spinnaker hangs from coherent rigging points:
-    - the **tack** is at the end of a 270-unit pole from the mast, 22° (reach) to
-      58° (run) to windward;
+    - the **tack** is at the end of the pole from the mast (270 units on the
+      Starling), 22° (reach) to 58° (run) to windward;
     - the **clew** is sheeted to the leeward quarter;
     - the **head** is joined to the mast by the halyard line;
     - the leading edge bellies 560 units forward of the tack–clew line (≈ x 680,
@@ -204,10 +236,89 @@ chart is open and no boat scene exists.
   - It has no collision; its `Interactable` (id `pet`, prompt "Pet cat/dog") is
     routed by `BoatArea` to `pet()`. That plays a sound on the SFX bus (purr, or
     soft panting) and a 1.6 s reaction (hearts, or a wagging tail).
-  - **Resting spots** are fixed per kind in `CompanionState.SPOTS`, chosen so that
-    the chart table, berth, wake-up spot and companionway stay the focused
-    interaction from where the player stands (tested). The `preview` flag reuses
-    the drawing in the New Game dialog.
+  - **Resting spots.** `CompanionState.SPOTS` holds only semantic ids per kind (cat:
+    `settee`, `nav_station`, `v_berth`; dog: `cabin_floor`, `companionway`,
+    `seating`).
+    - Each cabin places a `Marker2D` with that name under `Layout/CompanionSpots`,
+      so the spot survives a change of boat and its position belongs to the vessel.
+      Tests check that every cabin has all six.
+    - On the Starling the spots are chosen so that the chart table, berth, wake-up
+      spot and companionway stay the focused interaction (tested).
+    - An optional sprite at `assets/companions/<kind>.png` replaces the drawing
+      (the `CompanionVisual` slot).
+    - The `preview` flag reuses the drawing in the New Game dialog.
+
+## Vessels and the boatyard
+
+- **`VesselDefinition`** (`src/vessels/vessel_definition.gd`, one `.tres` per boat in
+  `data/vessels/`) is what a boat is:
+  - `id`: stable, saved; never the display name or a path;
+  - `display_name`, `hull_type` (monohull, catamaran or trimaran), `description` and
+    `specs`;
+  - `performance`: a `VesselProfile` in `data/vessel/`, with polar, engine and
+    controller thresholds;
+  - `deck_scene` and `cabin_scene`;
+  - `deck_visual_scene`: art only, used for the boatyard preview;
+  - `visual_profile`.
+- **`VesselCatalog`** (`data/vessels/vessel_catalog.tres`) lists the boats; the first
+  one, `starling_33`, is the starter.
+- **`GameSession`** owns which boat is active (`SessionState.vessel_id`):
+  - `get_vessel_definition()` and `get_vessel_profile()`: the Simulation, the
+    propulsion controller, the ETA and the helm reassessment all read the active
+    profile;
+  - `can_change_vessel()`: moored in a port, not underway;
+  - `switch_vessel(id)`: refuses underway, outside a harbour or for an unknown id.
+    Otherwise it sets the id, resets the propulsion state (stale rolling averages
+    from another hull must not carry over), enters the deck at `from_boatyard` and
+    emits `vessel_changed`. The Simulation then drops its cached ETA.
+- `App._show_current_boat_area()` takes the scene from the active definition, so a
+  switch is just a scene change; there are never two boat areas. Time, harbour,
+  companion and route plans are kept.
+- **Boatyard** (`src/ui/boatyard_menu.*`, a `ModalPanel`):
+  - It lists the catalog.
+  - It previews `deck_visual_scene` in a `SubViewport`, with the profile applied and
+    no gameplay nodes.
+  - It shows name, hull type, description and specs.
+  - Its comparison table comes from each profile: `compare_rows()` gives the top
+    speed, `sail_speed_kn(12 kn, 45°/90°/150°)` and the engine speed.
+  - **Move aboard** emits `vessel_chosen`, which `App.switch_vessel()` handles.
+    `App.open_boatyard()` refuses underway.
+
+| Vessel | Hull | Top speed | 12 kn at 45° / 90° / 150° | Engine | Spinnaker from |
+|---|---|---|---|---|---|
+| Starling 33 | monohull | 10.0 kn | 2.6 / 6.8 / 6.9 kn | 5.0 kn | 115° |
+| Halcyon 40 | catamaran | 11.0 kn | 1.1 / 7.0 / 6.8 kn | 6.5 kn | 100° |
+| Petrel 36 | trimaran | 14.0 kn | 5.2 / 10.6 / 10.2 kn | 5.5 kn | 120° |
+
+### Visual layer (sprite-ready)
+
+- **`VesselVisual`** (`src/boat/visuals/vessel_visual.gd`) is the root of each art
+  scene (`deck_visual.tscn`, `cabin_visual.tscn`). Its `canvas` (`Rect2`, in scene
+  units) is the area the art covers.
+- **`VisualSlot`** nodes are the named slots:
+  - **deck:** ShadowVisual, HullBase, DeckBase, Coachroof, DeckDetails,
+    RiggingVisual, MastVisual;
+  - **cabin:** CabinBase, FurnitureVisual, CabinDetails.
+
+  A slot shows **either** its procedural children (`ProceduralShape`, `Polygon2D`,
+  `Line2D`, labels) **or** one full-canvas `Sprite2D`. The sprite has its top-left
+  at `canvas.position` and is scaled uniformly to the canvas width; another aspect
+  ratio only logs a warning.
+- **`VesselVisualProfile`** (`data/vessels/<id>_visuals.tres`) resolves each slot in
+  a fixed order: the texture assigned in the profile, then
+  `<art_folder>/<deck|cabin>/<file>.png`, then procedural. A missing file can
+  therefore never break a boat. `procedural_only` forces placeholders.
+- Boom and sails (BoomVisual, MainSailVisual, HeadSailVisual, SpinnakerVisual) are
+  drawn by the `SailRig`. A sprite is stretched over the live sail outline as a
+  triangle strip (`canvas_item_add_triangle_array` with UVs), so trim, belly and
+  breathing still apply.
+- Coordinates: +x bow, −y port, origin at the middle of the boat; templates at 2 px
+  per unit. See [ART_PIPELINE.md](ART_PIPELINE.md).
+- Tooling (`tools/vessels/`):
+  - `build_multihull_scenes.py` bootstrapped the catamaran and trimaran scenes. It
+    is a one-time generator and refuses to overwrite without `--force`.
+  - `render_art_templates.tscn` draws the landmark templates.
+  - `make_demo_coachroof.py` drew the demo sprite.
 
 ## Map data structures
 
@@ -634,6 +745,11 @@ SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─
   `wind` (seed), `vessel` (status, position, propulsion state), `navigation`
   (location, planned route with its path, active voyage with route, progress,
   revision and warned weather ids).
+- **Version 5** (Iteration 004) adds `vessel.id`, which `from_dict` requires as a
+  non-empty string. `_migrate_4_to_5` sets `starling_33`. An id the catalog does
+  not know still loads: `GameSession.replace_state()` (`_check_vessel`) switches to
+  the starter, resets the spawn to `start` and emits a `notice` naming the unknown
+  boat. Migration chains 1 → 2 → 3 → 4 → 5.
 - **Version 4** (Iteration 003b) adds the `companion` section: `kind`, `spot`,
   `next_move_time` and `moves`, validated by `CompanionState.from_dict`.
   `_migrate_3_to_4` gives older games the default companion: a cat in its first
@@ -726,7 +842,9 @@ embedded in the editor.
 | Depth / draft limits | Another `NavGrid` cell class or a per-vessel mask; `SeaRouter` callers do not change. |
 | Money, provisions, equipment, vessel condition | Each its own section in `SessionState` and small owner API on `GameSession` (or a dedicated service if it grows); UI panels subscribe to signals. |
 | New interactions | Add an `Interactable` to a scene. Messages need no code; new behaviours add an id branch in `BoatArea` or, once there are many, a small handler resource. |
-| More boat areas | Add the id to `SessionState.BOAT_AREAS`, register the scene in `app.tscn`'s `boat_area_scenes`, add `SpawnPoints`. |
+| More vessels | A `VesselDefinition` `.tres` with a new stable id, deck/cabin scenes with the standard structure (start from a copy, or extend `tools/vessels/build_multihull_scenes.py`), a `VesselProfile`, and an entry in the catalog. `tests/suites/test_vessels.gd` checks every catalog entry automatically. |
+| Buying, upgrades, maintenance, decoration | A section in `SessionState` for owned boats or condition, and `GameSession` methods next to `switch_vessel()`. The boatyard is the natural UI; `VesselDefinition` can gain price or upgrade slots. Visual upgrades can be extra slots or profile variants. |
+| More boat areas | Add the id to `SessionState.BOAT_AREAS` and a scene field to `VesselDefinition` (`get_area_scene()`), with the standard `Layout`. |
 | More ports | New `PortData` resources in the catalog (a harbour approach is found automatically; tests check every port). |
 | Larger regions | Regenerate the navigation data with other bounds; for worldwide coverage the raster and graph would need tiling. |
 | Real audio | Replace the placeholder streams on the scenes and settings menu; buses stay the same. |
@@ -751,6 +869,21 @@ from cabin/deck/chart, interruptions, V-berth wake-up; chart panel geometry
 stability; helm prompt and messages; sail motion and spinnaker geometry), and an
 end-to-end gameplay flow driving
 the real `App` with input events, including the Iteration 002 acceptance scenario.
+Vessels (Iteration 004):
+- **data:** the catalog, definitions and profiles;
+- **scenes:** every scene instantiates, has every slot, station, spawn, sail marker
+  and companion spot, and has no physics in `Visual`;
+- **walking:** a flood fill with the real player shape shows that every spawn and
+  station is reachable on all six areas;
+- **boatyard:** opens by walking to it, preview, browsing, choosing, refused
+  underway, no duplicate scenes;
+- **life aboard each boat:** companionway, chart, sleep and wake at the berth,
+  companion on the cabin's markers, speed from the boat's profile, sails, sail
+  sprites, spinnaker and engine;
+- **sprites:** the fallback order, the demo sprite with the layout unchanged;
+- **time and persistence:** pause and 20× on another boat; save/load in the cabin,
+  on deck, underway and after switching; v4 migration; an unknown id.
+`--only=<name>` after `--` runs only the matching suites.
 Suites written for the constant-speed model run with a **calm-wind fixture**
 (`use_calm_wind()`): in a flat calm the boat motors at exactly 5 kn from
 departure, so their timing expectations stay exact.

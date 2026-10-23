@@ -1,0 +1,181 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/boat/boat_area.gd" id="1_r"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_cabin.wav" id="2_r"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="3_r"]
+[ext_resource type="PackedScene" path="res://src/vessels/starling_33/cabin_visual.tscn" id="4_r"]
+[ext_resource type="Script" path="res://src/boat/boat_fixture.gd" id="5_r"]
+[ext_resource type="Script" path="res://src/interaction/interactable.gd" id="6_r"]
+[ext_resource type="Script" path="res://src/companion/ship_companion.gd" id="7_r"]
+[ext_resource type="PackedScene" path="res://src/player/player.tscn" id="8_r"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3"]
+size = Vector2(30, 96)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
+size = Vector2(120, 28)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5"]
+size = Vector2(30, 150)
+
+[node name="Interior" type="Node2D"]
+script = ExtResource("1_r")
+area_id = &"interior"
+companionway_target_area = &"exterior"
+companionway_target_spawn = &"from_cabin"
+walkable_bounds = Rect2(-330, -160, 780, 320)
+ambience = ExtResource("2_r")
+interaction_sound = ExtResource("3_r")
+
+[node name="Backdrop" type="Node2D" parent="."]
+
+[node name="Darkness" type="Polygon2D" parent="Backdrop"]
+color = Color(0.0392, 0.1098, 0.1451, 1.0)
+polygon = PackedVector2Array(-1600.0, -900.0, 1600.0, -900.0, 1600.0, 900.0, -1600.0, 900.0)
+
+[node name="Visual" parent="." instance=ExtResource("4_r")]
+
+[node name="Layout" type="Node2D" parent="."]
+
+[node name="Collision" type="Node2D" parent="Layout"]
+
+[node name="Hull" type="StaticBody2D" parent="Layout/Collision"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layout/Collision/Hull"]
+build_mode = 1
+polygon = PackedVector2Array(-330.0, -141.5, -300.0, -144.0, -280.0, -144.5, -260.0, -145.1, -240.0, -145.6, -220.0, -146.1, -200.0, -146.7, -180.0, -147.2, -160.0, -147.7, -140.0, -147.9, -120.0, -147.6, -100.0, -147.3, -80.0, -147.1, -60.0, -146.8, -40.0, -146.5, -20.0, -146.3, 0.0, -146.0, 20.0, -144.3, 40.0, -142.7, 60.0, -141.0, 80.0, -139.3, 100.0, -137.7, 120.0, -136.0, 140.0, -132.0, 160.0, -128.0, 180.0, -124.0, 200.0, -120.0, 220.0, -116.0, 240.0, -109.8, 260.0, -103.5, 280.0, -97.2, 300.0, -91.0, 320.0, -82.2, 340.0, -73.5, 360.0, -64.8, 380.0, -56.0, 400.0, -44.3, 420.0, -32.7, 440.0, -21.0, 452.0, 0.0, 440.0, 21.0, 420.0, 32.7, 400.0, 44.3, 380.0, 56.0, 360.0, 64.8, 340.0, 73.5, 320.0, 82.2, 300.0, 91.0, 280.0, 97.2, 260.0, 103.5, 240.0, 109.8, 220.0, 116.0, 200.0, 120.0, 180.0, 124.0, 160.0, 128.0, 140.0, 132.0, 120.0, 136.0, 100.0, 137.7, 80.0, 139.3, 60.0, 141.0, 40.0, 142.7, 20.0, 144.3, 0.0, 146.0, -20.0, 146.3, -40.0, 146.5, -60.0, 146.8, -80.0, 147.1, -100.0, 147.3, -120.0, 147.6, -140.0, 147.9, -160.0, 147.7, -180.0, 147.2, -200.0, 146.7, -220.0, 146.1, -240.0, 145.6, -260.0, 145.1, -280.0, 144.5, -300.0, 144.0, -330.0, 141.5)
+
+[node name="EngineBox" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-311, 0)
+size = Vector2(38, 96)
+
+[node name="CompanionwaySteps" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-271, 0)
+size = Vector2(40, 96)
+
+[node name="Galley" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-240, -116)
+polygon = PackedVector2Array(-90.0, -25.5, 90.0, -32.0, 90.0, 30.0, -90.0, 30.0)
+
+[node name="NavTable" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-232, 116)
+polygon = PackedVector2Array(-68.0, -32.0, 67.0, -32.0, 67.0, 31.6, -68.0, 28.0)
+
+[node name="SetteePort" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(10, -128)
+polygon = PackedVector2Array(-130.0, -19.6, 130.0, -4.0, 130.0, 22.0, -130.0, 22.0)
+
+[node name="SetteeStarboard" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(10, 128)
+polygon = PackedVector2Array(-130.0, -22.0, 130.0, -22.0, 130.0, 4.0, -130.0, 19.6)
+
+[node name="SaloonTable" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(10, 0)
+size = Vector2(130, 66)
+
+[node name="StoragePort" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(200, -95)
+polygon = PackedVector2Array(-40.0, -33.0, 38.0, -15.4, 38.0, 25.0, -40.0, 25.0)
+
+[node name="StorageStarboard" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(200, 95)
+polygon = PackedVector2Array(-40.0, -25.0, 38.0, -25.0, 38.0, 15.4, -40.0, 33.0)
+
+[node name="BulkheadPort" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(246, -78)
+size = Vector2(12, 70)
+
+[node name="BulkheadStarboard" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(246, 78)
+size = Vector2(12, 70)
+
+[node name="VBerth" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(370, 0)
+polygon = PackedVector2Array(-54.0, -84.0, 12.0, -54.8, 64.0, -20.5, 64.0, 20.5, 12.0, 54.8, -54.0, 84.0)
+
+[node name="Stations" type="Node2D" parent="Layout"]
+
+[node name="Companionway" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-239, 0)
+script = ExtResource("6_r")
+interaction_id = &"companionway"
+prompt = "Go on deck"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Companionway"]
+shape = SubResource("RectangleShape2D_3")
+
+[node name="Chart" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-232, 70)
+script = ExtResource("6_r")
+interaction_id = &"nav_table"
+prompt = "Open chart"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Chart"]
+shape = SubResource("RectangleShape2D_4")
+
+[node name="Berth" type="Area2D" parent="Layout/Stations"]
+position = Vector2(308, 0)
+script = ExtResource("6_r")
+interaction_id = &"bed"
+prompt = "Sleep"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Berth"]
+shape = SubResource("RectangleShape2D_5")
+
+[node name="SpawnPoints" type="Node2D" parent="Layout"]
+
+[node name="start" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-120, 0)
+
+[node name="from_deck" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-218, 0)
+
+[node name="v_berth" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(282, 0)
+
+[node name="CompanionSpots" type="Node2D" parent="Layout"]
+
+[node name="settee" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(40, -124)
+
+[node name="nav_station" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-145, 118)
+
+[node name="v_berth" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(372, 48)
+
+[node name="cabin_floor" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(118, 70)
+
+[node name="companionway" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-178, -62)
+
+[node name="seating" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-80, 86)
+
+[node name="Companion" type="Node2D" parent="."]
+script = ExtResource("7_r")
+
+[node name="Player" parent="." instance=ExtResource("8_r")]
+z_index = 10
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(55, 0)
+zoom = Vector2(1.55, 1.55)

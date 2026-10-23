@@ -62,6 +62,7 @@ func _ready() -> void:
 	GameSession.voyage_started.connect(_on_voyage_started)
 	GameSession.voyage_course_changed.connect(_on_course_changed)
 	GameSession.state_replaced.connect(_on_state_replaced)
+	GameSession.vessel_changed.connect(_on_vessel_changed)
 
 
 func _process(delta: float) -> void:
@@ -199,6 +200,11 @@ func _on_voyage_started() -> void:
 func _on_course_changed() -> void:
 	invalidate_estimates()
 	evaluate_propulsion(true, true)
+
+
+func _on_vessel_changed(_vessel_id: StringName) -> void:
+	# Another hull sails differently: cached ETAs no longer hold.
+	invalidate_estimates()
 
 
 func _on_state_replaced() -> void:

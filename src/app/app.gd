@@ -9,14 +9,14 @@ extends Node
 
 @export var main_menu_scene: PackedScene
 @export var world_map_scene: PackedScene
-## Boat area id (see SessionState.BOAT_AREAS) -> scene for that area.
-@export var boat_area_scenes: Dictionary[StringName, PackedScene] = {}
 @export var pause_menu_scene: PackedScene
 @export var settings_menu_scene: PackedScene
 @export var save_load_menu_scene: PackedScene
 @export var sleep_menu_scene: PackedScene
 ## New Game: choose the ship's companion.
 @export var new_game_menu_scene: PackedScene
+## The boatyard (in harbour only): browse and choose the vessel.
+@export var boatyard_menu_scene: PackedScene
 ## Played on every button press, routed to the UI bus.
 @export var ui_click_sound: AudioStream
 ## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
@@ -46,9 +46,9 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_toast_offsets = Vector2(toasts.offset_left, toasts.offset_right)
 	$Screen.process_mode = Node.PROCESS_MODE_PAUSABLE
-	for area: StringName in SessionState.BOAT_AREAS:
-		if not boat_area_scenes.has(area):
-			push_error("No scene registered for boat area '%s'." % area)
+	for vessel in VesselCatalog.get_default().vessels:
+		for problem in vessel.validate():
+			push_error("Vessel '%s': %s" % [vessel.id, problem])
 	get_tree().node_added.connect(_on_node_added)
 	modals.stack_changed.connect(_on_modal_stack_changed)
 	modals.notification_requested.connect(notify)
@@ -300,7 +300,8 @@ func _on_arrived(port_id: StringName) -> void:
 
 func _show_current_boat_area() -> void:
 	var area := GameSession.get_boat_area()
-	var scene: PackedScene = boat_area_scenes.get(area)
+	# The scenes come from the active vessel (see VesselDefinition).
+	var scene := GameSession.get_vessel_definition().get_area_scene(area)
 	if scene == null:
 		push_error("Cannot show unknown boat area '%s'." % area)
 		return
@@ -323,6 +324,32 @@ func open_pause_menu() -> void:
 	menu.settings_requested.connect(open_settings)
 	menu.main_menu_requested.connect(request_main_menu)
 	modals.push(menu)
+
+
+## The boatyard: only in harbour, never underway.
+func open_boatyard() -> void:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return
+	if not GameSession.can_change_vessel():
+		notify("The boatyard is only open while you are moored in harbour.")
+		return
+	var menu := boatyard_menu_scene.instantiate() as BoatyardMenu
+	menu.vessel_chosen.connect(switch_vessel)
+	modals.push(menu)
+
+
+## Moves aboard `vessel_id` (from the boatyard): the session, companion, time
+## and harbour are kept; the player steps aboard on deck by the boatyard.
+func switch_vessel(vessel_id: StringName) -> void:
+	modals.clear()
+	if vessel_id == GameSession.get_vessel_id():
+		return
+	var error := GameSession.switch_vessel(vessel_id)
+	if error != "":
+		notify(error)
+		return
+	_show_current_boat_area()
+	notify("Welcome aboard the %s." % GameSession.get_vessel_definition().display_name)
 
 
 func open_settings() -> void:
@@ -359,6 +386,7 @@ func _connect_boat_area(area: BoatArea) -> void:
 	area.helm_requested.connect(_on_helm_requested)
 	area.message_requested.connect(notify)
 	area.interaction_prompt_changed.connect(hud.set_prompt)
+	area.boatyard_requested.connect(open_boatyard)
 
 
 func _connect_world_map(map: WorldMap) -> void:

@@ -7,11 +7,20 @@ extends Node2D
 ## from GameSession, writes the position back while active, and turns
 ## interactions into requests (signals) that the application flow handles.
 ## It never changes scenes or opens UI itself.
+##
+## Scene structure (every vessel, deck and cabin alike):
+##   Visual   - the art (VesselVisual: procedural slots or sprites), no physics
+##   Layout   - gameplay: Collision, Stations (interactables), SpawnPoints,
+##              CompanionSpots (cabin) and SailMarkers (deck)
+##   SailRig  - the dynamic sails (deck), Companion (cabin), Player, Camera2D
+## On entering, the active vessel's visual profile is applied to Visual and
+## the SailRig, so replacing art never touches the layout.
 
 signal area_change_requested(area: StringName, spawn_point: StringName)
 signal chart_requested
 signal sleep_requested
 signal helm_requested
+signal boatyard_requested
 signal message_requested(text: String)
 ## Prompt text for the focused interactable, or "" when nothing is in range.
 signal interaction_prompt_changed(prompt: String)
@@ -38,10 +47,11 @@ const HELM_PROMPT_UNDERWAY := "Check sail configuration"
 var _leaving := false
 
 @onready var player: Player = $Player
-@onready var _spawn_points: Node2D = $SpawnPoints
+@onready var _spawn_points: Node2D = $Layout/SpawnPoints
 
 
 func _ready() -> void:
+	apply_visual_profile(GameSession.get_vessel_definition().visual_profile)
 	_place_player()
 	player.focus_changed.connect(_on_player_focus_changed)
 	for node in find_children("*", "Interactable", true, false):
@@ -50,6 +60,23 @@ func _ready() -> void:
 	_update_mooring()
 	GameSession.voyage_started.connect(_update_mooring)
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
+
+
+## Shows the vessel's art: sprites where the profile has them, procedural
+## placeholder art elsewhere.
+func apply_visual_profile(profile: VesselVisualProfile) -> void:
+	var visual := get_node_or_null("Visual") as VesselVisual
+	if visual:
+		visual.apply(profile)
+	var rig := get_node_or_null("SailRig") as SailRig
+	if rig:
+		rig.apply_profile(profile)
+
+
+## A spawn point's position, or Vector2.INF when it does not exist.
+func get_spawn_position(spawn_point: StringName) -> Vector2:
+	var marker := _spawn_points.get_node_or_null(NodePath(String(spawn_point))) as Node2D
+	return marker.position if marker else Vector2.INF
 
 
 func _physics_process(_delta: float) -> void:
@@ -104,6 +131,8 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			sleep_requested.emit()
 		&"helm":
 			helm_requested.emit()
+		&"boatyard":
+			boatyard_requested.emit()
 		&"pet":
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
@@ -126,6 +155,11 @@ func _update_mooring() -> void:
 		var interactable := node as Interactable
 		if interactable.interaction_id == &"helm":
 			interactable.prompt = HELM_PROMPT_UNDERWAY if GameSession.is_underway() else HELM_PROMPT_IN_PORT
+		elif interactable.interaction_id == &"boatyard":
+			# The boatyard is only reachable in harbour.
+			interactable.enabled = GameSession.can_change_vessel()
+			interactable.visible = interactable.enabled
+			interactable.monitorable = interactable.enabled
 	if player and player.get_focused_interactable():
 		interaction_prompt_changed.emit(player.get_focused_interactable().prompt)
 	if mooring:

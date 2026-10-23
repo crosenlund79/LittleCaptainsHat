@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="VesselDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/vessels/vessel_definition.gd" id="1_def"]
+[ext_resource type="Resource" path="res://data/vessel/starter_sloop.tres" id="2_perf"]
+[ext_resource type="PackedScene" path="res://src/vessels/starling_33/deck.tscn" id="3_deck"]
+[ext_resource type="PackedScene" path="res://src/vessels/starling_33/cabin.tscn" id="4_cabin"]
+[ext_resource type="PackedScene" path="res://src/vessels/starling_33/deck_visual.tscn" id="5_visual"]
+[ext_resource type="Resource" path="res://data/vessels/starling_33_visuals.tres" id="6_profile"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"starling_33"
+display_name = "Starling 33"
+hull_type = "monohull"
+description = "A sturdy 33 ft cruising sloop: the boat you started with. Easy to handle, comfortable at sea and happy on every point of sail."
+specs = Dictionary[String, String]({"Length": "10.1 m (33 ft)", "Beam": "3.4 m", "Accommodation": "Forward V-berth, saloon, galley", "Engine": "Single diesel"})
+performance = ExtResource("2_perf")
+deck_scene = ExtResource("3_deck")
+cabin_scene = ExtResource("4_cabin")
+deck_visual_scene = ExtResource("5_visual")
+visual_profile = ExtResource("6_profile")

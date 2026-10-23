@@ -60,7 +60,7 @@ func _test_new_game_companion_choice() -> void:
 	t.check(companion != null and companion.visible and companion.kind == CompanionState.KIND_CAT, "[companion] the cat rests in the cabin")
 	t.check_eq(_companion_count(), 1, "[companion] exactly one companion")
 	if companion:
-		t.check(companion.position.is_equal_approx(GameSession.get_companion().get_position()), "[companion] at its saved resting spot")
+		t.check(companion.position.is_equal_approx(companion.get_spot_position(GameSession.get_companion().spot)), "[companion] at its saved resting spot")
 
 
 func _test_companion_spots_and_schedule() -> void:
@@ -73,7 +73,7 @@ func _test_companion_spots_and_schedule() -> void:
 	}
 	for kind in CompanionState.KINDS:
 		for spot in CompanionState.get_spot_ids(kind):
-			var at: Vector2 = CompanionState.SPOTS[kind][spot]
+			var at: Vector2 = _companion().get_spot_position(spot)
 			t.check(area.walkable_bounds.has_point(at), "[companion] %s spot '%s' is inside the cabin" % [kind, spot])
 			_set_companion(kind, spot)
 			await t.physics_frames(2)
@@ -114,7 +114,7 @@ func _test_companion_spots_and_schedule() -> void:
 	Simulation.advance(before.next_move_time - GameSession.get_game_time() + 1.0)
 	await t.frames(1)
 	t.check(GameSession.get_companion().spot != before.spot and _companion().spot == GameSession.get_companion().spot
-		and _companion().position.is_equal_approx(GameSession.get_companion().get_position()),
+		and _companion().position.is_equal_approx(_companion().get_spot_position(GameSession.get_companion().spot)),
 		"[companion] when its time comes it is found resting somewhere else")
 	_set_companion(CompanionState.KIND_CAT, &"settee")
 
@@ -396,7 +396,7 @@ func _test_helm_and_sails() -> void:
 	app._show_current_boat_area()
 	await _settle()
 	var deck := app.router.current_screen as BoatArea
-	var rig := deck.get_node("Fittings/SailRig") as SailRig
+	var rig := deck.get_node("SailRig") as SailRig
 	t.check(GameSession.is_motoring() and rig.is_furled(), "(setup) motoring with sails furled")
 	await _move_player_to(Vector2(-448, 0))
 	t.check_eq(app.hud.get_prompt(), "Check sail configuration", "[helm] underway the helm offers to check the sails")
@@ -441,7 +441,7 @@ func _test_helm_and_sails() -> void:
 	var kite: Dictionary = rig.get_shape().spinnaker
 	var front_mid: Vector2 = kite.front[kite.front.size() / 2]
 	t.check(front_mid.x > 650.0, "[spinnaker] it flies well ahead of the bow (leading edge at x=%d, bow at 500)" % roundi(front_mid.x))
-	t.check(absf((kite.tack as Vector2).distance_to(SailRig.MAST) - SailRig.SPINNAKER_POLE) < 0.5,
+	t.check(absf((kite.tack as Vector2).distance_to(rig.mast) - rig.spinnaker_pole) < 0.5,
 		"[spinnaker] its tack is at the end of the pole from the mast")
 	t.check(signf(kite.tack.y) == -signf(kite.clew.y) and signf(kite.clew.y) == lee,
 		"[spinnaker] pole to windward, clew sheeted to leeward")
@@ -482,7 +482,7 @@ func _check_motion(rig: SailRig, sail: String, min_px: float, max_px: float) -> 
 # --- Persistence -----------------------------------------------------------------------------
 
 func _test_companion_persistence() -> void:
-	app.router.change_screen(app.boat_area_scenes[&"interior"], app._connect_boat_area)
+	app.router.change_screen(GameSession.get_vessel_definition().cabin_scene, app._connect_boat_area)
 	GameSession.enter_boat_area(SessionState.AREA_INTERIOR, &"start")
 	await _settle()
 	_set_companion(CompanionState.KIND_CAT, &"nav_station")

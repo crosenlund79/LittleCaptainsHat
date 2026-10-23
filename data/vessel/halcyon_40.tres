@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="VesselProfile" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/vessel_profile.gd" id="1_vessel"]
+
+[resource]
+script = ExtResource("1_vessel")
+display_name = "40 ft cruising catamaran"
+length_ft = 40.0
+max_sail_speed_kn = 11.0
+wind_speed_scale_kn = 10.5
+light_air_min_kn = 1.0
+light_air_full_kn = 3.5
+angle_efficiency_curve = PackedVector2Array(0, 0, 40, 0, 50, 0.3, 60, 0.55, 70, 0.72, 85, 0.9, 100, 1, 115, 1, 130, 0.95, 145, 0.86, 160, 0.76, 175, 0.68, 180, 0.66)
+spinnaker_min_angle = 100.0
+spinnaker_bonus = 1.1
+engine_speed_kn = 6.5

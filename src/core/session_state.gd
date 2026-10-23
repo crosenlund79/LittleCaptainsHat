@@ -51,6 +51,8 @@ var vessel_position := Vector2.ZERO
 var propulsion := PropulsionState.new()
 ## Selects the deterministic weather variation of the wind field for this game.
 var wind_seed := 1
+## Which boat the player owns (a VesselDefinition id, stable across versions).
+var vessel_id: StringName = &"starling_33"
 ## The ship's companion (kind and resting spot in the cabin).
 var companion := CompanionState.new()
 ## The voyage being sailed, or null when not underway.
@@ -94,6 +96,7 @@ func duplicate_state() -> SessionState:
 	copy.propulsion = propulsion.duplicate_state()
 	copy.wind_seed = wind_seed
 	copy.companion = companion.duplicate_state()
+	copy.vessel_id = vessel_id
 	copy.voyage = voyage.duplicate_voyage() if voyage else null
 	return copy
 
@@ -111,6 +114,7 @@ func to_dict() -> Dictionary:
 		"wind": {"seed": wind_seed},
 		"companion": companion.to_dict(),
 		"vessel": {
+			"id": String(vessel_id),
 			"status": String(vessel_status),
 			"position": {"lon": vessel_position.x, "lat": vessel_position.y},
 			"propulsion": propulsion.to_dict(),
@@ -197,6 +201,12 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		errors.append("invalid vessel status or position")
 		return null
 	state.vessel_position = vessel_position
+	# An unknown id is not an error here: GameSession falls back to the starter
+	# boat and tells the player (so a save with a removed boat still loads).
+	if not vessel.get("id") is String or String(vessel.id).is_empty():
+		errors.append("missing vessel id")
+		return null
+	state.vessel_id = StringName(vessel.id)
 	state.propulsion = PropulsionState.from_dict(vessel.get("propulsion"), errors)
 	if state.propulsion == null:
 		return null

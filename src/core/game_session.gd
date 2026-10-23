@@ -22,6 +22,8 @@ signal voyage_course_changed
 signal voyage_arrived(port_id: StringName)
 ## Sail <-> engine changed (or propulsion ended on arrival: mode is then &"").
 signal propulsion_changed(mode: StringName)
+## The player switched boats at the boatyard.
+signal vessel_changed(vessel_id: StringName)
 ## The ship's companion moved to another resting spot (see CompanionState).
 signal companion_moved(spot: StringName)
 ## Something the player should be told that is not an error of their action
@@ -51,6 +53,7 @@ func _exit_tree() -> void:
 	WeatherCatalog.clear_default()
 	WindField.clear_default()
 	VesselProfile.clear_default()
+	VesselCatalog.clear_default()
 
 
 # --- Lifecycle ----------------------------------------------------------------
@@ -78,6 +81,7 @@ func replace_state(new_state: SessionState) -> void:
 	_state = new_state.duplicate_state()
 	_has_unsaved_changes = false
 	_complete_legacy_route()
+	_check_vessel()
 	if not was_active:
 		session_started.emit()
 	state_replaced.emit()
@@ -200,8 +204,68 @@ func get_vessel_speed_kn() -> float:
 
 
 ## The boat's performance profile (one starter boat for now).
+## Sailing performance of the active vessel.
 func get_vessel_profile() -> VesselProfile:
-	return VesselProfile.get_default()
+	var vessel := get_vessel_definition()
+	return vessel.performance if vessel and vessel.performance else VesselProfile.get_default()
+
+
+## The boat the player owns (the starter boat when no game is running).
+func get_vessel_definition() -> VesselDefinition:
+	var catalog := VesselCatalog.get_default()
+	if _state == null:
+		return catalog.get_starter()
+	var vessel := catalog.get_vessel(_state.vessel_id)
+	return vessel if vessel else catalog.get_starter()
+
+
+func get_vessel_id() -> StringName:
+	return _state.vessel_id if _state else VesselCatalog.STARTER_ID
+
+
+## True when the boatyard may be used: in harbour, not on a passage.
+func can_change_vessel() -> bool:
+	return _state != null and not is_underway() and get_location() != null
+
+
+## Switches to another boat at the boatyard. Only in harbour; refused (with a
+## reason) underway. Everything long-term stays: time, location, planned
+## course, companion, saves. The player goes on deck of the new boat at its
+## boatyard spawn point; the companion keeps its resting spot, which every
+## cabin provides. The propulsion controller starts afresh, so no rolling
+## average from the old boat's performance carries over.
+func switch_vessel(vessel_id: StringName) -> String:
+	if _state == null:
+		return "No game is running."
+	if is_underway():
+		return "You can only change boats in harbour, not during a passage."
+	if get_location() == null:
+		return "The boatyard is only available in harbour."
+	var vessel := VesselCatalog.get_default().get_vessel(vessel_id)
+	if vessel == null:
+		return "Unknown boat '%s'." % vessel_id
+	if vessel_id == _state.vessel_id:
+		return ""
+	_state.vessel_id = vessel_id
+	_state.propulsion = PropulsionState.new()
+	_has_unsaved_changes = true
+	enter_boat_area(SessionState.AREA_EXTERIOR, &"from_boatyard")
+	vessel_changed.emit(vessel_id)
+	return ""
+
+
+## A save naming a boat this version does not know falls back to the starter
+## boat, and the player is told (the rest of the save is kept).
+func _check_vessel() -> void:
+	var catalog := VesselCatalog.get_default()
+	if catalog.has_vessel(_state.vessel_id):
+		return
+	var unknown := _state.vessel_id
+	_state.vessel_id = catalog.get_starter().id
+	_state.spawn_point = &"start"
+	_state.has_player_position = false
+	push_warning("Unknown vessel id '%s' in the loaded game; using '%s'." % [unknown, _state.vessel_id])
+	notice.emit.call_deferred("The saved boat '%s' is not available; you are aboard the %s." % [unknown, catalog.get_starter().display_name])
 
 
 ## A copy of the propulsion state (mode, potential speed, wind, sails).

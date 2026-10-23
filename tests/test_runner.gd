@@ -23,6 +23,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_sailing_presentation.gd"),
 	preload("res://tests/suites/test_life_aboard.gd"),
 	preload("res://tests/suites/test_chart_and_pause.gd"),
+	preload("res://tests/suites/test_vessels.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
 
@@ -33,6 +34,8 @@ var passed := 0
 var failed := 0
 var current_suite := ""
 var screenshot_dir := ""
+## Run only suites whose file name contains this (--only=vessels).
+var only := ""
 var _failures: PackedStringArray = []
 
 
@@ -41,6 +44,8 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--screenshots="):
 			screenshot_dir = arg.trim_prefix("--screenshots=")
+		elif arg.begins_with("--only="):
+			only = arg.trim_prefix("--only=")
 	_run.call_deferred()
 
 
@@ -56,6 +61,8 @@ func _run() -> void:
 	SettingsManager.settings_path = TEST_SETTINGS_PATH
 	SettingsManager.load_settings()
 	for script in SUITES:
+		if not only.is_empty() and not script.resource_path.get_file().contains(only):
+			continue
 		use_calm_wind()
 		var suite: Object = script.new()
 		current_suite = script.resource_path.get_file().get_basename()

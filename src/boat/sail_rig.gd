@@ -15,8 +15,22 @@ extends Node2D
 ## purely cosmetic and never reaches the simulation: speed and propulsion
 ## come only from PropulsionState. Furled sails do not move.
 ##
-## Boat frame: +x is forward (bow at x = 500), -y is port, +y is starboard.
-## Sails lie on the leeward side: wind from starboard puts them to port.
+## Boat frame: +x is forward, -y is port, +y is starboard. Sails lie on the
+## leeward side: wind from starboard puts them to port.
+##
+## Attachment points come from the deck scene's layout markers
+## (Layout/SailMarkers: Mast, Tack, BoomEnd, Traveller, JibSheetLead,
+## SpinnakerSheetLead; sheet leads are given on the starboard side and
+## mirrored), so each vessel rigs its own sails. Without markers the starter
+## sloop's values below are used.
+##
+## Art: each sail (and the boom) is drawn procedurally, or with a sprite from
+## the vessel's visual profile (slots MainSailVisual, HeadSailVisual,
+## SpinnakerVisual, BoomVisual). A sail sprite is stretched over the sail's
+## current shape as a strip of triangles: the image's left edge is the luff
+## (head/tack), its right edge the clew, its top edge the curved leech (for
+## the spinnaker: the leading edge) and its bottom edge the foot. So the
+## sprite follows the trim, the belly and the breathing automatically.
 
 const SAIL := Color("#EFE5CC")
 const SAIL_SHADE := Color("#D8CDB1")
@@ -27,16 +41,17 @@ const SPINNAKER := Color("#C79F6D")
 const SPINNAKER_STRIPE := Color("#EFE5CC")
 const SHEET := Color(0.937, 0.898, 0.8, 0.7)
 
-## Mast step and boom geometry (matches the deck scene's mast fixture).
+## Defaults (the starter sloop) used when the scene has no SailMarkers.
 const MAST := Vector2(182, 0)
 const BOOM_LENGTH := 400.0
 const JIB_TACK := Vector2(470, 0)
-const JIB_FOOT := 290.0
-## Spinnaker: pole length from the mast and how far the sail's leading edge
-## bellies forward of its tack-clew line (the front edge flies ~1.5 hull
-## half-lengths ahead of the mast, well beyond the bow).
-const SPINNAKER_POLE := 270.0
-const SPINNAKER_DEPTH := 560.0
+const TRAVELLER := Vector2(-360, 0)
+const JIB_SHEET_LEAD := Vector2(-250, 120)
+const SPINNAKER_SHEET_LEAD := Vector2(-430, 150)
+## Spinnaker pole length and leading-edge depth relative to the foretriangle
+## base (mast to tack): 270 and 560 units on the sloop.
+const SPINNAKER_POLE_RATIO := 0.94
+const SPINNAKER_DEPTH_RATIO := 1.945
 ## While the spinnaker flies, the deck view eases this far forward so the
 ## whole sail stays on screen (the stern still fits).
 const SPINNAKER_VIEW_SHIFT := 110.0
@@ -57,6 +72,25 @@ const JIB_MAX_DEG := 38.0
 const TRIM_RATE := 1.6
 const HOIST_RATE := 0.8
 
+## Where to read the attachment markers from.
+@export var markers_path: NodePath = ^"../Layout/SailMarkers"
+
+## Attachment points (scene units), from the markers.
+var mast := MAST
+var tack := JIB_TACK
+var boom_length := BOOM_LENGTH
+var traveller := TRAVELLER
+var jib_sheet_lead := JIB_SHEET_LEAD
+var spinnaker_sheet_lead := SPINNAKER_SHEET_LEAD
+var jib_foot := 288.0
+var spinnaker_pole := 270.0
+var spinnaker_depth := 560.0
+## Sail sprites (null = procedural).
+var main_texture: Texture2D
+var jib_texture: Texture2D
+var spinnaker_texture: Texture2D
+var boom_texture: Texture2D
+
 ## Current pose (eased towards the target).
 var main_angle_deg := 0.0      # signed: - = boom to port, + = boom to starboard
 var jib_angle_deg := 0.0
@@ -68,7 +102,38 @@ var _twa := 0.0
 
 
 func _ready() -> void:
+	read_markers()
 	snap()
+
+
+## Reads the attachment points from the layout markers (if present).
+func read_markers() -> void:
+	var markers := get_node_or_null(markers_path)
+	if markers:
+		mast = _marker(markers, "Mast", MAST)
+		tack = _marker(markers, "Tack", JIB_TACK)
+		boom_length = mast.distance_to(_marker(markers, "BoomEnd", MAST - Vector2(BOOM_LENGTH, 0)))
+		traveller = _marker(markers, "Traveller", TRAVELLER)
+		jib_sheet_lead = _marker(markers, "JibSheetLead", JIB_SHEET_LEAD)
+		spinnaker_sheet_lead = _marker(markers, "SpinnakerSheetLead", SPINNAKER_SHEET_LEAD)
+	var base := mast.distance_to(tack)
+	jib_foot = base
+	spinnaker_pole = base * SPINNAKER_POLE_RATIO
+	spinnaker_depth = base * SPINNAKER_DEPTH_RATIO
+
+
+static func _marker(markers: Node, marker_name: String, fallback: Vector2) -> Vector2:
+	var marker := markers.get_node_or_null(marker_name) as Node2D
+	return marker.position if marker else fallback
+
+
+## Uses the sail sprites of a visual profile (missing ones stay procedural).
+func apply_profile(profile: VesselVisualProfile) -> void:
+	main_texture = profile.get_texture(&"MainSailVisual") if profile else null
+	jib_texture = profile.get_texture(&"HeadSailVisual") if profile else null
+	spinnaker_texture = profile.get_texture(&"SpinnakerVisual") if profile else null
+	boom_texture = profile.get_texture(&"BoomVisual") if profile else null
+	queue_redraw()
 
 
 func _process(delta: float) -> void:
@@ -150,27 +215,27 @@ func get_shape(time := -1.0) -> Dictionary:
 func _main_shape(t: float) -> Dictionary:
 	var motion := set_amount
 	var angle := deg_to_rad(main_angle_deg + motion * MAIN_SWAY_DEG * sin(t * TAU * 0.13) * signf(main_angle_deg))
-	var clew := MAST + Vector2(-cos(angle), sin(angle)) * BOOM_LENGTH
+	var clew := mast + Vector2(-cos(angle), sin(angle)) * boom_length
 	var lee := signf(main_angle_deg) if main_angle_deg != 0.0 else 1.0
-	var chord := clew - MAST
+	var chord := clew - mast
 	var normal := _leeward_normal(chord, lee)
 	var fullness := 0.13 * set_amount * (1.0 + motion * MAIN_BREATH * sin(t * TAU * 0.21 + 0.7))
-	var control := (MAST + clew) / 2.0 + normal * chord.length() * fullness * 2.0
-	var leech := _rippled(_curve(MAST, clew, control, 18), normal, motion * LEECH_RIPPLE_PX * 0.6, t, 0.9)
-	return {"head": MAST, "clew": clew, "leech": leech, "foot_control": (MAST + clew) / 2.0 + normal * chord.length() * fullness * 0.4}
+	var control := (mast + clew) / 2.0 + normal * chord.length() * fullness * 2.0
+	var leech := _rippled(_curve(mast, clew, control, 18), normal, motion * LEECH_RIPPLE_PX * 0.6, t, 0.9)
+	return {"head": mast, "clew": clew, "leech": leech, "foot_control": (mast + clew) / 2.0 + normal * chord.length() * fullness * 0.4}
 
 
 func _jib_shape(t: float) -> Dictionary:
 	var motion := set_amount * (1.0 - spinnaker_amount)
 	var angle := deg_to_rad(jib_angle_deg + motion * JIB_SWAY_DEG * sin(t * TAU * 0.17 + 1.9) * signf(jib_angle_deg))
-	var clew := JIB_TACK + Vector2(-cos(angle), sin(angle)) * JIB_FOOT
+	var clew := tack + Vector2(-cos(angle), sin(angle)) * jib_foot
 	var lee := signf(jib_angle_deg) if jib_angle_deg != 0.0 else 1.0
-	var chord := clew - JIB_TACK
+	var chord := clew - tack
 	var normal := _leeward_normal(chord, lee)
 	var fullness := 0.3 * (1.0 + motion * JIB_BREATH * sin(t * TAU * 0.27 + 2.4))
-	var control := (JIB_TACK + clew) / 2.0 + normal * chord.length() * fullness
-	var leech := _rippled(_curve(JIB_TACK, clew, control, 16), normal, motion * LEECH_RIPPLE_PX, t, 1.1)
-	return {"tack": JIB_TACK, "clew": clew, "leech": leech, "foot_control": (JIB_TACK + clew) / 2.0 + normal * chord.length() * 0.05}
+	var control := (tack + clew) / 2.0 + normal * chord.length() * fullness
+	var leech := _rippled(_curve(tack, clew, control, 16), normal, motion * LEECH_RIPPLE_PX, t, 1.1)
+	return {"tack": tack, "clew": clew, "leech": leech, "foot_control": (tack + clew) / 2.0 + normal * chord.length() * 0.05}
 
 
 ## The spinnaker: a big crescent flying ahead of the bow. Its tack is at the
@@ -184,21 +249,22 @@ func _spinnaker_shape(t: float) -> Dictionary:
 	var motion := amount
 	# Pole angle from the centreline: forward on a reach, squared back running.
 	var pole_angle := deg_to_rad(lerpf(22.0, 58.0, run))
-	var tack := MAST + Vector2(cos(pole_angle), -lee * sin(pole_angle)) * SPINNAKER_POLE
-	var clew := Vector2(lerpf(470.0, 400.0, run), lee * lerpf(215.0, 205.0, run))
+	var kite_tack := mast + Vector2(cos(pole_angle), -lee * sin(pole_angle)) * spinnaker_pole
+	var lead_y := absf(spinnaker_sheet_lead.y)
+	var clew := Vector2(lerpf(tack.x, tack.x - 70.0, run), lee * lerpf(lead_y + 65.0, lead_y + 55.0, run))
 	clew += Vector2(0.0, lee * motion * 6.0 * sin(t * TAU * 0.11 + 0.5))
 	var swing := deg_to_rad(lerpf(30.0, 0.0, run) + motion * SPINNAKER_SWAY_DEG * sin(t * TAU * 0.09))
 	var ahead := Vector2(cos(swing), lee * sin(swing))
 	# Hoisting: grow out from the bow.
-	tack = JIB_TACK.lerp(tack, amount)
-	clew = JIB_TACK.lerp(clew, amount)
-	var center := (tack + clew) / 2.0
-	var depth := SPINNAKER_DEPTH * amount * (1.0 + motion * SPINNAKER_BREATH * sin(t * TAU * 0.12 + 1.3))
+	kite_tack = tack.lerp(kite_tack, amount)
+	clew = tack.lerp(clew, amount)
+	var center := (kite_tack + clew) / 2.0
+	var depth := spinnaker_depth * amount * (1.0 + motion * SPINNAKER_BREATH * sin(t * TAU * 0.12 + 1.3))
 	var front_control := center + ahead * depth
 	var back_control := center + ahead * depth * 0.55
-	var front := _curve(tack, clew, front_control, 24)
+	var front := _curve(kite_tack, clew, front_control, 24)
 	return {
-		"tack": tack, "clew": clew, "head": _bezier(tack, front_control, clew, 0.5), "front": front,
+		"tack": kite_tack, "clew": clew, "head": _bezier(kite_tack, front_control, clew, 0.5), "front": front,
 		"back_control": back_control, "center": center, "ahead": ahead, "depth": depth, "lee": lee,
 	}
 
@@ -218,62 +284,119 @@ func _draw_main(shape: Dictionary) -> void:
 	if set_amount > 0.01:
 		# Sail: from the mast to the boom end, bellied to leeward.
 		var leech: PackedVector2Array = shape.leech
-		var outline := leech.duplicate()
-		outline.append_array(_inner(_curve(clew, MAST, shape.foot_control, 8)))
-		draw_colored_polygon(outline, Color(SAIL, set_amount))
-		draw_polyline(leech, Color(SAIL_EDGE, set_amount), 2.0, true)
-		# Battens.
-		for t in [0.3, 0.55, 0.8]:
-			var on_boom := MAST.lerp(clew, t)
-			var on_leech := leech[roundi(t * (leech.size() - 1))]
-			draw_line(on_boom, on_leech, Color(SAIL_SHADE, set_amount), 2.0, true)
+		if main_texture:
+			_draw_textured_sail(leech, _curve(mast, clew, shape.foot_control, leech.size() - 1), main_texture, set_amount)
+		else:
+			var outline := leech.duplicate()
+			outline.append_array(_inner(_curve(clew, mast, shape.foot_control, 8)))
+			draw_colored_polygon(outline, Color(SAIL, set_amount))
+			draw_polyline(leech, Color(SAIL_EDGE, set_amount), 2.0, true)
+			# Battens.
+			for t in [0.3, 0.55, 0.8]:
+				var on_boom := mast.lerp(clew, t)
+				var on_leech := leech[roundi(t * (leech.size() - 1))]
+				draw_line(on_boom, on_leech, Color(SAIL_SHADE, set_amount), 2.0, true)
 		# Main sheet to the traveller in the cockpit.
-		draw_line(clew, Vector2(-360, 0), Color(SHEET, set_amount * 0.8), 1.5, true)
+		draw_line(clew, traveller, Color(SHEET, set_amount * 0.8), 1.5, true)
 	# Boom (and the sail cover on it when furled).
-	draw_line(MAST, clew, BOOM, 7.0, true)
+	if boom_texture:
+		_draw_textured_spar(mast, clew, boom_texture)
+	else:
+		draw_line(mast, clew, BOOM, 7.0, true)
 	if set_amount < 0.99:
-		draw_line(MAST + (clew - MAST) * 0.03, clew - (clew - MAST) * 0.04, Color(COVER, 1.0 - set_amount), 16.0, true)
+		draw_line(mast + (clew - mast) * 0.03, clew - (clew - mast) * 0.04, Color(COVER, 1.0 - set_amount), 16.0, true)
 
 
 func _draw_jib(shape: Dictionary) -> void:
 	if set_amount <= 0.01 or spinnaker_amount >= 0.99:
 		# Rolled up on the forestay (roller furling).
-		draw_line(MAST + Vector2(40, 0), JIB_TACK, Color(SAIL_SHADE, 0.9), 6.0, true)
+		draw_line(_furled_jib_start(), tack, Color(SAIL_SHADE, 0.9), 6.0, true)
 		return
 	var shown := set_amount * (1.0 - spinnaker_amount)
 	var clew: Vector2 = shape.clew
-	var outline: PackedVector2Array = shape.leech.duplicate()
-	outline.append_array(_inner(_curve(clew, JIB_TACK, shape.foot_control, 6)))
-	draw_colored_polygon(outline, Color(SAIL, shown))
-	draw_polyline(outline, Color(SAIL_EDGE, shown), 2.0, true)
+	var leech: PackedVector2Array = shape.leech
+	if jib_texture:
+		_draw_textured_sail(leech, _curve(tack, clew, shape.foot_control, leech.size() - 1), jib_texture, shown)
+	else:
+		var outline: PackedVector2Array = leech.duplicate()
+		outline.append_array(_inner(_curve(clew, tack, shape.foot_control, 6)))
+		draw_colored_polygon(outline, Color(SAIL, shown))
+		draw_polyline(outline, Color(SAIL_EDGE, shown), 2.0, true)
 	# Jib sheet to the leeward winch.
 	var lee := signf(jib_angle_deg) if jib_angle_deg != 0.0 else 1.0
-	draw_line(clew, Vector2(-250, 120 * lee), Color(SHEET, shown * 0.8), 1.5, true)
-	draw_line(MAST + Vector2(40, 0), JIB_TACK, Color(SAIL_SHADE, 1.0 - shown), 6.0, true)
+	draw_line(clew, Vector2(jib_sheet_lead.x, absf(jib_sheet_lead.y) * lee), Color(SHEET, shown * 0.8), 1.5, true)
+	draw_line(_furled_jib_start(), tack, Color(SAIL_SHADE, 1.0 - shown), 6.0, true)
+
+
+## Where the rolled-up jib starts along the forestay (just ahead of the mast).
+func _furled_jib_start() -> Vector2:
+	return mast + (tack - mast).normalized() * 40.0
 
 
 func _draw_spinnaker(shape: Dictionary) -> void:
 	var amount := spinnaker_amount
-	var tack: Vector2 = shape.tack
+	var kite_tack: Vector2 = shape.tack
 	var clew: Vector2 = shape.clew
 	var lee: float = shape.lee
 	var front: PackedVector2Array = shape.front
-	var outline := front.duplicate()
-	outline.append_array(_inner(_curve(clew, tack, shape.back_control, 16)))
+	var lead := Vector2(spinnaker_sheet_lead.x, absf(spinnaker_sheet_lead.y))
 	# Rigging under the sail: pole (mast -> tack), halyard (mast -> head),
 	# sheet (clew -> leeward quarter) and guy (tack -> windward quarter).
-	draw_line(MAST, tack, Color(BOOM, amount), 5.0, true)
-	draw_line(MAST, shape.head, Color(SHEET, 0.7 * amount), 1.5, true)
-	draw_line(clew, Vector2(-430, lee * 150.0), Color(SHEET, 0.8 * amount), 1.5, true)
-	draw_line(tack, Vector2(-430, -lee * 150.0), Color(SHEET, 0.6 * amount), 1.5, true)
-	draw_colored_polygon(outline, Color(SPINNAKER, 0.95 * amount))
-	for band in [0.3, 0.65]:
-		var control: Vector2 = shape.center + shape.ahead * shape.depth * lerpf(0.55, 1.0, band)
-		draw_polyline(_curve(tack, clew, control, 20), Color(SPINNAKER_STRIPE, 0.85 * amount), 7.0, true)
-	draw_polyline(front, Color(SAIL_EDGE, amount), 2.0, true)
+	draw_line(mast, kite_tack, Color(BOOM, amount), 5.0, true)
+	draw_line(mast, shape.head, Color(SHEET, 0.7 * amount), 1.5, true)
+	draw_line(clew, Vector2(lead.x, lee * lead.y), Color(SHEET, 0.8 * amount), 1.5, true)
+	draw_line(kite_tack, Vector2(lead.x, -lee * lead.y), Color(SHEET, 0.6 * amount), 1.5, true)
+	if spinnaker_texture:
+		_draw_textured_sail(front, _curve(kite_tack, clew, shape.back_control, front.size() - 1), spinnaker_texture, amount)
+	else:
+		var outline := front.duplicate()
+		outline.append_array(_inner(_curve(clew, kite_tack, shape.back_control, 16)))
+		draw_colored_polygon(outline, Color(SPINNAKER, 0.95 * amount))
+		for band in [0.3, 0.65]:
+			var control: Vector2 = shape.center + shape.ahead * shape.depth * lerpf(0.55, 1.0, band)
+			draw_polyline(_curve(kite_tack, clew, control, 20), Color(SPINNAKER_STRIPE, 0.85 * amount), 7.0, true)
+		draw_polyline(front, Color(SAIL_EDGE, amount), 2.0, true)
 	# Corner fittings: the sail visibly hangs from its tack, clew and head.
-	for corner: Vector2 in [tack, clew]:
+	for corner: Vector2 in [kite_tack, clew]:
 		draw_circle(corner, 4.0, Color(BOOM, amount))
+
+
+## Stretches `texture` over the band between two edges of a sail: `outer`
+## (image top: leech / leading edge) and `inner` (image bottom: foot). Both
+## run from the luff or tack (image left) to the clew (image right) and have
+## the same number of points.
+func _draw_textured_sail(outer: PackedVector2Array, inner: PackedVector2Array, texture: Texture2D, alpha: float) -> void:
+	var count := mini(outer.size(), inner.size())
+	if count < 2:
+		return
+	var points := PackedVector2Array()
+	var uvs := PackedVector2Array()
+	var colors := PackedColorArray()
+	for i in count:
+		var u := float(i) / (count - 1)
+		points.append(outer[i])
+		uvs.append(Vector2(u, 0.0))
+		points.append(inner[i])
+		uvs.append(Vector2(u, 1.0))
+	colors.resize(points.size())
+	colors.fill(Color(1, 1, 1, alpha))
+	var indices := PackedInt32Array()
+	for i in count - 1:
+		var a := i * 2
+		indices.append_array([a, a + 1, a + 2, a + 1, a + 3, a + 2])
+	RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs,
+		PackedInt32Array(), PackedFloat32Array(), texture.get_rid())
+
+
+## A spar sprite (the boom): image left = mast end, right = outer end; its
+## height is scaled with the length so it keeps its proportions.
+func _draw_textured_spar(from: Vector2, to: Vector2, texture: Texture2D) -> void:
+	var direction := (to - from).normalized()
+	var side := Vector2(-direction.y, direction.x)
+	var half_width := from.distance_to(to) * texture.get_height() / float(texture.get_width()) / 2.0
+	var outer := PackedVector2Array([from - side * half_width, to - side * half_width])
+	var inner := PackedVector2Array([from + side * half_width, to + side * half_width])
+	_draw_textured_sail(outer, inner, texture, 1.0)
 
 
 ## A closing curve without its end points (they are already in the outline;

@@ -1,0 +1,604 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://src/boat/boat_area.gd" id="1_r"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_deck.wav" id="2_r"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="3_r"]
+[ext_resource type="FontFile" path="res://assets/fonts/Barlow-SemiBold.ttf" id="4_r"]
+[ext_resource type="PackedScene" path="res://src/vessels/starling_33/deck_visual.tscn" id="5_r"]
+[ext_resource type="Script" path="res://src/boat/boat_fixture.gd" id="6_r"]
+[ext_resource type="Script" path="res://src/interaction/interactable.gd" id="7_r"]
+[ext_resource type="Script" path="res://src/boat/sail_rig.gd" id="8_r"]
+[ext_resource type="PackedScene" path="res://src/player/player.tscn" id="9_r"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_3"]
+font = ExtResource("4_r")
+font_size = 15
+font_color = Color(0.6510, 0.7686, 0.7882, 0.6)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
+size = Vector2(36, 120)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5"]
+radius = 40.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_boatyard"]
+size = Vector2(200, 40)
+
+[node name="Exterior" type="Node2D" node_paths=PackedStringArray("mooring", "mooring_label")]
+script = ExtResource("1_r")
+area_id = &"exterior"
+companionway_target_area = &"interior"
+companionway_target_spawn = &"from_deck"
+walkable_bounds = Rect2(-500, -175, 1000, 350)
+ambience = ExtResource("2_r")
+interaction_sound = ExtResource("3_r")
+mooring = NodePath("Surroundings/Mooring")
+mooring_label = NodePath("Surroundings/Mooring/PontoonLabel")
+
+[node name="Surroundings" type="Node2D" parent="."]
+
+[node name="Water" type="Polygon2D" parent="Surroundings"]
+color = Color(0.1137, 0.2745, 0.3216, 1.0)
+polygon = PackedVector2Array(-1600.0, -900.0, 1600.0, -900.0, 1600.0, 900.0, -1600.0, 900.0)
+
+[node name="Ripple0" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(-640.0, -260.0, -580.0, -266.0, -520.0, -260.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Ripple1" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(-200.0, -300.0, -155.0, -306.0, -110.0, -300.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Ripple2" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(260.0, -250.0, 330.0, -256.0, 400.0, -250.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Ripple3" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(620.0, -180.0, 660.0, -186.0, 700.0, -180.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Ripple4" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(-720.0, 120.0, -670.0, 114.0, -620.0, 120.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Ripple5" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(700.0, 140.0, 755.0, 134.0, 810.0, 140.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Ripple6" type="Line2D" parent="Surroundings"]
+points = PackedVector2Array(-40.0, -330.0, -5.0, -336.0, 30.0, -330.0)
+width = 3
+default_color = Color(0.6510, 0.7686, 0.7882, 0.18)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Mooring" type="Node2D" parent="Surroundings"]
+
+[node name="Pontoon" type="Polygon2D" parent="Surroundings/Mooring"]
+color = Color(0.5412, 0.5059, 0.4392, 1.0)
+polygon = PackedVector2Array(-760.0, 245.0, 760.0, 245.0, 760.0, 345.0, -760.0, 345.0)
+
+[node name="Plank0" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-740.0, 247.0, -740.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank1" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-696.0, 247.0, -696.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank2" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-652.0, 247.0, -652.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank3" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-608.0, 247.0, -608.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank4" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-564.0, 247.0, -564.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank5" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-520.0, 247.0, -520.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank6" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-476.0, 247.0, -476.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank7" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-432.0, 247.0, -432.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank8" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-388.0, 247.0, -388.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank9" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-344.0, 247.0, -344.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank10" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-300.0, 247.0, -300.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank11" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-256.0, 247.0, -256.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank12" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-212.0, 247.0, -212.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank13" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-168.0, 247.0, -168.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank14" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-124.0, 247.0, -124.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank15" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-80.0, 247.0, -80.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank16" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-36.0, 247.0, -36.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank17" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(8.0, 247.0, 8.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank18" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(52.0, 247.0, 52.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank19" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(96.0, 247.0, 96.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank20" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(140.0, 247.0, 140.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank21" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(184.0, 247.0, 184.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank22" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(228.0, 247.0, 228.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank23" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(272.0, 247.0, 272.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank24" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(316.0, 247.0, 316.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank25" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(360.0, 247.0, 360.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank26" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(404.0, 247.0, 404.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank27" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(448.0, 247.0, 448.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank28" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(492.0, 247.0, 492.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank29" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(536.0, 247.0, 536.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank30" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(580.0, 247.0, 580.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank31" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(624.0, 247.0, 624.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank32" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(668.0, 247.0, 668.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank33" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(712.0, 247.0, 712.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Plank34" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(756.0, 247.0, 756.0, 343.0)
+width = 2
+default_color = Color(0.3725, 0.3412, 0.2863, 0.5)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Cleat0" type="Polygon2D" parent="Surroundings/Mooring"]
+color = Color(0.2275, 0.2275, 0.2196, 1.0)
+polygon = PackedVector2Array(-446.0, 256.0, -414.0, 256.0, -414.0, 266.0, -446.0, 266.0)
+
+[node name="Cleat1" type="Polygon2D" parent="Surroundings/Mooring"]
+color = Color(0.2275, 0.2275, 0.2196, 1.0)
+polygon = PackedVector2Array(364.0, 256.0, 396.0, 256.0, 396.0, 266.0, 364.0, 266.0)
+
+[node name="SternLine" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(-470.0, 150.0, -430.0, 261.0)
+width = 3
+default_color = Color(0.9373, 0.8980, 0.8000, 0.8)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="BowLine" type="Line2D" parent="Surroundings/Mooring"]
+points = PackedVector2Array(420.0, 70.0, 380.0, 261.0)
+width = 3
+default_color = Color(0.9373, 0.8980, 0.8000, 0.8)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="PontoonLabel" type="Label" parent="Surroundings/Mooring"]
+offset_left = -120
+offset_top = 286
+offset_right = 120
+offset_bottom = 314
+mouse_filter = 2
+text = "GUEST PONTOON · COPENHAGEN"
+label_settings = SubResource("LabelSettings_3")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BoatyardSign" type="Label" parent="Surroundings/Mooring"]
+offset_left = 120
+offset_top = 252
+offset_right = 400
+offset_bottom = 280
+mouse_filter = 2
+text = "BOATYARD"
+label_settings = SubResource("LabelSettings_3")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Visual" parent="." instance=ExtResource("5_r")]
+
+[node name="Layout" type="Node2D" parent="."]
+
+[node name="Collision" type="Node2D" parent="Layout"]
+
+[node name="Lifeline" type="StaticBody2D" parent="Layout/Collision"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layout/Collision/Lifeline"]
+build_mode = 1
+polygon = PackedVector2Array(-486.0, -129.2, -476.0, -131.4, -466.0, -133.7, -456.0, -135.9, -446.0, -138.2, -436.0, -140.4, -426.0, -142.7, -416.0, -144.3, -406.0, -145.2, -396.0, -146.0, -386.0, -146.8, -376.0, -147.7, -366.0, -148.5, -356.0, -149.3, -346.0, -150.2, -336.0, -151.0, -326.0, -151.8, -316.0, -152.7, -306.0, -153.5, -296.0, -154.1, -286.0, -154.4, -276.0, -154.6, -266.0, -154.9, -256.0, -155.2, -246.0, -155.4, -236.0, -155.7, -226.0, -156.0, -216.0, -156.2, -206.0, -156.5, -196.0, -156.8, -186.0, -157.0, -176.0, -157.3, -166.0, -157.6, -156.0, -157.8, -146.0, -157.9, -136.0, -157.8, -126.0, -157.7, -116.0, -157.5, -106.0, -157.4, -96.0, -157.3, -86.0, -157.1, -76.0, -157.0, -66.0, -156.9, -56.0, -156.7, -46.0, -156.6, -36.0, -156.5, -26.0, -156.3, -16.0, -156.2, -6.0, -156.1, 4.0, -155.7, 14.0, -154.8, 24.0, -154.0, 34.0, -153.2, 44.0, -152.3, 54.0, -151.5, 64.0, -150.7, 74.0, -149.8, 84.0, -149.0, 94.0, -148.2, 104.0, -147.3, 114.0, -146.5, 124.0, -145.2, 134.0, -143.2, 144.0, -141.2, 154.0, -139.2, 164.0, -137.2, 174.0, -135.2, 184.0, -133.2, 194.0, -131.2, 204.0, -129.2, 214.0, -127.2, 224.0, -124.8, 234.0, -121.6, 244.0, -118.5, 254.0, -115.4, 264.0, -112.2, 274.0, -109.1, 284.0, -106.0, 294.0, -102.9, 304.0, -99.2, 314.0, -94.9, 324.0, -90.5, 334.0, -86.1, 344.0, -81.8, 354.0, -77.4, 364.0, -73.0, 374.0, -68.6, 384.0, -63.7, 394.0, -57.8, 404.0, -52.0, 414.0, -46.2, 424.0, -40.3, 434.0, -34.5, 444.0, -28.3, 454.0, -21.5, 464.0, -14.8, 464.0, 14.8, 454.0, 21.5, 444.0, 28.3, 434.0, 34.5, 424.0, 40.3, 414.0, 46.2, 404.0, 52.0, 394.0, 57.8, 384.0, 63.7, 374.0, 68.6, 364.0, 73.0, 354.0, 77.4, 344.0, 81.8, 334.0, 86.1, 324.0, 90.5, 314.0, 94.9, 304.0, 99.2, 294.0, 102.9, 284.0, 106.0, 274.0, 109.1, 264.0, 112.2, 254.0, 115.4, 244.0, 118.5, 234.0, 121.6, 224.0, 124.8, 214.0, 127.2, 204.0, 129.2, 194.0, 131.2, 184.0, 133.2, 174.0, 135.2, 164.0, 137.2, 154.0, 139.2, 144.0, 141.2, 134.0, 143.2, 124.0, 145.2, 114.0, 146.5, 104.0, 147.3, 94.0, 148.2, 84.0, 149.0, 74.0, 149.8, 64.0, 150.7, 54.0, 151.5, 44.0, 152.3, 34.0, 153.2, 24.0, 154.0, 14.0, 154.8, 4.0, 155.7, -6.0, 156.1, -16.0, 156.2, -26.0, 156.3, -36.0, 156.5, -46.0, 156.6, -56.0, 156.7, -66.0, 156.9, -76.0, 157.0, -86.0, 157.1, -96.0, 157.3, -106.0, 157.4, -116.0, 157.5, -126.0, 157.7, -136.0, 157.8, -146.0, 157.9, -156.0, 157.8, -166.0, 157.6, -176.0, 157.3, -186.0, 157.0, -196.0, 156.8, -206.0, 156.5, -216.0, 156.2, -226.0, 156.0, -236.0, 155.7, -246.0, 155.4, -256.0, 155.2, -266.0, 154.9, -276.0, 154.6, -286.0, 154.4, -296.0, 154.1, -306.0, 153.5, -316.0, 152.7, -326.0, 151.8, -336.0, 151.0, -346.0, 150.2, -356.0, 149.3, -366.0, 148.5, -376.0, 147.7, -386.0, 146.8, -396.0, 146.0, -406.0, 145.2, -416.0, 144.3, -426.0, 142.7, -436.0, 140.4, -446.0, 138.2, -456.0, 135.9, -466.0, 133.7, -476.0, 131.4, -486.0, 129.2)
+
+[node name="Coamings" type="StaticBody2D" parent="Layout/Collision"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Port" type="CollisionPolygon2D" parent="Layout/Collision/Coamings"]
+build_mode = 1
+polygon = PackedVector2Array(-500.0, -100.0, -300.0, -100.0)
+
+[node name="Starboard" type="CollisionPolygon2D" parent="Layout/Collision/Coamings"]
+build_mode = 1
+polygon = PackedVector2Array(-500.0, 100.0, -300.0, 100.0)
+
+[node name="BenchPort" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("6_r")
+position = Vector2(-375, -85)
+size = Vector2(150, 26)
+
+[node name="BenchStarboard" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("6_r")
+position = Vector2(-375, 85)
+size = Vector2(150, 26)
+
+[node name="Coachroof" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("6_r")
+position = Vector2(-55, 0)
+polygon = PackedVector2Array(-175.0, -100.0, 145.0, -100.0, 175.0, -70.0, 175.0, 70.0, 145.0, 100.0, -175.0, 100.0)
+
+[node name="Mast" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("6_r")
+position = Vector2(182, 0)
+polygon = PackedVector2Array(13.0, 0.0, 12.0, 5.0, 9.2, 9.2, 5.0, 12.0, 0.0, 13.0, -5.0, 12.0, -9.2, 9.2, -12.0, 5.0, -13.0, 0.0, -12.0, -5.0, -9.2, -9.2, -5.0, -12.0, 0.0, -13.0, 5.0, -12.0, 9.2, -9.2, 12.0, -5.0)
+
+[node name="Pedestal" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("6_r")
+position = Vector2(-392, 0)
+polygon = PackedVector2Array(12.0, 0.0, 10.8, 5.2, 7.5, 9.4, 2.7, 11.7, -2.7, 11.7, -7.5, 9.4, -10.8, 5.2, -12.0, 0.0, -10.8, -5.2, -7.5, -9.4, -2.7, -11.7, 2.7, -11.7, 7.5, -9.4, 10.8, -5.2)
+
+[node name="Wheel" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("6_r")
+position = Vector2(-406, 0)
+size = Vector2(12, 116)
+
+[node name="Stations" type="Node2D" parent="Layout"]
+
+[node name="Companionway" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-248, 0)
+script = ExtResource("7_r")
+interaction_id = &"companionway"
+prompt = "Go below"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Companionway"]
+shape = SubResource("RectangleShape2D_4")
+
+[node name="Helm" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-434, 0)
+script = ExtResource("7_r")
+interaction_id = &"helm"
+prompt = "Take the helm"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Helm"]
+shape = SubResource("CircleShape2D_5")
+
+[node name="Boatyard" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-20, 158)
+script = ExtResource("7_r")
+interaction_id = &"boatyard"
+prompt = "Visit the boatyard"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Boatyard"]
+shape = SubResource("RectangleShape2D_boatyard")
+
+[node name="SpawnPoints" type="Node2D" parent="Layout"]
+
+[node name="start" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-330, 0)
+
+[node name="from_cabin" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-268, 0)
+
+[node name="from_boatyard" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-20, 128)
+
+[node name="SailMarkers" type="Node2D" parent="Layout"]
+
+[node name="Mast" type="Marker2D" parent="Layout/SailMarkers"]
+position = Vector2(182, 0)
+
+[node name="Tack" type="Marker2D" parent="Layout/SailMarkers"]
+position = Vector2(470, 0)
+
+[node name="BoomEnd" type="Marker2D" parent="Layout/SailMarkers"]
+position = Vector2(-218, 0)
+
+[node name="Traveller" type="Marker2D" parent="Layout/SailMarkers"]
+position = Vector2(-360, 0)
+
+[node name="JibSheetLead" type="Marker2D" parent="Layout/SailMarkers"]
+position = Vector2(-250, 120)
+
+[node name="SpinnakerSheetLead" type="Marker2D" parent="Layout/SailMarkers"]
+position = Vector2(-430, 150)
+
+[node name="SailRig" type="Node2D" parent="."]
+z_index = 2
+script = ExtResource("8_r")
+
+[node name="Player" parent="." instance=ExtResource("9_r")]
+z_index = 10
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, 55)
+zoom = Vector2(1.42, 1.42)

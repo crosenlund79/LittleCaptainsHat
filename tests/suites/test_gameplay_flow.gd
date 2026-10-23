@@ -63,7 +63,7 @@ func _test_new_game_and_movement() -> void:
 	t.check_eq(_player_count(), 1, "exactly one player exists")
 	t.check(app.hud.is_visible_in_tree(), "HUD is visible in the boat")
 	t.check_eq((app.hud.find_child("AreaLabel", true, false) as Label).text, "Cabin", "HUD shows the current area")
-	var spawn: Vector2 = area.get_node("SpawnPoints/start").position
+	var spawn: Vector2 = area.get_node("Layout/SpawnPoints/start").position
 	t.check(area.player.position.distance_to(spawn) < 1.0, "player starts at the start spawn point")
 	await t.screenshot("03_cabin")
 
@@ -259,7 +259,7 @@ func _test_companionway_transitions() -> void:
 	if deck == null:
 		return
 	t.check_eq(GameSession.get_boat_area(), &"exterior", "session records the deck as current area")
-	var spawn: Vector2 = deck.get_node("SpawnPoints/from_cabin").position
+	var spawn: Vector2 = deck.get_node("Layout/SpawnPoints/from_cabin").position
 	t.check(deck.player.position.distance_to(spawn) < 1.0, "player arrives at the companionway on deck")
 	t.check_eq((app.hud.find_child("AreaLabel", true, false) as Label).text, "Deck", "HUD shows Deck")
 	await t.screenshot("07_deck")

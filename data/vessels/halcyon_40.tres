@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="VesselDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/vessels/vessel_definition.gd" id="1_def"]
+[ext_resource type="Resource" path="res://data/vessel/halcyon_40.tres" id="2_perf"]
+[ext_resource type="PackedScene" path="res://src/vessels/halcyon_40/deck.tscn" id="3_deck"]
+[ext_resource type="PackedScene" path="res://src/vessels/halcyon_40/cabin.tscn" id="4_cabin"]
+[ext_resource type="PackedScene" path="res://src/vessels/halcyon_40/deck_visual.tscn" id="5_visual"]
+[ext_resource type="Resource" path="res://data/vessels/halcyon_40_visuals.tres" id="6_profile"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"halcyon_40"
+display_name = "Halcyon 40"
+hull_type = "catamaran"
+description = "A spacious 40 ft cruising catamaran: two hulls, a wide bridgedeck saloon and room to spread out. Fast and stable reaching, less keen to point upwind."
+specs = Dictionary[String, String]({"Length": "12.2 m (40 ft)", "Beam": "6.8 m", "Accommodation": "Bridgedeck saloon, owner's berth in the port hull, guest cabin", "Engine": "Twin diesels"})
+performance = ExtResource("2_perf")
+deck_scene = ExtResource("3_deck")
+cabin_scene = ExtResource("4_cabin")
+deck_visual_scene = ExtResource("5_visual")
+visual_profile = ExtResource("6_profile")

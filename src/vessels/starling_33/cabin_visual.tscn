@@ -1,53 +1,33 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=7 format=3]
 
-[ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="1_r"]
-[ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_cabin.wav" id="2_r"]
-[ext_resource type="Script" path="res://src/boat/boat_area.gd" id="3_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/vessel_visual.gd" id="1_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/visual_slot.gd" id="2_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/procedural_shape.gd" id="3_r"]
 [ext_resource type="FontFile" path="res://assets/fonts/Barlow-SemiBold.ttf" id="4_r"]
-[ext_resource type="Script" path="res://src/boat/boat_fixture.gd" id="5_r"]
-[ext_resource type="Script" path="res://src/interaction/interactable.gd" id="6_r"]
-[ext_resource type="PackedScene" path="res://src/player/player.tscn" id="7_r"]
-[ext_resource type="Script" path="res://src/companion/ship_companion.gd" id="9_companion"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_1"]
-font = ExtResource("4_r")
-font_size = 15
-font_color = Color(0.9373, 0.8980, 0.8000, 0.62)
 
 [sub_resource type="LabelSettings" id="LabelSettings_2"]
 font = ExtResource("4_r")
 font_size = 13
 font_color = Color(0.9373, 0.8980, 0.8000, 0.55)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_3"]
-size = Vector2(30, 96)
+[sub_resource type="LabelSettings" id="LabelSettings_1"]
+font = ExtResource("4_r")
+font_size = 15
+font_color = Color(0.9373, 0.8980, 0.8000, 0.62)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_4"]
-size = Vector2(120, 28)
+[node name="Visual" type="Node2D"]
+script = ExtResource("1_r")
+canvas = Rect2(-560, -200, 1120, 400)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_5"]
-size = Vector2(30, 150)
+[node name="CabinBase" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"CabinBase"
 
-[node name="Interior" type="Node2D"]
-script = ExtResource("3_r")
-area_id = &"interior"
-companionway_target_area = &"exterior"
-companionway_target_spawn = &"from_cabin"
-walkable_bounds = Rect2(-330, -160, 780, 320)
-ambience = ExtResource("2_r")
-interaction_sound = ExtResource("1_r")
-
-[node name="Backdrop" type="Node2D" parent="."]
-
-[node name="Darkness" type="Polygon2D" parent="Backdrop"]
-color = Color(0.0392, 0.1098, 0.1451, 1.0)
-polygon = PackedVector2Array(-1600.0, -900.0, 1600.0, -900.0, 1600.0, 900.0, -1600.0, 900.0)
-
-[node name="HullShape" type="Polygon2D" parent="Backdrop"]
+[node name="HullShape" type="Polygon2D" parent="CabinBase"]
 color = Color(0.0863, 0.1961, 0.2510, 1.0)
 polygon = PackedVector2Array(-500.0, -140.0, -490.0, -142.2, -480.0, -144.5, -470.0, -146.8, -460.0, -149.0, -450.0, -151.2, -440.0, -153.5, -430.0, -155.8, -420.0, -158.0, -410.0, -158.8, -400.0, -159.7, -390.0, -160.5, -380.0, -161.3, -370.0, -162.2, -360.0, -163.0, -350.0, -163.8, -340.0, -164.7, -330.0, -165.5, -320.0, -166.3, -310.0, -167.2, -300.0, -168.0, -290.0, -168.3, -280.0, -168.5, -270.0, -168.8, -260.0, -169.1, -250.0, -169.3, -240.0, -169.6, -230.0, -169.9, -220.0, -170.1, -210.0, -170.4, -200.0, -170.7, -190.0, -170.9, -180.0, -171.2, -170.0, -171.5, -160.0, -171.7, -150.0, -172.0, -140.0, -171.9, -130.0, -171.7, -120.0, -171.6, -110.0, -171.5, -100.0, -171.3, -90.0, -171.2, -80.0, -171.1, -70.0, -170.9, -60.0, -170.8, -50.0, -170.7, -40.0, -170.5, -30.0, -170.4, -20.0, -170.3, -10.0, -170.1, 0.0, -170.0, 10.0, -169.2, 20.0, -168.3, 30.0, -167.5, 40.0, -166.7, 50.0, -165.8, 60.0, -165.0, 70.0, -164.2, 80.0, -163.3, 90.0, -162.5, 100.0, -161.7, 110.0, -160.8, 120.0, -160.0, 130.0, -158.0, 140.0, -156.0, 150.0, -154.0, 160.0, -152.0, 170.0, -150.0, 180.0, -148.0, 190.0, -146.0, 200.0, -144.0, 210.0, -142.0, 220.0, -140.0, 230.0, -136.9, 240.0, -133.8, 250.0, -130.6, 260.0, -127.5, 270.0, -124.4, 280.0, -121.2, 290.0, -118.1, 300.0, -115.0, 310.0, -110.6, 320.0, -106.2, 330.0, -101.9, 340.0, -97.5, 350.0, -93.1, 360.0, -88.8, 370.0, -84.4, 380.0, -80.0, 390.0, -74.2, 400.0, -68.3, 410.0, -62.5, 420.0, -56.7, 430.0, -50.8, 440.0, -45.0, 450.0, -38.2, 460.0, -31.5, 470.0, -24.8, 480.0, -18.0, 490.0, -9.0, 500.0, -0.0, 490.0, 9.0, 480.0, 18.0, 470.0, 24.8, 460.0, 31.5, 450.0, 38.2, 440.0, 45.0, 430.0, 50.8, 420.0, 56.7, 410.0, 62.5, 400.0, 68.3, 390.0, 74.2, 380.0, 80.0, 370.0, 84.4, 360.0, 88.8, 350.0, 93.1, 340.0, 97.5, 330.0, 101.9, 320.0, 106.2, 310.0, 110.6, 300.0, 115.0, 290.0, 118.1, 280.0, 121.2, 270.0, 124.4, 260.0, 127.5, 250.0, 130.6, 240.0, 133.8, 230.0, 136.9, 220.0, 140.0, 210.0, 142.0, 200.0, 144.0, 190.0, 146.0, 180.0, 148.0, 170.0, 150.0, 160.0, 152.0, 150.0, 154.0, 140.0, 156.0, 130.0, 158.0, 120.0, 160.0, 110.0, 160.8, 100.0, 161.7, 90.0, 162.5, 80.0, 163.3, 70.0, 164.2, 60.0, 165.0, 50.0, 165.8, 40.0, 166.7, 30.0, 167.5, 20.0, 168.3, 10.0, 169.2, 0.0, 170.0, -10.0, 170.1, -20.0, 170.3, -30.0, 170.4, -40.0, 170.5, -50.0, 170.7, -60.0, 170.8, -70.0, 170.9, -80.0, 171.1, -90.0, 171.2, -100.0, 171.3, -110.0, 171.5, -120.0, 171.6, -130.0, 171.7, -140.0, 171.9, -150.0, 172.0, -160.0, 171.7, -170.0, 171.5, -180.0, 171.2, -190.0, 170.9, -200.0, 170.7, -210.0, 170.4, -220.0, 170.1, -230.0, 169.9, -240.0, 169.6, -250.0, 169.3, -260.0, 169.1, -270.0, 168.8, -280.0, 168.5, -290.0, 168.3, -300.0, 168.0, -310.0, 167.2, -320.0, 166.3, -330.0, 165.5, -340.0, 164.7, -350.0, 163.8, -360.0, 163.0, -370.0, 162.2, -380.0, 161.3, -390.0, 160.5, -400.0, 159.7, -410.0, 158.8, -420.0, 158.0, -430.0, 155.8, -440.0, 153.5, -450.0, 151.2, -460.0, 149.0, -470.0, 146.8, -480.0, 144.5, -490.0, 142.2, -500.0, 140.0)
 
-[node name="HullEdge" type="Line2D" parent="Backdrop"]
+[node name="HullEdge" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-500.0, -140.0, -490.0, -142.2, -480.0, -144.5, -470.0, -146.8, -460.0, -149.0, -450.0, -151.2, -440.0, -153.5, -430.0, -155.8, -420.0, -158.0, -410.0, -158.8, -400.0, -159.7, -390.0, -160.5, -380.0, -161.3, -370.0, -162.2, -360.0, -163.0, -350.0, -163.8, -340.0, -164.7, -330.0, -165.5, -320.0, -166.3, -310.0, -167.2, -300.0, -168.0, -290.0, -168.3, -280.0, -168.5, -270.0, -168.8, -260.0, -169.1, -250.0, -169.3, -240.0, -169.6, -230.0, -169.9, -220.0, -170.1, -210.0, -170.4, -200.0, -170.7, -190.0, -170.9, -180.0, -171.2, -170.0, -171.5, -160.0, -171.7, -150.0, -172.0, -140.0, -171.9, -130.0, -171.7, -120.0, -171.6, -110.0, -171.5, -100.0, -171.3, -90.0, -171.2, -80.0, -171.1, -70.0, -170.9, -60.0, -170.8, -50.0, -170.7, -40.0, -170.5, -30.0, -170.4, -20.0, -170.3, -10.0, -170.1, 0.0, -170.0, 10.0, -169.2, 20.0, -168.3, 30.0, -167.5, 40.0, -166.7, 50.0, -165.8, 60.0, -165.0, 70.0, -164.2, 80.0, -163.3, 90.0, -162.5, 100.0, -161.7, 110.0, -160.8, 120.0, -160.0, 130.0, -158.0, 140.0, -156.0, 150.0, -154.0, 160.0, -152.0, 170.0, -150.0, 180.0, -148.0, 190.0, -146.0, 200.0, -144.0, 210.0, -142.0, 220.0, -140.0, 230.0, -136.9, 240.0, -133.8, 250.0, -130.6, 260.0, -127.5, 270.0, -124.4, 280.0, -121.2, 290.0, -118.1, 300.0, -115.0, 310.0, -110.6, 320.0, -106.2, 330.0, -101.9, 340.0, -97.5, 350.0, -93.1, 360.0, -88.8, 370.0, -84.4, 380.0, -80.0, 390.0, -74.2, 400.0, -68.3, 410.0, -62.5, 420.0, -56.7, 430.0, -50.8, 440.0, -45.0, 450.0, -38.2, 460.0, -31.5, 470.0, -24.8, 480.0, -18.0, 490.0, -9.0, 500.0, -0.0, 490.0, 9.0, 480.0, 18.0, 470.0, 24.8, 460.0, 31.5, 450.0, 38.2, 440.0, 45.0, 430.0, 50.8, 420.0, 56.7, 410.0, 62.5, 400.0, 68.3, 390.0, 74.2, 380.0, 80.0, 370.0, 84.4, 360.0, 88.8, 350.0, 93.1, 340.0, 97.5, 330.0, 101.9, 320.0, 106.2, 310.0, 110.6, 300.0, 115.0, 290.0, 118.1, 280.0, 121.2, 270.0, 124.4, 260.0, 127.5, 250.0, 130.6, 240.0, 133.8, 230.0, 136.9, 220.0, 140.0, 210.0, 142.0, 200.0, 144.0, 190.0, 146.0, 180.0, 148.0, 170.0, 150.0, 160.0, 152.0, 150.0, 154.0, 140.0, 156.0, 130.0, 158.0, 120.0, 160.0, 110.0, 160.8, 100.0, 161.7, 90.0, 162.5, 80.0, 163.3, 70.0, 164.2, 60.0, 165.0, 50.0, 165.8, 40.0, 166.7, 30.0, 167.5, 20.0, 168.3, 10.0, 169.2, 0.0, 170.0, -10.0, 170.1, -20.0, 170.3, -30.0, 170.4, -40.0, 170.5, -50.0, 170.7, -60.0, 170.8, -70.0, 170.9, -80.0, 171.1, -90.0, 171.2, -100.0, 171.3, -110.0, 171.5, -120.0, 171.6, -130.0, 171.7, -140.0, 171.9, -150.0, 172.0, -160.0, 171.7, -170.0, 171.5, -180.0, 171.2, -190.0, 170.9, -200.0, 170.7, -210.0, 170.4, -220.0, 170.1, -230.0, 169.9, -240.0, 169.6, -250.0, 169.3, -260.0, 169.1, -270.0, 168.8, -280.0, 168.5, -290.0, 168.3, -300.0, 168.0, -310.0, 167.2, -320.0, 166.3, -330.0, 165.5, -340.0, 164.7, -350.0, 163.8, -360.0, 163.0, -370.0, 162.2, -380.0, 161.3, -390.0, 160.5, -400.0, 159.7, -410.0, 158.8, -420.0, 158.0, -430.0, 155.8, -440.0, 153.5, -450.0, 151.2, -460.0, 149.0, -470.0, 146.8, -480.0, 144.5, -490.0, 142.2, -500.0, 140.0)
 width = 3
 default_color = Color(0.2471, 0.4706, 0.5020, 0.5)
@@ -57,11 +37,11 @@ end_cap_mode = 2
 antialiased = true
 closed = true
 
-[node name="CabinSole" type="Polygon2D" parent="Backdrop"]
+[node name="CabinSole" type="Polygon2D" parent="CabinBase"]
 color = Color(0.6039, 0.4784, 0.3412, 1.0)
 polygon = PackedVector2Array(-330.0, -141.5, -300.0, -144.0, -280.0, -144.5, -260.0, -145.1, -240.0, -145.6, -220.0, -146.1, -200.0, -146.7, -180.0, -147.2, -160.0, -147.7, -140.0, -147.9, -120.0, -147.6, -100.0, -147.3, -80.0, -147.1, -60.0, -146.8, -40.0, -146.5, -20.0, -146.3, 0.0, -146.0, 20.0, -144.3, 40.0, -142.7, 60.0, -141.0, 80.0, -139.3, 100.0, -137.7, 120.0, -136.0, 140.0, -132.0, 160.0, -128.0, 180.0, -124.0, 200.0, -120.0, 220.0, -116.0, 240.0, -109.8, 260.0, -103.5, 280.0, -97.2, 300.0, -91.0, 320.0, -82.2, 340.0, -73.5, 360.0, -64.8, 380.0, -56.0, 400.0, -44.3, 420.0, -32.7, 440.0, -21.0, 452.0, 0.0, 440.0, 21.0, 420.0, 32.7, 400.0, 44.3, 380.0, 56.0, 360.0, 64.8, 340.0, 73.5, 320.0, 82.2, 300.0, 91.0, 280.0, 97.2, 260.0, 103.5, 240.0, 109.8, 220.0, 116.0, 200.0, 120.0, 180.0, 124.0, 160.0, 128.0, 140.0, 132.0, 120.0, 136.0, 100.0, 137.7, 80.0, 139.3, 60.0, 141.0, 40.0, 142.7, 20.0, 144.3, 0.0, 146.0, -20.0, 146.3, -40.0, 146.5, -60.0, 146.8, -80.0, 147.1, -100.0, 147.3, -120.0, 147.6, -140.0, 147.9, -160.0, 147.7, -180.0, 147.2, -200.0, 146.7, -220.0, 146.1, -240.0, 145.6, -260.0, 145.1, -280.0, 144.5, -300.0, 144.0, -330.0, 141.5)
 
-[node name="Seam0" type="Line2D" parent="Backdrop"]
+[node name="Seam0" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-230.0, -60.0, 250.0, -60.0)
 width = 2
 default_color = Color(0.3686, 0.2784, 0.2000, 0.35)
@@ -70,7 +50,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Seam1" type="Line2D" parent="Backdrop"]
+[node name="Seam1" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-230.0, -30.0, 250.0, -30.0)
 width = 2
 default_color = Color(0.3686, 0.2784, 0.2000, 0.35)
@@ -79,7 +59,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Seam2" type="Line2D" parent="Backdrop"]
+[node name="Seam2" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-230.0, 0.0, 250.0, 0.0)
 width = 2
 default_color = Color(0.3686, 0.2784, 0.2000, 0.35)
@@ -88,7 +68,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Seam3" type="Line2D" parent="Backdrop"]
+[node name="Seam3" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-230.0, 30.0, 250.0, 30.0)
 width = 2
 default_color = Color(0.3686, 0.2784, 0.2000, 0.35)
@@ -97,7 +77,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Seam4" type="Line2D" parent="Backdrop"]
+[node name="Seam4" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-230.0, 60.0, 250.0, 60.0)
 width = 2
 default_color = Color(0.3686, 0.2784, 0.2000, 0.35)
@@ -106,7 +86,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="CabinSide" type="Line2D" parent="Backdrop"]
+[node name="CabinSide" type="Line2D" parent="CabinBase"]
 points = PackedVector2Array(-330.0, -141.5, -300.0, -144.0, -280.0, -144.5, -260.0, -145.1, -240.0, -145.6, -220.0, -146.1, -200.0, -146.7, -180.0, -147.2, -160.0, -147.7, -140.0, -147.9, -120.0, -147.6, -100.0, -147.3, -80.0, -147.1, -60.0, -146.8, -40.0, -146.5, -20.0, -146.3, 0.0, -146.0, 20.0, -144.3, 40.0, -142.7, 60.0, -141.0, 80.0, -139.3, 100.0, -137.7, 120.0, -136.0, 140.0, -132.0, 160.0, -128.0, 180.0, -124.0, 200.0, -120.0, 220.0, -116.0, 240.0, -109.8, 260.0, -103.5, 280.0, -97.2, 300.0, -91.0, 320.0, -82.2, 340.0, -73.5, 360.0, -64.8, 380.0, -56.0, 400.0, -44.3, 420.0, -32.7, 440.0, -21.0, 452.0, 0.0, 440.0, 21.0, 420.0, 32.7, 400.0, 44.3, 380.0, 56.0, 360.0, 64.8, 340.0, 73.5, 320.0, 82.2, 300.0, 91.0, 280.0, 97.2, 260.0, 103.5, 240.0, 109.8, 220.0, 116.0, 200.0, 120.0, 180.0, 124.0, 160.0, 128.0, 140.0, 132.0, 120.0, 136.0, 100.0, 137.7, 80.0, 139.3, 60.0, 141.0, 40.0, 142.7, 20.0, 144.3, 0.0, 146.0, -20.0, 146.3, -40.0, 146.5, -60.0, 146.8, -80.0, 147.1, -100.0, 147.3, -120.0, 147.6, -140.0, 147.9, -160.0, 147.7, -180.0, 147.2, -200.0, 146.7, -220.0, 146.1, -240.0, 145.6, -260.0, 145.1, -280.0, 144.5, -300.0, 144.0, -330.0, 141.5)
 width = 12
 default_color = Color(0.3686, 0.2784, 0.2000, 1.0)
@@ -116,29 +96,23 @@ end_cap_mode = 2
 antialiased = true
 closed = true
 
-[node name="Hull" type="StaticBody2D" parent="."]
-collision_layer = 1
-collision_mask = 0
+[node name="FurnitureVisual" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"FurnitureVisual"
 
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Hull"]
-build_mode = 1
-polygon = PackedVector2Array(-330.0, -141.5, -300.0, -144.0, -280.0, -144.5, -260.0, -145.1, -240.0, -145.6, -220.0, -146.1, -200.0, -146.7, -180.0, -147.2, -160.0, -147.7, -140.0, -147.9, -120.0, -147.6, -100.0, -147.3, -80.0, -147.1, -60.0, -146.8, -40.0, -146.5, -20.0, -146.3, 0.0, -146.0, 20.0, -144.3, 40.0, -142.7, 60.0, -141.0, 80.0, -139.3, 100.0, -137.7, 120.0, -136.0, 140.0, -132.0, 160.0, -128.0, 180.0, -124.0, 200.0, -120.0, 220.0, -116.0, 240.0, -109.8, 260.0, -103.5, 280.0, -97.2, 300.0, -91.0, 320.0, -82.2, 340.0, -73.5, 360.0, -64.8, 380.0, -56.0, 400.0, -44.3, 420.0, -32.7, 440.0, -21.0, 452.0, 0.0, 440.0, 21.0, 420.0, 32.7, 400.0, 44.3, 380.0, 56.0, 360.0, 64.8, 340.0, 73.5, 320.0, 82.2, 300.0, 91.0, 280.0, 97.2, 260.0, 103.5, 240.0, 109.8, 220.0, 116.0, 200.0, 120.0, 180.0, 124.0, 160.0, 128.0, 140.0, 132.0, 120.0, 136.0, 100.0, 137.7, 80.0, 139.3, 60.0, 141.0, 40.0, 142.7, 20.0, 144.3, 0.0, 146.0, -20.0, 146.3, -40.0, 146.5, -60.0, 146.8, -80.0, 147.1, -100.0, 147.3, -120.0, 147.6, -140.0, 147.9, -160.0, 147.7, -180.0, 147.2, -200.0, 146.7, -220.0, 146.1, -240.0, 145.6, -260.0, 145.1, -280.0, 144.5, -300.0, 144.0, -330.0, 141.5)
-
-[node name="Furniture" type="Node2D" parent="."]
-
-[node name="EngineBox" type="StaticBody2D" parent="Furniture"]
+[node name="EngineBox" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(-311, 0)
-script = ExtResource("5_r")
 size = Vector2(38, 96)
 fill_color = Color(0.2941, 0.3255, 0.3412, 1.0)
 
-[node name="CompanionwaySteps" type="StaticBody2D" parent="Furniture"]
+[node name="CompanionwaySteps" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(-271, 0)
-script = ExtResource("5_r")
 size = Vector2(40, 96)
 fill_color = Color(0.4784, 0.3608, 0.2510, 1.0)
 
-[node name="Step0" type="Line2D" parent="Furniture/CompanionwaySteps"]
+[node name="Step0" type="Line2D" parent="FurnitureVisual/CompanionwaySteps"]
 points = PackedVector2Array(-11.0, -44.0, -11.0, 44.0)
 width = 3
 default_color = Color(0.2902, 0.2118, 0.1490, 0.8)
@@ -147,7 +121,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Step1" type="Line2D" parent="Furniture/CompanionwaySteps"]
+[node name="Step1" type="Line2D" parent="FurnitureVisual/CompanionwaySteps"]
 points = PackedVector2Array(0.0, -44.0, 0.0, 44.0)
 width = 3
 default_color = Color(0.2902, 0.2118, 0.1490, 0.8)
@@ -156,7 +130,7 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Step2" type="Line2D" parent="Furniture/CompanionwaySteps"]
+[node name="Step2" type="Line2D" parent="FurnitureVisual/CompanionwaySteps"]
 points = PackedVector2Array(11.0, -44.0, 11.0, 44.0)
 width = 3
 default_color = Color(0.2902, 0.2118, 0.1490, 0.8)
@@ -165,44 +139,35 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Companionway" type="Area2D" parent="Furniture/CompanionwaySteps"]
-position = Vector2(32, 0)
-script = ExtResource("6_r")
-interaction_id = &"companionway"
-prompt = "Go on deck"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Furniture/CompanionwaySteps/Companionway"]
-shape = SubResource("RectangleShape2D_3")
-
-[node name="Galley" type="StaticBody2D" parent="Furniture"]
+[node name="Galley" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(-240, -116)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-90.0, -25.5, 90.0, -32.0, 90.0, 30.0, -90.0, 30.0)
 fill_color = Color(0.4314, 0.3294, 0.2510, 1.0)
 
-[node name="Burner0" type="Polygon2D" parent="Furniture/Galley"]
+[node name="Burner0" type="Polygon2D" parent="FurnitureVisual/Galley"]
 color = Color(0.1647, 0.1843, 0.2000, 1.0)
 polygon = PackedVector2Array(-50.0, -10.0, -50.5, -6.9, -51.9, -4.1, -54.1, -1.9, -56.9, -0.5, -60.0, 0.0, -63.1, -0.5, -65.9, -1.9, -68.1, -4.1, -69.5, -6.9, -70.0, -10.0, -69.5, -13.1, -68.1, -15.9, -65.9, -18.1, -63.1, -19.5, -60.0, -20.0, -56.9, -19.5, -54.1, -18.1, -51.9, -15.9, -50.5, -13.1)
 
-[node name="Burner1" type="Polygon2D" parent="Furniture/Galley"]
+[node name="Burner1" type="Polygon2D" parent="FurnitureVisual/Galley"]
 color = Color(0.1647, 0.1843, 0.2000, 1.0)
 polygon = PackedVector2Array(-18.0, -10.0, -18.5, -6.9, -19.9, -4.1, -22.1, -1.9, -24.9, -0.5, -28.0, 0.0, -31.1, -0.5, -33.9, -1.9, -36.1, -4.1, -37.5, -6.9, -38.0, -10.0, -37.5, -13.1, -36.1, -15.9, -33.9, -18.1, -31.1, -19.5, -28.0, -20.0, -24.9, -19.5, -22.1, -18.1, -19.9, -15.9, -18.5, -13.1)
 
-[node name="Sink" type="Polygon2D" parent="Furniture/Galley"]
+[node name="Sink" type="Polygon2D" parent="FurnitureVisual/Galley"]
 color = Color(0.6510, 0.7686, 0.7882, 0.8)
 polygon = PackedVector2Array(30.0, -22.0, 66.0, -22.0, 66.0, 2.0, 30.0, 2.0)
 
-[node name="NavTable" type="StaticBody2D" parent="Furniture"]
+[node name="NavTable" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(-232, 116)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-68.0, -32.0, 67.0, -32.0, 67.0, 31.6, -68.0, 28.0)
 fill_color = Color(0.4314, 0.3294, 0.2510, 1.0)
 
-[node name="ChartPaper" type="Polygon2D" parent="Furniture/NavTable"]
+[node name="ChartPaper" type="Polygon2D" parent="FurnitureVisual/NavTable"]
 color = Color(0.9373, 0.8980, 0.8000, 0.9)
 polygon = PackedVector2Array(-40.0, -6.0, 30.0, -6.0, 30.0, 26.0, -40.0, 26.0)
 
-[node name="ChartCourse" type="Line2D" parent="Furniture/NavTable"]
+[node name="ChartCourse" type="Line2D" parent="FurnitureVisual/NavTable"]
 points = PackedVector2Array(-32.0, 20.0, -5.0, 8.0, 22.0, 2.0)
 width = 2
 default_color = Color(0.2471, 0.4706, 0.5020, 1.0)
@@ -211,84 +176,70 @@ begin_cap_mode = 2
 end_cap_mode = 2
 antialiased = true
 
-[node name="Chart" type="Area2D" parent="Furniture/NavTable"]
-position = Vector2(0, -46)
-script = ExtResource("6_r")
-interaction_id = &"nav_table"
-prompt = "Open chart"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Furniture/NavTable/Chart"]
-shape = SubResource("RectangleShape2D_4")
-
-[node name="SetteePort" type="StaticBody2D" parent="Furniture"]
+[node name="SetteePort" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(10, -128)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-130.0, -19.6, 130.0, -4.0, 130.0, 22.0, -130.0, 22.0)
 fill_color = Color(0.2471, 0.4706, 0.5020, 1.0)
 
-[node name="SetteeStarboard" type="StaticBody2D" parent="Furniture"]
+[node name="SetteeStarboard" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(10, 128)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-130.0, -22.0, 130.0, -22.0, 130.0, 4.0, -130.0, 19.6)
 fill_color = Color(0.2471, 0.4706, 0.5020, 1.0)
 
-[node name="SaloonTable" type="StaticBody2D" parent="Furniture"]
+[node name="SaloonTable" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(10, 0)
-script = ExtResource("5_r")
 size = Vector2(130, 66)
 fill_color = Color(0.4784, 0.3608, 0.2510, 1.0)
 
-[node name="StoragePort" type="StaticBody2D" parent="Furniture"]
+[node name="StoragePort" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(200, -95)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-40.0, -33.0, 38.0, -15.4, 38.0, 25.0, -40.0, 25.0)
 fill_color = Color(0.3686, 0.2784, 0.2000, 1.0)
 
-[node name="StorageStarboard" type="StaticBody2D" parent="Furniture"]
+[node name="StorageStarboard" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(200, 95)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-40.0, -25.0, 38.0, -25.0, 38.0, 15.4, -40.0, 33.0)
 fill_color = Color(0.3686, 0.2784, 0.2000, 1.0)
 
-[node name="BulkheadPort" type="StaticBody2D" parent="Furniture"]
+[node name="BulkheadPort" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(246, -78)
-script = ExtResource("5_r")
 size = Vector2(12, 70)
 fill_color = Color(0.2902, 0.2118, 0.1490, 1.0)
 
-[node name="BulkheadStarboard" type="StaticBody2D" parent="Furniture"]
+[node name="BulkheadStarboard" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(246, 78)
-script = ExtResource("5_r")
 size = Vector2(12, 70)
 fill_color = Color(0.2902, 0.2118, 0.1490, 1.0)
 
-[node name="VBerth" type="StaticBody2D" parent="Furniture"]
+[node name="VBerth" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
 position = Vector2(370, 0)
-script = ExtResource("5_r")
 polygon = PackedVector2Array(-54.0, -84.0, 12.0, -54.8, 64.0, -20.5, 64.0, 20.5, 12.0, 54.8, -54.0, 84.0)
 fill_color = Color(0.3647, 0.5569, 0.5843, 1.0)
 
-[node name="Pillow" type="Polygon2D" parent="Furniture/VBerth"]
+[node name="Pillow" type="Polygon2D" parent="FurnitureVisual/VBerth"]
 color = Color(0.9373, 0.8980, 0.8000, 0.9)
 polygon = PackedVector2Array(35.0, -34.0, 58.0, -24.0, 58.0, 24.0, 35.0, 34.0)
 
-[node name="Blanket" type="Polygon2D" parent="Furniture/VBerth"]
+[node name="Blanket" type="Polygon2D" parent="FurnitureVisual/VBerth"]
 color = Color(0.6510, 0.7686, 0.7882, 0.55)
 polygon = PackedVector2Array(-54.0, -60.0, 10.0, -50.0, 10.0, 50.0, -54.0, 60.0)
 
-[node name="Berth" type="Area2D" parent="Furniture/VBerth"]
-position = Vector2(-62, 0)
-script = ExtResource("6_r")
-interaction_id = &"bed"
-prompt = "Sleep"
+[node name="CabinDetails" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"CabinDetails"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Furniture/VBerth/Berth"]
-shape = SubResource("RectangleShape2D_5")
-
-[node name="Labels" type="Node2D" parent="."]
+[node name="Labels" type="Node2D" parent="CabinDetails"]
 z_index = 5
 
-[node name="Companionway" type="Label" parent="Labels"]
+[node name="Companionway" type="Label" parent="CabinDetails/Labels"]
 offset_left = -382
 offset_top = -76
 offset_right = -142
@@ -299,7 +250,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Engine" type="Label" parent="Labels"]
+[node name="Engine" type="Label" parent="CabinDetails/Labels"]
 offset_left = -431
 offset_top = 48
 offset_right = -191
@@ -310,7 +261,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Galley" type="Label" parent="Labels"]
+[node name="Galley" type="Label" parent="CabinDetails/Labels"]
 offset_left = -360
 offset_top = -110
 offset_right = -120
@@ -321,7 +272,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NavStation" type="Label" parent="Labels"]
+[node name="NavStation" type="Label" parent="CabinDetails/Labels"]
 offset_left = -352
 offset_top = 83
 offset_right = -112
@@ -332,7 +283,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Saloon" type="Label" parent="Labels"]
+[node name="Saloon" type="Label" parent="CabinDetails/Labels"]
 offset_left = -110
 offset_top = -14
 offset_right = 130
@@ -343,7 +294,7 @@ label_settings = SubResource("LabelSettings_1")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SeatPort" type="Label" parent="Labels"]
+[node name="SeatPort" type="Label" parent="CabinDetails/Labels"]
 offset_left = -110
 offset_top = -140
 offset_right = 130
@@ -354,7 +305,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="SeatStbd" type="Label" parent="Labels"]
+[node name="SeatStbd" type="Label" parent="CabinDetails/Labels"]
 offset_left = -110
 offset_top = 112
 offset_right = 130
@@ -365,7 +316,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StoragePort" type="Label" parent="Labels"]
+[node name="StoragePort" type="Label" parent="CabinDetails/Labels"]
 offset_left = 79
 offset_top = -109
 offset_right = 319
@@ -376,7 +327,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StorageStbd" type="Label" parent="Labels"]
+[node name="StorageStbd" type="Label" parent="CabinDetails/Labels"]
 offset_left = 79
 offset_top = 81
 offset_right = 319
@@ -387,7 +338,7 @@ label_settings = SubResource("LabelSettings_2")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Berth" type="Label" parent="Labels"]
+[node name="Berth" type="Label" parent="CabinDetails/Labels"]
 offset_left = 240
 offset_top = -14
 offset_right = 480
@@ -397,24 +348,3 @@ text = "V-BERTH"
 label_settings = SubResource("LabelSettings_1")
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="SpawnPoints" type="Node2D" parent="."]
-
-[node name="start" type="Marker2D" parent="SpawnPoints"]
-position = Vector2(-120, 0)
-
-[node name="from_deck" type="Marker2D" parent="SpawnPoints"]
-position = Vector2(-218, 0)
-
-[node name="v_berth" type="Marker2D" parent="SpawnPoints"]
-position = Vector2(282, 0)
-
-[node name="Companion" type="Node2D" parent="."]
-script = ExtResource("9_companion")
-
-[node name="Player" parent="." instance=ExtResource("7_r")]
-z_index = 10
-
-[node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(55, 0)
-zoom = Vector2(1.55, 1.55)

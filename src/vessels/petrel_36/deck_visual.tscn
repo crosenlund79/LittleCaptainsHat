@@ -1,0 +1,545 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/boat/visuals/vessel_visual.gd" id="1_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/visual_slot.gd" id="2_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/procedural_shape.gd" id="3_r"]
+[ext_resource type="FontFile" path="res://assets/fonts/Barlow-SemiBold.ttf" id="4_r"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_1"]
+font = ExtResource("4_r")
+font_size = 15
+font_color = Color(0.0627, 0.1765, 0.2314, 0.6000)
+
+[sub_resource type="LabelSettings" id="LabelSettings_2"]
+font = ExtResource("4_r")
+font_size = 13
+font_color = Color(0.0627, 0.1765, 0.2314, 0.5500)
+
+[node name="Visual" type="Node2D"]
+script = ExtResource("1_r")
+canvas = Rect2(-600, -320, 1200, 640)
+
+[node name="ShadowVisual" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"ShadowVisual"
+
+[node name="HullShadow" type="Polygon2D" parent="ShadowVisual"]
+color = Color(0.0000, 0.0000, 0.0000, 0.2500)
+polygon = PackedVector2Array(-492, -81.6, -450.33, -85.43, -408.67, -89.17, -367, -92.76, -325.33, -96.11, -283.67, -99.15, -242, -101.82, -200.33, -104.07, -158.67, -105.84, -117, -107.1, -75.33, -107.82, -33.67, -107.97, 8, -106.9, 49.67, -104.31, 91.33, -100.24, 133, -94.7, 174.67, -87.77, 216.33, -79.51, 258, -69.98, 299.67, -59.27, 341.33, -47.45, 383, -34.58, 424.67, -20.69, 466.33, -5.63, 508, 12, 466.33, 29.63, 424.67, 44.69, 383, 58.58, 341.33, 71.45, 299.67, 83.27, 258, 93.98, 216.33, 103.51, 174.67, 111.77, 133, 118.7, 91.33, 124.24, 49.67, 128.31, 8, 130.9, -33.67, 131.97, -75.33, 131.82, -117, 131.1, -158.67, 129.84, -200.33, 128.07, -242, 125.82, -283.67, 123.15, -325.33, 120.11, -367, 116.76, -408.67, 113.17, -450.33, 109.43, -492, 105.6)
+
+[node name="AmaShadow0" type="Polygon2D" parent="ShadowVisual"]
+color = Color(0.0000, 0.0000, 0.0000, 0.2200)
+polygon = PackedVector2Array(-322, -245, -292.83, -247.22, -263.67, -249.4, -234.5, -251.51, -205.33, -253.5, -176.17, -255.35, -147, -257.02, -117.83, -258.49, -88.67, -259.72, -59.5, -260.71, -30.33, -261.42, -1.17, -261.85, 28, -262, 57.17, -261.74, 86.33, -260.96, 115.5, -259.66, 144.67, -257.87, 173.83, -255.61, 203, -252.89, 232.17, -249.75, 261.33, -246.22, 290.5, -242.32, 319.67, -238.07, 348.83, -233.44, 378, -228, 348.83, -222.56, 319.67, -217.93, 290.5, -213.68, 261.33, -209.78, 232.17, -206.25, 203, -203.11, 173.83, -200.39, 144.67, -198.13, 115.5, -196.34, 86.33, -195.04, 57.17, -194.26, 28, -194, -1.17, -194.15, -30.33, -194.58, -59.5, -195.29, -88.67, -196.28, -117.83, -197.51, -147, -198.98, -176.17, -200.65, -205.33, -202.5, -234.5, -204.49, -263.67, -206.6, -292.83, -208.78, -322, -211)
+
+[node name="AmaShadow1" type="Polygon2D" parent="ShadowVisual"]
+color = Color(0.0000, 0.0000, 0.0000, 0.2200)
+polygon = PackedVector2Array(-322, 235, -292.83, 232.78, -263.67, 230.6, -234.5, 228.49, -205.33, 226.5, -176.17, 224.65, -147, 222.98, -117.83, 221.51, -88.67, 220.28, -59.5, 219.29, -30.33, 218.58, -1.17, 218.15, 28, 218, 57.17, 218.26, 86.33, 219.04, 115.5, 220.34, 144.67, 222.13, 173.83, 224.39, 203, 227.11, 232.17, 230.25, 261.33, 233.78, 290.5, 237.68, 319.67, 241.93, 348.83, 246.56, 378, 252, 348.83, 257.44, 319.67, 262.07, 290.5, 266.32, 261.33, 270.22, 232.17, 273.75, 203, 276.89, 173.83, 279.61, 144.67, 281.87, 115.5, 283.66, 86.33, 284.96, 57.17, 285.74, 28, 286, -1.17, 285.85, -30.33, 285.42, -59.5, 284.71, -88.67, 283.72, -117.83, 282.49, -147, 281.02, -176.17, 279.35, -205.33, 277.5, -234.5, 275.51, -263.67, 273.4, -292.83, 271.22, -322, 269)
+
+[node name="HullBase" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"HullBase"
+
+[node name="Aka00" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(-186, 0, -154, 0, -154, -240, -186, -240)
+
+[node name="Aka01" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(154, 0, 186, 0, 186, -240, 154, -240)
+
+[node name="Aka10" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(-186, 0, -154, 0, -154, 240, -186, 240)
+
+[node name="Aka11" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(154, 0, 186, 0, 186, 240, 154, 240)
+
+[node name="MainHull" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(-500, -93.6, -458.33, -97.43, -416.67, -101.17, -375, -104.76, -333.33, -108.11, -291.67, -111.15, -250, -113.82, -208.33, -116.07, -166.67, -117.84, -125, -119.1, -83.33, -119.82, -41.67, -119.97, 0, -118.9, 41.67, -116.31, 83.33, -112.24, 125, -106.7, 166.67, -99.77, 208.33, -91.51, 250, -81.98, 291.67, -71.27, 333.33, -59.45, 375, -46.58, 416.67, -32.69, 458.33, -17.63, 500, 0, 458.33, 17.63, 416.67, 32.69, 375, 46.58, 333.33, 59.45, 291.67, 71.27, 250, 81.98, 208.33, 91.51, 166.67, 99.77, 125, 106.7, 83.33, 112.24, 41.67, 116.31, 0, 118.9, -41.67, 119.97, -83.33, 119.82, -125, 119.1, -166.67, 117.84, -208.33, 116.07, -250, 113.82, -291.67, 111.15, -333.33, 108.11, -375, 104.76, -416.67, 101.17, -458.33, 97.43, -500, 93.6)
+
+[node name="ToeRail" type="Line2D" parent="HullBase"]
+points = PackedVector2Array(-500, -93.6, -458.33, -97.43, -416.67, -101.17, -375, -104.76, -333.33, -108.11, -291.67, -111.15, -250, -113.82, -208.33, -116.07, -166.67, -117.84, -125, -119.1, -83.33, -119.82, -41.67, -119.97, 0, -118.9, 41.67, -116.31, 83.33, -112.24, 125, -106.7, 166.67, -99.77, 208.33, -91.51, 250, -81.98, 291.67, -71.27, 333.33, -59.45, 375, -46.58, 416.67, -32.69, 458.33, -17.63, 500, 0, 458.33, 17.63, 416.67, 32.69, 375, 46.58, 333.33, 59.45, 291.67, 71.27, 250, 81.98, 208.33, 91.51, 166.67, 99.77, 125, 106.7, 83.33, 112.24, 41.67, 116.31, 0, 118.9, -41.67, 119.97, -83.33, 119.82, -125, 119.1, -166.67, 117.84, -208.33, 116.07, -250, 113.82, -291.67, 111.15, -333.33, 108.11, -375, 104.76, -416.67, 101.17, -458.33, 97.43, -500, 93.6)
+width = 6
+default_color = Color(0.5412, 0.4157, 0.2902, 1.0000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+closed = true
+
+[node name="PortAma" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(-330, -257, -300.83, -259.22, -271.67, -261.4, -242.5, -263.51, -213.33, -265.5, -184.17, -267.35, -155, -269.02, -125.83, -270.49, -96.67, -271.72, -67.5, -272.71, -38.33, -273.42, -9.17, -273.85, 20, -274, 49.17, -273.74, 78.33, -272.96, 107.5, -271.66, 136.67, -269.87, 165.83, -267.61, 195, -264.89, 224.17, -261.75, 253.33, -258.22, 282.5, -254.32, 311.67, -250.07, 340.83, -245.44, 370, -240, 340.83, -234.56, 311.67, -229.93, 282.5, -225.68, 253.33, -221.78, 224.17, -218.25, 195, -215.11, 165.83, -212.39, 136.67, -210.13, 107.5, -208.34, 78.33, -207.04, 49.17, -206.26, 20, -206, -9.17, -206.15, -38.33, -206.58, -67.5, -207.29, -96.67, -208.28, -125.83, -209.51, -155, -210.98, -184.17, -212.65, -213.33, -214.5, -242.5, -216.49, -271.67, -218.6, -300.83, -220.78, -330, -223)
+
+[node name="AmaRail0" type="Line2D" parent="HullBase"]
+points = PackedVector2Array(-330, -257, -300.83, -259.22, -271.67, -261.4, -242.5, -263.51, -213.33, -265.5, -184.17, -267.35, -155, -269.02, -125.83, -270.49, -96.67, -271.72, -67.5, -272.71, -38.33, -273.42, -9.17, -273.85, 20, -274, 49.17, -273.74, 78.33, -272.96, 107.5, -271.66, 136.67, -269.87, 165.83, -267.61, 195, -264.89, 224.17, -261.75, 253.33, -258.22, 282.5, -254.32, 311.67, -250.07, 340.83, -245.44, 370, -240, 340.83, -234.56, 311.67, -229.93, 282.5, -225.68, 253.33, -221.78, 224.17, -218.25, 195, -215.11, 165.83, -212.39, 136.67, -210.13, 107.5, -208.34, 78.33, -207.04, 49.17, -206.26, 20, -206, -9.17, -206.15, -38.33, -206.58, -67.5, -207.29, -96.67, -208.28, -125.83, -209.51, -155, -210.98, -184.17, -212.65, -213.33, -214.5, -242.5, -216.49, -271.67, -218.6, -300.83, -220.78, -330, -223)
+width = 4
+default_color = Color(0.5412, 0.4157, 0.2902, 1.0000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+closed = true
+
+[node name="StarboardAma" type="Polygon2D" parent="HullBase"]
+color = Color(0.9373, 0.8980, 0.8000, 1.0000)
+polygon = PackedVector2Array(-330, 223, -300.83, 220.78, -271.67, 218.6, -242.5, 216.49, -213.33, 214.5, -184.17, 212.65, -155, 210.98, -125.83, 209.51, -96.67, 208.28, -67.5, 207.29, -38.33, 206.58, -9.17, 206.15, 20, 206, 49.17, 206.26, 78.33, 207.04, 107.5, 208.34, 136.67, 210.13, 165.83, 212.39, 195, 215.11, 224.17, 218.25, 253.33, 221.78, 282.5, 225.68, 311.67, 229.93, 340.83, 234.56, 370, 240, 340.83, 245.44, 311.67, 250.07, 282.5, 254.32, 253.33, 258.22, 224.17, 261.75, 195, 264.89, 165.83, 267.61, 136.67, 269.87, 107.5, 271.66, 78.33, 272.96, 49.17, 273.74, 20, 274, -9.17, 273.85, -38.33, 273.42, -67.5, 272.71, -96.67, 271.72, -125.83, 270.49, -155, 269.02, -184.17, 267.35, -213.33, 265.5, -242.5, 263.51, -271.67, 261.4, -300.83, 259.22, -330, 257)
+
+[node name="AmaRail1" type="Line2D" parent="HullBase"]
+points = PackedVector2Array(-330, 223, -300.83, 220.78, -271.67, 218.6, -242.5, 216.49, -213.33, 214.5, -184.17, 212.65, -155, 210.98, -125.83, 209.51, -96.67, 208.28, -67.5, 207.29, -38.33, 206.58, -9.17, 206.15, 20, 206, 49.17, 206.26, 78.33, 207.04, 107.5, 208.34, 136.67, 210.13, 165.83, 212.39, 195, 215.11, 224.17, 218.25, 253.33, 221.78, 282.5, 225.68, 311.67, 229.93, 340.83, 234.56, 370, 240, 340.83, 245.44, 311.67, 250.07, 282.5, 254.32, 253.33, 258.22, 224.17, 261.75, 195, 264.89, 165.83, 267.61, 136.67, 269.87, 107.5, 271.66, 78.33, 272.96, 49.17, 273.74, 20, 274, -9.17, 273.85, -38.33, 273.42, -67.5, 272.71, -96.67, 271.72, -125.83, 270.49, -155, 269.02, -184.17, 267.35, -213.33, 265.5, -242.5, 263.51, -271.67, 261.4, -300.83, 259.22, -330, 257)
+width = 4
+default_color = Color(0.5412, 0.4157, 0.2902, 1.0000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+closed = true
+
+[node name="DeckBase" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"DeckBase"
+
+[node name="DeckSurface" type="Polygon2D" parent="DeckBase"]
+color = Color(0.8314, 0.8000, 0.7059, 1.0000)
+polygon = PackedVector2Array(-486, -79.6, -445.79, -83.43, -405.58, -87.17, -365.38, -90.76, -325.17, -94.11, -284.96, -97.15, -244.75, -99.82, -204.54, -102.07, -164.33, -103.84, -124.12, -105.1, -83.92, -105.82, -43.71, -105.97, -3.5, -105.03, 36.71, -102.74, 76.92, -99.14, 117.12, -94.26, 157.33, -88.13, 197.54, -80.83, 237.75, -72.42, 277.96, -62.95, 318.17, -52.51, 358.38, -41.15, 398.58, -28.88, 438.79, -15.57, 479, 0, 438.79, 15.57, 398.58, 28.88, 358.38, 41.15, 318.17, 52.51, 277.96, 62.95, 237.75, 72.42, 197.54, 80.83, 157.33, 88.13, 117.12, 94.26, 76.92, 99.14, 36.71, 102.74, -3.5, 105.03, -43.71, 105.97, -83.92, 105.82, -124.12, 105.1, -164.33, 103.84, -204.54, 102.07, -244.75, 99.82, -284.96, 97.15, -325.17, 94.11, -365.38, 90.76, -405.58, 87.17, -445.79, 83.43, -486, 79.6)
+
+[node name="Net0" type="Polygon2D" parent="DeckBase"]
+color = Color(0.1804, 0.2902, 0.3216, 0.8500)
+polygon = PackedVector2Array(-154, -113.7, 154, -113.7, 154, -212, -154, -212)
+
+[node name="NetLine00" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-130, -117.7, -130, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine01" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-92, -117.7, -92, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine02" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-54, -117.7, -54, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine03" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-16, -117.7, -16, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine04" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(22, -117.7, 22, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine05" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(60, -117.7, 60, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine06" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(98, -117.7, 98, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine07" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(136, -117.7, 136, -210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="AmaDeck0" type="Polygon2D" parent="DeckBase"]
+color = Color(0.8314, 0.8000, 0.7059, 1.0000)
+polygon = PackedVector2Array(-322, -257, -293.67, -258.17, -265.33, -259.33, -237, -260.44, -208.67, -261.5, -180.33, -262.48, -152, -263.36, -123.67, -264.14, -95.33, -264.79, -67, -265.31, -38.67, -265.69, -10.33, -265.92, 18, -266, 46.33, -265.8, 74.67, -265.2, 103, -264.21, 131.33, -262.84, 159.67, -261.11, 188, -259.03, 216.33, -256.63, 244.67, -253.93, 273, -250.95, 301.33, -247.7, 329.67, -244.16, 358, -240, 329.67, -235.84, 301.33, -232.3, 273, -229.05, 244.67, -226.07, 216.33, -223.37, 188, -220.97, 159.67, -218.89, 131.33, -217.16, 103, -215.79, 74.67, -214.8, 46.33, -214.2, 18, -214, -10.33, -214.08, -38.67, -214.31, -67, -214.69, -95.33, -215.21, -123.67, -215.86, -152, -216.64, -180.33, -217.52, -208.67, -218.5, -237, -219.56, -265.33, -220.67, -293.67, -221.83, -322, -223)
+
+[node name="Net1" type="Polygon2D" parent="DeckBase"]
+color = Color(0.1804, 0.2902, 0.3216, 0.8500)
+polygon = PackedVector2Array(-154, 113.7, 154, 113.7, 154, 212, -154, 212)
+
+[node name="NetLine10" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-130, 117.7, -130, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine11" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-92, 117.7, -92, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine12" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-54, 117.7, -54, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine13" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(-16, 117.7, -16, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine14" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(22, 117.7, 22, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine15" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(60, 117.7, 60, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine16" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(98, 117.7, 98, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="NetLine17" type="Line2D" parent="DeckBase"]
+points = PackedVector2Array(136, 117.7, 136, 210)
+width = 1
+default_color = Color(0.7882, 0.8235, 0.8392, 0.2500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="AmaDeck1" type="Polygon2D" parent="DeckBase"]
+color = Color(0.8314, 0.8000, 0.7059, 1.0000)
+polygon = PackedVector2Array(-322, 223, -293.67, 221.83, -265.33, 220.67, -237, 219.56, -208.67, 218.5, -180.33, 217.52, -152, 216.64, -123.67, 215.86, -95.33, 215.21, -67, 214.69, -38.67, 214.31, -10.33, 214.08, 18, 214, 46.33, 214.2, 74.67, 214.8, 103, 215.79, 131.33, 217.16, 159.67, 218.89, 188, 220.97, 216.33, 223.37, 244.67, 226.07, 273, 229.05, 301.33, 232.3, 329.67, 235.84, 358, 240, 329.67, 244.16, 301.33, 247.7, 273, 250.95, 244.67, 253.93, 216.33, 256.63, 188, 259.03, 159.67, 261.11, 131.33, 262.84, 103, 264.21, 74.67, 265.2, 46.33, 265.8, 18, 266, -10.33, 265.92, -38.67, 265.69, -67, 265.31, -95.33, 264.79, -123.67, 264.14, -152, 263.36, -180.33, 262.48, -208.67, 261.5, -237, 260.44, -265.33, 259.33, -293.67, 258.17, -322, 257)
+
+[node name="Cockpit" type="Polygon2D" parent="DeckBase"]
+color = Color(0.7059, 0.6706, 0.5765, 1.0000)
+polygon = PackedVector2Array(-470, -62, -140, -62, -140, 62, -470, 62)
+
+[node name="BenchPort" type="Node2D" parent="DeckBase"]
+script = ExtResource("3_r")
+position = Vector2(-300, -72)
+size = Vector2(220, 20)
+fill_color = Color(0.5412, 0.4157, 0.2902, 1.0000)
+
+[node name="BenchStarboard" type="Node2D" parent="DeckBase"]
+script = ExtResource("3_r")
+position = Vector2(-300, 72)
+size = Vector2(220, 20)
+fill_color = Color(0.5412, 0.4157, 0.2902, 1.0000)
+
+[node name="Hatch" type="Node2D" parent="DeckBase"]
+script = ExtResource("3_r")
+position = Vector2(-142, 0)
+size = Vector2(20, 60)
+fill_color = Color(0.3686, 0.2784, 0.2000, 1.0000)
+
+[node name="Coachroof" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"Coachroof"
+
+[node name="Coachroof" type="Node2D" parent="Coachroof"]
+script = ExtResource("3_r")
+position = Vector2(0, 0)
+polygon = PackedVector2Array(-130, -44, 120, -44, 150, -24, 150, 24, 120, 44, -130, 44)
+fill_color = Color(0.9020, 0.8745, 0.7961, 1.0000)
+
+[node name="Portlight0" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.2471, 0.4706, 0.5020, 0.7500)
+polygon = PackedVector2Array(-90, -40, -50, -40, -50, -34, -90, -34)
+
+[node name="PortlightS0" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.2471, 0.4706, 0.5020, 0.7500)
+polygon = PackedVector2Array(-90, 34, -50, 34, -50, 40, -90, 40)
+
+[node name="Portlight1" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.2471, 0.4706, 0.5020, 0.7500)
+polygon = PackedVector2Array(-20, -40, 20, -40, 20, -34, -20, -34)
+
+[node name="PortlightS1" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.2471, 0.4706, 0.5020, 0.7500)
+polygon = PackedVector2Array(-20, 34, 20, 34, 20, 40, -20, 40)
+
+[node name="Portlight2" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.2471, 0.4706, 0.5020, 0.7500)
+polygon = PackedVector2Array(50, -40, 90, -40, 90, -34, 50, -34)
+
+[node name="PortlightS2" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.2471, 0.4706, 0.5020, 0.7500)
+polygon = PackedVector2Array(50, 34, 90, 34, 90, 40, 50, 40)
+
+[node name="ForeHatch" type="Polygon2D" parent="Coachroof/Coachroof"]
+color = Color(0.6510, 0.7686, 0.7882, 0.6000)
+polygon = PackedVector2Array(110, -22, 150, -22, 150, 22, 110, 22)
+
+[node name="DeckDetails" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"DeckDetails"
+
+[node name="Pedestal" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(-396, 0)
+polygon = PackedVector2Array(11, 0, 9.53, 5.5, 5.5, 9.53, 0., 11, -5.5, 9.53, -9.53, 5.5, -11, 0., -9.53, -5.5, -5.5, -9.53, -0., -11, 5.5, -9.53, 9.53, -5.5)
+fill_color = Color(0.3686, 0.3922, 0.4078, 1.0000)
+
+[node name="Wheel" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(-410, 0)
+size = Vector2(12, 100)
+fill_color = Color(0.2392, 0.2471, 0.2549, 1.0000)
+
+[node name="Winch0" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(-170, -62)
+polygon = PackedVector2Array(9, 0, 7.28, 5.29, 2.78, 8.56, -2.78, 8.56, -7.28, 5.29, -9, 0., -7.28, -5.29, -2.78, -8.56, 2.78, -8.56, 7.28, -5.29)
+fill_color = Color(0.2392, 0.2471, 0.2549, 1.0000)
+
+[node name="AmaHatch0" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(60, -240)
+size = Vector2(60, 30)
+fill_color = Color(0.7059, 0.6706, 0.5765, 1.0000)
+
+[node name="Winch1" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(-170, 62)
+polygon = PackedVector2Array(9, 0, 7.28, 5.29, 2.78, 8.56, -2.78, 8.56, -7.28, 5.29, -9, 0., -7.28, -5.29, -2.78, -8.56, 2.78, -8.56, 7.28, -5.29)
+fill_color = Color(0.2392, 0.2471, 0.2549, 1.0000)
+
+[node name="AmaHatch1" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(60, 240)
+size = Vector2(60, 30)
+fill_color = Color(0.7059, 0.6706, 0.5765, 1.0000)
+
+[node name="AnchorLocker" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(400, 0)
+size = Vector2(54, 40)
+fill_color = Color(0.7059, 0.6706, 0.5765, 1.0000)
+
+[node name="BowRoller" type="Node2D" parent="DeckDetails"]
+script = ExtResource("3_r")
+position = Vector2(488, 0)
+size = Vector2(26, 10)
+fill_color = Color(0.3686, 0.3922, 0.4078, 1.0000)
+
+[node name="Lifelines" type="Line2D" parent="DeckDetails"]
+points = PackedVector2Array(-488, -81.6, -447.58, -85.43, -407.17, -89.17, -366.75, -92.76, -326.33, -96.11, -285.92, -99.15, -245.5, -101.82, -205.08, -104.07, -170, -105.61, -170, -216, -300, -216, -316, -246, -300, -264, 290, -264, 356, -244, 290, -216, 170, -216, 170, -87.71, 199.08, -82.36, 239.5, -73.78, 279.92, -64.14, 320.33, -53.51, 360.75, -41.93, 401.17, -29.42, 441.58, -15.87, 480, 0, 441.58, 15.87, 401.17, 29.42, 360.75, 41.93, 320.33, 53.51, 279.92, 64.14, 239.5, 73.78, 199.08, 82.36, 170, 87.71, 170, 216, 290, 216, 356, 244, 290, 264, -300, 264, -316, 246, -300, 216, -170, 216, -170, 105.61, -205.08, 104.07, -245.5, 101.82, -285.92, 99.15, -326.33, 96.11, -366.75, 92.76, -407.17, 89.17, -447.58, 85.43, -488, 81.6)
+width = 2
+default_color = Color(0.7882, 0.8235, 0.8392, 0.6500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+closed = true
+z_index = 6
+
+[node name="Pulpit" type="Line2D" parent="DeckDetails"]
+points = PackedVector2Array(430, -36, 470, 0, 430, 36)
+width = 4
+default_color = Color(0.7882, 0.8235, 0.8392, 0.9000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+z_index = 6
+
+[node name="Pushpit" type="Line2D" parent="DeckDetails"]
+points = PackedVector2Array(-470, -80, -488, -60, -488, 60, -470, 80)
+width = 4
+default_color = Color(0.7882, 0.8235, 0.8392, 0.9000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+z_index = 6
+
+[node name="Labels" type="Node2D" parent="DeckDetails"]
+z_index = 5
+
+[node name="Cockpit" type="Label" parent="DeckDetails/Labels"]
+offset_left = -440
+offset_top = 26
+offset_right = -200
+offset_bottom = 54
+mouse_filter = 2
+text = "COCKPIT"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Helm" type="Label" parent="DeckDetails/Labels"]
+offset_left = -550
+offset_top = -94
+offset_right = -310
+offset_bottom = -66
+mouse_filter = 2
+text = "HELM"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Coachroof" type="Label" parent="DeckDetails/Labels"]
+offset_left = -90
+offset_top = -14
+offset_right = 150
+offset_bottom = 14
+mouse_filter = 2
+text = "COACHROOF"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NetPort" type="Label" parent="DeckDetails/Labels"]
+offset_left = -120
+offset_top = -174
+offset_right = 120
+offset_bottom = -146
+mouse_filter = 2
+text = "NET"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NetStbd" type="Label" parent="DeckDetails/Labels"]
+offset_left = -120
+offset_top = 146
+offset_right = 120
+offset_bottom = 174
+mouse_filter = 2
+text = "NET"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PortAma" type="Label" parent="DeckDetails/Labels"]
+offset_left = -270
+offset_top = -254
+offset_right = -30
+offset_bottom = -226
+mouse_filter = 2
+text = "PORT FLOAT"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StbdAma" type="Label" parent="DeckDetails/Labels"]
+offset_left = -270
+offset_top = 226
+offset_right = -30
+offset_bottom = 254
+mouse_filter = 2
+text = "STARBOARD FLOAT"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Bow" type="Label" parent="DeckDetails/Labels"]
+offset_left = 300
+offset_top = -74
+offset_right = 540
+offset_bottom = -46
+mouse_filter = 2
+text = "BOW"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Mast" type="Label" parent="DeckDetails/Labels"]
+offset_left = 80
+offset_top = -44
+offset_right = 320
+offset_bottom = -16
+mouse_filter = 2
+text = "MAST"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RiggingVisual" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"RiggingVisual"
+z_index = 2
+
+[node name="Shrouds" type="Line2D" parent="RiggingVisual"]
+points = PackedVector2Array(175, -230, 195, 0, 175, 230)
+width = 2
+default_color = Color(0.7882, 0.8235, 0.8392, 0.8000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Forestay" type="Line2D" parent="RiggingVisual"]
+points = PackedVector2Array(195, 0, 480, 0)
+width = 2
+default_color = Color(0.7882, 0.8235, 0.8392, 0.8000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="MastVisual" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"MastVisual"
+z_index = 3
+
+[node name="Mast" type="Node2D" parent="MastVisual"]
+script = ExtResource("3_r")
+position = Vector2(195, 0)
+polygon = PackedVector2Array(16, 0, 6, 8, -14, 6, -14, -6, 6, -8)
+fill_color = Color(0.7255, 0.7569, 0.7725, 1.0000)

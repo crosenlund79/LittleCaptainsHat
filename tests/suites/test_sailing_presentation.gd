@@ -54,7 +54,7 @@ func _force(mode: StringName, twa: float, wind_kn := 14.0) -> void:
 
 func _rig() -> SailRig:
 	var area := app.router.current_screen as BoatArea
-	return area.get_node("Fittings/SailRig") as SailRig if area and area.area_id == &"exterior" else null
+	return area.get_node("SailRig") as SailRig if area and area.area_id == &"exterior" else null
 
 
 func _test_sails_by_wind_side() -> void:

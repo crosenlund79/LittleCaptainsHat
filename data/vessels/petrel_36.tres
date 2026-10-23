@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="VesselDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/vessels/vessel_definition.gd" id="1_def"]
+[ext_resource type="Resource" path="res://data/vessel/petrel_36.tres" id="2_perf"]
+[ext_resource type="PackedScene" path="res://src/vessels/petrel_36/deck.tscn" id="3_deck"]
+[ext_resource type="PackedScene" path="res://src/vessels/petrel_36/cabin.tscn" id="4_cabin"]
+[ext_resource type="PackedScene" path="res://src/vessels/petrel_36/deck_visual.tscn" id="5_visual"]
+[ext_resource type="Resource" path="res://data/vessels/petrel_36_visuals.tres" id="6_profile"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"petrel_36"
+display_name = "Petrel 36"
+hull_type = "trimaran"
+description = "A light 36 ft cruising trimaran: a slim central hull between two floats. Quick in a breeze and good upwind, with a snug cabin in the main hull."
+specs = Dictionary[String, String]({"Length": "11.0 m (36 ft)", "Beam": "8.2 m (floats out)", "Accommodation": "Forward V-berth, saloon and galley in the main hull", "Engine": "Outboard"})
+performance = ExtResource("2_perf")
+deck_scene = ExtResource("3_deck")
+cabin_scene = ExtResource("4_cabin")
+deck_visual_scene = ExtResource("5_visual")
+visual_profile = ExtResource("6_profile")

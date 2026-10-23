@@ -23,6 +23,7 @@ const COLLISION_LAYER := 1 << 2
 @export var highlight_target: NodePath = ^".."
 
 const HIGHLIGHT := Color(1.25, 1.18, 1.0)
+const RING := Color(0.78, 0.62, 0.43, 0.8)
 
 var _focused := false
 
@@ -43,9 +44,25 @@ func set_focused(focused: bool) -> void:
 	if _focused == focused:
 		return
 	_focused = focused
-	var target := get_node_or_null(highlight_target) as CanvasItem
+	var target := get_node_or_null(highlight_target) as CanvasItem if not highlight_target.is_empty() else null
 	if target:
 		target.modulate = HIGHLIGHT if focused else Color.WHITE
+	queue_redraw()
+
+
+## Stations without a highlight target (gameplay markers, independent of the
+## art) show a soft brass ring around their area while focused.
+func _draw() -> void:
+	if not _focused or not highlight_target.is_empty():
+		return
+	var radius := 24.0
+	for child in get_children():
+		var shape := child as CollisionShape2D
+		if shape and shape.shape:
+			var bounds := shape.shape.get_rect()
+			radius = maxf(bounds.size.x, bounds.size.y) / 2.0 + 6.0
+			break
+	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, RING, 3.0, true)
 
 
 func is_focused() -> bool:

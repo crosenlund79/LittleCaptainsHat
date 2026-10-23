@@ -19,21 +19,18 @@ const KIND_DOG := &"dog"
 const KINDS: Array[StringName] = [KIND_CAT, KIND_DOG]
 const DEFAULT_KIND := KIND_CAT
 
-## Resting spots per kind: id -> position in the cabin (local coordinates of
-## the interior scene). Chosen so they never sit on an interaction point or in
-## the walkway between them; the companion has no collision either way.
+## Resting spot ids per kind. The ids are semantic and shared by every
+## vessel: each cabin scene places a marker with the same name under
+## Layout/CompanionSpots, so the companion keeps its spot when the player
+## changes boats and the positions belong to the vessel's layout, not here.
+## Markers are placed off the interaction points and walkways; the companion
+## has no collision either way.
 const SPOTS := {
-	KIND_CAT: {
-		&"settee": Vector2(40, -124),       # curled up on the port settee
-		&"nav_station": Vector2(-145, 118),  # in the nook beside the chart table
-		&"v_berth": Vector2(372, 48),        # on the V-berth blanket
-	},
-	KIND_DOG: {
-		&"cabin_floor": Vector2(118, 70),    # on the cabin sole by the storage locker
-		&"companionway": Vector2(-178, -62), # at the foot of the steps, by the galley
-		&"seating": Vector2(-80, 86),        # beside the starboard settee
-	},
+	KIND_CAT: [&"settee", &"nav_station", &"v_berth"],
+	KIND_DOG: [&"cabin_floor", &"companionway", &"seating"],
 }
+## Every spot id a cabin must provide (see VesselDefinition.validate()).
+const ALL_SPOT_IDS: Array[StringName] = [&"settee", &"nav_station", &"v_berth", &"cabin_floor", &"companionway", &"seating"]
 const MIN_REST_SECONDS := 2.0 * 3600.0
 const MAX_REST_SECONDS := 5.0 * 3600.0
 ## Loading a game far in the future of its schedule never loops for long.
@@ -57,17 +54,13 @@ static func create(companion_kind: StringName, now: float) -> CompanionState:
 
 static func get_spot_ids(companion_kind: StringName) -> Array[StringName]:
 	var ids: Array[StringName] = []
-	ids.assign(SPOTS.get(companion_kind, {}).keys())
+	ids.assign(SPOTS.get(companion_kind, []))
 	return ids
 
 
 ## "cat" / "dog" as shown to the player.
 static func display_name(companion_kind: StringName) -> String:
 	return "dog" if companion_kind == KIND_DOG else "cat"
-
-
-func get_position() -> Vector2:
-	return SPOTS[kind][spot]
 
 
 ## Moves on to new resting spots for every move due by `now`. Returns true

@@ -1,0 +1,171 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/boat/boat_area.gd" id="1_r"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_cabin.wav" id="2_r"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="3_r"]
+[ext_resource type="PackedScene" path="res://src/vessels/petrel_36/cabin_visual.tscn" id="4_r"]
+[ext_resource type="Script" path="res://src/boat/boat_fixture.gd" id="5_r"]
+[ext_resource type="Script" path="res://src/interaction/interactable.gd" id="6_r"]
+[ext_resource type="Script" path="res://src/companion/ship_companion.gd" id="7_r"]
+[ext_resource type="PackedScene" path="res://src/player/player.tscn" id="8_r"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Companionway"]
+size = Vector2(30, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Chart"]
+size = Vector2(80, 26)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Berth"]
+size = Vector2(30, 120)
+
+[node name="Interior" type="Node2D"]
+script = ExtResource("1_r")
+area_id = &"interior"
+companionway_target_area = &"exterior"
+companionway_target_spawn = &"from_cabin"
+walkable_bounds = Rect2(-440, -110, 900, 220)
+ambience = ExtResource("2_r")
+interaction_sound = ExtResource("3_r")
+
+[node name="Backdrop" type="Node2D" parent="."]
+
+[node name="Darkness" type="Polygon2D" parent="Backdrop"]
+color = Color(0.0392, 0.1098, 0.1451, 1.0000)
+polygon = PackedVector2Array(-1700, -1000, 1700, -1000, 1700, 1000, -1700, 1000)
+
+[node name="Visual" parent="." instance=ExtResource("4_r")]
+
+[node name="Layout" type="Node2D" parent="."]
+
+[node name="Collision" type="Node2D" parent="Layout"]
+
+[node name="Hull" type="StaticBody2D" parent="Layout/Collision"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Layout/Collision/Hull"]
+build_mode = 1
+polygon = PackedVector2Array(-430, -78, -300, -96, -150, -106, 100, -106, 260, -88, 380, -50, 440, -14, 450, 0, 440, 14, 380, 50, 260, 88, 100, 106, -150, 106, -300, 96, -430, 78)
+
+[node name="EngineBox" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-412, 0)
+size = Vector2(30, 70)
+
+[node name="CompanionwaySteps" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-378, 0)
+size = Vector2(38, 80)
+
+[node name="Galley" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-290, -80)
+size = Vector2(110, 28)
+
+[node name="NavTable" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-290, 80)
+size = Vector2(80, 28)
+
+[node name="SetteePort" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(0, -88)
+size = Vector2(220, 28)
+
+[node name="SetteeStbd" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(0, 88)
+size = Vector2(220, 28)
+
+[node name="Table" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(0, 0)
+size = Vector2(110, 30)
+
+[node name="MastPost" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(195, 0)
+polygon = PackedVector2Array(9, 0, 7.79, 4.5, 4.5, 7.79, 0., 9, -4.5, 7.79, -7.79, 4.5, -9, 0., -7.79, -4.5, -4.5, -7.79, -0., -9, 4.5, -7.79, 7.79, -4.5)
+
+[node name="VBerth" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(0, 0)
+polygon = PackedVector2Array(300, -66, 380, -46, 436, -10, 436, 10, 380, 46, 300, 66)
+
+[node name="Locker" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(160, 80)
+size = Vector2(60, 26)
+
+[node name="Stations" type="Node2D" parent="Layout"]
+
+[node name="Companionway" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-345, 0)
+script = ExtResource("6_r")
+interaction_id = &"companionway"
+prompt = "Go on deck"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Companionway"]
+shape = SubResource("RectangleShape2D_Companionway")
+
+[node name="Chart" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-290, 52)
+script = ExtResource("6_r")
+interaction_id = &"nav_table"
+prompt = "Open chart"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Chart"]
+shape = SubResource("RectangleShape2D_Chart")
+
+[node name="Berth" type="Area2D" parent="Layout/Stations"]
+position = Vector2(282, 0)
+script = ExtResource("6_r")
+interaction_id = &"bed"
+prompt = "Sleep"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Berth"]
+shape = SubResource("RectangleShape2D_Berth")
+
+[node name="SpawnPoints" type="Node2D" parent="Layout"]
+
+[node name="start" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-120, 40)
+
+[node name="from_deck" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(-322, 0)
+
+[node name="v_berth" type="Marker2D" parent="Layout/SpawnPoints"]
+position = Vector2(258, 0)
+
+[node name="CompanionSpots" type="Node2D" parent="Layout"]
+
+[node name="settee" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-40, -90)
+
+[node name="nav_station" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-232, 86)
+
+[node name="v_berth" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(372, 30)
+
+[node name="cabin_floor" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(110, 40)
+
+[node name="companionway" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-330, -50)
+
+[node name="seating" type="Marker2D" parent="Layout/CompanionSpots"]
+position = Vector2(-90, 52)
+
+[node name="Companion" type="Node2D" parent="."]
+script = ExtResource("7_r")
+
+[node name="Player" parent="." instance=ExtResource("8_r")]
+z_index = 10
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, 0)
+zoom = Vector2(1.5, 1.5)

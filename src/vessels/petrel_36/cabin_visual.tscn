@@ -1,0 +1,263 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/boat/visuals/vessel_visual.gd" id="1_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/visual_slot.gd" id="2_r"]
+[ext_resource type="Script" path="res://src/boat/visuals/procedural_shape.gd" id="3_r"]
+[ext_resource type="FontFile" path="res://assets/fonts/Barlow-SemiBold.ttf" id="4_r"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_1"]
+font = ExtResource("4_r")
+font_size = 15
+font_color = Color(0.9373, 0.8980, 0.8000, 0.6200)
+
+[sub_resource type="LabelSettings" id="LabelSettings_2"]
+font = ExtResource("4_r")
+font_size = 13
+font_color = Color(0.9373, 0.8980, 0.8000, 0.5500)
+
+[node name="Visual" type="Node2D"]
+script = ExtResource("1_r")
+canvas = Rect2(-600, -320, 1200, 640)
+
+[node name="CabinBase" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"CabinBase"
+
+[node name="HullShape" type="Polygon2D" parent="CabinBase"]
+color = Color(0.0863, 0.1961, 0.2510, 1.0000)
+polygon = PackedVector2Array(-500, -93.6, -458.33, -97.43, -416.67, -101.17, -375, -104.76, -333.33, -108.11, -291.67, -111.15, -250, -113.82, -208.33, -116.07, -166.67, -117.84, -125, -119.1, -83.33, -119.82, -41.67, -119.97, 0, -118.9, 41.67, -116.31, 83.33, -112.24, 125, -106.7, 166.67, -99.77, 208.33, -91.51, 250, -81.98, 291.67, -71.27, 333.33, -59.45, 375, -46.58, 416.67, -32.69, 458.33, -17.63, 500, 0, 458.33, 17.63, 416.67, 32.69, 375, 46.58, 333.33, 59.45, 291.67, 71.27, 250, 81.98, 208.33, 91.51, 166.67, 99.77, 125, 106.7, 83.33, 112.24, 41.67, 116.31, 0, 118.9, -41.67, 119.97, -83.33, 119.82, -125, 119.1, -166.67, 117.84, -208.33, 116.07, -250, 113.82, -291.67, 111.15, -333.33, 108.11, -375, 104.76, -416.67, 101.17, -458.33, 97.43, -500, 93.6)
+
+[node name="AmaHint0" type="Polygon2D" parent="CabinBase"]
+color = Color(0.0863, 0.1961, 0.2510, 0.4500)
+polygon = PackedVector2Array(-330, -257, -300.83, -259.22, -271.67, -261.4, -242.5, -263.51, -213.33, -265.5, -184.17, -267.35, -155, -269.02, -125.83, -270.49, -96.67, -271.72, -67.5, -272.71, -38.33, -273.42, -9.17, -273.85, 20, -274, 49.17, -273.74, 78.33, -272.96, 107.5, -271.66, 136.67, -269.87, 165.83, -267.61, 195, -264.89, 224.17, -261.75, 253.33, -258.22, 282.5, -254.32, 311.67, -250.07, 340.83, -245.44, 370, -240, 340.83, -234.56, 311.67, -229.93, 282.5, -225.68, 253.33, -221.78, 224.17, -218.25, 195, -215.11, 165.83, -212.39, 136.67, -210.13, 107.5, -208.34, 78.33, -207.04, 49.17, -206.26, 20, -206, -9.17, -206.15, -38.33, -206.58, -67.5, -207.29, -96.67, -208.28, -125.83, -209.51, -155, -210.98, -184.17, -212.65, -213.33, -214.5, -242.5, -216.49, -271.67, -218.6, -300.83, -220.78, -330, -223)
+
+[node name="AmaHint1" type="Polygon2D" parent="CabinBase"]
+color = Color(0.0863, 0.1961, 0.2510, 0.4500)
+polygon = PackedVector2Array(-330, 223, -300.83, 220.78, -271.67, 218.6, -242.5, 216.49, -213.33, 214.5, -184.17, 212.65, -155, 210.98, -125.83, 209.51, -96.67, 208.28, -67.5, 207.29, -38.33, 206.58, -9.17, 206.15, 20, 206, 49.17, 206.26, 78.33, 207.04, 107.5, 208.34, 136.67, 210.13, 165.83, 212.39, 195, 215.11, 224.17, 218.25, 253.33, 221.78, 282.5, 225.68, 311.67, 229.93, 340.83, 234.56, 370, 240, 340.83, 245.44, 311.67, 250.07, 282.5, 254.32, 253.33, 258.22, 224.17, 261.75, 195, 264.89, 165.83, 267.61, 136.67, 269.87, 107.5, 271.66, 78.33, 272.96, 49.17, 273.74, 20, 274, -9.17, 273.85, -38.33, 273.42, -67.5, 272.71, -96.67, 271.72, -125.83, 270.49, -155, 269.02, -184.17, 267.35, -213.33, 265.5, -242.5, 263.51, -271.67, 261.4, -300.83, 259.22, -330, 257)
+
+[node name="CabinSole" type="Polygon2D" parent="CabinBase"]
+color = Color(0.6039, 0.4784, 0.3412, 1.0000)
+polygon = PackedVector2Array(-430, -78, -300, -96, -150, -106, 100, -106, 260, -88, 380, -50, 440, -14, 450, 0, 440, 14, 380, 50, 260, 88, 100, 106, -150, 106, -300, 96, -430, 78)
+
+[node name="Seam0" type="Line2D" parent="CabinBase"]
+points = PackedVector2Array(-420, -80, 420, -80)
+width = 2
+default_color = Color(0.3686, 0.2784, 0.2000, 0.3500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Seam1" type="Line2D" parent="CabinBase"]
+points = PackedVector2Array(-420, -40, 420, -40)
+width = 2
+default_color = Color(0.3686, 0.2784, 0.2000, 0.3500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Seam2" type="Line2D" parent="CabinBase"]
+points = PackedVector2Array(-420, 0, 420, 0)
+width = 2
+default_color = Color(0.3686, 0.2784, 0.2000, 0.3500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Seam3" type="Line2D" parent="CabinBase"]
+points = PackedVector2Array(-420, 40, 420, 40)
+width = 2
+default_color = Color(0.3686, 0.2784, 0.2000, 0.3500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Seam4" type="Line2D" parent="CabinBase"]
+points = PackedVector2Array(-420, 80, 420, 80)
+width = 2
+default_color = Color(0.3686, 0.2784, 0.2000, 0.3500)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="CabinSide" type="Line2D" parent="CabinBase"]
+points = PackedVector2Array(-430, -78, -300, -96, -150, -106, 100, -106, 260, -88, 380, -50, 440, -14, 450, 0, 440, 14, 380, 50, 260, 88, 100, 106, -150, 106, -300, 96, -430, 78)
+width = 12
+default_color = Color(0.3686, 0.2784, 0.2000, 1.0000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+closed = true
+
+[node name="FurnitureVisual" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"FurnitureVisual"
+
+[node name="EngineBox" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(-412, 0)
+size = Vector2(30, 70)
+fill_color = Color(0.2941, 0.3255, 0.3412, 1.0000)
+
+[node name="CompanionwaySteps" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(-378, 0)
+size = Vector2(38, 80)
+fill_color = Color(0.4784, 0.3608, 0.2510, 1.0000)
+
+[node name="Step0" type="Line2D" parent="FurnitureVisual/CompanionwaySteps"]
+points = PackedVector2Array(-12, -36, -12, 36)
+width = 3
+default_color = Color(0.2902, 0.2118, 0.1490, 0.8000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Step1" type="Line2D" parent="FurnitureVisual/CompanionwaySteps"]
+points = PackedVector2Array(0, -36, 0, 36)
+width = 3
+default_color = Color(0.2902, 0.2118, 0.1490, 0.8000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Step2" type="Line2D" parent="FurnitureVisual/CompanionwaySteps"]
+points = PackedVector2Array(12, -36, 12, 36)
+width = 3
+default_color = Color(0.2902, 0.2118, 0.1490, 0.8000)
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+antialiased = true
+
+[node name="Galley" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(-290, -80)
+size = Vector2(110, 28)
+fill_color = Color(0.4314, 0.3294, 0.2510, 1.0000)
+
+[node name="Burner0" type="Polygon2D" parent="FurnitureVisual/Galley"]
+color = Color(0.1647, 0.1843, 0.2000, 1.0000)
+polygon = PackedVector2Array(-22, 0, -23.07, 4., -26, 6.93, -30, 8, -34, 6.93, -36.93, 4., -38, 0., -36.93, -4., -34, -6.93, -30, -8, -26, -6.93, -23.07, -4.)
+
+[node name="Burner1" type="Polygon2D" parent="FurnitureVisual/Galley"]
+color = Color(0.1647, 0.1843, 0.2000, 1.0000)
+polygon = PackedVector2Array(0, 0, -1.07, 4., -4., 6.93, -8., 8, -12., 6.93, -14.93, 4., -16, 0., -14.93, -4., -12., -6.93, -8., -8, -4., -6.93, -1.07, -4.)
+
+[node name="Sink" type="Polygon2D" parent="FurnitureVisual/Galley"]
+color = Color(0.6510, 0.7686, 0.7882, 0.8000)
+polygon = PackedVector2Array(18, -9, 42, -9, 42, 9, 18, 9)
+
+[node name="NavTable" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(-290, 80)
+size = Vector2(80, 28)
+fill_color = Color(0.4314, 0.3294, 0.2510, 1.0000)
+
+[node name="ChartPaper" type="Polygon2D" parent="FurnitureVisual/NavTable"]
+color = Color(0.9373, 0.8980, 0.8000, 0.9000)
+polygon = PackedVector2Array(-30, -10, 26, -10, 26, 10, -30, 10)
+
+[node name="SetteePort" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(0, -88)
+size = Vector2(220, 28)
+fill_color = Color(0.2471, 0.4706, 0.5020, 1.0000)
+label = "SETTEE"
+
+[node name="SetteeStbd" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(0, 88)
+size = Vector2(220, 28)
+fill_color = Color(0.2471, 0.4706, 0.5020, 1.0000)
+
+[node name="Table" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(0, 0)
+size = Vector2(110, 30)
+fill_color = Color(0.4314, 0.3294, 0.2510, 1.0000)
+
+[node name="MastPost" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(195, 0)
+polygon = PackedVector2Array(9, 0, 7.79, 4.5, 4.5, 7.79, 0., 9, -4.5, 7.79, -7.79, 4.5, -9, 0., -7.79, -4.5, -4.5, -7.79, -0., -9, 4.5, -7.79, 7.79, -4.5)
+fill_color = Color(0.3686, 0.3922, 0.4078, 1.0000)
+
+[node name="VBerth" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(0, 0)
+polygon = PackedVector2Array(300, -66, 380, -46, 436, -10, 436, 10, 380, 46, 300, 66)
+fill_color = Color(0.6588, 0.7059, 0.6275, 1.0000)
+label = "V-BERTH"
+
+[node name="Pillow0" type="Polygon2D" parent="FurnitureVisual/VBerth"]
+color = Color(0.9373, 0.8980, 0.8000, 0.8500)
+polygon = PackedVector2Array(392, -36, 424, -12, 424, -2, 392, -2)
+
+[node name="Pillow1" type="Polygon2D" parent="FurnitureVisual/VBerth"]
+color = Color(0.9373, 0.8980, 0.8000, 0.8500)
+polygon = PackedVector2Array(392, 2, 424, 2, 424, 12, 392, 36)
+
+[node name="Locker" type="Node2D" parent="FurnitureVisual"]
+script = ExtResource("3_r")
+position = Vector2(160, 80)
+size = Vector2(60, 26)
+fill_color = Color(0.4314, 0.3294, 0.2510, 1.0000)
+
+[node name="CabinDetails" type="Node2D" parent="."]
+script = ExtResource("2_r")
+slot = &"CabinDetails"
+
+[node name="Labels" type="Node2D" parent="CabinDetails"]
+z_index = 5
+
+[node name="Saloon" type="Label" parent="CabinDetails/Labels"]
+offset_left = -30
+offset_top = -54
+offset_right = 210
+offset_bottom = -26
+mouse_filter = 2
+text = "SALOON"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Galley" type="Label" parent="CabinDetails/Labels"]
+offset_left = -410
+offset_top = -66
+offset_right = -170
+offset_bottom = -38
+mouse_filter = 2
+text = "GALLEY"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Chart" type="Label" parent="CabinDetails/Labels"]
+offset_left = -410
+offset_top = 38
+offset_right = -170
+offset_bottom = 66
+mouse_filter = 2
+text = "NAV STATION"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Floats" type="Label" parent="CabinDetails/Labels"]
+offset_left = -120
+offset_top = 186
+offset_right = 120
+offset_bottom = 214
+mouse_filter = 2
+text = "FLOATS: STORAGE ONLY"
+label_settings = SubResource("LabelSettings_2")
+horizontal_alignment = 1
+vertical_alignment = 1

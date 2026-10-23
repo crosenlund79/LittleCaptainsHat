@@ -37,6 +37,7 @@ func _write() -> void:
 	SettingsManager.save()
 	Simulation.auto_advance = false
 	GameSession.start_new_session(CompanionState.KIND_DOG)
+	GameSession.switch_vessel(&"petrel_36")  # sail the trimaran
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"from_cabin")
 	GameSession.set_player_position(Vector2(-300.5, 42.25))
 	GameSession.plan_route_to(&"kiel")
@@ -74,6 +75,7 @@ func _read() -> bool:
 		ok = _expect(state.voyage != null and state.voyage.route.destination_port_id == &"kiel", "destination restored") and ok
 		ok = _expect(is_equal_approx(state.game_time, SessionState.get_start_time() + 3.0 * 3600.0), "game clock restored") and ok
 		ok = _expect(state.time_scale == 5, "time acceleration restored") and ok
+		ok = _expect(state.vessel_id == &"petrel_36", "active vessel restored (%s)" % state.vessel_id) and ok
 	# Clean up the scratch files.
 	DirAccess.remove_absolute(SETTINGS_PATH)
 	DirAccess.remove_absolute(EXPECT_PATH)
