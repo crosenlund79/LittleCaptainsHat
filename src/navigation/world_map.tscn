@@ -1,10 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://src/navigation/world_map.gd" id="1_world"]
 [ext_resource type="Script" path="res://src/navigation/map_view.gd" id="2_view"]
 [ext_resource type="JSON" path="res://data/navigation/europe_land.json" id="3_land"]
 [ext_resource type="Script" path="res://src/ui/ui_scale_layer.gd" id="4_layer"]
-[ext_resource type="Script" path="res://src/ui/time_controls.gd" id="5_time"]
 
 [node name="WorldMap" type="Node2D"]
 script = ExtResource("1_world")
@@ -33,6 +32,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="SidePanel" type="PanelContainer" parent="Ui/Root"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
@@ -44,225 +44,315 @@ offset_right = -24.0
 offset_bottom = -24.0
 grow_horizontal = 0
 grow_vertical = 2
+theme_type_variation = &"SidebarPanel"
 
-[node name="Scroll" type="ScrollContainer" parent="Ui/Root/SidePanel"]
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/SidePanel"]
 layout_mode = 2
-horizontal_scroll_mode = 0
+theme_override_constants/separation = 10
 
-[node name="VBox" type="VBoxContainer" parent="Ui/Root/SidePanel/Scroll"]
+[node name="Header" type="VBoxContainer" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 7
+theme_override_constants/separation = 4
 
-[node name="Title" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="Title" type="Label" parent="Ui/Root/SidePanel/VBox/Header"]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
+theme_override_font_sizes/font_size = 34
 text = "Chart"
 
-[node name="Region" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-text = "Europe  ·  WGS84, Mercator"
-
-[node name="Sep1" type="HSeparator" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-
-[node name="StatusLabel" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="StatusLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 21
 text = "Moored"
-autowrap_mode = 3
-
-[node name="PositionLabel" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-text = ""
-
-[node name="ClockRow" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="ClockLabel" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox/ClockRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
 clip_text = true
 text_overrun_behavior = 3
-text = ""
+mouse_filter = 1
 
-[node name="TimeControls" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox/ClockRow"]
-layout_mode = 2
-script = ExtResource("5_time")
-
-[node name="VoyageBox" type="VBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="VoyageProgress" type="ProgressBar" parent="Ui/Root/SidePanel/VBox/Header"]
 unique_name_in_owner = true
-layout_mode = 2
-
-[node name="VoyageProgress" type="ProgressBar" parent="Ui/Root/SidePanel/Scroll/VBox/VoyageBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 10)
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 show_percentage = false
 
-[node name="VoyageLabel" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox/VoyageBox"]
+[node name="VoyageLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 18
 text = ""
-autowrap_mode = 3
+clip_text = true
+text_overrun_behavior = 3
+mouse_filter = 1
 
-[node name="Sep2" type="HSeparator" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="Tabs" type="TabContainer" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
 
-[node name="DestinationHeader" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="Course" type="ScrollContainer" parent="Ui/Root/SidePanel/VBox/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 4
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/SidePanel/VBox/Tabs/Course"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DestinationHeader" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
 text = "Destination"
 
-[node name="SelectionTitle" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="SelectionTitle" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 text = "No port selected"
 autowrap_mode = 3
 
-[node name="SelectionDetails" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="SelectionDetails" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 17
 text = ""
 autowrap_mode = 3
 
-[node name="PlotButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="PlotButton" type="Button" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Plot course"
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="Sep3" type="HSeparator" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="Sep1" type="HSeparator" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 layout_mode = 2
 
-[node name="CourseHeader" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="CourseHeader" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
 text = "Course"
 
-[node name="CourseLabel" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="CourseLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 text = "No course planned."
 autowrap_mode = 3
 
-[node name="CourseStatus" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="CourseStatus" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 17
 text = ""
 autowrap_mode = 3
 
-[node name="CourseButtons" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="WaypointButtons" type="HBoxContainer" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ApplyButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/CourseButtons"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Apply course"
-
-[node name="DiscardButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/CourseButtons"]
-unique_name_in_owner = true
-layout_mode = 2
-tooltip_text = "Discard changes and keep the current course"
-text = "Discard"
-
-[node name="WaypointButtons" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="RemoveWaypointButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/WaypointButtons"]
+[node name="RemoveWaypointButton" type="Button" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox/WaypointButtons"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Remove the selected waypoint (Delete, or right-click it)"
 text = "Remove waypoint"
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="ClearButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/WaypointButtons"]
+[node name="ClearButton" type="Button" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox/WaypointButtons"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Forget the planned course (in port)"
 text = "Clear course"
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="ActionRow" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="EditHelp" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 16
+text = "Drag the course line to add a waypoint; drag a waypoint to move it; right-click or Delete removes it."
+autowrap_mode = 3
+
+[node name="Weather" type="ScrollContainer" parent="Ui/Root/SidePanel/VBox/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 4
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/SidePanel/VBox/Tabs/Weather"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="WindHeader" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
+text = "Wind at the boat"
+
+[node name="WindHereLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
+[node name="PropulsionLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
+text = ""
+autowrap_mode = 3
+
+[node name="Sep2" type="HSeparator" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+layout_mode = 2
+
+[node name="WeatherHeader" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
+text = "Along the course"
+
+[node name="WeatherLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
+text = ""
+autowrap_mode = 3
+
+[node name="WeatherNote" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Weather/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 15
+text = "Warnings appear when a caution or danger area is within about 5 hours of sailing. Weather areas are demonstration data."
+autowrap_mode = 3
+
+[node name="Details" type="ScrollContainer" parent="Ui/Root/SidePanel/VBox/Tabs"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 4
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/SidePanel/VBox/Tabs/Details"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="PositionHeader" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
+text = "Position"
+
+[node name="PositionLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
+[node name="Region" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
+text = "Europe  ·  WGS84, Mercator projection"
+autowrap_mode = 3
+
+[node name="Sep3" type="HSeparator" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+
+[node name="HelpHeader" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
+text = "Using the chart"
+
+[node name="Help" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
+text = "Click a port, then Plot course. Drag the course line to add a waypoint, drag waypoints to move them, right-click or Delete to remove. Drag the chart to pan; scroll, + / - or the toolbar to zoom. All Europe shows the whole chart; Find boat centres on the boat. The Wind switch shows or hides the wind arrows. Esc returns to the boat."
+autowrap_mode = 3
+
+[node name="Sep4" type="HSeparator" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+
+[node name="Attribution" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 15
+text = "Coastlines: Natural Earth 1:10m (public domain), simplified. Weather areas are demonstration data. Not for navigation."
+autowrap_mode = 3
+
+[node name="Footer" type="VBoxContainer" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SetSailButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/ActionRow"]
+[node name="FooterSep" type="HSeparator" parent="Ui/Root/SidePanel/VBox/Footer"]
+layout_mode = 2
+
+[node name="CourseButtons" type="HBoxContainer" parent="Ui/Root/SidePanel/VBox/Footer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ApplyButton" type="Button" parent="Ui/Root/SidePanel/VBox/Footer/CourseButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Apply course"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="DiscardButton" type="Button" parent="Ui/Root/SidePanel/VBox/Footer/CourseButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 0)
+layout_mode = 2
+tooltip_text = "Discard changes and keep the current course"
+text = "Discard"
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="ActionRow" type="HBoxContainer" parent="Ui/Root/SidePanel/VBox/Footer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SetSailButton" type="Button" parent="Ui/Root/SidePanel/VBox/Footer/ActionRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"BigButton"
 tooltip_text = "Depart on the planned course"
 text = "Set sail"
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="SleepButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/ActionRow"]
+[node name="SleepButton" type="Button" parent="Ui/Root/SidePanel/VBox/Footer/ActionRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 theme_type_variation = &"BigButton"
 tooltip_text = "Sleep for a while (the boat sails on while you sleep). You wake in the V-berth."
 text = "Sleep"
+clip_text = true
+text_overrun_behavior = 3
 
-[node name="Sep4" type="HSeparator" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-
-[node name="WeatherHeader" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-theme_type_variation = &"HeaderLabel"
-text = "Weather along the course"
-
-[node name="WeatherLabel" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 17
-text = ""
-autowrap_mode = 3
-
-[node name="Sep5" type="HSeparator" parent="Ui/Root/SidePanel/Scroll/VBox"]
-layout_mode = 2
-
-[node name="Help" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 16
-text = "Click a port, then Plot course. Drag the course line to add a waypoint, drag waypoints to move them, right-click or Delete to remove. Drag the chart to pan, scroll or + / - to zoom."
-autowrap_mode = 3
-
-[node name="Attribution" type="Label" parent="Ui/Root/SidePanel/Scroll/VBox"]
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-theme_type_variation = &"MutedLabel"
-theme_override_font_sizes/font_size = 14
-text = "Coastlines: Natural Earth 1:10m (public domain), simplified. Weather areas are demonstration data. Not for navigation."
-autowrap_mode = 3
-
-[node name="BackButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="BackButton" type="Button" parent="Ui/Root/SidePanel/VBox/Footer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BigButton"
 text = "Back to boat  (Esc)"
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="Toolbar" type="PanelContainer" parent="Ui/Root"]
 layout_mode = 1

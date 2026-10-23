@@ -105,6 +105,7 @@ Edit the generator and re-run it rather than hand-editing the `.tres`.
 | `planned_route` | `PlannedRoute` planned in port, or `null` |
 | `game_time` | authoritative clock: seconds since the Unix epoch, UTC (float) |
 | `time_scale` | 1, 5 or 20 |
+| `paused` | the player paused the simulation clock (UI keeps working); resuming continues at `time_scale` |
 | `vessel_status` | `moored`, `underway` or `arrived` |
 | `vessel_position` | Vector2(lon, lat); while underway always derived from the voyage |
 | `propulsion` | `PropulsionState`: sail/engine mode, reason, speed, the controller's average and timers, last wind and angle, spinnaker |
@@ -245,6 +246,29 @@ is culled and only the light overlay is redrawn when the view moves.
   `delta × game_seconds_per_real_second (60) × time_scale (1/5/20)`. The rate is a
   variable, so it can be rebalanced. The node is `PROCESS_MODE_PAUSABLE`: pause
   menus stop time; the cabin, deck and chart do not.
+- **Player pause (I003b UI hotfix).** There is one shared pause:
+  - It is stored as `SessionState.paused` and set through
+    `GameSession.set_paused()`, which emits `pause_changed`.
+  - `Simulation.tick()` does nothing while it is set, so the clock, the voyage,
+    the wind (a function of game time) and the companion's schedule all stand
+    still. The scene tree keeps running, so the chart, menus and movement on board
+    stay usable.
+  - It is not a scene-tree pause: that is used only while menus are open.
+  - Choosing a speed (`set_time_scale`, also the same speed again) resumes;
+    Pause again resumes at the kept speed.
+  - The flag is part of the session, so scene changes keep it. It is saved
+    (optional `clock.paused`; older saves load running), and a new game starts
+    running.
+  - **Sleep** is an explicit `Simulation.sleep()`. It works while paused, moves
+    time on by the hours chosen, and leaves the pause as it was; the dialog and
+    the wake-up message say so.
+- **Shared time bar.** `TimeControls` (Pause, 1×, 5×, 20×) lives once, in the HUD's
+  clock panel, with a PAUSED badge.
+  - The HUD layer is shown on deck, in the cabin and on the chart.
+  - On the chart, `Hud.set_chart_mode(true)` hides everything except the clock
+    bar and centres it (and the notifications) over the map, clear of the sidebar.
+  - A weather warning that arrives on the chart is kept and shown on returning to
+    the boat.
 - **Event-driven stepping.** `advance(seconds, stop_at_events)` computes the next
   event on the active voyage (arrival, the next route vertex, the progress at which
   a weather warning becomes due, or the next wind/propulsion evaluation point),
@@ -383,20 +407,32 @@ callers.
 The chart edits a **draft**; the committed course is untouched until **Apply**:
 
 - `WorldMap` keeps the draft destination, its waypoints and its leg results.
-- **Layout stability (Iteration 003b).** The side panel has a fixed size.
-  - Each label whose text changes during play reserves a fixed number of lines
-    (`WorldMap.LINE_BUDGET`: status 2, position 1, voyage 2, selected port 1 + 4,
-    course 2 + 3, weather 4). The labels wrap; text beyond the budget ends in an
-    ellipsis and is always shown in full as the label's tooltip.
-  - Buttons clip their text.
-  - Sections never appear or disappear: the voyage box and **Set sail** stay
-    visible, the button disabled at sea.
-  - The clock omits " UTC" so it fits beside the time controls.
+- **Sidebar (I003b UI hotfix).** A fixed-size `SidePanel` (`SidebarPanel` theme
+  variation) has three parts stacked in one `VBoxContainer`:
+  - **Header** (always visible): "Chart", the voyage status, a progress bar, and
+    distance to go plus ETA. These are single-line labels cut with an ellipsis
+    (full text in the tooltip), so live values never change its height.
+  - **Tabs** (`TabContainer`, fills the rest). Each tab is its own
+    `ScrollContainer` with horizontal scrolling disabled and a *reserved* vertical
+    gutter (`SCROLL_MODE_RESERVE`), so wrapping never changes when a scroll bar
+    appears.
+    - **Course:** destination, course, waypoint tools and editing help.
+    - **Weather:** wind at the boat with sail/engine, and the weather along the
+      course. Its title shows the number of areas met, e.g. "Weather (1)".
+    - **Details:** position, projection, help and attribution.
 
-  Ticking values at 20×, sail ↔ engine, other destinations and new drafts with
-  their weather therefore never move a button. A test compares the panel's and
-  every button's rectangles across these states, also at 80 % and 130 %
-  interface scale. **Sleep** sits next to **Set sail**.
+    Clicking a port or editing the course on the map shows the Course tab; the
+    warning's *View chart* opens the Weather tab.
+  - **Footer** (always visible): Apply/Change course and Discard, Set sail and
+    Sleep, Back. These are the actions needed from any tab. They never move, and
+    are disabled rather than hidden when unusable.
+
+  Long text wraps and scrolls inside its tab instead of being cut. Map controls
+  (zoom, All Europe, Find boat, Wind) stay in the map toolbar. Time controls are
+  not in the sidebar: the HUD's shared clock bar is shown on the chart (see
+  *Simulation and the game clock*). Tests compare the panel, header, tabs, footer
+  and footer buttons across tabs, 20× live updates, sail ↔ engine, destinations,
+  drafts, 80 %/130 % scale and a 1366×768 window.
 - `MapView` only reports presses and drags: on the course line, which inserts a
   waypoint into that leg and starts dragging it; on waypoints; and right-clicks.
 - While dragging, the marker follows the mouse and the two affected legs are

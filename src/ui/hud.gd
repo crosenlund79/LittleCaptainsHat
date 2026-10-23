@@ -6,6 +6,10 @@ extends Control
 ##
 ## The HUD only reads state; it refreshes its text every frame from
 ## GameSession, so it can never drift from the simulation.
+##
+## The clock bar (game time, PAUSED badge, Pause / 1× / 5× / 20×) is the one
+## shared time control. On the chart the HUD runs in "chart mode": only the
+## clock bar is shown, centred over the map (left of the chart's sidebar).
 
 signal menu_requested
 signal chart_requested
@@ -13,6 +17,8 @@ signal chart_requested
 @onready var _area: Label = %AreaLabel
 @onready var _location: Label = %LocationLabel
 @onready var _clock: Label = %ClockLabel
+@onready var _paused_badge: Control = %PausedBadge
+@onready var _clock_panel: Control = $ClockPanel
 @onready var _route_caption: Label = %RouteCaption
 @onready var _route: Label = %RouteLabel
 @onready var _route_detail: Label = %RouteDetail
@@ -46,13 +52,38 @@ func _process(_delta: float) -> void:
 		refresh()
 
 
+## Width the chart's sidebar takes on the right, in unscaled UI pixels; the
+## clock bar is centred over the remaining map area in chart mode.
+const CHART_SIDEBAR_WIDTH := 544.0
+
+var _chart_mode := false
+var _warning_pending := false
+
+
+## Chart mode: only the shared clock bar, centred over the map. A weather
+## warning that arrives meanwhile is shown again on returning to the boat.
+func set_chart_mode(enabled: bool) -> void:
+	_chart_mode = enabled
+	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls"]:
+		var node := get_node(node_name) as Control
+		node.visible = not enabled if node_name != "PromptPanel" else (not enabled and not _prompt.text.is_empty())
+	_warning_panel.visible = _warning_pending and not enabled
+	var shift := -CHART_SIDEBAR_WIDTH / 2.0 if enabled else 0.0
+	_clock_panel.offset_left = -260.0 + shift
+	_clock_panel.offset_right = 260.0 + shift
+
+
+func is_chart_mode() -> bool:
+	return _chart_mode
+
+
 func set_area(area: StringName) -> void:
 	_area.text = SessionState.get_area_display_name(area)
 
 
 func set_prompt(text: String) -> void:
 	_prompt.text = text
-	_prompt_panel.visible = not text.is_empty()
+	_prompt_panel.visible = not text.is_empty() and not _chart_mode
 
 
 func get_prompt() -> String:
@@ -61,15 +92,19 @@ func get_prompt() -> String:
 
 func show_warning(text: String) -> void:
 	_warning_text.text = text
-	_warning_panel.show()
+	_warning_pending = true
+	_warning_panel.visible = not _chart_mode
 
 
 func hide_warning() -> void:
+	_warning_pending = false
 	_warning_panel.hide()
 
 
+## True while a warning is waiting to be dismissed (also while it is kept
+## out of the way on the chart).
 func is_warning_visible() -> bool:
-	return _warning_panel.visible
+	return _warning_pending
 
 
 func get_route_text() -> String:
@@ -81,6 +116,13 @@ func refresh() -> void:
 		return
 	var catalog := PortCatalog.get_default()
 	_clock.text = Simulation.format_game_time(GameSession.get_game_time())
+	_paused_badge.visible = GameSession.is_paused()
+	# The warning sits just below the route panel, whose height depends on its lines.
+	var route_panel := $RoutePanel as Control
+	var warning_top := route_panel.offset_top + route_panel.size.y + 12.0
+	if not is_equal_approx(_warning_panel.offset_top, warning_top):
+		_warning_panel.offset_top = warning_top
+		_warning_panel.offset_bottom = warning_top + 124.0
 	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
 	_wind.text = describe_wind(wind)
 	if GameSession.is_underway():

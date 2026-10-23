@@ -22,6 +22,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_settings_and_audio.gd"),
 	preload("res://tests/suites/test_sailing_presentation.gd"),
 	preload("res://tests/suites/test_life_aboard.gd"),
+	preload("res://tests/suites/test_chart_and_pause.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
 

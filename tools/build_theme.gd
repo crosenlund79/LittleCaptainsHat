@@ -34,6 +34,7 @@ func _initialize() -> void:
 	_panels(theme)
 	_ranges(theme)
 	_popups(theme)
+	_tabs(theme, medium)
 
 	var err := ResourceSaver.save(theme, OUTPUT)
 	print("Saved theme: ", OUTPUT, " (", error_string(err), ")")
@@ -110,6 +111,9 @@ func _panels(theme: Theme) -> void:
 	theme.set_stylebox("panel", "PromptPanel", _box(Color(NAVY, 0.9), BRASS, 2, 8, Vector4(18, 10, 18, 10)))
 	_variation(theme, "ToastPanel", "PanelContainer")
 	theme.set_stylebox("panel", "ToastPanel", _box(Color(NAVY_LIGHT, 0.95), Color(SEAFOAM, 0.5), 1, 8, Vector4(22, 12, 22, 12)))
+	# The chart's sidebar: the dialog look with tighter margins.
+	_variation(theme, "SidebarPanel", "PanelContainer")
+	theme.set_stylebox("panel", "SidebarPanel", _box(Color(NAVY, 0.97), Color(SEAFOAM, 0.3), 2, 12, Vector4(26, 22, 26, 22)))
 	_variation(theme, "SectionPanel", "PanelContainer")
 	theme.set_stylebox("panel", "SectionPanel", _box(Color(NAVY_LIGHT, 0.6), Color.TRANSPARENT, 0, 8, Vector4(20, 14, 20, 14)))
 	var separator := StyleBoxLine.new()
@@ -139,6 +143,45 @@ func _popups(theme: Theme) -> void:
 	theme.set_color("font_hover_color", "PopupMenu", Color.WHITE)
 	theme.set_stylebox("panel", "TooltipPanel", _box(NAVY, SEAFOAM, 1, 4, Vector4(10, 6, 10, 6)))
 	theme.set_color("font_color", "TooltipLabel", CREAM)
+
+
+## Tabs (the chart's sidebar): flat, the selected tab underlined in brass.
+func _tabs(theme: Theme, medium: Font) -> void:
+	var margins := Vector4(18, 8, 18, 10)
+	var selected := _box(NAVY_LIGHT, BRASS, 0, 6, margins)
+	selected.border_width_bottom = 3
+	selected.corner_radius_bottom_left = 0
+	selected.corner_radius_bottom_right = 0
+	var unselected := _box(Color(NAVY_LIGHT, 0.35), Color(SEAFOAM, 0.15), 0, 6, margins)
+	unselected.border_width_bottom = 1
+	unselected.corner_radius_bottom_left = 0
+	unselected.corner_radius_bottom_right = 0
+	var hovered := _box(NAVY_HOVER, SEAFOAM, 0, 6, margins)
+	hovered.border_width_bottom = 1
+	hovered.corner_radius_bottom_left = 0
+	hovered.corner_radius_bottom_right = 0
+	for type: String in ["TabContainer", "TabBar"]:
+		theme.set_stylebox("tab_selected", type, selected)
+		theme.set_stylebox("tab_unselected", type, unselected)
+		theme.set_stylebox("tab_hovered", type, hovered)
+		theme.set_stylebox("tab_disabled", type, unselected)
+		theme.set_stylebox("tab_focus", type, _box(Color.TRANSPARENT, BRASS, 2, 6, margins, false))
+		theme.set_font("font", type, medium)
+		theme.set_font_size("font_size", type, 21)
+		theme.set_color("font_selected_color", type, CREAM)
+		theme.set_color("font_unselected_color", type, SEAFOAM)
+		theme.set_color("font_hovered_color", type, Color.WHITE)
+		theme.set_color("font_disabled_color", type, Color(SEAFOAM, 0.4))
+	theme.set_stylebox("panel", "TabContainer", _box(Color.TRANSPARENT, Color.TRANSPARENT, 0, 0, Vector4(0, 14, 0, 0)))
+	theme.set_stylebox("tabbar_background", "TabContainer", StyleBoxEmpty.new())
+	theme.set_constant("side_margin", "TabContainer", 0)
+	# Slim scroll bars (tab contents scroll; the sidebar itself never does).
+	var track := _box(Color(NAVY_LIGHT, 0.6), Color.TRANSPARENT, 0, 4, Vector4(4, 0, 4, 0))
+	var grabber := _box(Color(SEAFOAM, 0.45), Color.TRANSPARENT, 0, 4, Vector4(4, 0, 4, 0))
+	theme.set_stylebox("scroll", "VScrollBar", track)
+	theme.set_stylebox("grabber", "VScrollBar", grabber)
+	theme.set_stylebox("grabber_highlight", "VScrollBar", _box(SEAFOAM, Color.TRANSPARENT, 0, 4, Vector4(4, 0, 4, 0)))
+	theme.set_stylebox("grabber_pressed", "VScrollBar", _box(CREAM, Color.TRANSPARENT, 0, 4, Vector4(4, 0, 4, 0)))
 
 
 func _variation(theme: Theme, variation: String, base: String) -> void:

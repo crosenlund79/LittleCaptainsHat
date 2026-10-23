@@ -40,6 +40,9 @@ var planned_route: PlannedRoute
 var game_time := 0.0
 ## Selected time acceleration (one of TIME_SCALES).
 var time_scale := 1
+## Simulation paused by the player (the clock stands still; UI keeps working).
+## The selected time_scale is kept and used again on resuming.
+var paused := false
 ## Moored (never left), underway, or arrived (at location_id after a voyage).
 var vessel_status: StringName = STATUS_MOORED
 ## Vessel's geographic position Vector2(lon, lat).
@@ -85,6 +88,7 @@ func duplicate_state() -> SessionState:
 	copy.planned_route = planned_route.duplicate_route() if planned_route else null
 	copy.game_time = game_time
 	copy.time_scale = time_scale
+	copy.paused = paused
 	copy.vessel_status = vessel_status
 	copy.vessel_position = vessel_position
 	copy.propulsion = propulsion.duplicate_state()
@@ -103,7 +107,7 @@ func to_dict() -> Dictionary:
 	return {
 		"boat": {"area": String(boat_area)},
 		"player": player,
-		"clock": {"game_time": game_time, "time_scale": time_scale},
+		"clock": {"game_time": game_time, "time_scale": time_scale, "paused": paused},
 		"wind": {"seed": wind_seed},
 		"companion": companion.to_dict(),
 		"vessel": {
@@ -164,6 +168,12 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		return null
 	state.game_time = float(clock.game_time)
 	state.time_scale = int(clock.time_scale)
+	# Optional (added in the I003b UI hotfix; older saves are simply not paused).
+	var saved_paused: Variant = clock.get("paused", false)
+	if not saved_paused is bool:
+		errors.append("invalid pause state")
+		return null
+	state.paused = saved_paused
 	if state.game_time < 0.0 or state.time_scale not in TIME_SCALES:
 		errors.append("invalid game time or time acceleration")
 		return null

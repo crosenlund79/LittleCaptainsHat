@@ -141,7 +141,9 @@ func _test_chart() -> void:
 	t.check(map != null, "navigation table opens the chart")
 	if map == null:
 		return
-	t.check(not app.hud.is_visible_in_tree(), "gameplay HUD is hidden on the chart")
+	# Since the I003b UI hotfix only the shared clock bar (time and Pause/1×/5×/20×) is shown on the chart.
+	t.check(app.hud.is_chart_mode() and not app.hud.get_node("RoutePanel").visible and not app.hud.get_node("AreaPanel").visible
+		and app.hud.get_node("ClockPanel").is_visible_in_tree(), "on the chart only the HUD's clock bar is shown")
 	t.check_eq(_player_count(), 0, "no player exists while the chart is open")
 	var view := map.get_map_view()
 	await t.screenshot("05_chart")
@@ -627,6 +629,8 @@ func _test_first_voyage_acceptance() -> void:
 	map = app.router.current_screen as WorldMap
 	if not t.check(map != null, "[voyage] the warning's View chart button opens the chart"):
 		return
+	await t.frames(2)
+	t.check_eq(map.get_current_tab(), WorldMap.TAB_WEATHER, "[voyage] View chart opens the chart on its Weather tab")
 	Simulation.auto_advance = false  # hold the boat still while editing for exact checks
 	view = map.get_map_view()
 	view.center_on_geo(Vector2(12.4, 54.9), 1.2)

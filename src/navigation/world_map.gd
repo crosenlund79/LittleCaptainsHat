@@ -9,11 +9,17 @@ extends Node2D
 ## returns to the committed course. All routes come from SeaRouter, so the
 ## course shown is exactly the course the vessel will sail.
 ##
-## Layout stability: the side panel has a fixed size, and every label whose
-## text changes during play reserves a fixed number of lines (LINE_BUDGET):
-## longer text is cut with an ellipsis and stays readable in full as the
-## label's tooltip. Sections never appear or disappear while the boat sails,
-## so values ticking at 20× never move the buttons below them.
+## Sidebar (I003b UI hotfix): a fixed-size panel in three parts.
+## - Header (always visible): title, voyage status, progress, distance and ETA.
+##   One line each, cut with an ellipsis (full text in the tooltip), so live
+##   values never change its height.
+## - Tabs (fill the rest): Course (destination, course, waypoint tools),
+##   Weather (wind at the boat, weather along the course) and Details
+##   (position, projection, help). Each tab scrolls on its own, with a reserved
+##   scroll-bar gutter, so long text never resizes or pushes anything.
+## - Footer (always visible): Apply/Change course and Discard, Set sail and
+##   Sleep, Back. Their positions never change; unusable ones are disabled.
+## Time controls are not here: the HUD's shared clock bar is shown on the chart.
 
 signal close_requested
 signal depart_requested
@@ -24,11 +30,9 @@ const SIDE_PANEL_WIDTH := 544.0
 ## Minimum real time between route recalculations while dragging a waypoint.
 const DRAG_RECALC_INTERVAL := 0.1
 const LIVE_REFRESH_INTERVAL := 0.25
-## Lines reserved for each label whose text changes (see the class comment).
-const LINE_BUDGET := {
-	"StatusLabel": 2, "PositionLabel": 1, "VoyageLabel": 2, "SelectionTitle": 1, "SelectionDetails": 4,
-	"CourseLabel": 2, "CourseStatus": 3, "WeatherLabel": 4,
-}
+const TAB_COURSE := 0
+const TAB_WEATHER := 1
+const TAB_DETAILS := 2
 
 var _selected_port_id: StringName
 var _draft_destination: StringName
@@ -50,7 +54,9 @@ var _draft_estimate_seconds := 0.0
 @onready var _map: MapView = $MapView
 @onready var _status: Label = %StatusLabel
 @onready var _position: Label = %PositionLabel
-@onready var _clock: Label = %ClockLabel
+@onready var _tabs: TabContainer = %Tabs
+@onready var _wind_here: Label = %WindHereLabel
+@onready var _propulsion: Label = %PropulsionLabel
 @onready var _voyage_bar: ProgressBar = %VoyageProgress
 @onready var _voyage_label: Label = %VoyageLabel
 @onready var _selection_title: Label = %SelectionTitle
@@ -91,7 +97,11 @@ func _ready() -> void:
 	_sail_button.pressed.connect(depart_requested.emit)
 	%BackButton.pressed.connect(close_requested.emit)
 	%SleepButton.pressed.connect(sleep_requested.emit)
-	_reserve_text_space()
+	_tabs.set_tab_title(TAB_COURSE, "Course")
+	_tabs.set_tab_title(TAB_WEATHER, "Weather")
+	_tabs.set_tab_title(TAB_DETAILS, "Details")
+	for tab in _tabs.get_children():
+		(tab as ScrollContainer).follow_focus = true
 	%ZoomInButton.pressed.connect(_map.zoom_by.bind(MapView.ZOOM_STEP))
 	%ZoomOutButton.pressed.connect(_map.zoom_by.bind(1.0 / MapView.ZOOM_STEP))
 	%ResetViewButton.pressed.connect(_map.reset_view)
@@ -146,6 +156,8 @@ func has_unapplied_changes() -> bool:
 
 func select_port(port_id: StringName) -> void:
 	_selected_port_id = port_id
+	if is_node_ready():
+		show_tab(TAB_COURSE)  # what the player clicked is shown there
 	_refresh()
 
 
@@ -308,10 +320,13 @@ func _move_waypoint(index: int, geo: Vector2) -> void:
 
 func _select_waypoint(index: int) -> void:
 	_selected_waypoint = index
+	if index >= 0:
+		show_tab(TAB_COURSE)  # its Remove button is there
 	_refresh()
 
 
 func _on_route_pressed(leg_index: int, geo: Vector2) -> void:
+	show_tab(TAB_COURSE)
 	var index := insert_waypoint(leg_index, geo)
 	_dragging_waypoint = index
 	_map.begin_waypoint_drag(index)
@@ -394,26 +409,8 @@ func _refresh_map_only() -> void:
 	_map.set_display(display)
 
 
-## Fixes the height of every changing label and keeps buttons from growing
-## with their text (see the class comment).
-func _reserve_text_space() -> void:
-	for label_name: String in LINE_BUDGET:
-		var label := find_child(label_name, true, false) as Label
-		var lines: int = LINE_BUDGET[label_name]
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.max_lines_visible = lines
-		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		label.custom_minimum_size = Vector2(0, label.get_line_height() * lines
-			+ label.get_theme_constant(&"line_spacing") * (lines - 1))
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.mouse_filter = Control.MOUSE_FILTER_PASS  # for the full-text tooltip
-	_clock.mouse_filter = Control.MOUSE_FILTER_PASS
-	for button: Button in [_plot_button, _apply_button, _sail_button]:
-		button.clip_text = true
-		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-
-
-## Sets a reserved label's text; the full text is always available as its tooltip.
+## Sets a label's text; the full text is also its tooltip (the header's
+## one-line labels are cut with an ellipsis when too long).
 static func _set_text(label: Label, text: String) -> void:
 	if label.text != text:
 		label.text = text
@@ -434,15 +431,13 @@ func _refresh() -> void:
 		var verb := "Arrived at" if GameSession.get_vessel_status() == SessionState.STATUS_ARRIVED else "Moored at"
 		_set_text(_status, "%s %s, %s" % [verb, location.display_name, location.country])
 	_set_text(_position, GeoMath.format_position(GameSession.get_vessel_position()))
-	# Without " UTC" so it fits beside the time controls; the tooltip has it all.
-	_clock.text = Simulation.format_game_time(GameSession.get_game_time(), false)
-	_clock.tooltip_text = Simulation.format_game_time(GameSession.get_game_time())
+	_refresh_wind()
 
 	# Voyage progress.
 	# Always shown (also in port), so the panel below never moves on departure/arrival.
 	if not GameSession.is_underway():
 		_voyage_bar.value = 0.0
-		_set_text(_voyage_label, "No voyage in progress.")
+		_set_text(_voyage_label, "No voyage in progress  ·  plan a course on the Course tab")
 	else:
 		var total := GameSession.get_voyage_total_nm()
 		var remaining := GameSession.get_voyage_remaining_nm()
@@ -472,11 +467,11 @@ func _refresh() -> void:
 	else:
 		var distance := GeoMath.path_length_nm(_draft_route.path) if _draft_route else -1.0
 		var seconds := _draft_estimate_seconds
-		if _draft_route == null and not _draft_dirty and GameSession.is_underway():
-			distance = GameSession.get_voyage_remaining_nm()
-			seconds = Simulation.get_eta() - GameSession.get_game_time()
 		var summary := "To %s" % catalog.get_display_name(_draft_destination)
-		if distance >= 0.0:
+		if _draft_route == null and not _draft_dirty and GameSession.is_underway():
+			# Being sailed: distance to go and ETA are live values in the header.
+			summary += "  ·  %d nm course" % roundi(GameSession.get_voyage_total_nm())
+		elif distance >= 0.0:
 			summary += "  ·  %d nm  ·  about %s with the expected wind" % [roundi(distance), Simulation.format_duration(seconds)]
 		if not _draft_waypoints.is_empty():
 			summary += "\n%d waypoint%s" % [_draft_waypoints.size(), "" if _draft_waypoints.size() == 1 else "s"]
@@ -499,11 +494,52 @@ func _refresh() -> void:
 	_discard_button.disabled = not _draft_dirty
 	_remove_button.disabled = _selected_waypoint < 0
 	_clear_button.disabled = GameSession.is_underway() or GameSession.get_planned_route() == null
-	# Kept visible while underway (disabled) so the layout does not change.
+	# Always in the footer; disabled (not hidden) when it cannot be used.
 	_sail_button.disabled = GameSession.is_underway() or _draft_dirty or GameSession.get_planned_route() == null
 	_sail_button.tooltip_text = "Already underway" if GameSession.is_underway() else "Depart on the planned course"
 
 	_set_text(_weather_label, _describe_weather())
+	var warnings := _count_weather_warnings()
+	_tabs.set_tab_title(TAB_WEATHER, "Weather (%d)" % warnings if warnings > 0 else "Weather")
+
+
+## Shows one of the sidebar's tabs (TAB_COURSE, TAB_WEATHER, TAB_DETAILS).
+func show_tab(index: int) -> void:
+	_tabs.current_tab = index
+
+
+func get_current_tab() -> int:
+	return _tabs.current_tab
+
+
+## Wind at the boat (and how it sails in it) for the Weather tab.
+func _refresh_wind() -> void:
+	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
+	var text := Hud.describe_wind(wind)
+	if wind.speed_kn >= 0.5:
+		text += " (from the %s)" % WindField.compass_name(wind.from_deg)
+	_set_text(_wind_here, text)
+	if GameSession.is_underway():
+		var propulsion := GameSession.get_propulsion()
+		var side := PropulsionState.wind_side(propulsion.true_wind_angle)
+		_set_text(_propulsion, "%s\nWind %d° %s" % [propulsion.describe(), roundi(absf(propulsion.true_wind_angle)),
+			side if side else "off the bow"])
+	else:
+		_set_text(_propulsion, "In port. The boat chooses sail or engine itself once underway.")
+
+
+## Caution/danger areas the draft (or current) course meets.
+func _count_weather_warnings() -> int:
+	var path := PackedVector2Array()
+	for leg in _draft_legs:
+		if not leg.ok:
+			return 0
+		for p: Vector2 in leg.path:
+			if path.is_empty() or not path[path.size() - 1].is_equal_approx(p):
+				path.append(p)
+	if path.size() < 2:
+		return 0
+	return WeatherCatalog.get_default().find_encounters(path, GeoMath.cumulative_distances(path), 0.0).size()
 
 
 func _describe_weather() -> String:

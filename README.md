@@ -56,7 +56,7 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Move | **W A S D** or **arrow keys** |
 | Interact | **E** (e.g. pet the cat or dog, sleep at the berth, check the sails at the helm) |
 | Pause menu / back | **Esc** |
-| Time acceleration | **1× / 5× / 20×** buttons at the top of the screen (also on the chart) |
+| Pause / time acceleration | **Pause** and **1× / 5× / 20×** in the time bar at the top (on deck, in the cabin and on the chart). Pause stops the clock; Pause again, or a speed, continues |
 | Chart: pan | drag with the mouse, or **W A S D** / arrows |
 | Chart: zoom | mouse wheel, **+ / −**, **Page Up / Page Down**, or the toolbar buttons |
 | Chart: choose destination | click a port, then **Plot course to …** |
@@ -77,6 +77,15 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    estimated time with the expected wind, and lists any weather along it. The
    chart shows the wind as arrows (pointing where the wind blows) coloured by
    strength; the cursor readout shows the wind under the mouse.
+
+   The sidebar has a header that is always visible (voyage status, distance, ETA)
+   and three tabs:
+   - **Course:** destination, course and waypoints;
+   - **Weather:** the wind at the boat and the weather along the course;
+   - **Details:** position, projection and help.
+
+   Its footer always holds **Apply/Change course**, **Discard**, **Set sail**,
+   **Sleep** and **Back**.
 2. **Adjust (optional).** Drag the course line to add waypoints, drag waypoints to
    move them, right-click to remove them. The legs on either side are recalculated
    at once. A waypoint on land, or a leg that cannot be sailed, is marked **BLOCKED**
@@ -108,7 +117,10 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    make the boat switch back and forth. A change of course at sea triggers the same
    check automatically.
 4. **Live aboard.** Walk around the cabin and deck while the voyage continues.
-   1 real second is 1 game minute at **1×**. Use **5×** or **20×** to go faster.
+   1 real second is 1 game minute at **1×**. Use **5×** or **20×** to go faster, or
+   **Pause** to stop the clock: the boat, wind and time wait while you look around
+   or plan on the chart. Sleeping still works while paused (it moves time on by the
+   hours you choose) and the game stays paused afterwards.
 5. **Sleep.** Use the berth in the cabin, or the **Sleep** button on the chart. Choose
    1–12 hours with the arrows. The dialog shows when you will wake. The boat sails
    on while you sleep, and you are woken early on arrival or when a weather warning

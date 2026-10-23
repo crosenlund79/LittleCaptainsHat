@@ -209,10 +209,15 @@ func _check_woke_at_berth(when: String) -> void:
 
 # --- Chart -----------------------------------------------------------------------------------
 
-func _panel_geometry(map: WorldMap) -> Dictionary:
+## Rectangles of the sidebar's fixed parts (and, with `with_course_tab`, the
+## Course tab's buttons, which must not move while only live values change).
+func _panel_geometry(map: WorldMap, with_course_tab := true) -> Dictionary:
 	var geometry := {}
-	for control_name in ["SidePanel", "PlotButton", "ApplyButton", "DiscardButton", "RemoveWaypointButton",
-			"ClearButton", "SetSailButton", "SleepButton", "BackButton", "WeatherLabel"]:
+	var names := ["SidePanel", "Header", "Tabs", "Footer", "ApplyButton", "DiscardButton", "SetSailButton",
+		"SleepButton", "BackButton"]
+	if with_course_tab:
+		names.append_array(["PlotButton", "RemoveWaypointButton", "ClearButton"])
+	for control_name in names:
 		var control := map.find_child(control_name, true, false) as Control
 		geometry[control_name] = control.get_global_rect()
 	return geometry
@@ -269,24 +274,27 @@ func _test_chart_panel_stability() -> void:
 	t.check("under engine" in modes[PropulsionState.MODE_ENGINE] and "under sail" in modes[PropulsionState.MODE_SAIL],
 		"[chart] sailing and motoring are both shown")
 
-	# Different destinations: long and short names and descriptions.
+	# Different destinations: long and short names and descriptions (the
+	# Course tab's own content may reflow; the sidebar and footer may not).
 	problems.clear()
+	var fixed_reference := _panel_geometry(map, false)
 	for port in [&"gothenburg", &"reykjavik", &"kiel", &"piraeus", &"helsinki"]:
 		map.select_port(port)
 		await _refresh_chart(map)
-		var diff := _same_geometry(reference, _panel_geometry(map))
+		var diff := _same_geometry(fixed_reference, _panel_geometry(map, false))
 		if not diff.is_empty():
 			problems.append("%s: %s" % [port, diff])
-	t.check(problems.is_empty(), "[chart] selecting other destinations does not move the buttons%s" % ("" if problems.is_empty() else ": " + problems[0]))
+	t.check(problems.is_empty(), "[chart] selecting other destinations does not move the sidebar, header or footer%s" % ("" if problems.is_empty() else ": " + problems[0]))
 	var details := map.find_child("SelectionDetails", true, false) as Label
-	t.check(details.tooltip_text == details.text and not details.text.is_empty(), "[chart] long texts stay readable in full (tooltip)")
+	t.check(not details.text.is_empty() and details.get_visible_line_count() == details.get_line_count(),
+		"[chart] long texts are shown in full (wrapped inside the tab)")
 
 	# Editing the course (weather list and course status change).
 	map.select_port(&"kiel")
 	map.plot_course_to(&"gothenburg")
 	await _refresh_chart(map)
-	var diff_edit := _same_geometry(reference, _panel_geometry(map))
-	t.check(diff_edit.is_empty(), "[chart] a new draft course with its weather does not move the buttons%s" % ("" if diff_edit.is_empty() else ": " + diff_edit))
+	var diff_edit := _same_geometry(fixed_reference, _panel_geometry(map, false))
+	t.check(diff_edit.is_empty(), "[chart] a new draft course with its weather does not move the sidebar or its footer%s" % ("" if diff_edit.is_empty() else ": " + diff_edit))
 	map.discard_changes()
 	await _refresh_chart(map)
 	await t.screenshot("28_chart_panel_underway")

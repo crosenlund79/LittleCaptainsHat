@@ -26,6 +26,8 @@ func _ready() -> void:
 		_info.text = "The boat sails on while you sleep. You will be woken early on arrival or when a weather warning comes in."
 	else:
 		_info.text = "The boat is moored. Time passes while you sleep."
+	if GameSession.is_paused():
+		_info.text += " The game is paused: sleeping moves time on by the hours you choose, and it stays paused afterwards."
 	_decrease.pressed.connect(change_hours.bind(-1))
 	_increase.pressed.connect(change_hours.bind(1))
 	_sleep.pressed.connect(func() -> void: sleep_requested.emit(float(hours)))

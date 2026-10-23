@@ -39,8 +39,12 @@ const ENGINE_FADE_SECONDS := 1.5
 @onready var _hud_layer: CanvasLayer = $HudLayer
 
 
+var _toast_offsets := Vector2.ZERO
+
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_toast_offsets = Vector2(toasts.offset_left, toasts.offset_right)
 	$Screen.process_mode = Node.PROCESS_MODE_PAUSABLE
 	for area: StringName in SessionState.BOAT_AREAS:
 		if not boat_area_scenes.has(area):
@@ -164,7 +168,9 @@ func open_chart() -> void:
 
 func open_chart_from_warning() -> void:
 	if is_in_gameplay() and modals.is_empty() and not router.is_busy():
-		open_chart()
+		router.change_screen(world_map_scene, func(map: WorldMap) -> void:
+			_connect_world_map(map)
+			map.show_tab.call_deferred(WorldMap.TAB_WEATHER))
 
 
 ## Leaves the chart. Unapplied course changes are only discarded after asking.
@@ -252,19 +258,23 @@ func open_sleep_menu() -> void:
 
 ## Sleeps by advancing the normal simulation; stops early on arrival or a
 ## weather warning (those report themselves through their own signals).
+## Sleeping is an explicit advance of time, so it also works while the game is
+## paused, and the pause stays as it was afterwards (time does not start
+## running continuously on waking).
 func sleep_for(hours: float) -> void:
 	modals.clear()
 	var result := Simulation.sleep(hours)
 	_wake_in_berth()
 	var slept := Simulation.format_duration(result.elapsed_seconds)
 	var now := Simulation.format_game_time(GameSession.get_game_time())
+	var still_paused := "  Time is still paused." if GameSession.is_paused() else ""
 	match result.stopped_by:
 		Simulation.STOP_WARNING:
-			notify("You were woken after %s by a weather warning. It is %s." % [slept, now])
+			notify("You were woken after %s by a weather warning. It is %s.%s" % [slept, now, still_paused])
 		Simulation.STOP_ARRIVAL:
-			notify("You were woken after %s: the boat has arrived. It is %s." % [slept, now])
+			notify("You were woken after %s: the boat has arrived. It is %s.%s" % [slept, now, still_paused])
 		_:
-			notify("You slept %s. It is %s." % [slept, now])
+			notify("You slept %s. It is %s.%s" % [slept, now, still_paused])
 
 
 ## After any sleep (full or cut short, in port or underway, started in the
@@ -359,7 +369,13 @@ func _connect_world_map(map: WorldMap) -> void:
 
 func _on_screen_changed(screen: Node) -> void:
 	var area := screen as BoatArea
-	_hud_layer.visible = area != null
+	# The HUD's clock bar is the shared time control: also shown on the chart.
+	_hud_layer.visible = area != null or screen is WorldMap
+	hud.set_chart_mode(screen is WorldMap)
+	# On the chart, notifications are centred over the map like the clock bar.
+	var toast_shift := -Hud.CHART_SIDEBAR_WIDTH / 2.0 if screen is WorldMap else 0.0
+	toasts.offset_left = _toast_offsets.x + toast_shift
+	toasts.offset_right = _toast_offsets.y + toast_shift
 	hud.set_prompt("")
 	if area:
 		hud.set_area(area.area_id)

@@ -72,6 +72,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Fri 1 May 2026, 08:00 UTC"
 
+[node name="PausedBadge" type="Label" parent="ClockPanel/HBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"KeyLabel"
+text = "PAUSED"
+
 [node name="TimeControls" type="HBoxContainer" parent="ClockPanel/HBox"]
 layout_mode = 2
 script = ExtResource("3_time")

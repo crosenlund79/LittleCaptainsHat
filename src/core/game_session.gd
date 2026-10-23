@@ -14,6 +14,8 @@ signal boat_area_changed(area: StringName)
 ## `route` is a PlannedRoute, or null when the route was cleared.
 signal route_changed(route: PlannedRoute)
 signal time_scale_changed(scale: int)
+## The player paused or resumed the simulation clock.
+signal pause_changed(paused: bool)
 signal voyage_started
 ## The active voyage's course was replaced (change of course at sea).
 signal voyage_course_changed
@@ -141,12 +143,32 @@ func get_time_scale() -> int:
 	return _state.time_scale if _state else 1
 
 
+## Selects 1x/5x/20x. Choosing a speed while paused also resumes the clock.
 func set_time_scale(scale: int) -> void:
-	if _state == null or scale not in SessionState.TIME_SCALES or scale == _state.time_scale:
+	if _state == null or scale not in SessionState.TIME_SCALES:
 		return
-	_state.time_scale = scale
+	if scale != _state.time_scale:
+		_state.time_scale = scale
+		_has_unsaved_changes = true
+		time_scale_changed.emit(scale)
+	set_paused(false)
+
+
+## True while the player has paused the simulation clock. This is the one
+## shared pause: Simulation does not advance time while it is set, in any
+## scene. (Menus pausing the scene tree are a separate, temporary thing.)
+func is_paused() -> bool:
+	return _state.paused if _state else false
+
+
+## Pauses or resumes the simulation clock; resuming continues at the selected
+## time scale.
+func set_paused(paused: bool) -> void:
+	if _state == null or _state.paused == paused:
+		return
+	_state.paused = paused
 	_has_unsaved_changes = true
-	time_scale_changed.emit(scale)
+	pause_changed.emit(paused)
 
 
 # --- Vessel and location -------------------------------------------------------

@@ -71,8 +71,12 @@ func _process(delta: float) -> void:
 
 ## Advances the game for `real_seconds` of real time at the current time
 ## acceleration (what happens every frame).
+##
+## While the player has paused the game (GameSession.is_paused()) the clock
+## stands still: no time, no movement, no wind change, no companion moves.
+## Explicit advances (sleeping) still work and leave the pause as it was.
 func tick(real_seconds: float) -> void:
-	if not GameSession.is_active():
+	if not GameSession.is_active() or GameSession.is_paused():
 		return
 	var result := advance(real_seconds * game_seconds_per_real_second * GameSession.get_time_scale())
 	# Accelerated time drops back to normal speed when something needs the
