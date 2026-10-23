@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://src/app/app.gd" id="1_app"]
 [ext_resource type="PackedScene" path="res://src/ui/main_menu.tscn" id="2_main_menu"]
@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://src/ui/confirm_dialog.tscn" id="14_confirm"]
 [ext_resource type="Script" path="res://src/ui/toasts.gd" id="15_toasts"]
 [ext_resource type="PackedScene" path="res://src/ui/sleep_menu.tscn" id="16_sleep"]
+[ext_resource type="PackedScene" path="res://src/ui/new_game_menu.tscn" id="17_new_game"]
 
 [node name="App" type="Node"]
 script = ExtResource("1_app")
@@ -29,6 +30,7 @@ pause_menu_scene = ExtResource("6_pause")
 settings_menu_scene = ExtResource("7_settings")
 save_load_menu_scene = ExtResource("8_saveload")
 sleep_menu_scene = ExtResource("16_sleep")
+new_game_menu_scene = ExtResource("17_new_game")
 ui_click_sound = ExtResource("9_click")
 
 [node name="Screen" type="Node" parent="."]

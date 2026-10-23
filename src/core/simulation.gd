@@ -143,13 +143,29 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 
 ## Samples the wind at the vessel and lets the propulsion controller decide
 ## sail or engine and the speed until the next evaluation point.
-func evaluate_propulsion(force_reset := false) -> void:
+## `reset_history` restarts the rolling average from the current heading;
+## `reassess` lets clearly good or poor conditions decide at once (see
+## PropulsionController).
+func evaluate_propulsion(reset_history := false, reassess := false) -> void:
 	if not GameSession.is_underway():
 		return
 	var wind := get_wind_at(GameSession.get_vessel_position())
 	var state := PropulsionController.evaluate(GameSession.get_propulsion(), GameSession.get_vessel_profile(),
-		GameSession.get_game_time(), get_current_heading(), wind, force_reset)
+		GameSession.get_game_time(), get_current_heading(), wind, reset_history, reassess)
 	GameSession.set_propulsion(state)
+
+
+## The helm's "Check sail configuration": a fresh assessment of the current
+## heading and local wind through the normal controller (same safeguards; no
+## timer is reset). Returns {"changed", "before", "after"} (PropulsionStates)
+## so the caller can describe the result. Does nothing in port.
+func reassess_propulsion() -> Dictionary:
+	if not GameSession.is_underway():
+		return {}
+	var before := GameSession.get_propulsion()
+	evaluate_propulsion(false, true)
+	var after := GameSession.get_propulsion()
+	return {"changed": before.mode != after.mode, "before": before, "after": after}
 
 
 ## The wind anywhere at the current game time (the one query used by the
@@ -178,7 +194,7 @@ func _on_voyage_started() -> void:
 
 func _on_course_changed() -> void:
 	invalidate_estimates()
-	evaluate_propulsion(true)
+	evaluate_propulsion(true, true)
 
 
 func _on_state_replaced() -> void:

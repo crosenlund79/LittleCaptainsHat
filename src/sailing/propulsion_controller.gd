@@ -19,11 +19,20 @@ extends RefCounted
 ## prevents cycling. While motoring the potential keeps being evaluated.
 ## - A course change of more than heading_reset_deg (new route leg, waypoint,
 ##   change of course) restarts the averaging from the new heading's potential,
-##   so an old average from a different point of sail is not kept.
+##   so an old average from a different point of sail is not kept
+##   (`reset_history`). A near-stall that continues on the new heading keeps
+##   its stall timer, so it cannot be dodged by turning.
+## - A *reassessment* (`reassess`: a change of course applied by the player,
+##   or the helm's "Check sail configuration") additionally lets the current
+##   potential decide at once when it clearly crosses a threshold: engine ->
+##   sail if potential > engine_stop_above_kn, sail -> engine if potential <
+##   engine_start_below_kn. The minimum times in each mode still apply, so
+##   reassessing again and again cannot make the boat cycle faster than the
+##   normal rules allow. A reassessment never resets any timer.
 
 
 static func evaluate(state: PropulsionState, profile: VesselProfile, now: float, heading_deg: float,
-		wind: WindField.Sample, force_reset := false) -> PropulsionState:
+		wind: WindField.Sample, reset_history := false, reassess := false) -> PropulsionState:
 	var next := state.duplicate_state()
 	var angle := WindField.relative_angle(heading_deg, wind.from_deg)
 	var potential := profile.sail_speed_kn(wind.speed_kn, angle)
@@ -45,11 +54,12 @@ static func evaluate(state: PropulsionState, profile: VesselProfile, now: float,
 		next.stall_seconds = state.stall_seconds + dt if state.potential_kn < profile.stall_below_kn else 0.0
 		next.favorable_seconds = state.favorable_seconds + dt if next.average_potential_kn > profile.engine_stop_above_kn else 0.0
 		next.mode_seconds = state.mode_seconds + dt
-		if turned or force_reset:
+		if turned or reset_history:
 			next.average_potential_kn = potential
-			next.stall_seconds = 0.0
+			if potential >= profile.stall_below_kn:
+				next.stall_seconds = 0.0
 			next.favorable_seconds = 0.0
-		_decide(next, profile, potential)
+		_decide(next, profile, potential, reassess)
 
 	next.potential_kn = potential
 	next.speed_kn = profile.engine_speed_kn if next.is_motoring() else potential
@@ -62,18 +72,20 @@ static func evaluate(state: PropulsionState, profile: VesselProfile, now: float,
 	return next
 
 
-static func _decide(state: PropulsionState, profile: VesselProfile, potential: float) -> void:
+static func _decide(state: PropulsionState, profile: VesselProfile, potential: float, reassess: bool) -> void:
 	if state.mode == PropulsionState.MODE_SAIL:
 		var stalled := potential < profile.stall_below_kn and state.stall_seconds >= profile.stall_delay_s
 		var poor := state.average_potential_kn < profile.engine_start_below_kn and state.mode_seconds >= profile.min_sail_time_s
-		if stalled or poor:
+		var clearly_poor := reassess and potential < profile.engine_start_below_kn and state.mode_seconds >= profile.min_sail_time_s
+		if stalled or poor or clearly_poor:
 			state.mode = PropulsionState.MODE_ENGINE
-			state.engine_reason = PropulsionState.REASON_STALL if stalled else PropulsionState.REASON_POOR
+			state.engine_reason = PropulsionState.REASON_STALL if stalled or potential < profile.stall_below_kn \
+				else PropulsionState.REASON_POOR
 			state.mode_seconds = 0.0
 			state.favorable_seconds = 0.0
 	else:
-		if state.mode_seconds >= profile.min_engine_time_s and state.favorable_seconds >= profile.engine_stop_confirm_s \
-				and potential > profile.engine_stop_above_kn:
+		var confirmed := state.favorable_seconds >= profile.engine_stop_confirm_s or reassess
+		if state.mode_seconds >= profile.min_engine_time_s and confirmed and potential > profile.engine_stop_above_kn:
 			state.mode = PropulsionState.MODE_SAIL
 			state.engine_reason = PropulsionState.REASON_NONE
 			state.mode_seconds = 0.0

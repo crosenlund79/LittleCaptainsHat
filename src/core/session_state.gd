@@ -48,16 +48,20 @@ var vessel_position := Vector2.ZERO
 var propulsion := PropulsionState.new()
 ## Selects the deterministic weather variation of the wind field for this game.
 var wind_seed := 1
+## The ship's companion (kind and resting spot in the cabin).
+var companion := CompanionState.new()
 ## The voyage being sailed, or null when not underway.
 var voyage: Voyage
 
 
-static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName) -> SessionState:
+static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
+		companion_kind: StringName = CompanionState.DEFAULT_KIND) -> SessionState:
 	var state := SessionState.new()
 	state.location_id = start_location
 	state.boat_area = start_area
 	state.spawn_point = start_spawn
 	state.game_time = get_start_time()
+	state.companion = CompanionState.create(companion_kind, state.game_time)
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
 	return state
@@ -85,6 +89,7 @@ func duplicate_state() -> SessionState:
 	copy.vessel_position = vessel_position
 	copy.propulsion = propulsion.duplicate_state()
 	copy.wind_seed = wind_seed
+	copy.companion = companion.duplicate_state()
 	copy.voyage = voyage.duplicate_voyage() if voyage else null
 	return copy
 
@@ -100,6 +105,7 @@ func to_dict() -> Dictionary:
 		"player": player,
 		"clock": {"game_time": game_time, "time_scale": time_scale},
 		"wind": {"seed": wind_seed},
+		"companion": companion.to_dict(),
 		"vessel": {
 			"status": String(vessel_status),
 			"position": {"lon": vessel_position.x, "lat": vessel_position.y},
@@ -167,6 +173,9 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		errors.append("missing or invalid wind settings")
 		return null
 	state.wind_seed = int(wind.seed)
+	state.companion = CompanionState.from_dict(data.get("companion"), errors)
+	if state.companion == null:
+		return null
 
 	var vessel: Variant = data.get("vessel")
 	if not vessel is Dictionary or not vessel.get("status") is String:

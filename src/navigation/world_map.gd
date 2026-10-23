@@ -8,15 +8,27 @@ extends Node2D
 ## player presses Apply, and only a fully valid draft can be applied. Discard
 ## returns to the committed course. All routes come from SeaRouter, so the
 ## course shown is exactly the course the vessel will sail.
+##
+## Layout stability: the side panel has a fixed size, and every label whose
+## text changes during play reserves a fixed number of lines (LINE_BUDGET):
+## longer text is cut with an ellipsis and stays readable in full as the
+## label's tooltip. Sections never appear or disappear while the boat sails,
+## so values ticking at 20× never move the buttons below them.
 
 signal close_requested
 signal depart_requested
+signal sleep_requested
 
 ## Width of the side panel plus its margin, in unscaled UI pixels.
 const SIDE_PANEL_WIDTH := 544.0
 ## Minimum real time between route recalculations while dragging a waypoint.
 const DRAG_RECALC_INTERVAL := 0.1
 const LIVE_REFRESH_INTERVAL := 0.25
+## Lines reserved for each label whose text changes (see the class comment).
+const LINE_BUDGET := {
+	"StatusLabel": 2, "PositionLabel": 1, "VoyageLabel": 2, "SelectionTitle": 1, "SelectionDetails": 4,
+	"CourseLabel": 2, "CourseStatus": 3, "WeatherLabel": 4,
+}
 
 var _selected_port_id: StringName
 var _draft_destination: StringName
@@ -39,7 +51,6 @@ var _draft_estimate_seconds := 0.0
 @onready var _status: Label = %StatusLabel
 @onready var _position: Label = %PositionLabel
 @onready var _clock: Label = %ClockLabel
-@onready var _voyage_box: Control = %VoyageBox
 @onready var _voyage_bar: ProgressBar = %VoyageProgress
 @onready var _voyage_label: Label = %VoyageLabel
 @onready var _selection_title: Label = %SelectionTitle
@@ -79,6 +90,8 @@ func _ready() -> void:
 	_clear_button.pressed.connect(clear_course)
 	_sail_button.pressed.connect(depart_requested.emit)
 	%BackButton.pressed.connect(close_requested.emit)
+	%SleepButton.pressed.connect(sleep_requested.emit)
+	_reserve_text_space()
 	%ZoomInButton.pressed.connect(_map.zoom_by.bind(MapView.ZOOM_STEP))
 	%ZoomOutButton.pressed.connect(_map.zoom_by.bind(1.0 / MapView.ZOOM_STEP))
 	%ResetViewButton.pressed.connect(_map.reset_view)
@@ -381,6 +394,32 @@ func _refresh_map_only() -> void:
 	_map.set_display(display)
 
 
+## Fixes the height of every changing label and keeps buttons from growing
+## with their text (see the class comment).
+func _reserve_text_space() -> void:
+	for label_name: String in LINE_BUDGET:
+		var label := find_child(label_name, true, false) as Label
+		var lines: int = LINE_BUDGET[label_name]
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.max_lines_visible = lines
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.custom_minimum_size = Vector2(0, label.get_line_height() * lines
+			+ label.get_theme_constant(&"line_spacing") * (lines - 1))
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.mouse_filter = Control.MOUSE_FILTER_PASS  # for the full-text tooltip
+	_clock.mouse_filter = Control.MOUSE_FILTER_PASS
+	for button: Button in [_plot_button, _apply_button, _sail_button]:
+		button.clip_text = true
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
+
+## Sets a reserved label's text; the full text is always available as its tooltip.
+static func _set_text(label: Label, text: String) -> void:
+	if label.text != text:
+		label.text = text
+		label.tooltip_text = text
+
+
 func _refresh() -> void:
 	_refresh_map_only()
 	var catalog := PortCatalog.get_default()
@@ -389,42 +428,47 @@ func _refresh() -> void:
 
 	# Status and clock.
 	if GameSession.is_underway():
-		_status.text = "Underway to %s  ·  %.1f kn %s" % [catalog.get_display_name(GameSession.get_voyage_destination_id()),
-			speed, "under engine" if GameSession.is_motoring() else "under sail"]
+		_set_text(_status, "Underway to %s  ·  %.1f kn %s" % [catalog.get_display_name(GameSession.get_voyage_destination_id()),
+			speed, "under engine" if GameSession.is_motoring() else "under sail"])
 	elif location:
 		var verb := "Arrived at" if GameSession.get_vessel_status() == SessionState.STATUS_ARRIVED else "Moored at"
-		_status.text = "%s %s, %s" % [verb, location.display_name, location.country]
-	_position.text = GeoMath.format_position(GameSession.get_vessel_position())
-	_clock.text = Simulation.format_game_time(GameSession.get_game_time())
+		_set_text(_status, "%s %s, %s" % [verb, location.display_name, location.country])
+	_set_text(_position, GeoMath.format_position(GameSession.get_vessel_position()))
+	# Without " UTC" so it fits beside the time controls; the tooltip has it all.
+	_clock.text = Simulation.format_game_time(GameSession.get_game_time(), false)
+	_clock.tooltip_text = Simulation.format_game_time(GameSession.get_game_time())
 
 	# Voyage progress.
-	_voyage_box.visible = GameSession.is_underway()
-	if GameSession.is_underway():
+	# Always shown (also in port), so the panel below never moves on departure/arrival.
+	if not GameSession.is_underway():
+		_voyage_bar.value = 0.0
+		_set_text(_voyage_label, "No voyage in progress.")
+	else:
 		var total := GameSession.get_voyage_total_nm()
 		var remaining := GameSession.get_voyage_remaining_nm()
 		_voyage_bar.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 		var eta := Simulation.get_eta()
-		_voyage_label.text = "%d nm to go  ·  ETA about %s" % [roundi(remaining), Simulation.format_game_time(eta)]
+		_set_text(_voyage_label, "%d nm to go  ·  ETA about %s" % [roundi(remaining), Simulation.format_game_time(eta)])
 
 	# Selected port.
 	var selected := catalog.get_port(_selected_port_id)
 	if selected == null:
-		_selection_title.text = "No port selected"
-		_selection_details.text = "Click a port on the chart to choose a destination."
+		_set_text(_selection_title, "No port selected")
+		_set_text(_selection_details, "Click a port on the chart to choose a destination.")
 		_plot_button.disabled = true
 		_plot_button.text = "Plot course"
 	else:
-		_selection_title.text = "%s, %s" % [selected.display_name, selected.country]
-		_selection_details.text = "%s\n%s  ·  %d nm in a straight line" % [selected.description,
+		_set_text(_selection_title, "%s, %s" % [selected.display_name, selected.country])
+		_set_text(_selection_details, "%s\n%s  ·  %d nm in a straight line" % [selected.description,
 			GeoMath.format_position(selected.get_geo_position()),
-			roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))]
+			roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))])
 		var here := location != null and selected.id == location.id and not GameSession.is_underway()
 		_plot_button.disabled = here
 		_plot_button.text = "You are here" if here else "Plot course to %s" % selected.display_name
 
 	# Course.
 	if _draft_destination.is_empty():
-		_course_label.text = "No course planned."
+		_set_text(_course_label, "No course planned.")
 	else:
 		var distance := GeoMath.path_length_nm(_draft_route.path) if _draft_route else -1.0
 		var seconds := _draft_estimate_seconds
@@ -436,27 +480,30 @@ func _refresh() -> void:
 			summary += "  ·  %d nm  ·  about %s with the expected wind" % [roundi(distance), Simulation.format_duration(seconds)]
 		if not _draft_waypoints.is_empty():
 			summary += "\n%d waypoint%s" % [_draft_waypoints.size(), "" if _draft_waypoints.size() == 1 else "s"]
-		_course_label.text = summary
+		_set_text(_course_label, summary)
 	var valid := _draft_route != null or (not _draft_dirty and not _draft_legs.is_empty())
+	var course_status := ""
 	if _draft_destination.is_empty():
-		_course_status.text = ""
+		course_status = ""
 	elif not valid:
-		_course_status.text = "NOT NAVIGABLE: %s" % _draft_error
+		course_status = "NOT NAVIGABLE: %s" % _draft_error
 	elif _draft_dirty:
-		_course_status.text = "Sea route found. Press %s to use it." % ("Change course" if GameSession.is_underway() else "Apply course")
+		course_status = "Sea route found. Press %s to use it." % ("Change course" if GameSession.is_underway() else "Apply course")
 	else:
-		_course_status.text = "Current course" + (" (being sailed)" if GameSession.is_underway() else "")
+		course_status = "Current course" + (" (being sailed)" if GameSession.is_underway() else "")
 	if not _feedback.is_empty():
-		_course_status.text += "\n" + _feedback
+		course_status += "\n" + _feedback
+	_set_text(_course_status, course_status)
 	_apply_button.text = "Change course" if GameSession.is_underway() else "Apply course"
 	_apply_button.disabled = not _draft_dirty or _draft_route == null
 	_discard_button.disabled = not _draft_dirty
 	_remove_button.disabled = _selected_waypoint < 0
 	_clear_button.disabled = GameSession.is_underway() or GameSession.get_planned_route() == null
-	_sail_button.visible = not GameSession.is_underway()
-	_sail_button.disabled = _draft_dirty or GameSession.get_planned_route() == null
+	# Kept visible while underway (disabled) so the layout does not change.
+	_sail_button.disabled = GameSession.is_underway() or _draft_dirty or GameSession.get_planned_route() == null
+	_sail_button.tooltip_text = "Already underway" if GameSession.is_underway() else "Depart on the planned course"
 
-	_weather_label.text = _describe_weather()
+	_set_text(_weather_label, _describe_weather())
 
 
 func _describe_weather() -> String:

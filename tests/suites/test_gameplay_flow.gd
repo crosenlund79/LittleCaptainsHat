@@ -54,6 +54,8 @@ func _test_main_menu() -> void:
 func _test_new_game_and_movement() -> void:
 	var menu: MainMenu = app.router.current_screen
 	await t.click(_button(menu, "NewGameButton"))
+	t.check(app.modals.get_top() is NewGameMenu, "New Game asks for the ship's companion")
+	await t.click(_button(app.modals.get_top(), "StartButton"))
 	await _settle()
 	var area := app.router.current_screen as BoatArea
 	t.check(area != null and area.area_id == &"interior", "New Game starts inside the boat (cabin)")
@@ -466,6 +468,7 @@ func _test_main_menu_return_and_continue() -> void:
 	for slot in [1, 2]:
 		slot_files[slot] = FileAccess.get_file_as_string(SaveManager.save_dir.path_join("slot_%d.json" % slot))
 	await t.click(_button(app.router.current_screen, "NewGameButton"))
+	await t.click(_button(app.modals.get_top(), "StartButton"))
 	await _settle()
 	var untouched := true
 	for slot: int in slot_files:
@@ -481,6 +484,7 @@ func _test_first_voyage_acceptance() -> void:
 	var catalog := PortCatalog.get_default()
 	# 1-2. New game in Copenhagen.
 	await t.click(_button(app.router.current_screen, "NewGameButton"))
+	await t.click(_button(app.modals.get_top(), "StartButton"))
 	await _settle()
 	t.check_eq(GameSession.get_location_id(), &"copenhagen", "[voyage] a new game starts in Copenhagen")
 
@@ -577,7 +581,11 @@ func _test_first_voyage_acceptance() -> void:
 	await _move_player_to(Vector2(276, 0))
 	await t.press_action(&"interact")
 	var progress_before_sleep := GameSession.get_voyage_progress_nm()
-	await t.click(app.modals.get_top().find_child("Sleep4", true, false))
+	var sleep_menu := app.modals.get_top() as SleepMenu
+	for i in 2:
+		await t.click(sleep_menu.find_child("DecreaseButton", true, false))
+	await t.click(sleep_menu.find_child("SleepButton", true, false))
+	await _settle()
 	t.check(app.modals.is_empty(), "[voyage] the sleep menu closes")
 	t.check(absf(GameSession.get_voyage_progress_nm() - progress_before_sleep - 20.0) < 0.5,
 		"[voyage] 4 h of sleep advance the voyage ~20 nm (%.1f nm)" % (GameSession.get_voyage_progress_nm() - progress_before_sleep))
@@ -605,6 +613,7 @@ func _test_first_voyage_acceptance() -> void:
 
 	# 24. A weather warning within five sailing hours (sleep is cut short by it).
 	app.sleep_for(8.0)
+	await _settle()
 	t.check(app.hud.is_warning_visible(), "[voyage] the strong-wind warning is shown in the HUD")
 	t.check(_toast_contains("woken") and _toast_contains("Strong winds"), "[voyage] sleep was interrupted by the warning")
 	var position_at_warning := GameSession.get_vessel_position()
@@ -645,6 +654,7 @@ func _test_first_voyage_acceptance() -> void:
 		if not GameSession.is_underway():
 			break
 		app.sleep_for(8.0)
+		await _settle()
 	t.check_eq(GameSession.get_location_id(), &"kiel", "[voyage] the boat reaches Kiel")
 	t.check(_toast_contains("Arrived in Kiel"), "[voyage] arrival is announced")
 	t.check(GameSession.get_vessel_position().is_equal_approx(catalog.get_port(&"kiel").get_geo_position()), "[voyage] the vessel lies in Kiel")

@@ -101,3 +101,44 @@ write("ui_click.wav", tone(1200, 0.03, 0.25, 0.002, 0.02))
 # SFX bus: engine loops (open air on deck, muffled below deck / at the chart).
 write("engine_hum.wav", engine_loop(2.0, 0.5, 0))
 write("engine_hum_muffled.wav", engine_loop(2.0, 0.5, 140))
+
+
+def purr(dur, amp):
+    """Soft cat purr: low filtered noise pulsing at ~26 Hz, in two breaths."""
+    random.seed(11)
+    n = int(dur * RATE)
+    out, v = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        v += (random.uniform(-1, 1) - v) * 0.04
+        pulse = 0.55 + 0.45 * math.sin(2 * math.pi * 26 * t) ** 2
+        breath = math.sin(math.pi * ((t % (dur / 2)) / (dur / 2))) ** 0.8
+        out.append(v * pulse * breath)
+    peak = max(abs(s) for s in out) or 1.0
+    return [s / peak * amp * envelope(i, n, 0.05, 0.2) for i, s in enumerate(out)]
+
+
+def dog_pant(dur, amp):
+    """Gentle, happy dog panting: short airy breaths, then a contented sigh."""
+    random.seed(23)
+    n = int(dur * RATE)
+    out, v = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        v += (random.uniform(-1, 1) - v) * 0.25
+        if t < dur * 0.65:
+            phase = (t * 4.2) % 1.0
+            breath = math.sin(math.pi * min(phase / 0.45, 1.0)) if phase < 0.45 else 0.0
+            level = 0.8
+        else:
+            u = (t - dur * 0.65) / (dur * 0.35)
+            breath = math.sin(math.pi * u) ** 1.5
+            level = 0.55
+        out.append(v * breath * level)
+    peak = max(abs(s) for s in out) or 1.0
+    return [s / peak * amp * envelope(i, n, 0.02, 0.15) for i, s in enumerate(out)]
+
+
+# SFX bus: ship's companion responses to petting (soft, never harsh test tones).
+write("companion_purr.wav", purr(1.6, 0.4))
+write("companion_dog_pant.wav", dog_pant(1.6, 0.3))

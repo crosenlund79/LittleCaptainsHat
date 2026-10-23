@@ -1,6 +1,6 @@
 # Next Harbor: Architecture
 
-This document describes how Next Harbor is put together (as of Iteration 003)
+This document describes how Next Harbor is put together (as of Iteration 003b)
 and where future systems are meant to plug in. It is kept short on purpose; the scripts have
 doc comments for details.
 
@@ -109,6 +109,7 @@ Edit the generator and re-run it rather than hand-editing the `.tres`.
 | `vessel_position` | Vector2(lon, lat); while underway always derived from the voyage |
 | `propulsion` | `PropulsionState`: sail/engine mode, reason, speed, the controller's average and timers, last wind and angle, spinnaker |
 | `wind_seed` | seed of the deterministic wind field (1 for every game so far) |
+| `companion` | `CompanionState`: the ship's companion (kind, resting spot, schedule) |
 | `voyage` | `Voyage` while underway, else `null` |
 
 `GameSession` is the only writer. It exposes intent-level methods
@@ -167,6 +168,45 @@ chart is open and no boat scene exists.
   (time constant ≈ 0.6 s) and the spinnaker hoists/drops over ≈ 1.2 s; on entering
   the scene the rig snaps to the current state, so it never depends on which scene
   was open when the state changed.
+  - **Geometry** (Iteration 003b) lives in `get_shape(time)`, which draws and tests
+    share. The spinnaker hangs from coherent rigging points:
+    - the **tack** is at the end of a 270-unit pole from the mast, 22° (reach) to
+      58° (run) to windward;
+    - the **clew** is sheeted to the leeward quarter;
+    - the **head** is joined to the mast by the halyard line;
+    - the leading edge bellies 560 units forward of the tack–clew line (≈ x 680,
+      the bow is at 500).
+
+    While it flies, the deck camera eases 110 units forward so the whole sail stays
+    in view.
+  - **Motion** is cosmetic and runs on real time. Values are amplitudes at full set:
+
+    | Sail | Angle | Fullness | Other |
+    |---|---|---|---|
+    | Mainsail | ±0.8° at 0.13 Hz | ±6 % at 0.21 Hz | leech ripple ≈ 1 px |
+    | Jib | ±1.2° | ±8 % | leech ripple 2 px |
+    | Spinnaker | swing ±2.5° | ±7 % | clew ±6 px |
+
+    All motion scales with `set_amount` / `spinnaker_amount`, so furled sails do
+    not move. It is never read by the simulation: speed and propulsion come only
+    from `PropulsionState`.
+- **Helm** (`BoatArea`): its prompt is "Take the helm" in port (departure) and "Check
+  sail configuration" underway, which calls `Simulation.reassess_propulsion()` (see
+  *Propulsion controller*). `App.describe_reassessment()` turns the result into the
+  message shown.
+- **Ship's companion** (`src/companion/`):
+  - `ShipCompanion` is a node in the cabin scene only, so exactly one exists and it
+    never appears on deck or on the chart. It draws a top-down cat or dog in the
+    fixture style, with slow breathing.
+  - It reads kind and resting spot from `GameSession.get_companion()` and moves
+    instantly on `companion_moved` and `state_replaced`.
+  - It has no collision; its `Interactable` (id `pet`, prompt "Pet cat/dog") is
+    routed by `BoatArea` to `pet()`. That plays a sound on the SFX bus (purr, or
+    soft panting) and a 1.6 s reaction (hearts, or a wagging tail).
+  - **Resting spots** are fixed per kind in `CompanionState.SPOTS`, chosen so that
+    the chart table, berth, wake-up spot and companionway stay the focused
+    interaction from where the player stands (tested). The `preview` flag reuses
+    the drawing in the New Game dialog.
 
 ## Map data structures
 
@@ -223,6 +263,21 @@ is culled and only the light overlay is redrawn when the view moves.
 - **Sleeping** is `Simulation.sleep(hours)`, the same `advance()` with
   `stop_at_events = true`: it stops at arrival or at a newly due warning and reports
   the elapsed time. There is no separate sleep timer or distance formula.
+  - `SleepMenu` (1–12 h, arrows, default 6 h) only reports the chosen duration.
+  - `App.open_sleep_menu()` is reached from the berth or the chart's Sleep button.
+    It is refused at the chart while course edits are unapplied.
+  - `App.sleep_for()` calls `Simulation.sleep()`, then `_wake_in_berth()`: the
+    session enters the cabin at spawn `v_berth` (282, 0), clear of furniture.
+    - Already in the cabin: the player is moved there without reloading the
+      scene.
+    - From the deck or the chart: the cabin is shown, which closes the chart.
+- **The companion's schedule** runs on the same clock:
+  `GameSession.apply_simulation_step()` calls `CompanionState.advance_to(time)`.
+  - Every 2–5 game hours (interval and next spot picked deterministically from the
+    kind and a move counter, intervals in whole minutes) it changes spot, emitting
+    `companion_moved`.
+  - It is a pure function of game time: one 48 h step and 2,880 one-minute steps
+    give the same result (tested), and sleeping or 20× need no special handling.
 - **Determinism.** Given the same state, course, wind seed and elapsed time,
   results are identical (up to floating-point rounding); no randomness is involved.
 - No offline time: time only advances while the game runs; loading resumes at the
@@ -328,6 +383,20 @@ callers.
 The chart edits a **draft**; the committed course is untouched until **Apply**:
 
 - `WorldMap` keeps the draft destination, its waypoints and its leg results.
+- **Layout stability (Iteration 003b).** The side panel has a fixed size.
+  - Each label whose text changes during play reserves a fixed number of lines
+    (`WorldMap.LINE_BUDGET`: status 2, position 1, voyage 2, selected port 1 + 4,
+    course 2 + 3, weather 4). The labels wrap; text beyond the budget ends in an
+    ellipsis and is always shown in full as the label's tooltip.
+  - Buttons clip their text.
+  - Sections never appear or disappear: the voyage box and **Set sail** stay
+    visible, the button disabled at sea.
+  - The clock omits " UTC" so it fits beside the time controls.
+
+  Ticking values at 20×, sail ↔ engine, other destinations and new drafts with
+  their weather therefore never move a button. A test compares the panel's and
+  every button's rectangles across these states, also at 80 % and 130 %
+  interface scale. **Sleep** sits next to **Set sail**.
 - `MapView` only reports presses and drags: on the course line, which inserts a
   waypoint into that leg and starts dragging it; on waypoints; and right-clicks.
 - While dragging, the marker follows the mouse and the two affected legs are
@@ -454,12 +523,31 @@ exports:
 | Sail → engine (poor) | average < 3.5 kn, after ≥ 900 s under sail |
 | Sail → engine (near stall) | potential < 0.5 kn continuously for ≥ 600 s (any average) |
 | Engine → sail | average > 6.0 kn continuously for ≥ 1200 s, current potential > 6.0 kn, and ≥ 1800 s motoring |
-| Course change > 30° (or a change of course) | average restarts from the new heading's potential; stall/favourable timers reset |
+| Course change > 30° (or a change of course) | average restarts from the new heading's potential; favourable timer resets; the stall timer resets only if the new heading is no longer becalmed |
+| **Reassessment** (a change of course applied by the player, or the helm's "Check sail configuration") | engine → sail at once if the current potential > 6.0 kn (no 1200 s confirmation); sail → engine at once if the current potential < 3.5 kn (no wait for the average). The minimum times (900 s sailing, 1800 s motoring) still apply. A reassessment resets no timer. |
 | Departure / first evaluation | engine (reason "start") if the potential < 3.5 kn, else sail |
 | Spinnaker | sailing and \|twa\| ≥ 115° (bonus ×1.12 in the polar) |
 
 The 3.5–6 kn gap plus the minimum times give the hysteresis; the potential is
-also evaluated while motoring. Speed is the engine speed or the potential sail
+also evaluated while motoring.
+
+**Reassessment (Iteration 003b).** Iteration 003 already re-evaluated the controller
+on a change of course and restarted the rolling average from the new heading. That
+part was verified and kept. Two gaps remained:
+- After turning from a beat into a good breeze while motoring, the engine still
+  waited for the 20-minute confirmation.
+- After turning into poor wind under sail, the boat waited for the average.
+
+`PropulsionController.evaluate(…, reset_history, reassess)` now separates the two
+ideas:
+- `reset_history` (a turn) restarts the average;
+- `reassess` lets clearly good or poor *current* conditions decide at once.
+
+`Simulation._on_course_changed` uses both. `Simulation.reassess_propulsion()` (the
+helm) uses only `reassess`, so repeated checks reset nothing. The minimum times in
+each mode bound how often the mode can change, however often the player checks.
+The HUD, sails and engine sound follow through `propulsion_changed`, as for any
+other change. Speed is the engine speed or the potential sail
 speed until the next evaluation point.
 
 ### ETA
@@ -510,6 +598,11 @@ SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─
   `wind` (seed), `vessel` (status, position, propulsion state), `navigation`
   (location, planned route with its path, active voyage with route, progress,
   revision and warned weather ids).
+- **Version 4** (Iteration 003b) adds the `companion` section: `kind`, `spot`,
+  `next_move_time` and `moves`, validated by `CompanionState.from_dict`.
+  `_migrate_3_to_4` gives older games the default companion: a cat in its first
+  spot, with its schedule starting at the saved game time. Sail animation phases
+  are not saved (cosmetic). Migration chains 1 → 2 → 3 → 4.
 - **Version 3** (Iteration 003) adds `wind.seed` and `vessel.propulsion`.
   `_migrate_2_to_3` sets seed 1, removes the old constant `speed_kn` and adds an
   uninitialised controller state. On load, `Simulation` evaluates it at once
@@ -601,6 +694,7 @@ embedded in the editor.
 | More ports | New `PortData` resources in the catalog (a harbour approach is found automatically; tests check every port). |
 | Larger regions | Regenerate the navigation data with other bounds; for worldwide coverage the raster and graph would need tiling. |
 | Real audio | Replace the placeholder streams on the scenes and settings menu; buses stay the same. |
+| A human crew member | Another `CompanionState` kind with its own spots, or, once it needs more (tasks, skills), its own small state class next to it. `ShipCompanion` stays the cabin presentation; nothing assumes a companion is an animal beyond the drawing and the petting sound. |
 
 ## Tests
 
@@ -614,7 +708,12 @@ query speed, polar), sailing (controller rules and hysteresis, step independence
 at 1×/5×/20×/sleep with sail↔engine changes, ETA accuracy, warnings with
 variable speed, course changes, propulsion save/load and v2 migration),
 sailing presentation (sails by wind side, spinnaker, furling, HUD, chart overlay
-and toggle, engine audio across scenes), and an end-to-end gameplay flow driving
+and toggle, engine audio across scenes), reassessment (course changes and helm
+checks, hysteresis, no forced or rapid switching), life aboard (companion choice,
+spots, schedule, petting, audio, persistence and migration; sleep dialog, sleeping
+from cabin/deck/chart, interruptions, V-berth wake-up; chart panel geometry
+stability; helm prompt and messages; sail motion and spinnaker geometry), and an
+end-to-end gameplay flow driving
 the real `App` with input events, including the Iteration 002 acceptance scenario.
 Suites written for the constant-speed model run with a **calm-wind fixture**
 (`use_calm_wind()`): in a flat calm the boat motors at exactly 5 kn from

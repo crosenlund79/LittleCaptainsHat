@@ -1,30 +1,60 @@
 class_name SleepMenu
 extends ModalPanel
-## Choose how long to sleep. Sleeping itself is done by the Simulation; this
-## dialog only reports the chosen duration.
+## Choose how long to sleep (1-12 hours, in one-hour steps with the arrow
+## buttons or the Left/Right keys). Sleeping itself is done by the Simulation;
+## this dialog only reports the chosen duration. It is the same dialog whether
+## it was opened from the berth or from the chart.
 
 signal sleep_requested(hours: float)
 
-const DURATIONS := [4, 6, 8]
+const MIN_HOURS := 1
+const MAX_HOURS := 12
+const DEFAULT_HOURS := 6
+
+var hours := DEFAULT_HOURS
 
 @onready var _info: Label = %Info
-@onready var _buttons: VBoxContainer = %Durations
+@onready var _duration: Label = %DurationLabel
+@onready var _wake: Label = %WakeLabel
+@onready var _decrease: Button = %DecreaseButton
+@onready var _increase: Button = %IncreaseButton
+@onready var _sleep: Button = %SleepButton
 
 
 func _ready() -> void:
 	if GameSession.is_underway():
-		_info.text = "The boat sails on while you sleep. You will be woken on arrival or when a weather warning comes in."
+		_info.text = "The boat sails on while you sleep. You will be woken early on arrival or when a weather warning comes in."
 	else:
 		_info.text = "The boat is moored. Time passes while you sleep."
-	for hours in DURATIONS:
-		var button := Button.new()
-		button.name = "Sleep%d" % hours
-		button.theme_type_variation = &"BigButton"
-		button.text = "Sleep %d hours" % hours
-		button.pressed.connect(func() -> void: sleep_requested.emit(float(hours)))
-		_buttons.add_child(button)
+	_decrease.pressed.connect(change_hours.bind(-1))
+	_increase.pressed.connect(change_hours.bind(1))
+	_sleep.pressed.connect(func() -> void: sleep_requested.emit(float(hours)))
 	%CancelButton.pressed.connect(close)
+	_update()
+
+
+func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"ui_left") or event.is_action_pressed(&"move_left"):
+		change_hours(-1)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed(&"ui_right") or event.is_action_pressed(&"move_right"):
+		change_hours(1)
+		get_viewport().set_input_as_handled()
+
+
+## Changes the duration by `delta` hours, kept within MIN_HOURS..MAX_HOURS.
+func change_hours(delta: int) -> void:
+	hours = clampi(hours + delta, MIN_HOURS, MAX_HOURS)
+	_update()
+
+
+func _update() -> void:
+	_duration.text = "%d hour%s" % [hours, "" if hours == 1 else "s"]
+	_decrease.disabled = hours <= MIN_HOURS
+	_increase.disabled = hours >= MAX_HOURS
+	_sleep.text = "Sleep %d hour%s" % [hours, "" if hours == 1 else "s"]
+	_wake.text = "Wake at about %s\nin the V-berth." % Simulation.format_game_time(GameSession.get_game_time() + hours * 3600.0)
 
 
 func focus_default() -> void:
-	(_buttons.get_child(0) as Button).grab_focus()
+	_sleep.grab_focus()

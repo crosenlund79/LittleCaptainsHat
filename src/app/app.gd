@@ -15,12 +15,16 @@ extends Node
 @export var settings_menu_scene: PackedScene
 @export var save_load_menu_scene: PackedScene
 @export var sleep_menu_scene: PackedScene
+## New Game: choose the ship's companion.
+@export var new_game_menu_scene: PackedScene
 ## Played on every button press, routed to the UI bus.
 @export var ui_click_sound: AudioStream
 ## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
 @export var engine_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum.wav")
 @export var engine_muffled_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum_muffled.wav")
 
+## Spawn marker in the cabin where the player wakes after sleeping.
+const WAKE_SPAWN := &"v_berth"
 const ENGINE_LOOP := &"engine"
 const ENGINE_MUFFLED_LOOP := &"engine_muffled"
 ## Engine loudness on deck and inside (cabin, chart table), and the fade time.
@@ -89,8 +93,18 @@ func show_main_menu() -> void:
 	router.change_screen(main_menu_scene, _connect_main_menu)
 
 
-func start_new_game() -> void:
-	GameSession.start_new_session()
+## New Game asks for the ship's companion (cat or dog) first.
+func open_new_game_menu() -> void:
+	if not modals.is_empty() or router.is_busy():
+		return
+	var menu := new_game_menu_scene.instantiate() as NewGameMenu
+	menu.start_requested.connect(start_new_game)
+	modals.push(menu)
+
+
+func start_new_game(companion_kind: StringName = CompanionState.DEFAULT_KIND) -> void:
+	modals.clear()
+	GameSession.start_new_session(companion_kind)
 	_show_current_boat_area()
 
 
@@ -187,17 +201,49 @@ func request_departure() -> void:
 		catalog.get_display_name(route.destination_port_id))
 
 
+## In port the helm sets sail; underway it checks the sail configuration: a
+## fresh assessment through the propulsion controller (never a manual engine
+## switch; the controller's minimum times still apply).
 func _on_helm_requested() -> void:
 	if GameSession.is_underway():
-		notify("The autopilot is steering for %s, %d nm to go. Use the chart table to change course." % [
-			PortCatalog.get_default().get_display_name(GameSession.get_voyage_destination_id()),
-			roundi(GameSession.get_voyage_remaining_nm())])
+		notify(describe_reassessment(Simulation.reassess_propulsion()))
 	else:
 		request_departure()
 
 
+## Player-facing result of a helm check.
+static func describe_reassessment(result: Dictionary) -> String:
+	if result.is_empty():
+		return ""
+	var after: PropulsionState = result.after
+	var profile := GameSession.get_vessel_profile()
+	var conditions := "%.1f kn possible under sail in %d kn of wind" % [after.potential_kn, roundi(after.wind_speed_kn)]
+	if result.changed:
+		if after.sails_set():
+			return "Sailing conditions favourable (%s). Sails set%s, engine stopped." % [conditions,
+				" with the spinnaker" if after.spinnaker else ""]
+		if after.engine_reason == PropulsionState.REASON_STALL:
+			return "Becalmed or head to wind (%s). Sails furled, engine started." % conditions
+		return "Insufficient sailing performance (%s). Sails furled, engine started." % conditions
+	if after.sails_set():
+		if after.potential_kn < profile.engine_start_below_kn:
+			return "Light wind (%s). The sails stay up a little longer; the engine starts if it does not improve." % conditions
+		return "Sails are drawing well (%s). No change needed." % conditions
+	if after.potential_kn > profile.engine_stop_above_kn:
+		return "The wind is filling in (%s). The engine runs a little longer before the sails go up." % conditions
+	return "Insufficient sailing performance (%s). Continuing under engine." % conditions
+
+
+## Opens the sleep dialog from the berth (cabin) or the chart's Sleep button.
+## Both use the same dialog and the same Simulation.sleep().
 func open_sleep_menu() -> void:
-	if not is_in_gameplay() or not modals.is_empty():
+	if not GameSession.is_active() or not modals.is_empty() or router.is_busy():
+		return
+	var map := router.current_screen as WorldMap
+	if not (router.current_screen is BoatArea or map):
+		return
+	if map and map.has_unapplied_changes():
+		notify("Apply or discard your course changes before sleeping.")
 		return
 	var menu := sleep_menu_scene.instantiate() as SleepMenu
 	menu.sleep_requested.connect(sleep_for)
@@ -209,6 +255,7 @@ func open_sleep_menu() -> void:
 func sleep_for(hours: float) -> void:
 	modals.clear()
 	var result := Simulation.sleep(hours)
+	_wake_in_berth()
 	var slept := Simulation.format_duration(result.elapsed_seconds)
 	var now := Simulation.format_game_time(GameSession.get_game_time())
 	match result.stopped_by:
@@ -218,6 +265,17 @@ func sleep_for(hours: float) -> void:
 			notify("You were woken after %s: the boat has arrived. It is %s." % [slept, now])
 		_:
 			notify("You slept %s. It is %s." % [slept, now])
+
+
+## After any sleep (full or cut short, in port or underway, started in the
+## cabin or at the chart) the player wakes in the cabin beside the V-berth.
+func _wake_in_berth() -> void:
+	GameSession.enter_boat_area(SessionState.AREA_INTERIOR, WAKE_SPAWN)
+	var area := router.current_screen as BoatArea
+	if area and area.area_id == SessionState.AREA_INTERIOR:
+		area.place_player_at_spawn(WAKE_SPAWN)
+	else:
+		_show_current_boat_area()  # closes the chart (or leaves the deck)
 
 
 func _on_weather_warning(warning: Dictionary) -> void:
@@ -277,7 +335,7 @@ func open_load_menu() -> void:
 # --- Screen wiring -----------------------------------------------------------------
 
 func _connect_main_menu(menu: MainMenu) -> void:
-	menu.new_game_requested.connect(start_new_game)
+	menu.new_game_requested.connect(open_new_game_menu)
 	menu.continue_requested.connect(continue_game)
 	menu.load_requested.connect(open_load_menu)
 	menu.settings_requested.connect(open_settings)
@@ -296,6 +354,7 @@ func _connect_boat_area(area: BoatArea) -> void:
 func _connect_world_map(map: WorldMap) -> void:
 	map.close_requested.connect(close_chart)
 	map.depart_requested.connect(request_departure)
+	map.sleep_requested.connect(open_sleep_menu)
 
 
 func _on_screen_changed(screen: Node) -> void:

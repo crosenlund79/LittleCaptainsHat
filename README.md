@@ -12,15 +12,21 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 003: Wind, Sails & Propulsion**, built on Iteration 002
-(sea routes, voyages, game clock, sleep, weather warnings) and Iteration 001 (boat,
-menus, save/load, settings, audio, visual identity). Europe now has a deterministic
-wind, which the chart shows. The boat sails with it, up to about 10 knots, or
-motors automatically when the wind is too light or on the nose. You see the sails
-trimmed on deck, the spinnaker set downwind, and hear the engine when it runs.
+Current state: **Iteration 003b: Stabilization, Sail Polish & Life Aboard**, a
+refinement of Iteration 003 (wind, sails, automatic propulsion), Iteration 002 (sea
+routes, voyages, game clock, sleep, weather warnings) and Iteration 001 (boat, menus,
+save/load, settings, audio, visual identity). Europe has a deterministic wind, which
+the chart shows. The boat sails with it, up to about 10 knots, or motors automatically
+when the wind is too light or on the nose. Iteration 003b adds:
+- a ship's **cat or dog** in the cabin;
+- adjustable **sleep** (also from the chart), always waking at the V-berth;
+- a **sail check** at the helm;
+- a steady chart side panel;
+- gently moving sails and a refined spinnaker.
 
 ![The spinnaker set on a broad reach](docs/screenshots/21_deck_spinnaker.png)
 ![Wind on the chart](docs/screenshots/23_chart_wind_europe.png)
+![The ship's cat in the cabin](docs/screenshots/26_pet_cat.png)
 
 ## Engine
 
@@ -48,7 +54,7 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Action | Keys / mouse |
 |---|---|
 | Move | **W A S D** or **arrow keys** |
-| Interact | **E** |
+| Interact | **E** (e.g. pet the cat or dog, sleep at the berth, check the sails at the helm) |
 | Pause menu / back | **Esc** |
 | Time acceleration | **1× / 5× / 20×** buttons at the top of the screen (also on the chart) |
 | Chart: pan | drag with the mouse, or **W A S D** / arrows |
@@ -58,6 +64,8 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Chart: move a waypoint | drag the diamond-shaped waypoint marker |
 | Chart: remove a waypoint | right-click it, or select it and press **Delete** / **Remove waypoint** |
 | Chart: show/hide wind | **Wind** switch in the toolbar |
+| Chart: sleep | **Sleep** button in the side panel |
+| Sleep dialog: duration | **<** / **>** buttons (or Left / Right): 1–12 hours |
 
 Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / Space to press).
 
@@ -91,10 +99,20 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    The HUD shows destination, distance to go, a wind-aware ETA, speed, sail or
    engine with the reason, and the local wind. The pontoon is left behind and the
    chart shows the boat's actual position.
+
+   **Check sail configuration** at the helm (press **E** there while underway) makes
+   the boat assess the current heading and wind at once. If the conditions are now
+   clearly good or poor, sails or engine change straight away. It is a check, not an
+   engine switch: it never forces a mode the conditions don't justify. The usual
+   minimum times (15 min under sail, 30 min under engine) still apply, so it cannot
+   make the boat switch back and forth. A change of course at sea triggers the same
+   check automatically.
 4. **Live aboard.** Walk around the cabin and deck while the voyage continues.
    1 real second is 1 game minute at **1×**. Use **5×** or **20×** to go faster.
-5. **Sleep.** Use the berth to sleep 4, 6 or 8 hours. The boat sails on while you
-   sleep, and you are woken early on arrival or when a weather warning comes in.
+5. **Sleep.** Use the berth in the cabin, or the **Sleep** button on the chart. Choose
+   1–12 hours with the arrows. The dialog shows when you will wake. The boat sails
+   on while you sleep, and you are woken early on arrival or when a weather warning
+   comes in. Wherever you went to sleep, you wake in the cabin beside the V-berth.
 6. **Weather.** The chart shows demonstration weather areas (fair, caution, danger).
    When your course will reach a caution or danger area within **5 hours of sailing**
    at the current speed, a warning appears with **View chart** and **Dismiss**.
@@ -132,6 +150,11 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   sail/engine choice with hysteresis, an automatic spinnaker, sails drawn on deck
   by wind angle and side, and an engine sound loop (loud on deck, muffled below,
   never restarting on scene changes, following the SFX volume).
+- **Ship's companion**: on New Game you choose a **cat** or a **dog** (the cat is
+  preselected). It lives in the cabin and rests in a few spots of its own, moving to
+  another spot every few game hours. Walk up to it and press **E** to pet it: the cat
+  purrs and the dog pants happily. There are no stats, needs or bonuses; it is
+  company.
 - **Pause menu**, **save/load** (3 slots), **settings** (audio, display, interface scale),
   audio buses and placeholder sounds, as in Iteration 001.
 
@@ -145,9 +168,11 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
     progress along it;
   - sail or engine and the automatic controller's state, and the wind seed;
   - the weather warnings already given;
-  - the boat area and player position.
+  - the boat area and player position;
+  - the ship's companion (cat or dog, resting spot and when it next moves).
 - Loading resumes exactly where you saved. **No time passes while the game is closed.**
-- Save format version 3. **Older saves still load:**
+- Save format version 4. **Older saves still load:**
+  - Iteration 003 saves (v3) get a ship's cat (the default companion).
   - Iteration 002 saves (v2) keep their voyage. Sail or engine is decided from the
     wind where and when the boat was saved.
   - Iteration 001 saves (v1): the boat is placed in its port at the default start
@@ -173,12 +198,13 @@ data/vessel/     vessel profile (sailing performance, engine, controller thresho
 src/app/         application shell (main scene) and screen transitions
 src/core/        game session state and the simulation (game clock, voyages)
 src/boat/        cabin and deck scenes, boat area logic, fixture geometry, sail rig
+src/companion/   ship's companion: its state (kind, resting spot) and the cabin animal
 src/player/      player token
 src/interaction/ interactables and the player's interaction sensor
 src/navigation/  ports, routes, voyages, projection, sea router, chart screen, chart wind layer
 src/sailing/     propulsion state and the automatic sail/engine controller
 src/weather/     weather conditions, wind field
-src/ui/          menus, HUD, time controls, sleep dialog, notifications, dialogs
+src/ui/          menus, HUD, time controls, new-game and sleep dialogs, notifications, dialogs
 src/audio/       audio manager
 src/persistence/ save manager (format v3 + migration)
 src/settings/    settings manager
@@ -188,19 +214,22 @@ docs/            screenshots
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
-[ITERATION_003_REPORT.md](ITERATION_003_REPORT.md) (and the reports for
+[ITERATION_003B_REPORT.md](ITERATION_003B_REPORT.md) (and the reports for
+[003](ITERATION_003_REPORT.md),
 [002](ITERATION_002_REPORT.md) and [001](ITERATION_001_REPORT.md)) for what was
 built and verified.
 
 ## Known limitations
 
 - The wind is synthetic, not real weather and not a forecast. Sailing is simplified:
-  - there is no manual sail or engine control, no tacking (a head-to-wind leg is
-    motored), and no fuel;
+  - there is no manual sail or engine control (the helm only asks for a fresh
+    check), no tacking (a head-to-wind leg is motored), and no fuel;
   - there are no currents, waves, depth or tides;
   - the weather areas are static demonstration data and only produce warnings;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
+- The companion only rests (no walking, no needs) and stays in the cabin. Its sounds
+  are synthetic placeholders.
 - **Routing coverage.** All 15 ports are reachable from each other. Waters the chart
   data cannot represent are **not** navigable, and are reported as such instead of being
   crossed. These include:

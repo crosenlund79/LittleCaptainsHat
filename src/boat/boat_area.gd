@@ -32,6 +32,9 @@ signal interaction_prompt_changed(prompt: String)
 @export var mooring: Node2D
 @export var mooring_label: Label
 
+const HELM_PROMPT_IN_PORT := "Take the helm"
+const HELM_PROMPT_UNDERWAY := "Check sail configuration"
+
 var _leaving := false
 
 @onready var player: Player = $Player
@@ -74,10 +77,22 @@ func _place_player() -> void:
 	GameSession.set_player_position(position)
 
 
+## Moves the player to a spawn marker without reloading the scene (waking up
+## in the cabin when already there).
+func place_player_at_spawn(spawn_point: StringName) -> void:
+	var marker := _spawn_points.get_node_or_null(NodePath(String(spawn_point))) as Node2D
+	if marker == null:
+		return
+	player.position = marker.position
+	player.velocity = Vector2.ZERO
+	GameSession.set_player_position(marker.position)
+
+
 func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 	if _leaving:
 		return
-	AudioManager.play_sfx(interaction_sound)
+	if interactable.interaction_id != &"pet":  # the companion makes its own sound
+		AudioManager.play_sfx(interaction_sound)
 	match interactable.interaction_id:
 		&"companionway":
 			begin_exit()
@@ -89,6 +104,10 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			sleep_requested.emit()
 		&"helm":
 			helm_requested.emit()
+		&"pet":
+			var companion := interactable.get_parent() as ShipCompanion
+			if companion:
+				companion.pet()
 		_:
 			if not interactable.message.is_empty():
 				message_requested.emit(interactable.message)
@@ -100,8 +119,15 @@ func _on_voyage_arrived(_port: StringName) -> void:
 	_update_mooring()
 
 
-## Shows the pontoon only in port; while underway the boat is at sea.
+## Shows the pontoon only in port; while underway the boat is at sea. The
+## helm offers to set sail in port and to check the sails underway.
 func _update_mooring() -> void:
+	for node in find_children("*", "Interactable", true, false):
+		var interactable := node as Interactable
+		if interactable.interaction_id == &"helm":
+			interactable.prompt = HELM_PROMPT_UNDERWAY if GameSession.is_underway() else HELM_PROMPT_IN_PORT
+	if player and player.get_focused_interactable():
+		interaction_prompt_changed.emit(player.get_focused_interactable().prompt)
 	if mooring:
 		mooring.visible = not GameSession.is_underway()
 	if mooring_label and GameSession.get_location():

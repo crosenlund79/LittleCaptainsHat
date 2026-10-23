@@ -20,6 +20,8 @@ signal voyage_course_changed
 signal voyage_arrived(port_id: StringName)
 ## Sail <-> engine changed (or propulsion ended on arrival: mode is then &"").
 signal propulsion_changed(mode: StringName)
+## The ship's companion moved to another resting spot (see CompanionState).
+signal companion_moved(spot: StringName)
 ## Something the player should be told that is not an error of their action
 ## (e.g. an old save's route had to be dropped).
 signal notice(text: String)
@@ -51,8 +53,9 @@ func _exit_tree() -> void:
 
 # --- Lifecycle ----------------------------------------------------------------
 
-func start_new_session() -> void:
-	_state = SessionState.create_new(START_LOCATION, START_AREA, START_SPAWN)
+## Starts a new game with the chosen ship's companion ("cat" or "dog").
+func start_new_session(companion_kind: StringName = CompanionState.DEFAULT_KIND) -> void:
+	_state = SessionState.create_new(START_LOCATION, START_AREA, START_SPAWN, companion_kind)
 	_has_unsaved_changes = false
 	session_started.emit()
 
@@ -192,6 +195,11 @@ func is_motoring() -> bool:
 ## True while sails are drawing on a voyage (false in port or when motoring).
 func are_sails_set() -> bool:
 	return is_underway() and _state.propulsion.initialised and _state.propulsion.sails_set()
+
+
+## A copy of the ship's companion (kind, resting spot, schedule).
+func get_companion() -> CompanionState:
+	return _state.companion.duplicate_state() if _state else null
 
 
 func get_wind_seed() -> int:
@@ -343,6 +351,9 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 	if _state == null:
 		return
 	_state.game_time = game_time
+	# The companion's resting schedule runs on the same clock (pure function of time).
+	if _state.companion.advance_to(game_time):
+		companion_moved.emit(_state.companion.spot)
 	if _state.voyage:
 		_state.voyage.progress_nm = clampf(progress_nm, 0.0, _state.voyage.get_total_nm())
 		_state.vessel_position = _state.voyage.get_position()

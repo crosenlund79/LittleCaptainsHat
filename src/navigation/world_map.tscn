@@ -91,6 +91,8 @@ theme_override_constants/separation = 12
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+clip_text = true
+text_overrun_behavior = 3
 text = ""
 
 [node name="TimeControls" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox/ClockRow"]
@@ -200,12 +202,25 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Clear course"
 
-[node name="SetSailButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox"]
+[node name="ActionRow" type="HBoxContainer" parent="Ui/Root/SidePanel/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SetSailButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/ActionRow"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"BigButton"
 tooltip_text = "Depart on the planned course"
 text = "Set sail"
+
+[node name="SleepButton" type="Button" parent="Ui/Root/SidePanel/Scroll/VBox/ActionRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_type_variation = &"BigButton"
+tooltip_text = "Sleep for a while (the boat sails on while you sleep). You wake in the V-berth."
+text = "Sleep"
 
 [node name="Sep4" type="HSeparator" parent="Ui/Root/SidePanel/Scroll/VBox"]
 layout_mode = 2
@@ -256,7 +271,7 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
 offset_top = -88.0
-offset_right = 1060.0
+offset_right = 860.0
 offset_bottom = -24.0
 grow_vertical = 0
 theme_type_variation = &"HudPanel"
@@ -298,7 +313,9 @@ text = "Wind"
 
 [node name="CursorLabel" type="Label" parent="Ui/Root/Toolbar/HBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(380, 0)
+custom_minimum_size = Vector2(300, 0)
+clip_text = true
+text_overrun_behavior = 3
 layout_mode = 2
 size_flags_vertical = 4
 theme_type_variation = &"MutedLabel"

@@ -16,10 +16,12 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_simulation.gd"),
 	preload("res://tests/suites/test_wind.gd"),
 	preload("res://tests/suites/test_sailing.gd"),
+	preload("res://tests/suites/test_reassessment.gd"),
 	preload("res://tests/suites/test_save_manager.gd"),
 	preload("res://tests/suites/test_voyage_persistence.gd"),
 	preload("res://tests/suites/test_settings_and_audio.gd"),
 	preload("res://tests/suites/test_sailing_presentation.gd"),
+	preload("res://tests/suites/test_life_aboard.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
 

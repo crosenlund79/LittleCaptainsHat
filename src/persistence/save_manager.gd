@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -236,6 +236,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_1_to_2(data)
 	if from_version < 3:
 		data = _migrate_2_to_3(data)
+	if from_version < 4:
+		data = _migrate_3_to_4(data)
 	return data
 
 
@@ -284,6 +286,20 @@ func _migrate_2_to_3(data: Dictionary) -> Dictionary:
 	vessel.erase("speed_kn")
 	vessel["propulsion"] = PropulsionState.new().to_dict()
 	data["version"] = 3
+	return data
+
+
+## Version 3 (Iteration 003) had no ship's companion. Version 4 adds one:
+## older games get the default companion (a cat, CompanionState.DEFAULT_KIND)
+## resting in its first spot, with its schedule starting at the saved time.
+func _migrate_3_to_4(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("clock") is Dictionary:
+		return data
+	var game_time: Variant = session.clock.get("game_time")
+	var now := float(game_time) if game_time is float or game_time is int else SessionState.get_start_time()
+	session["companion"] = CompanionState.create(CompanionState.DEFAULT_KIND, now).to_dict()
+	data["version"] = 4
 	return data
 
 

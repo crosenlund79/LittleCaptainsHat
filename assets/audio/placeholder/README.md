@@ -13,3 +13,5 @@ routing and the volume settings. Replace them with real audio in a later iterati
 | `ui_click.wav` | UI | Button presses, UI test button |
 | `engine_hum.wav` | SFX | Engine loop on deck (open air) while motoring |
 | `engine_hum_muffled.wav` | SFX | Engine loop below deck and at the chart (low-passed) |
+| `companion_purr.wav` | SFX | The ship's cat purring when petted |
+| `companion_dog_pant.wav` | SFX | The ship's dog panting and sighing when petted |

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="1_r"]
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_cabin.wav" id="2_r"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://src/boat/boat_fixture.gd" id="5_r"]
 [ext_resource type="Script" path="res://src/interaction/interactable.gd" id="6_r"]
 [ext_resource type="PackedScene" path="res://src/player/player.tscn" id="7_r"]
+[ext_resource type="Script" path="res://src/companion/ship_companion.gd" id="9_companion"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_1"]
 font = ExtResource("4_r")
@@ -404,6 +405,12 @@ position = Vector2(-120, 0)
 
 [node name="from_deck" type="Marker2D" parent="SpawnPoints"]
 position = Vector2(-218, 0)
+
+[node name="v_berth" type="Marker2D" parent="SpawnPoints"]
+position = Vector2(282, 0)
+
+[node name="Companion" type="Node2D" parent="."]
+script = ExtResource("9_companion")
 
 [node name="Player" parent="." instance=ExtResource("7_r")]
 z_index = 10
