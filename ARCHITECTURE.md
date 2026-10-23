@@ -1,7 +1,7 @@
 # Next Harbor: Architecture
 
-This document describes how Iteration 001 is put together and where future
-systems are meant to plug in. It is kept short on purpose; the scripts have
+This document describes how Next Harbor is put together (as of Iteration 002)
+and where future systems are meant to plug in. It is kept short on purpose; the scripts have
 doc comments for details.
 
 ## Guiding rules
@@ -12,25 +12,33 @@ doc comments for details.
   signals; the application shell (`App`) reacts by calling services and switching screens.
 - **One place per responsibility.** Scene switching, the modal menu stack, saving,
   settings and audio each have one owner.
-- **No speculative systems.** Nothing exists yet for time, weather, money and so on.
-  The extension points below describe where they will go.
+- **One timeline.** Game time and vessel movement are advanced only by the
+  `Simulation` service, never by scenes, menus or timers.
+- **Navigation data is geographic.** Ports, routes, the vessel and weather use
+  WGS84 longitude/latitude; projection to the screen is a display concern.
+- **No speculative systems.** Nothing exists yet for money, provisions, equipment
+  and so on. The extension points below describe where they will go.
 
-## Autoloads (4)
+## Autoloads (5)
 
 | Autoload | Script | Responsibility |
 |---|---|---|
 | `SettingsManager` | `src/settings/settings_manager.gd` | Preferences: load/validate/save `user://settings.cfg`, apply bus volumes, window mode, VSync, UI scale. |
 | `AudioManager` | `src/audio/audio_manager.gd` | Music, looping ambience, pooled one-shots (SFX/UI) on the right buses. Owns no game state. |
 | `GameSession` | `src/core/game_session.gd` | Authoritative session state and its mutations, with change signals. |
+| `Simulation` | `src/core/simulation.gd` | The single simulation timeline: advances the game clock and the active voyage, detects arrival and due weather warnings, sleeping. Pausable. |
 | `SaveManager` | `src/persistence/save_manager.gd` | Save slots: JSON read/write, validation, metadata. Converts files ↔ `SessionState` only. |
 
 Screen transitions are deliberately **not** an autoload: they belong to the
 application shell, the only code that changes screens.
 
 Dependency direction (no cycles): UI/screens → `App` (via signals) → services
-(`GameSession`, `SaveManager`, `SettingsManager`, `AudioManager`) → data classes
-(`SessionState`, `PlannedRoute`, `PortCatalog`, …). Services do not reference
-each other, except that `SaveManager` and `GameSession` both use the data classes.
+(`GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `AudioManager`)
+→ data classes and data services (`SessionState`, `PlannedRoute`, `Voyage`,
+`PortCatalog`, `SeaRouter`, `WeatherCatalog`, …). `Simulation` reads and writes
+the session only through `GameSession`; `SaveManager` only converts files ↔
+`SessionState`. `PortCatalog`, `SeaRouter` and `WeatherCatalog` are shared,
+lazily loaded data services (`get_default()`); `GameSession` releases them on exit.
 
 ## Scene architecture
 
@@ -45,7 +53,8 @@ App (src/app/app.tscn, main scene, PROCESS_MODE_ALWAYS)
 ```
 
 - **`App`** (`src/app/app.gd`) is the flow coordinator: new game, continue, load,
-  return to menu, quit, opening and closing the chart, area changes and the menus.
+  return to menu, quit, opening and closing the chart, area changes, the menus,
+  departure confirmation, sleeping and showing simulation events (warnings, arrival).
   It wires each new screen's signals in a setup callback before the screen's `_ready`.
 - **`SceneRouter`** (`src/app/scene_router.gd`) removes and frees the old screen
   *before* instantiating the new one, so there is never a second player or screen.
@@ -87,13 +96,24 @@ Edit the generator and re-run it rather than hand-editing the `.tres`.
 | `boat_area` | `&"interior"` or `&"exterior"` |
 | `player_position` / `has_player_position` | position in the area's local space |
 | `spawn_point` | marker to use when there is no position (new game, after moving between areas) |
-| `location_id` | port id where the boat lies |
-| `planned_route` | `PlannedRoute` or `null` |
+| `location_id` | port id where the boat lies; empty while underway |
+| `planned_route` | `PlannedRoute` planned in port, or `null` |
+| `game_time` | authoritative clock: seconds since the Unix epoch, UTC (float) |
+| `time_scale` | 1, 5 or 20 |
+| `vessel_status` | `moored`, `underway` or `arrived` |
+| `vessel_position` | Vector2(lon, lat); while underway always derived from the voyage |
+| `vessel_speed_kn` | from the `VesselProfile` (5 kn) |
+| `voyage` | `Voyage` while underway, else `null` |
 
 `GameSession` is the only writer. It exposes intent-level methods
 (`start_new_session`, `enter_boat_area`, `set_player_position`, `plan_route_to`,
-`clear_planned_route`, `replace_state`) and signals (`boat_area_changed`,
-`route_changed`, `state_replaced`, …). `get_planned_route()` and
+`set_planned_route`, `clear_planned_route`, `depart`, `change_course`,
+`set_time_scale`, `replace_state`), hooks used only by `Simulation`
+(`apply_simulation_step`, `complete_voyage`, `record_weather_warning`) and signals
+(`boat_area_changed`, `route_changed`, `voyage_started`, `voyage_course_changed`,
+`voyage_arrived`, `time_scale_changed`, `state_replaced`, `notice`, …). Every
+request that could break the rules (an unvalidated route, departing without a
+course) is refused with a reason string instead of applied. `get_planned_route()` and
 `get_state_snapshot()` return copies, so callers cannot modify state behind its back.
 `has_unsaved_changes()` drives the "progress will be lost" confirmations.
 
@@ -120,7 +140,10 @@ chart is open and no boat scene exists.
   - `InteractionSensor` (`Area2D` on the player) keeps one focused interactable: the
     nearest one in range, with ties broken by node name, so the choice is predictable.
   - `BoatArea` routes by id: `companionway` → `area_change_requested`,
-    `nav_table` → `chart_requested`, anything with a `message` → notification.
+    `nav_table` → `chart_requested`, `bed` → `sleep_requested`,
+    `helm` → `helm_requested` (App: depart, or report the autopilot course),
+    anything with a `message` → notification.
+  - The deck's `mooring` node (pontoon, lines, port name) is visible only in port.
     A new "flavour" object therefore needs no code, only an `Interactable` with a message.
 
 ## Map data structures
@@ -128,17 +151,226 @@ chart is open and no boat scene exists.
 | Piece | File | Notes |
 |---|---|---|
 | `PortData` (Resource) | `src/navigation/port_data.gd`, `data/navigation/ports/*.tres` | stable `id`, name, country, latitude/longitude (WGS84), description |
-| `PortCatalog` (Resource) | `port_catalog.gd`, `data/navigation/port_catalog.tres` | list of ports; `get_default()` is the shared instance |
-| `PlannedRoute` | `planned_route.gd` | origin id, destination id, `waypoints: Array[Vector2(lon, lat)]` (already serialized; no UI to add them yet) |
-| `GeoMath` | `geo_math.gd` | great-circle distance (nm), coordinate formatting |
-| `MapProjection` | `map_projection.gd` | spherical Mercator, geo ↔ map units |
-| Coastlines | `data/navigation/western_baltic_land.json` | Natural Earth 10m land, clipped/simplified, plus label anchors |
+| `PortCatalog` (Resource) | `port_catalog.gd`, `data/navigation/port_catalog.tres` | the 15 ports; `get_default()` is the shared instance |
+| `PlannedRoute` | `planned_route.gd` | origin (port id or position at sea), destination, user waypoints, the calculated `path` and the waypoint indices in it |
+| `Voyage` | `voyage.gd` | the route being sailed, `progress_nm`, course `revision`, warned weather ids |
+| `VesselProfile` (Resource) | `vessel_profile.gd`, `data/vessel/starter_sloop.tres` | cruising speed (5 kn) |
+| `GeoMath` | `geo_math.gd` | rhumb-line distance/interpolation, great-circle distance, formatting |
+| `MapProjection` | `map_projection.gd` | spherical Mercator, geo ↔ chart map units (display) |
+| `NavGrid` | `nav_grid.gd`, `data/navigation/europe_navmask.png/.json` | navigability raster and exact line checks |
+| `SeaRouter` | `sea_router.gd`, `data/navigation/europe_route_graph.json` | route calculation and validation |
+| Coastlines | `data/navigation/europe_land.json` | Natural Earth 10m land, clipped to Europe, simplified; whole rings plus fill tiles; chart labels |
+| Weather | `src/weather/*.gd`, `data/weather/demo_conditions.tres` | static demonstration areas |
 
-Geographic coordinates are never converted to pixels in data. `MapView` projects
-them to map units, and its `Camera2D` handles zoom and pan. Port picking is done in
-screen space with a fixed pick radius, so it stays usable at any zoom. Markers and
-text are drawn at a constant screen size. `WorldMap` (the chart screen) edits the
-route only through `GameSession.plan_route_to` / `clear_planned_route`.
+All navigation data is generated by `tools/navigation/build_navigation_data.py`
+from Natural Earth (see the script for inputs). Geographic coordinates are never
+converted to pixels in data. `MapView` projects them to map units, and its
+`Camera2D` handles zoom and pan. Port, waypoint and course picking is done in
+screen space with fixed radii, so it works at any zoom. Markers and text are
+drawn at a constant screen size. Land fill is pre-tiled (4° tiles) and
+coastlines are drawn once as hairlines in spatial tiles, so off-screen geometry
+is culled and only the light overlay is redrawn when the view moves.
+
+## Simulation and the game clock
+
+`Simulation` (autoload) is the only code that moves time forward:
+
+- **Clock.** `SessionState.game_time` is UTC seconds. New games start on
+  1 May 2026, 08:00 UTC (`SessionState.START_TIME_ISO`). Each frame,
+  `Simulation.tick(delta)` advances it by
+  `delta × game_seconds_per_real_second (60) × time_scale (1/5/20)`. The rate is a
+  variable, so it can be rebalanced. The node is `PROCESS_MODE_PAUSABLE`: pause
+  menus stop time; the cabin, deck and chart do not.
+- **Event-driven stepping.** `advance(seconds, stop_at_events)` computes the next
+  event on the active voyage (arrival, or the progress at which a weather warning
+  becomes due), steps the clock and the voyage *exactly* to it, handles it, and
+  repeats with the remaining time. Large steps (20×, eight hours of sleep) therefore
+  produce the same position, time and events as many small steps (tested). The cost
+  is proportional to the number of events, not to the simulated time.
+- **Sleeping** is `Simulation.sleep(hours)`, the same `advance()` with
+  `stop_at_events = true`: it stops at arrival or at a newly due warning and reports
+  the elapsed time. There is no separate sleep timer or distance formula.
+- **Determinism.** Given the same state, course, speed and elapsed time, results
+  are identical (up to floating-point rounding); no randomness is involved.
+- No offline time: time only advances while the game runs; loading resumes at the
+  saved `game_time`.
+
+## Voyage state
+
+`SessionState.vessel_status` is a small explicit state model:
+
+```
+moored ──depart()──► underway ──arrival──► arrived ──depart()──► underway …
+                       └─change_course()─┘ (stays underway)
+```
+
+`arrived` behaves like `moored` but tells the player where they arrived. While
+underway, `voyage` holds the `Voyage` and `location_id` is empty. Travel time per
+segment is `distance_nm / speed_kn` hours. The vessel position is
+`GeoMath.point_along(route.path, progress_nm)`, so chart, HUD, simulation and saves
+cannot disagree.
+
+**Departure** (`GameSession.depart()`) re-validates the planned route, creates the
+`Voyage` from it and switches to `underway`; nothing is reloaded. **Arrival**
+(`complete_voyage()`) sets the location to the destination, places the vessel at
+the port coordinate and emits `voyage_arrived`; no new voyage starts automatically.
+
+## Route calculation
+
+Approach: **precomputed sea graph + A\* + string pulling, all checked against one
+navigability raster**. It was chosen because it is deterministic, fast (European
+routes in milliseconds via Godot's native `AStar2D`), works for any origin or
+destination inside the coverage (ports, waypoints, positions at sea), and keeps one
+definition of "navigable water" for routing and validation.
+
+1. **Navigability raster** (`NavGrid`, 3720×4236 cells, 60 cells per Mercator degree:
+   about 1.9 km E-W, and N-S about 1.1 km at 55°N). It is rasterised from exactly the
+   coastline polygons the chart draws. A cell is navigable only if **no** land
+   touches any part of it (checked at 1/4-cell precision). A second class,
+   *approach* water (mostly water), exists only for harbour approaches.
+2. **Sea graph** (offline, `build_navigation_data.py`): about 24,000 nodes on a
+   multi-resolution lattice. Nodes are coarse in open water and denser near coasts,
+   with extra nodes along the medial axis of narrow straits. About 110,000 edges each
+   join two nodes with a clear straight line. Pieces that lie in the same body of
+   water are stitched together with a raster search, so the graph is connected
+   exactly where the water is.
+3. **A leg** (`SeaRouter.find_leg`): if the two ends see each other, a straight
+   segment. Otherwise each end is connected to up to 8 visible nearby graph nodes,
+   `AStar2D` finds the node path (costs ≈ nautical miles via an azimuthal
+   equidistant projection), and string pulling removes every point that a clear
+   straight line can skip.
+4. **Harbour approaches.** Port coordinates often lie on generalised coastline.
+   `find_port_approach()` does a bounded breadth-first search over approach-class
+   cells:
+   - it may start up to 2 nm from the port (the "berth link");
+   - it may not go further than 10 nm from the port, and stays inside a 61×61-cell
+     window;
+   - it ends at the first navigable cell that reaches open sea (a graph piece of at
+     least 50 nodes, so dock basins don't count).
+
+   This is the only place approach water is used, and it is documented as able to
+   graze the simplified coastline.
+5. **Waypoints** split a route into legs (origin → wp1 → … → destination). Each leg is
+   routed independently, so waypoints are constraints, and moving one recalculates
+   only its two legs (leg results are cached).
+6. **Limits.** Every search is bounded:
+   - fixed connection radii and candidate counts;
+   - the approach window;
+   - `MAX_PATH_NODES` on the A* result.
+
+   Failure returns an explanation instead of a route. Unconnected waters (e.g. the
+   Black Sea) fail in milliseconds.
+
+The **coverage limits** follow from the data and resolution: straits narrower than
+roughly two cells (the Bosporus, the Dardanelles, the Rio–Antirrio strait, the
+Drøbak narrows, inner skerries) are closed. They are reported as "no sea route",
+never crossed.
+
+### Land validation
+
+`SeaRouter.validate_route(route)` checks **complete segments**, not just points. Each
+segment is a rhumb line, which is a straight line in the Mercator raster, so
+`NavGrid.is_line_clear` walks *every* cell the segment touches (supercover traversal;
+at exact corner crossings both side cells must be water). A segment is allowed if it
+is:
+
+- entirely in navigable cells;
+- within 10 nm of the route's origin/destination port and entirely in approach cells
+  (harbour approach); or
+- the ≤ 2 nm berth link that starts exactly at a port coordinate.
+
+Waypoints must be in navigable cells. The same raster and traversal produced the
+graph edges (verified at runtime by a test that re-checks all 109,475 edges), so
+routing and validation cannot disagree. `GameSession.set_planned_route()`,
+`depart()` and `change_course()` all validate before changing state. Tests also
+check every route segment against the vector coastline independently.
+
+Depth, draft, tides and grounding are not modelled. "Navigable" is a property of
+`NavGrid` cells only. A later restriction (depth, draft, exclusion zones) can be
+added as another cell class or a per-vessel mask, without changing the router's
+callers.
+
+### Manual waypoint handling
+
+The chart edits a **draft**; the committed course is untouched until **Apply**:
+
+- `WorldMap` keeps the draft destination, its waypoints and its leg results.
+- `MapView` only reports presses and drags: on the course line, which inserts a
+  waypoint into that leg and starts dragging it; on waypoints; and right-clicks.
+- While dragging, the marker follows the mouse and the two affected legs are
+  recalculated at most every 0.1 s, and again on release.
+- An invalid draft (a waypoint on land, a blocked leg) is drawn with dashed red
+  "BLOCKED" legs and crossed waypoints, and explained in the side panel. Its Apply
+  button is disabled.
+- Leaving the chart with unapplied changes asks first; Discard restores the
+  committed course.
+- The draft legs are the `SeaRouter` result itself, so the course shown is the course
+  that will be sailed. In port, Apply calls `set_planned_route()`; at sea it calls
+  `change_course()`.
+
+### Geographic position interpolation
+
+Route segments are rhumb lines (constant bearing). `GeoMath.rhumb_distance_nm`
+gives segment lengths; route distance is their sum (so it follows the coast, not the
+great circle). `GeoMath.rhumb_interpolate` places a point at a fraction of a
+segment's *distance* (latitude linear in distance, longitude along the constant
+bearing), consistent with the distance calculation. The same lines are straight on
+the Mercator chart and in the raster, so drawing, validation and movement agree.
+Screen space is never used to compute positions.
+
+## Weather model
+
+- `WeatherCondition` (Resource) is a static circle: id, name, kind (`fair`,
+  `strong_wind`, `storm`), severity (`NONE`/`CAUTION`/`DANGER`), centre and radius
+  in nm. `WeatherCatalog` (`data/weather/demo_conditions.tres`) lists four
+  demonstration areas:
+  - strong winds between Møn and Rügen, on the Copenhagen → Kiel route;
+  - a storm in the Bay of Biscay;
+  - the Mistral in the Gulf of Lion;
+  - fair weather in the Balearic Sea, shown but never warned about.
+- `WeatherCatalog.find_encounters(path, from_nm)` returns, for each noteworthy area
+  the path enters, the distance along the path of its first point inside the area.
+  It samples every 0.5 nm, then bisects to 0.01 nm. It is pure data and maths, with
+  no scene dependencies.
+- **Five-hour warning.** `Simulation` caches the encounters per course revision. A
+  warning becomes due when the vessel is `5 h × speed` (25 nm at 5 kn) of
+  *sailing distance* before the entry point. That horizon is geographic, so time
+  acceleration cannot change where it triggers; the warning is an event boundary in
+  `advance()`, so 20× and sleep cannot skip it.
+- **De-duplication.** Warned condition ids are stored on the voyage per course
+  revision; a changed course is a new revision, so the warning is re-evaluated (and
+  repeated only if the new course still meets the area). The list is saved, so loading
+  does not repeat warnings.
+- When a warning fires, `App` shows a HUD banner (View chart / Dismiss) and a
+  notification. Accelerated time drops to 1×; a sleep stops.
+- Weather has **no** effect on speed, the boat or the player in this iteration.
+
+## Mid-voyage rerouting
+
+`SeaRouter.plan_route()` accepts either a port origin or an arbitrary origin
+position (empty origin port id). At sea, `GameSession.change_course(destination,
+waypoints)` plans from the vessel's *current* position using the same router and
+validation as departures:
+
+- On success it replaces the voyage's route and resets `progress_nm` to 0 on the new
+  path, which starts exactly at the current position, so there is no jump. It also
+  increments the revision and clears the warned list.
+- The clock, boat area and player position are untouched.
+- On failure nothing changes and the reason is returned.
+
+The chart's draft may be a little behind a moving boat. That doesn't matter, because
+`change_course()` always replans from the position at the moment of applying.
+
+### How future wind effects may change speed
+
+Speed is read in one place: `GameSession.get_vessel_speed_kn()` (from
+`VesselProfile.cruising_speed_kn`), used by `Simulation.advance()` and for
+ETAs/horizons. A later wind model would supply a speed as a function of position,
+heading and time (e.g. a polar table × wind). `advance()` then has to treat speed
+changes as additional event boundaries (e.g. entering a weather area or crossing a
+time step of the wind field) and integrate piecewise. ETAs and the warning horizon
+become sums over those pieces. Nothing in the route, voyage or save format assumes
+constant speed beyond `vessel_speed_kn`.
 
 ## Save/load architecture
 
@@ -147,7 +379,22 @@ GameSession.get_state_snapshot() ─► SaveManager.save_to_slot(slot, state)
 SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─► GameSession.replace_state()
 ```
 
-- File layout: `{format, version, game_version, saved_at_unix, saved_at_utc, session: SessionState.to_dict()}`.
+- File layout: `{format, version, game_version, saved_at_unix, saved_at_utc, session: SessionState.to_dict()}`,
+  written with full float precision. Session sections: `boat`, `player`, `clock`,
+  `vessel`, `navigation` (location, planned route with its path, active voyage with
+  route, progress, revision and warned weather ids).
+- **Version 2** (Iteration 002). `_migrate_1_to_2` upgrades Iteration 001 saves:
+  - default clock (start time, 1×);
+  - vessel moored at its port;
+  - no voyage;
+  - the old planned route keeps its destination and waypoints, with an empty path.
+
+  `GameSession.replace_state()` then recalculates such a route as a sea route, or
+  removes it and emits a `notice` if that is impossible.
+- Underway saves are cross-checked: status ⇔ voyage ⇔ empty location, progress within
+  the route, and the saved vessel position must match the position derived from the
+  progress (≤ 0.001°). Loading continues from the saved progress, never from the
+  departure port.
 - Validation is complete before anything is applied: `SessionState.from_dict` builds
   a brand-new state or returns `null` with reasons. `App.load_slot` only touches the
   session and the scene after success, so a failed load leaves the game untouched.
@@ -197,18 +444,24 @@ embedded in the editor.
 
 | Future system | Where it goes |
 |---|---|
-| Game time, voyage progress, weather | A new data section in `SessionState` plus a simulation service (node or autoload) that advances it, independent of the visible scene. Boat areas only *read* it (e.g. deck shows weather, cabin may not). |
-| Travel / arrival | `GameSession` gains a voyage state built from `PlannedRoute` (waypoints already serialize); arrival updates `location_id`. `WorldMap` shows progress from session data. |
+| Wind and sailing performance | Speed from a wind/polar model in `Simulation.advance()` with extra event boundaries (see "How future wind effects may change speed"). |
+| Moving or time-varying weather | Give `WeatherCondition` a time dependence and make `find_encounters` time-aware (encounter = position *and* time); `Simulation` already asks per course revision and can ask again when the forecast changes. |
+| Depth / draft limits | Another `NavGrid` cell class or a per-vessel mask; `SeaRouter` callers do not change. |
 | Money, provisions, equipment, vessel condition | Each its own section in `SessionState` and small owner API on `GameSession` (or a dedicated service if it grows); UI panels subscribe to signals. |
 | New interactions | Add an `Interactable` to a scene. Messages need no code; new behaviours add an id branch in `BoatArea` or, once there are many, a small handler resource. |
 | More boat areas | Add the id to `SessionState.BOAT_AREAS`, register the scene in `app.tscn`'s `boat_area_scenes`, add `SpawnPoints`. |
-| More ports / regions | New `PortData` resources in the catalog; another coastline JSON for `MapView.land_data`. |
+| More ports | New `PortData` resources in the catalog (a harbour approach is found automatically; tests check every port). |
+| Larger regions | Regenerate the navigation data with other bounds; for worldwide coverage the raster and graph would need tiling. |
 | Real audio | Replace the placeholder streams on the scenes and settings menu; buses stay the same. |
 
 ## Tests
 
 `tests/test_runner.tscn` is a small built-in runner (no framework). Suites:
-data model, save manager (including corruption and failed writes), settings and
-audio, and an end-to-end gameplay flow driving the real `App` with input events.
+data model, routing (graph consistency, port approaches, land crossings against
+the vector coastline, straits, all port pairs, waypoints, failures), simulation
+(clock, voyages, step independence, sleep, weather warnings, rerouting), save
+manager, voyage persistence (underway saves, migration, invalid saves), settings
+and audio, and an end-to-end gameplay flow driving the real `App` with input
+events, including the Iteration 002 acceptance scenario.
 `tests/restart_check.tscn` verifies persistence across two separate processes.
 Tests use scratch files under `user://test_*`, never the player's saves or settings.

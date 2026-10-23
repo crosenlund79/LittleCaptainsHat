@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"brest"
+display_name = "Brest"
+country = "France"
+latitude = 48.381
+longitude = -4.488
+description = "Breton port in a great natural roadstead near the western tip of France."

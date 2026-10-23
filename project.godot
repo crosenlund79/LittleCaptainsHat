@@ -24,6 +24,7 @@ config/icon="res://assets/branding/next_harbor_icon.svg"
 SettingsManager="*res://src/settings/settings_manager.gd"
 AudioManager="*res://src/audio/audio_manager.gd"
 GameSession="*res://src/core/game_session.gd"
+Simulation="*res://src/core/simulation.gd"
 SaveManager="*res://src/persistence/save_manager.gd"
 
 [display]

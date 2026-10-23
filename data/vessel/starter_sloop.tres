@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="VesselProfile" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/vessel_profile.gd" id="1_vessel"]
+
+[resource]
+script = ExtResource("1_vessel")
+display_name = "33 ft cruising sloop"
+length_ft = 33.0
+cruising_speed_kn = 5.0

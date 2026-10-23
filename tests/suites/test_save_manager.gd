@@ -13,7 +13,7 @@ func run(t: Node) -> void:
 	var state := SessionState.create_new(&"copenhagen", SessionState.AREA_EXTERIOR, &"start")
 	state.player_position = Vector2(-120, 33)
 	state.has_player_position = true
-	state.planned_route = PlannedRoute.create(&"copenhagen", &"kiel")
+	state.planned_route = t.make_route(&"copenhagen", &"kiel")
 	t.check_eq(SaveManager.save_to_slot(1, state), OK, "saving to slot 1 succeeds")
 	t.check(FileAccess.file_exists(dir.path_join("slot_1.json")), "slot file is written under user://")
 	t.check(not FileAccess.file_exists(dir.path_join("slot_1.json.tmp")), "temporary file is cleaned up")

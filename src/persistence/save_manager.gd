@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -31,6 +31,8 @@ class SlotInfo:
 	var area_name := ""
 	var location_name := ""
 	var destination_name := ""
+	## In-game date and time of the save.
+	var game_time := 0.0
 	## Explanation for CORRUPTED / UNSUPPORTED slots.
 	var problem := ""
 
@@ -63,9 +65,14 @@ func get_slot_info(slot: int) -> SlotInfo:
 	var state: SessionState = read.state
 	info.saved_at_unix = read.saved_at_unix
 	info.area_name = SessionState.get_area_display_name(state.boat_area)
-	info.location_name = catalog.get_display_name(state.location_id)
-	if state.planned_route:
-		info.destination_name = catalog.get_display_name(state.planned_route.destination_port_id)
+	info.game_time = state.game_time
+	if state.voyage:
+		info.location_name = "At sea"
+		info.destination_name = catalog.get_display_name(state.voyage.route.destination_port_id)
+	else:
+		info.location_name = catalog.get_display_name(state.location_id)
+		if state.planned_route:
+			info.destination_name = catalog.get_display_name(state.planned_route.destination_port_id)
 	return info
 
 
@@ -110,7 +117,8 @@ func save_to_slot(slot: int, state: SessionState) -> Error:
 		"saved_at_utc": Time.get_datetime_string_from_unix_time(int(now)) + "Z",
 		"session": state.to_dict(),
 	}
-	var text := JSON.stringify(data, "\t")
+	# Full precision keeps positions, progress and time exact across save/load.
+	var text := JSON.stringify(data, "\t", true, true)
 	var final_path := _slot_path(slot)
 	var temp_path := final_path + ".tmp"
 	var backup_path := final_path + ".bak"
@@ -221,9 +229,41 @@ func _read_and_validate(path: String) -> _ReadResult:
 	return read
 
 
-## Upgrades older save layouts to the current one. Version 1 is the first
-## format, so there is nothing to migrate yet.
-func _migrate(data: Dictionary, _from_version: int) -> Dictionary:
+## Upgrades older save layouts to the current one, one version at a time.
+## Each step only adds safe defaults; validation happens afterwards as usual.
+func _migrate(data: Dictionary, from_version: int) -> Dictionary:
+	if from_version < 2:
+		data = _migrate_1_to_2(data)
+	return data
+
+
+## Version 1 (Iteration 001) had no clock, vessel state or voyages, and its
+## planned route was only origin/destination/waypoints. The vessel is placed
+## in its port at the default start time; the route keeps its destination and
+## waypoints and is recalculated as a sea route when the game is loaded.
+func _migrate_1_to_2(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("navigation") is Dictionary:
+		return data  # Invalid anyway; validation reports it.
+	var catalog := PortCatalog.get_default()
+	var navigation: Dictionary = session.navigation
+	var port := catalog.get_port(StringName(str(navigation.get("location_id", ""))))
+	var position := port.get_geo_position() if port else Vector2.ZERO
+	session["clock"] = {"game_time": SessionState.get_start_time(), "time_scale": 1}
+	session["vessel"] = {
+		"status": String(SessionState.STATUS_MOORED),
+		"position": {"lon": position.x, "lat": position.y},
+		"speed_kn": VesselProfile.get_default().cruising_speed_kn,
+	}
+	navigation["voyage"] = null
+	var route: Variant = navigation.get("planned_route")
+	if route is Dictionary:
+		var origin := catalog.get_port(StringName(str(route.get("origin", ""))))
+		var origin_position := origin.get_geo_position() if origin else position
+		route["origin_position"] = {"lon": origin_position.x, "lat": origin_position.y}
+		route["path"] = []
+		route["waypoint_path_indices"] = []
+	data["version"] = 2
 	return data
 
 

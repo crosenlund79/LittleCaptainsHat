@@ -25,6 +25,7 @@ func run(runner: Node) -> void:
 	await _test_pause_and_settings()
 	await _test_save_and_load()
 	await _test_main_menu_return_and_continue()
+	await _test_first_voyage_acceptance()
 	await _test_quit()
 
 
@@ -108,7 +109,10 @@ func _test_interactions_in_cabin() -> void:
 	t.check_eq(app.hud.get_prompt(), "Sleep", "prompt appears near the berth")
 	await t.screenshot("04_prompt_berth")
 	await t.press_action(&"interact")
-	t.check(_toast_contains("Sleeping is not implemented"), "bed interaction shows its message")
+	t.check(app.modals.get_top() is SleepMenu, "the berth opens the sleep menu")
+	t.check(t.get_tree().paused, "the game pauses while choosing how long to sleep")
+	await t.press_action(&"pause")
+	t.check(app.modals.is_empty() and not t.get_tree().paused, "Esc closes the sleep menu without sleeping")
 
 	# Between the companionway and the chart table both are in reach; the
 	# closer one must win, and the choice must not flicker.
@@ -161,15 +165,22 @@ func _test_chart() -> void:
 	await t.frames(2)
 
 	# Select Kiel by clicking its marker, then plot a course.
+	view.center_on_geo(Vector2(11.4, 55.0), 0.6)
+	await t.frames(2)
 	await t.click_at(view.get_port_screen_position(&"kiel"))
 	t.check_eq(map.get_selected_port_id(), &"kiel", "clicking a port selects it")
 	var plot := map.find_child("PlotButton", true, false) as Button
 	t.check(not plot.disabled, "Plot course is available for Kiel")
 	await t.click(plot)
+	t.check(map.get_draft_route() != null, "an automatic sea route to Kiel is calculated")
+	t.check(GameSession.get_planned_route() == null, "the course is only a proposal until it is applied")
+	await t.click(map.find_child("ApplyButton", true, false))
 	var route := GameSession.get_planned_route()
 	t.check(route != null and route.origin_port_id == &"copenhagen" and route.destination_port_id == &"kiel",
-		"a route Copenhagen -> Kiel is plotted")
-	t.check(view.route_path.size() == 2, "the chart draws the planned course")
+		"applying makes Copenhagen -> Kiel the planned course")
+	t.check(route != null and route.path.size() > 2 and SeaRouter.get_default().validate_route(route).is_empty(),
+		"the planned course is a validated multi-segment sea route")
+	t.check(view.draft_legs.size() == 1 and view.draft_legs[0].path == route.path, "the chart draws exactly the planned course")
 	await t.screenshot("06_chart_route")
 
 	await t.click_at(view.get_port_screen_position(&"copenhagen"))
@@ -177,10 +188,12 @@ func _test_chart() -> void:
 	var clear := map.find_child("ClearButton", true, false) as Button
 	await t.click(clear)
 	t.check(GameSession.get_planned_route() == null, "route can be cleared")
-	t.check(clear.disabled, "Clear route is disabled without a route")
+	t.check(clear.disabled, "Clear course is disabled without a route")
 	await t.click_at(view.get_port_screen_position(&"kiel"))
 	await t.click(plot)
+	await t.click(map.find_child("ApplyButton", true, false))
 	t.check(GameSession.get_planned_route() != null, "route can be plotted again")
+	await _test_waypoint_editing(map)
 
 	await t.press_action(&"pause")
 	await _settle()
@@ -191,6 +204,45 @@ func _test_chart() -> void:
 	t.check(app.modals.is_empty() and not t.get_tree().paused, "closing the chart does not open the pause menu")
 	t.check_eq((app.hud.find_child("RouteLabel", true, false) as Label).text,
 		PlannedRoute.describe(GameSession.get_planned_route(), PortCatalog.get_default()), "HUD shows the planned route")
+
+
+## Waypoint editing on the chart with the mouse; invalid edits never replace
+## the committed course.
+func _test_waypoint_editing(map: WorldMap) -> void:
+	var view := map.get_map_view()
+	var committed := GameSession.get_planned_route()
+	var path := committed.path
+	view.center_on_geo(Vector2(12.3, 55.1), 1.2)
+	await t.frames(2)
+	await _drag(view.geo_to_screen(GeoMath.rhumb_interpolate(path[3], path[4], 0.3)), view.geo_to_screen(Vector2(12.9, 54.9)))
+	t.check_eq(map.get_draft_waypoints().size(), 1, "dragging the course adds a waypoint")
+	t.check(map.get_draft_route() != null, "the course is recalculated through the new waypoint")
+	await t.screenshot("06b_chart_waypoint_drag")
+
+	# Drag the waypoint onto land (Møn): shown as invalid, cannot be applied.
+	await _drag(view.geo_to_screen(map.get_draft_waypoints()[0]), view.geo_to_screen(Vector2(12.35, 54.97)))
+	t.check(map.get_draft_route() == null, "a waypoint on land makes the course invalid")
+	t.check("NOT NAVIGABLE" in (map.find_child("CourseStatus", true, false) as Label).text, "the panel explains why the course is invalid")
+	t.check((map.find_child("ApplyButton", true, false) as Button).disabled, "an invalid course cannot be applied")
+	t.check(not view.invalid_waypoints.is_empty() and view.draft_legs.any(func(l: Dictionary) -> bool: return not l.ok),
+		"the chart marks the waypoint and the blocked legs")
+	t.check(GameSession.get_planned_route().path == committed.path, "the committed course is untouched while editing")
+	await t.screenshot("06c_chart_invalid_waypoint")
+
+	# Drag it back to sea, then remove it with a right-click.
+	await _drag(view.geo_to_screen(map.get_draft_waypoints()[0]), view.geo_to_screen(Vector2(12.9, 54.85)))
+	t.check(map.get_draft_route() != null, "moving the waypoint back to sea makes the course valid again")
+	await t.click_at(view.geo_to_screen(map.get_draft_waypoints()[0]), MOUSE_BUTTON_RIGHT)
+	t.check(map.get_draft_waypoints().is_empty(), "right-clicking a waypoint removes it")
+
+	# Leaving with unapplied changes asks first; discarding keeps the course.
+	await t.press_action(&"pause")
+	t.check(app.modals.get_top() is ConfirmDialog, "leaving the chart with unapplied changes asks first")
+	await t.click(_button(app.modals.get_top(), "CancelButton"))
+	t.check(app.router.current_screen == map and app.modals.is_empty(), "Keep editing stays on the chart")
+	await t.click(map.find_child("DiscardButton", true, false))
+	t.check(not map.has_unapplied_changes(), "Discard returns to the committed course")
+	t.check(GameSession.get_planned_route().path == committed.path, "the committed course is unchanged after discarding")
 
 
 func _test_companionway_transitions() -> void:
@@ -211,7 +263,9 @@ func _test_companionway_transitions() -> void:
 	await _move_player_to(Vector2(-448, 0))
 	t.check_eq(app.hud.get_prompt(), "Take the helm", "helm prompt")
 	await t.press_action(&"interact")
-	t.check(_toast_contains("Steering and sailing are not implemented"), "helm interaction shows its message")
+	t.check(app.modals.get_top() is ConfirmDialog, "with a planned course the helm offers to set sail")
+	await t.click(_button(app.modals.get_top(), "CancelButton"))
+	t.check(not GameSession.is_underway(), "cancelling at the helm keeps the boat moored")
 
 	# Deck boundaries hold.
 	await _move_player_to(Vector2(0, -130))
@@ -350,7 +404,7 @@ func _test_save_and_load() -> void:
 	await _settle()
 	area = app.router.current_screen as BoatArea
 	t.check(area != null and area.area_id == &"exterior", "loading restores the saved area (deck)")
-	t.check_eq(GameSession.get_state_snapshot().to_dict(), saved_state, "loading restores the saved session state")
+	t.check(_same_state(GameSession.get_state_snapshot().to_dict(), saved_state), "loading restores the saved session state")
 	if area:
 		t.check(area.player.position.distance_to(Vector2(saved_state.player.position.x, saved_state.player.position.y)) < 1.0,
 			"loading restores the player position")
@@ -363,12 +417,14 @@ func _test_save_and_load() -> void:
 	var damaged := FileAccess.open(SaveManager.save_dir.path_join("slot_3.json"), FileAccess.WRITE)
 	damaged.store_string("{\"format\": \"next_harbor_save\", \"version\": 1, \"session\": 42}")
 	damaged.close()
+	Simulation.auto_advance = false  # freeze the clock for an exact comparison
 	var state_before := GameSession.get_state_snapshot().to_dict()
 	app.load_slot(3)
 	await t.frames(2)
 	t.check(_toast_contains("Could not load slot 3"), "loading a damaged save reports an error")
 	t.check_eq(GameSession.get_state_snapshot().to_dict(), state_before, "a failed load leaves the session unchanged")
 	t.check(app.router.current_screen == area, "a failed load keeps the current scene")
+	Simulation.auto_advance = true
 
 
 func _test_main_menu_return_and_continue() -> void:
@@ -398,7 +454,7 @@ func _test_main_menu_return_and_continue() -> void:
 	await t.click(_button(menu, "ContinueButton"))
 	await _settle()
 	t.check(app.router.current_screen is BoatArea, "Continue loads into the boat")
-	t.check_eq(GameSession.get_state_snapshot().to_dict(), expected, "Continue loads the most recent save (slot %d)" % newest)
+	t.check(_same_state(GameSession.get_state_snapshot().to_dict(), expected), "Continue loads the most recent save (slot %d)" % newest)
 
 	await _open_pause_and_click("MainMenuButton")
 	if app.modals.get_top() is ConfirmDialog:
@@ -420,6 +476,201 @@ func _test_main_menu_return_and_continue() -> void:
 	await _settle()
 
 
+## The owner's acceptance scenario for Iteration 002, through the real UI.
+func _test_first_voyage_acceptance() -> void:
+	var catalog := PortCatalog.get_default()
+	# 1-2. New game in Copenhagen.
+	await t.click(_button(app.router.current_screen, "NewGameButton"))
+	await _settle()
+	t.check_eq(GameSession.get_location_id(), &"copenhagen", "[voyage] a new game starts in Copenhagen")
+
+	# 3-4. Walk to the navigation station and open the European chart.
+	await _move_player_to(Vector2(-232, 62))
+	await t.press_action(&"interact")
+	await _settle()
+	var map := app.router.current_screen as WorldMap
+	if not t.check(map != null, "[voyage] the chart table opens the European chart"):
+		return
+	var view := map.get_map_view()
+	view.reset_view()
+	await t.frames(2)
+	var visible := Rect2(Vector2.ZERO, t.get_viewport().get_visible_rect().size)
+	t.check(visible.has_point(view.get_port_screen_position(&"reykjavik")) and visible.has_point(view.get_port_screen_position(&"piraeus")),
+		"[voyage] the whole-Europe view shows ports from Iceland to Greece (%s, %s)" % [
+			view.get_port_screen_position(&"reykjavik"), view.get_port_screen_position(&"piraeus")])
+	await t.screenshot("12_chart_europe")
+
+	# 5-7. Select Kiel and plot an automatic sea route that avoids Zealand.
+	view.center_on_geo(Vector2(11.6, 55.0), 0.7)
+	await t.frames(2)
+	await t.click_at(view.get_port_screen_position(&"kiel"))
+	await t.click(map.find_child("PlotButton", true, false))
+	var draft := map.get_draft_route()
+	t.check(draft != null and SeaRouter.get_default().validate_route(draft).is_empty(), "[voyage] an automatic sea route to Kiel is plotted")
+	var distance_before := draft.get_distance_nm() if draft else 0.0
+
+	# 8-9. Drag the course line to add a waypoint; the distance updates.
+	var press_geo := GeoMath.rhumb_interpolate(draft.path[2], draft.path[3], 0.5)
+	var target_geo := Vector2(12.78, 55.30)
+	await _drag(view.geo_to_screen(press_geo), view.geo_to_screen(target_geo))
+	await t.frames(2)
+	t.check_eq(map.get_draft_waypoints().size(), 1, "[voyage] dragging the course line adds a waypoint")
+	draft = map.get_draft_route()
+	t.check(draft != null and draft.waypoints.size() == 1, "[voyage] the course is recalculated through the waypoint")
+	t.check(draft != null and not is_equal_approx(draft.get_distance_nm(), distance_before),
+		"[voyage] the distance updates (%d -> %d nm)" % [roundi(distance_before), roundi(draft.get_distance_nm()) if draft else 0])
+	t.check(str(roundi(draft.get_distance_nm())) in (map.find_child("CourseLabel", true, false) as Label).text if draft else false,
+		"[voyage] the side panel shows the new distance")
+	await t.screenshot("13_chart_waypoint")
+
+	# 10. Confirm the route and return to the boat.
+	await t.click(map.find_child("ApplyButton", true, false))
+	t.check(GameSession.get_planned_route() != null and GameSession.get_planned_route().waypoints.size() == 1, "[voyage] the course with its waypoint is applied")
+	await t.press_action(&"pause")
+	await _settle()
+
+	# 11. Depart at the helm.
+	await _move_player_to(Vector2(-222, 0))
+	await t.press_action(&"interact")
+	await _settle()
+	await _move_player_to(Vector2(-448, 0))
+	await t.press_action(&"interact")
+	t.check(app.modals.get_top() is ConfirmDialog, "[voyage] the helm asks to set sail")
+	await t.click(_button(app.modals.get_top(), "ConfirmButton"))
+	t.check(GameSession.is_underway(), "[voyage] the boat departs")
+	var deck := app.router.current_screen as BoatArea
+	t.check(deck != null and not deck.get_node("Surroundings/Mooring").visible, "[voyage] the pontoon is left behind on deck")
+
+	# 12. The boat moves along the route.
+	var progress := GameSession.get_voyage_progress_nm()
+	await t.get_tree().create_timer(1.0).timeout
+	t.check(GameSession.get_voyage_progress_nm() > progress, "[voyage] the boat moves along the route in real time")
+	await t.screenshot("14_deck_underway")
+
+	# 13-14. Inspect progress on the chart, then return to the cabin.
+	await _move_player_to(Vector2(-262, 0))
+	await t.press_action(&"interact")
+	await _settle()
+	await _move_player_to(Vector2(-232, 62))
+	await t.press_action(&"interact")
+	await _settle()
+	map = app.router.current_screen as WorldMap
+	if not t.check(map != null, "[voyage] the chart opens while underway"):
+		return
+	await t.frames(2)
+	t.check(map.get_map_view().vessel_geo.distance_to(GameSession.get_vessel_position()) < 1e-3 and map.get_map_view().boat_port_id.is_empty(),
+		"[voyage] the chart shows the vessel at its actual position at sea")
+	await t.screenshot("15_chart_underway")
+	await t.press_action(&"pause")
+	await _settle()
+
+	# 15-16. 20x time acceleration from the HUD.
+	await t.click(app.hud.find_child("Speed20", true, false))
+	t.check_eq(GameSession.get_time_scale(), 20, "[voyage] the HUD switches to 20×")
+	var time_before := GameSession.get_game_time()
+	await t.get_tree().create_timer(0.5).timeout
+	var game_seconds := GameSession.get_game_time() - time_before
+	t.check(game_seconds > 300.0, "[voyage] at 20× half a real second covers %d game seconds" % roundi(game_seconds))
+	await t.click(app.hud.find_child("Speed1", true, false))
+
+	# 17-19. Sleep at the berth.
+	await _move_player_to(Vector2(276, 0))
+	await t.press_action(&"interact")
+	var progress_before_sleep := GameSession.get_voyage_progress_nm()
+	await t.click(app.modals.get_top().find_child("Sleep4", true, false))
+	t.check(app.modals.is_empty(), "[voyage] the sleep menu closes")
+	t.check(absf(GameSession.get_voyage_progress_nm() - progress_before_sleep - 20.0) < 0.5,
+		"[voyage] 4 h of sleep advance the voyage ~20 nm (%.1f nm)" % (GameSession.get_voyage_progress_nm() - progress_before_sleep))
+	t.check(_toast_contains("You slept 4 h"), "[voyage] waking up reports the time")
+
+	# 20-23. Save underway, leave to the main menu, load again.
+	await _open_pause_and_click("SaveButton")
+	await t.click(app.modals.get_top().find_child("Slot3", true, false))
+	if app.modals.get_top() is ConfirmDialog:
+		await t.click(_button(app.modals.get_top(), "ConfirmButton"))
+	var saved := SaveManager.load_from_slot(3).state
+	t.check(saved != null and saved.voyage != null, "[voyage] the game is saved while underway")
+	await t.click(_button(app.modals.get_top(), "MainMenuButton"))
+	if app.modals.get_top() is ConfirmDialog:
+		await t.click(_button(app.modals.get_top(), "ConfirmButton"))
+	await _settle()
+	t.check(app.router.current_screen is MainMenu, "[voyage] back at the main menu")
+	await t.click(_button(app.router.current_screen, "LoadButton"))
+	await t.click(app.modals.get_top().find_child("Slot3", true, false))
+	await _settle()
+	t.check(GameSession.is_underway() and GameSession.get_voyage_destination_id() == &"kiel", "[voyage] the loaded game is underway to Kiel")
+	if saved:
+		t.check(absf(GameSession.get_voyage_progress_nm() - saved.voyage.progress_nm) < 0.5,
+			"[voyage] the voyage resumes from the saved position, not from Copenhagen")
+
+	# 24. A weather warning within five sailing hours (sleep is cut short by it).
+	app.sleep_for(8.0)
+	t.check(app.hud.is_warning_visible(), "[voyage] the strong-wind warning is shown in the HUD")
+	t.check(_toast_contains("woken") and _toast_contains("Strong winds"), "[voyage] sleep was interrupted by the warning")
+	var position_at_warning := GameSession.get_vessel_position()
+	var time_at_warning := GameSession.get_game_time()
+	await t.screenshot("16_weather_warning")
+
+	# 25-26. Open the chart from the warning and steer around the area.
+	await t.frames(2)  # let the newly shown warning panel lay out
+	await t.click(app.hud.find_child("WarningChartButton", true, false))
+	await _settle()
+	map = app.router.current_screen as WorldMap
+	if not t.check(map != null, "[voyage] the warning's View chart button opens the chart"):
+		return
+	Simulation.auto_advance = false  # hold the boat still while editing for exact checks
+	view = map.get_map_view()
+	view.center_on_geo(Vector2(12.4, 54.9), 1.2)
+	await t.frames(2)
+	var leg: PackedVector2Array = map.get_draft_legs()[0].path
+	var ahead := GeoMath.point_along(leg, GeoMath.cumulative_distances(leg), 6.0)
+	await _drag(view.geo_to_screen(ahead), view.geo_to_screen(Vector2(12.62, 54.55)))
+	await t.frames(2)
+	var new_course := map.get_draft_route()
+	t.check(new_course != null and new_course.origin_port_id.is_empty(), "[voyage] the new course starts at sea from the vessel")
+	var avoids := new_course != null and WeatherCatalog.get_default().find_encounters(new_course.path,
+		GeoMath.cumulative_distances(new_course.path), 0.0).is_empty()
+	t.check(avoids, "[voyage] the adjusted course avoids the strong winds")
+	await t.screenshot("17_chart_reroute")
+	await t.click(map.find_child("ApplyButton", true, false))
+	t.check_eq(GameSession.get_voyage().revision, 2, "[voyage] the course is changed at sea")
+	t.check(GameSession.get_vessel_position().distance_to(position_at_warning) < 1e-3, "[voyage] no teleport: the boat stays where it was")
+	t.check(GameSession.get_game_time() - time_at_warning < 120.0, "[voyage] the clock is preserved")
+	Simulation.auto_advance = true
+	await t.press_action(&"pause")
+	await _settle()
+
+	# 27-30. Continue to Kiel without returning to Copenhagen.
+	for i in 6:
+		if not GameSession.is_underway():
+			break
+		app.sleep_for(8.0)
+	t.check_eq(GameSession.get_location_id(), &"kiel", "[voyage] the boat reaches Kiel")
+	t.check(_toast_contains("Arrived in Kiel"), "[voyage] arrival is announced")
+	t.check(GameSession.get_vessel_position().is_equal_approx(catalog.get_port(&"kiel").get_geo_position()), "[voyage] the vessel lies in Kiel")
+	await t.frames(2)
+	t.check_eq((app.hud.find_child("LocationLabel", true, false) as Label).text, "Arrived at Kiel", "[voyage] the HUD shows the new location")
+	await t.screenshot("18_arrived_kiel")
+
+	# 31. Plot the next voyage from Kiel.
+	var area := app.router.current_screen as BoatArea
+	if area.area_id == SessionState.AREA_EXTERIOR:
+		await _move_player_to(Vector2(-262, 0))
+		await t.press_action(&"interact")
+		await _settle()
+	await _move_player_to(Vector2(-232, 62))
+	await t.press_action(&"interact")
+	await _settle()
+	map = app.router.current_screen as WorldMap
+	if t.check(map != null, "[voyage] the chart opens in Kiel"):
+		map.select_port(&"gothenburg")
+		await t.click(map.find_child("PlotButton", true, false))
+		var next := map.get_draft_route()
+		t.check(next != null and next.origin_port_id == &"kiel", "[voyage] the next course is plotted from Kiel")
+	app.show_main_menu()
+	await _settle()
+
+
 func _test_quit() -> void:
 	# Quitting ends this test process, so it is the last step and only runs
 	# when everything else passed (the exit code must reflect failures).
@@ -431,6 +682,17 @@ func _test_quit() -> void:
 	await t.click(_button(menu, "QuitButton"))
 	await t.frames(30)
 	t.check(false, "Quit should have closed the application")
+
+
+## Equal session states, allowing the clock to have run on for a few seconds
+## of real time since loading (the game clock keeps going while tests wait).
+func _same_state(actual: Dictionary, expected: Dictionary) -> bool:
+	var a: Dictionary = actual.duplicate(true)
+	var b: Dictionary = expected.duplicate(true)
+	var drift: float = a.clock.game_time - b.clock.game_time
+	a.clock.erase("game_time")
+	b.clock.erase("game_time")
+	return a == b and drift >= 0.0 and drift < 20.0 * Simulation.game_seconds_per_real_second
 
 
 # --- Helpers -------------------------------------------------------------------------

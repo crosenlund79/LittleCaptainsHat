@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"piraeus"
+display_name = "Piraeus"
+country = "Greece"
+latitude = 37.942
+longitude = 23.636
+description = "Port of Athens on the Saronic Gulf, gateway to the Aegean islands."

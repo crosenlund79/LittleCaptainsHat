@@ -10,6 +10,8 @@ extends Node2D
 
 signal area_change_requested(area: StringName, spawn_point: StringName)
 signal chart_requested
+signal sleep_requested
+signal helm_requested
 signal message_requested(text: String)
 ## Prompt text for the focused interactable, or "" when nothing is in range.
 signal interaction_prompt_changed(prompt: String)
@@ -25,6 +27,10 @@ signal interaction_prompt_changed(prompt: String)
 @export var walkable_bounds := Rect2(-500, -200, 1000, 400)
 @export var ambience: AudioStream
 @export var interaction_sound: AudioStream
+## Optional node shown only while the boat lies in a port (e.g. the pontoon),
+## and a label inside it that names the port.
+@export var mooring: Node2D
+@export var mooring_label: Label
 
 var _leaving := false
 
@@ -38,6 +44,9 @@ func _ready() -> void:
 	for node in find_children("*", "Interactable", true, false):
 		(node as Interactable).interacted.connect(_on_interacted)
 	AudioManager.play_ambience(ambience)
+	_update_mooring()
+	GameSession.voyage_started.connect(_update_mooring)
+	GameSession.voyage_arrived.connect(_on_voyage_arrived)
 
 
 func _physics_process(_delta: float) -> void:
@@ -76,11 +85,27 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 		&"nav_table":
 			begin_exit()
 			chart_requested.emit()
+		&"bed":
+			sleep_requested.emit()
+		&"helm":
+			helm_requested.emit()
 		_:
 			if not interactable.message.is_empty():
 				message_requested.emit(interactable.message)
 			else:
 				push_warning("Interactable '%s' has no behaviour." % interactable.interaction_id)
+
+
+func _on_voyage_arrived(_port: StringName) -> void:
+	_update_mooring()
+
+
+## Shows the pontoon only in port; while underway the boat is at sea.
+func _update_mooring() -> void:
+	if mooring:
+		mooring.visible = not GameSession.is_underway()
+	if mooring_label and GameSession.get_location():
+		mooring_label.text = "GUEST PONTOON · %s" % GameSession.get_location().display_name.to_upper()
 
 
 func _on_player_focus_changed(interactable: Interactable) -> void:

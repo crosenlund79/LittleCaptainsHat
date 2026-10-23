@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/branding/next_harbor_symbol.svg" id="2_symbol"]
+[ext_resource type="Script" path="res://src/ui/time_controls.gd" id="3_time"]
 
 [node name="Hud" type="Control"]
 layout_mode = 3
@@ -17,7 +18,7 @@ script = ExtResource("1_hud")
 layout_mode = 0
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 360.0
+offset_right = 400.0
 offset_bottom = 96.0
 theme_type_variation = &"HudPanel"
 
@@ -48,15 +49,42 @@ layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Moored"
 
+[node name="ClockPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -260.0
+offset_top = 24.0
+offset_right = 260.0
+offset_bottom = 84.0
+grow_horizontal = 2
+theme_type_variation = &"HudPanel"
+
+[node name="HBox" type="HBoxContainer" parent="ClockPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="ClockLabel" type="Label" parent="ClockPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fri 1 May 2026, 08:00 UTC"
+
+[node name="TimeControls" type="HBoxContainer" parent="ClockPanel/HBox"]
+layout_mode = 2
+script = ExtResource("3_time")
+
 [node name="RoutePanel" type="PanelContainer" parent="."]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -520.0
+offset_left = -560.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 96.0
+offset_bottom = 120.0
 grow_horizontal = 0
 theme_type_variation = &"HudPanel"
 
@@ -69,7 +97,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
-[node name="Caption" type="Label" parent="RoutePanel/HBox/VBox"]
+[node name="RouteCaption" type="Label" parent="RoutePanel/HBox/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 text = "Planned route"
@@ -78,6 +107,21 @@ text = "Planned route"
 unique_name_in_owner = true
 layout_mode = 2
 text = "No route planned"
+text_overrun_behavior = 3
+
+[node name="RouteDetail" type="Label" parent="RoutePanel/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
+text = ""
+text_overrun_behavior = 3
+
+[node name="VoyageProgress" type="ProgressBar" parent="RoutePanel/HBox/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+show_percentage = false
 
 [node name="MenuButton" type="Button" parent="RoutePanel/HBox"]
 unique_name_in_owner = true
@@ -86,6 +130,52 @@ size_flags_vertical = 4
 focus_mode = 0
 tooltip_text = "Open the pause menu (Esc)"
 text = "Menu"
+
+[node name="WarningPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -560.0
+offset_top = 136.0
+offset_right = -24.0
+offset_bottom = 260.0
+grow_horizontal = 0
+theme_type_variation = &"PromptPanel"
+
+[node name="VBox" type="VBoxContainer" parent="WarningPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="WarningPanel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Weather warning"
+
+[node name="WarningText" type="Label" parent="WarningPanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="WarningPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="WarningChartButton" type="Button" parent="WarningPanel/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "View chart"
+
+[node name="WarningDismissButton" type="Button" parent="WarningPanel/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Dismiss"
 
 [node name="PromptPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true

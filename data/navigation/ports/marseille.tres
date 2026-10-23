@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"marseille"
+display_name = "Marseille"
+country = "France"
+latitude = 43.296
+longitude = 5.364
+description = "France's oldest city, its Vieux-Port open to the Gulf of Lion."

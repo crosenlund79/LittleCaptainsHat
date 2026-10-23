@@ -1,0 +1,15 @@
+{
+ "source": "Natural Earth 1:10m Land (ne_10m_land), public domain, naturalearthdata.com",
+ "processing": "Clipped to bounds, simplified 0.0035 deg, islets < 0.0002 sq deg removed, holes (lakes) filled. Not for navigation.",
+ "bounds": {
+  "west": -25.0,
+  "south": 33.0,
+  "east": 37.0,
+  "north": 72.0
+ },
+ "cells_per_mercator_degree": 60,
+ "columns": 3720,
+ "rows": 4236,
+ "mercator_north": 105.58065377036948,
+ "land_rule": "255: navigable, no land in any part of the cell (1/4 cell precision); 128: approach-only, water covers at least half of the cell; 0: land"
+}

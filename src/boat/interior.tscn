@@ -280,7 +280,6 @@ position = Vector2(-62, 0)
 script = ExtResource("6_r")
 interaction_id = &"bed"
 prompt = "Sleep"
-message = "You stretch out on the berth for a moment. Sleeping is not implemented yet."
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Furniture/VBerth/Berth"]
 shape = SubResource("RectangleShape2D_5")

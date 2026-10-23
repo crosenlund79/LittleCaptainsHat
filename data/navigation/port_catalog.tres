@@ -2,9 +2,22 @@
 
 [ext_resource type="Script" path="res://src/navigation/port_catalog.gd" id="1_catalog"]
 [ext_resource type="Script" path="res://src/navigation/port_data.gd" id="2_port"]
-[ext_resource type="Resource" path="res://data/navigation/ports/copenhagen.tres" id="3_cph"]
+[ext_resource type="Resource" path="res://data/navigation/ports/copenhagen.tres" id="3_copenhagen"]
 [ext_resource type="Resource" path="res://data/navigation/ports/kiel.tres" id="4_kiel"]
+[ext_resource type="Resource" path="res://data/navigation/ports/gothenburg.tres" id="5_gothenburg"]
+[ext_resource type="Resource" path="res://data/navigation/ports/bergen.tres" id="6_bergen"]
+[ext_resource type="Resource" path="res://data/navigation/ports/helsinki.tres" id="7_helsinki"]
+[ext_resource type="Resource" path="res://data/navigation/ports/portsmouth.tres" id="8_portsmouth"]
+[ext_resource type="Resource" path="res://data/navigation/ports/dublin.tres" id="9_dublin"]
+[ext_resource type="Resource" path="res://data/navigation/ports/brest.tres" id="10_brest"]
+[ext_resource type="Resource" path="res://data/navigation/ports/lisbon.tres" id="11_lisbon"]
+[ext_resource type="Resource" path="res://data/navigation/ports/gibraltar.tres" id="12_gibraltar"]
+[ext_resource type="Resource" path="res://data/navigation/ports/barcelona.tres" id="13_barcelona"]
+[ext_resource type="Resource" path="res://data/navigation/ports/marseille.tres" id="14_marseille"]
+[ext_resource type="Resource" path="res://data/navigation/ports/naples.tres" id="15_naples"]
+[ext_resource type="Resource" path="res://data/navigation/ports/piraeus.tres" id="16_piraeus"]
+[ext_resource type="Resource" path="res://data/navigation/ports/reykjavik.tres" id="17_reykjavik"]
 
 [resource]
 script = ExtResource("1_catalog")
-ports = Array[ExtResource("2_port")]([ExtResource("3_cph"), ExtResource("4_kiel")])
+ports = Array[ExtResource("2_port")]([ExtResource("3_copenhagen"), ExtResource("4_kiel"), ExtResource("5_gothenburg"), ExtResource("6_bergen"), ExtResource("7_helsinki"), ExtResource("8_portsmouth"), ExtResource("9_dublin"), ExtResource("10_brest"), ExtResource("11_lisbon"), ExtResource("12_gibraltar"), ExtResource("13_barcelona"), ExtResource("14_marseille"), ExtResource("15_naples"), ExtResource("16_piraeus"), ExtResource("17_reykjavik")])

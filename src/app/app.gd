@@ -14,6 +14,7 @@ extends Node
 @export var pause_menu_scene: PackedScene
 @export var settings_menu_scene: PackedScene
 @export var save_load_menu_scene: PackedScene
+@export var sleep_menu_scene: PackedScene
 ## Played on every button press, routed to the UI bus.
 @export var ui_click_sound: AudioStream
 
@@ -34,6 +35,10 @@ func _ready() -> void:
 	modals.stack_changed.connect(_on_modal_stack_changed)
 	modals.notification_requested.connect(notify)
 	hud.menu_requested.connect(open_pause_menu)
+	hud.chart_requested.connect(open_chart_from_warning)
+	GameSession.notice.connect(notify)
+	Simulation.weather_warning.connect(_on_weather_warning)
+	Simulation.arrived.connect(_on_arrived)
 	router.screen_changed.connect(_on_screen_changed)
 	_hud_layer.hide()
 	show_main_menu()
@@ -130,8 +135,86 @@ func open_chart() -> void:
 	router.change_screen(world_map_scene, _connect_world_map)
 
 
+func open_chart_from_warning() -> void:
+	if is_in_gameplay() and modals.is_empty() and not router.is_busy():
+		open_chart()
+
+
+## Leaves the chart. Unapplied course changes are only discarded after asking.
 func close_chart() -> void:
+	var map := router.current_screen as WorldMap
+	if map and map.has_unapplied_changes():
+		var leave: bool = await modals.confirm("Leave the chart?",
+			"Your course changes have not been applied. The current course stays as it is.",
+			"Discard changes", "Keep editing")
+		if not leave:
+			return
 	_show_current_boat_area()
+
+
+# --- Voyage ------------------------------------------------------------------------
+
+## Asks for confirmation, then sets sail on the planned route.
+func request_departure() -> void:
+	var route := GameSession.get_planned_route()
+	if route == null or not route.has_path():
+		notify("Plot a course at the chart table before setting sail.")
+		return
+	var catalog := PortCatalog.get_default()
+	var speed := GameSession.get_vessel_speed_kn()
+	var waypoints := "" if route.waypoints.is_empty() else " via %d waypoint%s" % [
+		route.waypoints.size(), "" if route.waypoints.size() == 1 else "s"]
+	var go: bool = await modals.confirm("Set sail for %s?" % catalog.get_display_name(route.destination_port_id),
+		"%d nm%s, about %s at %.1f knots." % [roundi(route.get_distance_nm()), waypoints,
+			Simulation.format_duration(route.get_distance_nm() / speed * 3600.0), speed], "Set sail")
+	if not go:
+		return
+	var error := GameSession.depart()
+	notify(error if not error.is_empty() else "Underway to %s. The autopilot holds the course." %
+		catalog.get_display_name(route.destination_port_id))
+
+
+func _on_helm_requested() -> void:
+	if GameSession.is_underway():
+		notify("The autopilot is steering for %s, %d nm to go. Use the chart table to change course." % [
+			PortCatalog.get_default().get_display_name(GameSession.get_voyage_destination_id()),
+			roundi(GameSession.get_voyage_remaining_nm())])
+	else:
+		request_departure()
+
+
+func open_sleep_menu() -> void:
+	if not is_in_gameplay() or not modals.is_empty():
+		return
+	var menu := sleep_menu_scene.instantiate() as SleepMenu
+	menu.sleep_requested.connect(sleep_for)
+	modals.push(menu)
+
+
+## Sleeps by advancing the normal simulation; stops early on arrival or a
+## weather warning (those report themselves through their own signals).
+func sleep_for(hours: float) -> void:
+	modals.clear()
+	var result := Simulation.sleep(hours)
+	var slept := Simulation.format_duration(result.elapsed_seconds)
+	var now := Simulation.format_game_time(GameSession.get_game_time())
+	match result.stopped_by:
+		Simulation.STOP_WARNING:
+			notify("You were woken after %s by a weather warning. It is %s." % [slept, now])
+		Simulation.STOP_ARRIVAL:
+			notify("You were woken after %s: the boat has arrived. It is %s." % [slept, now])
+		_:
+			notify("You slept %s. It is %s." % [slept, now])
+
+
+func _on_weather_warning(warning: Dictionary) -> void:
+	hud.show_warning(warning.text)
+	notify(warning.text)
+
+
+func _on_arrived(port_id: StringName) -> void:
+	hud.hide_warning()
+	notify("Arrived in %s." % PortCatalog.get_default().get_display_name(port_id))
 
 
 func _show_current_boat_area() -> void:
@@ -191,12 +274,15 @@ func _connect_main_menu(menu: MainMenu) -> void:
 func _connect_boat_area(area: BoatArea) -> void:
 	area.area_change_requested.connect(_on_area_change_requested)
 	area.chart_requested.connect(open_chart)
+	area.sleep_requested.connect(open_sleep_menu)
+	area.helm_requested.connect(_on_helm_requested)
 	area.message_requested.connect(notify)
 	area.interaction_prompt_changed.connect(hud.set_prompt)
 
 
 func _connect_world_map(map: WorldMap) -> void:
 	map.close_requested.connect(close_chart)
+	map.depart_requested.connect(request_departure)
 
 
 func _on_screen_changed(screen: Node) -> void:

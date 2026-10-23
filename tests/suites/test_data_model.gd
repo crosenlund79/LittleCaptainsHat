@@ -4,7 +4,8 @@ extends RefCounted
 
 func run(t: Node) -> void:
 	var catalog := PortCatalog.get_default()
-	t.check(catalog != null and catalog.ports.size() == 2, "port catalog loads with two ports")
+	t.check(catalog != null and catalog.ports.size() >= 10 and catalog.ports.size() <= 15,
+		"port catalog loads 10-15 European ports (got %d)" % catalog.ports.size())
 	t.check(catalog.has_port(&"copenhagen") and catalog.has_port(&"kiel"), "Copenhagen and Kiel use stable ids")
 
 	# Geographic maths and projection.
@@ -21,8 +22,8 @@ func run(t: Node) -> void:
 	var state := SessionState.create_new(&"copenhagen", SessionState.AREA_INTERIOR, &"start")
 	state.player_position = Vector2(12.5, -40.25)
 	state.has_player_position = true
-	state.planned_route = PlannedRoute.create(&"copenhagen", &"kiel")
-	state.planned_route.waypoints.append(Vector2(11.0, 55.0))
+	state.planned_route = t.make_route(&"copenhagen", &"kiel", [Vector2(12.6, 54.6)] as Array[Vector2])
+	t.check(state.planned_route != null, "a sea route with a waypoint can be planned")
 	var errors: Array[String] = []
 	var json := JSON.stringify(state.to_dict())
 	var restored := SessionState.from_dict(JSON.parse_string(json), errors)
@@ -46,8 +47,11 @@ func run(t: Node) -> void:
 		"infinite position": _with(state, ["player", "position", "y"], INF),
 		"unknown location": _with(state, ["navigation", "location_id"], "atlantis"),
 		"route to unknown port": _with(state, ["navigation", "planned_route", "destination"], "atlantis"),
-		"route to same port": _with(state, ["navigation", "planned_route", "destination"], "copenhagen"),
+		"route path not ending at destination": _with(state, ["navigation", "planned_route", "destination"], "gibraltar"),
 		"bad waypoint": _with(state, ["navigation", "planned_route", "waypoints"], [{"lon": 500, "lat": 0}]),
+		"invalid clock": _with(state, ["clock", "time_scale"], 7),
+		"unknown vessel status": _with(state, ["vessel", "status"], "sinking"),
+		"underway without voyage": _with(state, ["vessel", "status"], "underway"),
 	}
 	for case_name: String in cases:
 		var case_errors: Array[String] = []
@@ -56,9 +60,9 @@ func run(t: Node) -> void:
 
 	# Route planning through GameSession.
 	GameSession.start_new_session()
-	t.check(not GameSession.plan_route_to(&"copenhagen"), "cannot plan a route to the current port")
-	t.check(not GameSession.plan_route_to(&"atlantis"), "cannot plan a route to an unknown port")
-	t.check(GameSession.plan_route_to(&"kiel"), "can plan a route to Kiel")
+	t.check(not GameSession.plan_route_to(&"copenhagen").is_empty(), "cannot plan a route to the current port")
+	t.check(not GameSession.plan_route_to(&"atlantis").is_empty(), "cannot plan a route to an unknown port")
+	t.check_eq(GameSession.plan_route_to(&"kiel"), "", "can plan a route to Kiel")
 	t.check_eq(GameSession.get_planned_route().destination_port_id, &"kiel", "planned route points at Kiel")
 	t.check(GameSession.has_unsaved_changes(), "planning a route marks the session as changed")
 	GameSession.clear_planned_route()

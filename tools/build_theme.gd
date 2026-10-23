@@ -128,6 +128,8 @@ func _ranges(theme: Theme) -> void:
 	theme.set_icon("grabber_highlight", "HSlider", _circle_icon(22, Color.WHITE, BRASS))
 	theme.set_icon("grabber_disabled", "HSlider", _circle_icon(22, Color(SEAFOAM, 0.4), NAVY))
 	theme.set_stylebox("focus", "HSlider", _box(Color.TRANSPARENT, BRASS, 2, 6, Vector4.ZERO, false))
+	theme.set_stylebox("background", "ProgressBar", _box(NAVY_LIGHT, Color(SEAFOAM, 0.25), 1, 4, Vector4.ZERO))
+	theme.set_stylebox("fill", "ProgressBar", _box(BRASS, Color.TRANSPARENT, 0, 4, Vector4.ZERO))
 
 
 func _popups(theme: Theme) -> void:

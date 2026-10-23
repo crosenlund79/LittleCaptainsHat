@@ -12,7 +12,10 @@ extends Node
 
 const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_data_model.gd"),
+	preload("res://tests/suites/test_routing.gd"),
+	preload("res://tests/suites/test_simulation.gd"),
 	preload("res://tests/suites/test_save_manager.gd"),
+	preload("res://tests/suites/test_voyage_persistence.gd"),
 	preload("res://tests/suites/test_settings_and_audio.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
@@ -134,6 +137,12 @@ func click_at(position: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
 		event.button_mask = MOUSE_BUTTON_MASK_LEFT if pressed and button == MOUSE_BUTTON_LEFT else 0
 		get_viewport().push_input(event, true)
 	await frames(2)
+
+
+## A calculated sea route between two catalog ports (for tests).
+func make_route(origin_id: StringName, destination_id: StringName, waypoints: Array[Vector2] = []) -> PlannedRoute:
+	var origin := PortCatalog.get_default().get_port(origin_id)
+	return SeaRouter.get_default().plan_route(origin_id, origin.get_geo_position(), waypoints, destination_id).route
 
 
 func screenshot(file_name: String) -> void:

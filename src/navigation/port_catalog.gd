@@ -11,6 +11,12 @@ static var _default: PortCatalog
 
 ## The game's catalog. Loaded once and shared, so session validation, saves
 ## and the map always agree on which port ids exist.
+## Drops the shared instance. Called on shutdown: a script holding an instance
+## of itself in a static variable would otherwise never be released.
+static func clear_default() -> void:
+	_default = null
+
+
 static func get_default() -> PortCatalog:
 	if _default == null:
 		_default = load(DEFAULT_PATH) as PortCatalog

@@ -33,10 +33,14 @@ func _write() -> void:
 	SettingsManager.set_vsync(false)
 	SettingsManager.set_ui_scale(0.9)
 	SettingsManager.save()
+	Simulation.auto_advance = false
 	GameSession.start_new_session()
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"from_cabin")
 	GameSession.set_player_position(Vector2(-300.5, 42.25))
 	GameSession.plan_route_to(&"kiel")
+	GameSession.depart()
+	Simulation.advance(3.0 * 3600.0)  # 15 nm out of Copenhagen
+	GameSession.set_time_scale(5)
 	SaveManager.save_to_slot(2, GameSession.get_state_snapshot())
 	print("write phase done")
 
@@ -55,7 +59,11 @@ func _read() -> bool:
 		var state := result.state
 		ok = _expect(state.boat_area == SessionState.AREA_EXTERIOR, "area restored") and ok
 		ok = _expect(state.player_position.is_equal_approx(Vector2(-300.5, 42.25)), "player position restored") and ok
-		ok = _expect(state.planned_route != null and state.planned_route.destination_port_id == &"kiel", "route restored") and ok
+		ok = _expect(state.vessel_status == SessionState.STATUS_UNDERWAY and state.voyage != null, "voyage underway restored") and ok
+		ok = _expect(state.voyage != null and absf(state.voyage.progress_nm - 15.0) < 1e-6, "voyage progress (15 nm) restored") and ok
+		ok = _expect(state.voyage != null and state.voyage.route.destination_port_id == &"kiel", "destination restored") and ok
+		ok = _expect(is_equal_approx(state.game_time, SessionState.get_start_time() + 3.0 * 3600.0), "game clock restored") and ok
+		ok = _expect(state.time_scale == 5, "time acceleration restored") and ok
 	# Clean up the scratch files.
 	DirAccess.remove_absolute(SETTINGS_PATH)
 	SaveManager.delete_slot(2)
