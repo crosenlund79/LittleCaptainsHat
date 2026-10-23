@@ -256,7 +256,7 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
 offset_top = -88.0
-offset_right = 680.0
+offset_right = 1060.0
 offset_bottom = -24.0
 grow_vertical = 0
 theme_type_variation = &"HudPanel"
@@ -289,10 +289,48 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Find boat"
 
+[node name="WindToggle" type="CheckButton" parent="Ui/Root/Toolbar/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Show or hide the wind arrows and speed colours"
+button_pressed = true
+text = "Wind"
+
 [node name="CursorLabel" type="Label" parent="Ui/Root/Toolbar/HBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(230, 0)
+custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 size_flags_vertical = 4
 theme_type_variation = &"MutedLabel"
 text = ""
+
+[node name="WindLegend" type="PanelContainer" parent="Ui/Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -150.0
+offset_right = 470.0
+offset_bottom = -100.0
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/WindLegend"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="Ui/Root/WindLegend/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 16
+text = "Wind speed (knots)  ·  arrows point where the wind blows"
+
+[node name="WindLegendBands" type="HBoxContainer" parent="Ui/Root/WindLegend/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6

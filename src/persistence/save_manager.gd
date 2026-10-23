@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -234,6 +234,8 @@ func _read_and_validate(path: String) -> _ReadResult:
 func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 	if from_version < 2:
 		data = _migrate_1_to_2(data)
+	if from_version < 3:
+		data = _migrate_2_to_3(data)
 	return data
 
 
@@ -253,7 +255,7 @@ func _migrate_1_to_2(data: Dictionary) -> Dictionary:
 	session["vessel"] = {
 		"status": String(SessionState.STATUS_MOORED),
 		"position": {"lon": position.x, "lat": position.y},
-		"speed_kn": VesselProfile.get_default().cruising_speed_kn,
+		"speed_kn": 5.0,  # version 2 stored the constant cruising speed
 	}
 	navigation["voyage"] = null
 	var route: Variant = navigation.get("planned_route")
@@ -264,6 +266,24 @@ func _migrate_1_to_2(data: Dictionary) -> Dictionary:
 		route["path"] = []
 		route["waypoint_path_indices"] = []
 	data["version"] = 2
+	return data
+
+
+## Version 2 (Iteration 002) had a constant 5 kn speed and no wind. Version 3
+## adds the wind seed (default 1) and the propulsion state. Migrated voyages
+## get an uninitialised controller: at the first simulation step it starts
+## from the current wind at the saved position (sail, or engine if the
+## potential sailing speed is below the start threshold), so loading never
+## inherits a stale mode.
+func _migrate_2_to_3(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("vessel") is Dictionary:
+		return data
+	session["wind"] = {"seed": 1}
+	var vessel: Dictionary = session.vessel
+	vessel.erase("speed_kn")
+	vessel["propulsion"] = PropulsionState.new().to_dict()
+	data["version"] = 3
 	return data
 
 

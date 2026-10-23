@@ -71,7 +71,8 @@ func _test_voyage_basics() -> void:
 	t.check(SeaRouter.get_default().is_point_navigable(GameSession.get_vessel_position())
 		or GeoMath.rhumb_distance_nm(GameSession.get_vessel_position(), PortCatalog.get_default().get_port(&"copenhagen").get_geo_position()) <= SeaRouter.MAX_APPROACH_NM,
 		"the vessel is in navigable water (or in the harbour approach)")
-	t.check(GameSession.get_vessel_speed_kn() == VesselProfile.get_default().cruising_speed_kn, "speed comes from the vessel profile (5 kn)")
+	t.check(GameSession.get_vessel_speed_kn() == VesselProfile.get_default().engine_speed_kn and GameSession.is_motoring(),
+		"in a calm the boat motors at the profile's engine speed (5 kn)")
 
 
 func _test_step_independence() -> void:

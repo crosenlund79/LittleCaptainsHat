@@ -47,6 +47,14 @@ static func rhumb_interpolate(from: Vector2, to: Vector2, fraction: float) -> Ve
 	return Vector2(from.x + (to.x - from.x) * share, rad_to_deg(lat))
 
 
+## Constant compass bearing (degrees true, 0 = north, 90 = east) of the
+## rhumb line from `from` to `to`.
+static func rhumb_bearing(from: Vector2, to: Vector2) -> float:
+	var d_psi := _psi(deg_to_rad(to.y)) - _psi(deg_to_rad(from.y))
+	var d_lon := deg_to_rad(to.x - from.x)
+	return fposmod(rad_to_deg(atan2(d_lon, d_psi)), 360.0)
+
+
 ## Total rhumb length of a polyline, in nautical miles.
 static func path_length_nm(path: PackedVector2Array) -> float:
 	var total := 0.0

@@ -117,6 +117,21 @@ theme_override_font_sizes/font_size = 17
 text = ""
 text_overrun_behavior = 3
 
+[node name="PropulsionLabel" type="Label" parent="RoutePanel/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = ""
+text_overrun_behavior = 3
+
+[node name="WindLabel" type="Label" parent="RoutePanel/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
+text = ""
+text_overrun_behavior = 3
+
 [node name="VoyageProgress" type="ProgressBar" parent="RoutePanel/HBox/VBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 8)

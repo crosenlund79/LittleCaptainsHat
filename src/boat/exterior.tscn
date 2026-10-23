@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="1_r"]
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_deck.wav" id="2_r"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://src/boat/boat_fixture.gd" id="5_r"]
 [ext_resource type="Script" path="res://src/interaction/interactable.gd" id="6_r"]
 [ext_resource type="PackedScene" path="res://src/player/player.tscn" id="7_r"]
+[ext_resource type="Script" path="res://src/boat/sail_rig.gd" id="8_r"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_1"]
 font = ExtResource("4_r")
@@ -685,15 +686,9 @@ prompt = "Go below"
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Fittings/Hatch/Companionway"]
 shape = SubResource("RectangleShape2D_4")
 
-[node name="SailCover" type="Line2D" parent="Fittings"]
-points = PackedVector2Array(-275.0, 0.0, 160.0, 0.0)
-width = 16
-default_color = Color(0.2471, 0.4706, 0.5020, 1.0)
-joint_mode = 2
-begin_cap_mode = 2
-end_cap_mode = 2
-antialiased = true
+[node name="SailRig" type="Node2D" parent="Fittings"]
 z_index = 2
+script = ExtResource("8_r")
 
 [node name="Shrouds" type="Line2D" parent="Fittings"]
 points = PackedVector2Array(190.0, -152.0, 182.0, 0.0, 190.0, 152.0)

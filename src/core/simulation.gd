@@ -6,11 +6,15 @@ extends Node
 ## by exactly that amount. Sleeping advances the same timeline in one call.
 ## Nothing else in the game advances time or moves the vessel.
 ##
-## Advancing is event-driven: the elapsed time is split at the exact moments
-## something happens (arrival, a weather warning becoming due), so any step
-## size, from one frame at 1× to eight hours of sleep, produces the same
-## positions and events. Cost per call is proportional to the number of events,
-## not to the amount of time simulated.
+## Speed varies with wind and propulsion. It is (re)evaluated only at fixed
+## evaluation points: an absolute grid every EVALUATION_INTERVAL game seconds,
+## every route vertex (the heading changes there), departure and changes of
+## course. Between evaluation points the speed is constant, so events
+## (arrival, weather warnings, the next vertex or grid point) can be solved
+## exactly. Because the evaluation points do not depend on how time is
+## chopped into calls, one 8-hour step and 9,600 three-second frames produce
+## the same positions, propulsion changes and events. Cost per call grows with
+## the number of evaluation points and events, not with frame count.
 ##
 ## The node is pausable: when the game is paused (menus), time stops.
 
@@ -20,8 +24,14 @@ signal arrived(port_id: StringName)
 ## Real seconds to game seconds at 1× (1 real second = 1 game minute).
 const DEFAULT_GAME_SECONDS_PER_REAL_SECOND := 60.0
 ## Warnings are given when a noteworthy condition lies within this much
-## sailing time along the remaining course.
+## sailing time (at the current speed) along the remaining course.
 const WARNING_HORIZON_HOURS := 5.0
+## Wind and propulsion are re-evaluated on this absolute game-time grid.
+const EVALUATION_INTERVAL := 300.0
+## Step used to estimate remaining sailing time along a route (ETA).
+const ESTIMATE_STEP_NM := 5.0
+## Floor speed for time estimates, so a momentary calm never gives infinity.
+const MIN_ESTIMATE_SPEED_KN := 0.5
 
 const STOP_NONE := &""
 const STOP_ARRIVAL := &"arrival"
@@ -34,6 +44,8 @@ var auto_advance := true
 
 var _encounters: Array[Dictionary] = []
 var _encounters_key := ""
+var _eta_key := ""
+var _eta_seconds := 0.0
 
 
 ## Outcome of an advance() call.
@@ -47,6 +59,9 @@ class AdvanceResult:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	GameSession.voyage_started.connect(_on_voyage_started)
+	GameSession.voyage_course_changed.connect(_on_course_changed)
+	GameSession.state_replaced.connect(_on_state_replaced)
 
 
 func _process(delta: float) -> void:
@@ -73,29 +88,39 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 	if not GameSession.is_active() or seconds <= 0.0:
 		return result
 	var remaining := seconds
-	while remaining > 0.0:
+	var guard := 1000000
+	while remaining > 1e-9 and guard > 0:
+		guard -= 1
 		var time := GameSession.get_game_time()
 		if not GameSession.is_underway():
 			GameSession.apply_simulation_step(time + remaining, 0.0)
 			result.elapsed_seconds += remaining
 			break
-		var speed := GameSession.get_vessel_speed_kn()
+		var propulsion := GameSession.get_propulsion()
+		var next_grid := _next_grid_time(propulsion.last_evaluation_time)
+		if not propulsion.initialised or time >= next_grid - 1e-6:
+			evaluate_propulsion()
+			propulsion = GameSession.get_propulsion()
+			next_grid = _next_grid_time(propulsion.last_evaluation_time)
+		var speed := propulsion.speed_kn
 		var progress := GameSession.get_voyage_progress_nm()
 		var total := GameSession.get_voyage_total_nm()
+		var vertex := GameSession.get_voyage_next_vertex_nm()
 		var due := _next_due_warning(progress, speed)
-		var event_at := total
+		var event_at := minf(total, vertex)
 		if not due.is_empty():
 			event_at = minf(event_at, due.trigger_nm)
-		var to_event := maxf(event_at - progress, 0.0) / speed * 3600.0
-		if to_event > remaining:
-			GameSession.apply_simulation_step(time + remaining, progress + speed * remaining / 3600.0)
-			result.elapsed_seconds += remaining
-			break
-		# Step exactly to the event.
-		GameSession.apply_simulation_step(time + to_event, event_at)
-		result.elapsed_seconds += to_event
-		remaining -= to_event
-		if not due.is_empty() and due.trigger_nm <= event_at and due.trigger_nm < total:
+		var to_event := (maxf(event_at - progress, 0.0) / speed * 3600.0) if speed > 0.0 else INF
+		var to_grid := maxf(next_grid - time, 0.0)
+		var step := minf(remaining, minf(to_event, to_grid))
+		var reached_event := to_event <= step
+		var new_progress := event_at if reached_event else progress + speed * step / 3600.0
+		GameSession.apply_simulation_step(time + step, new_progress)
+		result.elapsed_seconds += step
+		remaining -= step
+		if not reached_event:
+			continue  # a grid point or the end of the requested time
+		if not due.is_empty() and due.trigger_nm <= event_at + 1e-9 and due.trigger_nm < total:
 			var warning := _make_warning(due, event_at, speed)
 			GameSession.record_weather_warning(due.condition.id)
 			result.warnings.append(warning)
@@ -103,7 +128,7 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 			if stop_at_events:
 				result.stopped_by = STOP_WARNING
 				break
-		else:
+		elif event_at >= total - 1e-9:
 			var destination := GameSession.get_voyage_destination_id()
 			GameSession.complete_voyage()
 			result.arrived_at = destination
@@ -111,17 +136,115 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 			if stop_at_events:
 				result.stopped_by = STOP_ARRIVAL
 				break
+		else:
+			evaluate_propulsion()  # new leg: new heading
 	return result
+
+
+## Samples the wind at the vessel and lets the propulsion controller decide
+## sail or engine and the speed until the next evaluation point.
+func evaluate_propulsion(force_reset := false) -> void:
+	if not GameSession.is_underway():
+		return
+	var wind := get_wind_at(GameSession.get_vessel_position())
+	var state := PropulsionController.evaluate(GameSession.get_propulsion(), GameSession.get_vessel_profile(),
+		GameSession.get_game_time(), get_current_heading(), wind, force_reset)
+	GameSession.set_propulsion(state)
+
+
+## The wind anywhere at the current game time (the one query used by the
+## chart, HUD, sails and simulation).
+func get_wind_at(geo: Vector2) -> WindField.Sample:
+	return WindField.get_default().sample(geo, GameSession.get_game_time(), GameSession.get_wind_seed())
+
+
+## Heading (true, degrees) of the route leg the vessel is on.
+func get_current_heading() -> float:
+	var voyage := GameSession.get_voyage()
+	if voyage == null:
+		return 0.0
+	var i := GeoMath.segment_index_at(voyage.get_cumulative(), voyage.progress_nm)
+	return GeoMath.rhumb_bearing(voyage.route.path[i - 1], voyage.route.path[i])
+
+
+func _next_grid_time(last_evaluation: float) -> float:
+	return (floorf(last_evaluation / EVALUATION_INTERVAL) + 1.0) * EVALUATION_INTERVAL
+
+
+func _on_voyage_started() -> void:
+	invalidate_estimates()
+	evaluate_propulsion()
+
+
+func _on_course_changed() -> void:
+	invalidate_estimates()
+	evaluate_propulsion(true)
+
+
+func _on_state_replaced() -> void:
+	invalidate_estimates()
+	# Loaded voyages keep their saved controller state; only a migrated (never
+	# evaluated) one is evaluated straight away.
+	if GameSession.is_underway() and not GameSession.get_propulsion().initialised:
+		evaluate_propulsion()
+
+
+# --- Estimates ----------------------------------------------------------------------
+
+## Estimated sailing time in seconds along `path` from `from_nm` to its end,
+## starting at `start_time`. Walks the route in ESTIMATE_STEP_NM steps, using
+## the wind expected at each point and time and a simple propulsion rule (sail
+## if the potential beats the engine-start threshold, otherwise motor). It is
+## an estimate: it ignores the controller's averaging and hysteresis.
+func estimate_route_seconds(path: PackedVector2Array, from_nm := 0.0, start_time := -1.0, to_nm := -1.0) -> float:
+	if path.size() < 2:
+		return 0.0
+	var profile := GameSession.get_vessel_profile()
+	var cumulative := GeoMath.cumulative_distances(path)
+	var total := cumulative[cumulative.size() - 1]
+	if to_nm >= 0.0:
+		total = minf(total, to_nm)
+	var time := GameSession.get_game_time() if start_time < 0.0 else start_time
+	var seconds := 0.0
+	var d := from_nm
+	var field := WindField.get_default()
+	while d < total - 1e-6:
+		var i := GeoMath.segment_index_at(cumulative, d)
+		var heading := GeoMath.rhumb_bearing(path[i - 1], path[i])
+		var wind := field.sample(GeoMath.point_along(path, cumulative, d), time + seconds, GameSession.get_wind_seed())
+		var potential := profile.sail_speed_kn(wind.speed_kn, WindField.relative_angle(heading, wind.from_deg))
+		var speed := potential if potential >= profile.engine_start_below_kn else profile.engine_speed_kn
+		var ds := minf(ESTIMATE_STEP_NM, total - d)
+		seconds += ds / maxf(speed, MIN_ESTIMATE_SPEED_KN) * 3600.0
+		d += ds
+	return seconds
+
+
+## Estimated game time of arrival for the active voyage (cached; refreshed as
+## the boat moves on or time passes).
+func get_eta() -> float:
+	if not GameSession.is_underway():
+		return 0.0
+	var progress := GameSession.get_voyage_progress_nm()
+	var key := "%d|%s|%.3f|%d|%d|%d" % [GameSession.get_voyage_revision(), GameSession.get_voyage_destination_id(),
+		GameSession.get_voyage_total_nm(), GameSession.get_wind_seed(), floori(progress / 2.0),
+		floori(GameSession.get_game_time() / 1800.0)]
+	if key != _eta_key:
+		_eta_key = key
+		var voyage := GameSession.get_voyage()
+		_eta_seconds = estimate_route_seconds(voyage.route.path, progress)
+	return GameSession.get_game_time() + _eta_seconds
+
+
+## Forgets cached estimates (after the voyage, a loaded game or the wind changed).
+func invalidate_estimates() -> void:
+	_eta_key = ""
 
 
 ## Sleeps for `hours`: the normal simulation advanced in one go, stopping
 ## early on arrival or when a weather warning becomes due.
 func sleep(hours: float) -> AdvanceResult:
 	return advance(hours * 3600.0, true)
-
-
-func get_warning_horizon_nm() -> float:
-	return WARNING_HORIZON_HOURS * GameSession.get_vessel_speed_kn()
 
 
 ## All noteworthy conditions still ahead on the active course, nearest first:
@@ -131,7 +254,7 @@ func get_conditions_ahead() -> Array[Dictionary]:
 	if not GameSession.is_underway():
 		return ahead
 	var progress := GameSession.get_voyage_progress_nm()
-	var speed := GameSession.get_vessel_speed_kn()
+	var speed := maxf(GameSession.get_vessel_speed_kn(), MIN_ESTIMATE_SPEED_KN)
 	for encounter in _get_encounters():
 		if encounter.at_nm >= progress - 1e-6:
 			var distance: float = encounter.at_nm - progress
@@ -156,7 +279,7 @@ func _next_due_warning(progress: float, speed: float) -> Dictionary:
 
 func _make_warning(due: Dictionary, progress: float, speed: float) -> Dictionary:
 	var condition: WeatherCondition = due.condition
-	var hours: float = maxf(due.at_nm - progress, 0.0) / speed
+	var hours: float = maxf(due.at_nm - progress, 0.0) / maxf(speed, MIN_ESTIMATE_SPEED_KN)
 	var when := "now" if hours < 0.1 else "in about %s" % format_duration(hours * 3600.0)
 	return {
 		"condition": condition,

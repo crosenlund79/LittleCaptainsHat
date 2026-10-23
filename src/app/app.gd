@@ -17,6 +17,16 @@ extends Node
 @export var sleep_menu_scene: PackedScene
 ## Played on every button press, routed to the UI bus.
 @export var ui_click_sound: AudioStream
+## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
+@export var engine_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum.wav")
+@export var engine_muffled_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum_muffled.wav")
+
+const ENGINE_LOOP := &"engine"
+const ENGINE_MUFFLED_LOOP := &"engine_muffled"
+## Engine loudness on deck and inside (cabin, chart table), and the fade time.
+const ENGINE_OUTSIDE_DB := -6.0
+const ENGINE_INSIDE_DB := -16.0
+const ENGINE_FADE_SECONDS := 1.5
 
 @onready var router: SceneRouter = $SceneRouter
 @onready var hud: Hud = $HudLayer/Hud
@@ -40,6 +50,8 @@ func _ready() -> void:
 	Simulation.weather_warning.connect(_on_weather_warning)
 	Simulation.arrived.connect(_on_arrived)
 	router.screen_changed.connect(_on_screen_changed)
+	GameSession.propulsion_changed.connect(func(_mode: StringName) -> void: update_engine_audio())
+	GameSession.state_replaced.connect(update_engine_audio)
 	_hud_layer.hide()
 	show_main_menu()
 
@@ -73,6 +85,7 @@ func show_main_menu() -> void:
 	GameSession.end_session()
 	AudioManager.stop_ambience()
 	AudioManager.stop_music()
+	update_engine_audio()
 	router.change_screen(main_menu_scene, _connect_main_menu)
 
 
@@ -161,12 +174,12 @@ func request_departure() -> void:
 		notify("Plot a course at the chart table before setting sail.")
 		return
 	var catalog := PortCatalog.get_default()
-	var speed := GameSession.get_vessel_speed_kn()
+	var estimate := Simulation.estimate_route_seconds(route.path)
 	var waypoints := "" if route.waypoints.is_empty() else " via %d waypoint%s" % [
 		route.waypoints.size(), "" if route.waypoints.size() == 1 else "s"]
 	var go: bool = await modals.confirm("Set sail for %s?" % catalog.get_display_name(route.destination_port_id),
-		"%d nm%s, about %s at %.1f knots." % [roundi(route.get_distance_nm()), waypoints,
-			Simulation.format_duration(route.get_distance_nm() / speed * 3600.0), speed], "Set sail")
+		"%d nm%s, about %s with the expected wind (estimate)." % [roundi(route.get_distance_nm()), waypoints,
+			Simulation.format_duration(estimate)], "Set sail")
 	if not go:
 		return
 	var error := GameSession.depart()
@@ -294,7 +307,25 @@ func _on_screen_changed(screen: Node) -> void:
 		hud.refresh()
 	else:
 		AudioManager.stop_ambience()
+	update_engine_audio()
 	_on_modal_stack_changed(modals.depth())
+
+
+## Runs the engine sound while the boat is motoring: loud on deck, quieter and
+## muffled inside. Both layers run in step and are only cross-faded, so the
+## engine never restarts on a scene change. Off in the main menu and in port.
+func update_engine_audio() -> void:
+	var running := GameSession.is_active() and GameSession.is_motoring() and not (router.current_screen is MainMenu)
+	if not running:
+		AudioManager.stop_loop(ENGINE_LOOP, ENGINE_FADE_SECONDS)
+		AudioManager.stop_loop(ENGINE_MUFFLED_LOOP, ENGINE_FADE_SECONDS)
+		return
+	var area := router.current_screen as BoatArea
+	var outside := area != null and area.area_id == SessionState.AREA_EXTERIOR
+	AudioManager.play_loop(ENGINE_LOOP, engine_sound,
+		ENGINE_OUTSIDE_DB if outside else AudioManager.SILENT_DB, ENGINE_FADE_SECONDS)
+	AudioManager.play_loop(ENGINE_MUFFLED_LOOP, engine_muffled_sound,
+		AudioManager.SILENT_DB if outside else ENGINE_INSIDE_DB, ENGINE_FADE_SECONDS)
 
 
 func _on_modal_stack_changed(depth: int) -> void:

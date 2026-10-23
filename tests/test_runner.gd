@@ -14,9 +14,12 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_data_model.gd"),
 	preload("res://tests/suites/test_routing.gd"),
 	preload("res://tests/suites/test_simulation.gd"),
+	preload("res://tests/suites/test_wind.gd"),
+	preload("res://tests/suites/test_sailing.gd"),
 	preload("res://tests/suites/test_save_manager.gd"),
 	preload("res://tests/suites/test_voyage_persistence.gd"),
 	preload("res://tests/suites/test_settings_and_audio.gd"),
+	preload("res://tests/suites/test_sailing_presentation.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
 
@@ -38,12 +41,19 @@ func _ready() -> void:
 	_run.call_deferred()
 
 
+func _exit_tree() -> void:
+	# The gameplay suite ends by quitting the app: drop the wind fixture (a
+	# lambda bound to this node) before this node goes away.
+	WindField.clear_default()
+
+
 func _run() -> void:
 	_reset_scratch_files()
 	SaveManager.save_dir = TEST_SAVE_DIR
 	SettingsManager.settings_path = TEST_SETTINGS_PATH
 	SettingsManager.load_settings()
 	for script in SUITES:
+		use_calm_wind()
 		var suite: Object = script.new()
 		current_suite = script.resource_path.get_file().get_basename()
 		print("\n=== %s ===" % current_suite)
@@ -51,8 +61,26 @@ func _run() -> void:
 	print("\n%d checks passed, %d failed." % [passed, failed])
 	for failure in _failures:
 		print("  FAILED: ", failure)
+	WindField.get_default().test_override = Callable()
 	_reset_scratch_files()
 	get_tree().quit(1 if failed > 0 else 0)
+
+
+# --- Fixtures -----------------------------------------------------------------------
+
+## Test fixture: a flat calm everywhere. The vessel then motors at exactly the
+## engine speed (5 kn) from departure, so voyage timing tests written for the
+## constant-speed model of Iteration 002 keep exact, predictable numbers.
+## Suites about wind and sailing set their own wind (and restore this).
+func use_calm_wind() -> void:
+	set_wind(0.0, 0.0)
+
+
+## Test fixture: the same wind everywhere, at all times.
+func set_wind(from_deg: float, speed_kn: float) -> void:
+	WindField.get_default().test_override = func(_geo: Vector2, _time: float) -> WindField.Sample:
+		return WindField.Sample.make(from_deg, speed_kn)
+	Simulation.invalidate_estimates()
 
 
 # --- Assertions ---------------------------------------------------------------------

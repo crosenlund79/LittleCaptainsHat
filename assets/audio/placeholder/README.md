@@ -11,3 +11,5 @@ routing and the volume settings. Replace them with real audio in a later iterati
 | `placeholder_ambience_cabin.wav` | Ambience | Looping ambience in the cabin |
 | `test_sfx_blip.wav` | SFX | Interaction feedback, SFX test button |
 | `ui_click.wav` | UI | Button presses, UI test button |
+| `engine_hum.wav` | SFX | Engine loop on deck (open air) while motoring |
+| `engine_hum_muffled.wav` | SFX | Engine loop below deck and at the chart (low-passed) |

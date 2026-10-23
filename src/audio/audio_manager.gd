@@ -5,6 +5,9 @@ extends Node
 ##
 ## Players are created once and reused: one music player, one ambience player
 ## and a small round-robin pool for one-shots, so nothing is allocated per sound.
+## Named loops (e.g. the engine) get one player each, created on first use;
+## requesting a loop that is already playing only fades its volume, so it never
+## restarts on a scene change.
 
 const BUS_MUSIC := &"Music"
 const BUS_AMBIENCE := &"Ambience"
@@ -12,6 +15,8 @@ const BUS_SFX := &"SFX"
 const BUS_UI := &"UI"
 
 const ONE_SHOT_POOL_SIZE := 8
+## Volume treated as silent when fading loops in and out.
+const SILENT_DB := -60.0
 
 var _music: AudioStreamPlayer
 var _ambience: AudioStreamPlayer
@@ -20,6 +25,8 @@ var _ambience_loops := false
 var _music_tween: Tween
 var _one_shots: Array[AudioStreamPlayer] = []
 var _next_one_shot := 0
+## Named loops: id -> {"player", "target_db", "tween", "stopping"}.
+var _loops := {}
 
 
 func _ready() -> void:
@@ -36,6 +43,10 @@ func _ready() -> void:
 ## Stops every sound immediately (used before quitting).
 func stop_all() -> void:
 	_kill_music_tween()
+	for id: StringName in _loops:
+		_kill_loop_tween(_loops[id])
+		_loops[id].stopping = false
+		_loops[id].target_db = SILENT_DB
 	_music_loops = false
 	_ambience_loops = false
 	for child in get_children():
@@ -97,6 +108,56 @@ func get_ambience_stream() -> AudioStream:
 	return _ambience.stream if _ambience.playing else null
 
 
+# --- Named loops ---------------------------------------------------------------
+
+## Starts (or keeps) a seamless loop and fades it to `volume_db`. If the same
+## stream is already playing under `id`, it is not restarted: only its volume
+## is faded. Volume settings apply through the bus (SFX by default).
+func play_loop(id: StringName, stream: AudioStream, volume_db := 0.0, fade := 0.0, bus := BUS_SFX) -> void:
+	if stream == null:
+		stop_loop(id, fade)
+		return
+	var loop: Dictionary = _loops.get(id, {})
+	if loop.is_empty():
+		var player := _create_player("Loop_%s" % id, bus)
+		player.finished.connect(_on_loop_finished.bind(id))
+		loop = {"player": player, "target_db": SILENT_DB, "tween": null, "stopping": false}
+		_loops[id] = loop
+	var player: AudioStreamPlayer = loop.player
+	if not (player.playing and player.stream == stream):
+		_kill_loop_tween(loop)
+		player.bus = bus
+		player.stream = stream
+		player.volume_db = SILENT_DB if fade > 0.0 else volume_db
+		player.play()
+	loop.stopping = false
+	_fade_loop(loop, volume_db, fade, false)
+
+
+## Fades a loop out and stops it.
+func stop_loop(id: StringName, fade := 0.0) -> void:
+	var loop: Dictionary = _loops.get(id, {})
+	if loop.is_empty() or (not loop.player.playing and not loop.stopping):
+		return
+	loop.stopping = true
+	_fade_loop(loop, SILENT_DB, fade, true)
+
+
+## True while the loop is playing and not fading out to stop.
+func is_loop_playing(id: StringName) -> bool:
+	var loop: Dictionary = _loops.get(id, {})
+	return not loop.is_empty() and loop.player.playing and not loop.stopping
+
+
+## The volume the loop is at or fading towards (SILENT_DB if not playing).
+func get_loop_target_db(id: StringName) -> float:
+	return _loops[id].target_db if is_loop_playing(id) else SILENT_DB
+
+
+func get_loop_player(id: StringName) -> AudioStreamPlayer:
+	return _loops[id].player if _loops.has(id) else null
+
+
 # --- One-shots ---------------------------------------------------------------
 
 func play_sfx(stream: AudioStream, volume_db := 0.0) -> void:
@@ -138,6 +199,39 @@ func _create_player(player_name: String, bus: StringName) -> AudioStreamPlayer:
 	player.bus = bus
 	add_child(player)
 	return player
+
+
+func _fade_loop(loop: Dictionary, volume_db: float, fade: float, stop_after: bool) -> void:
+	_kill_loop_tween(loop)
+	loop.target_db = volume_db
+	var player: AudioStreamPlayer = loop.player
+	if fade <= 0.0:
+		player.volume_db = volume_db
+		if stop_after:
+			player.stop()
+			loop.stopping = false
+		return
+	var tween := create_tween()
+	tween.tween_property(player, "volume_db", volume_db, fade)
+	if stop_after:
+		tween.tween_callback(func() -> void:
+			player.stop()
+			loop.stopping = false)
+	loop.tween = tween
+
+
+func _kill_loop_tween(loop: Dictionary) -> void:
+	var tween: Tween = loop.tween
+	if tween and tween.is_valid():
+		tween.kill()
+	loop.tween = null
+
+
+func _on_loop_finished(id: StringName) -> void:
+	# Streams imported without a loop point still loop.
+	var loop: Dictionary = _loops[id]
+	if not loop.stopping and loop.target_db > SILENT_DB:
+		loop.player.play()
 
 
 func _kill_music_tween() -> void:

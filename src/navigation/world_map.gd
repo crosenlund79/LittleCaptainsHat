@@ -32,6 +32,8 @@ var _pending_drag_geo := Vector2.INF
 var _drag_timer := 0.0
 var _live_timer := 0.0
 var _feedback := ""
+## Estimated sailing time of the draft course (seconds), refreshed when it changes.
+var _draft_estimate_seconds := 0.0
 
 @onready var _map: MapView = $MapView
 @onready var _status: Label = %StatusLabel
@@ -52,6 +54,11 @@ var _feedback := ""
 @onready var _sail_button: Button = %SetSailButton
 @onready var _weather_label: Label = %WeatherLabel
 @onready var _cursor_label: Label = %CursorLabel
+@onready var _wind_toggle: CheckButton = %WindToggle
+@onready var _wind_legend: Control = %WindLegend
+
+## Whether the wind overlay is shown (kept while the game runs).
+static var wind_shown := true
 
 
 func _ready() -> void:
@@ -76,6 +83,10 @@ func _ready() -> void:
 	%ZoomOutButton.pressed.connect(_map.zoom_by.bind(1.0 / MapView.ZOOM_STEP))
 	%ResetViewButton.pressed.connect(_map.reset_view)
 	%CenterBoatButton.pressed.connect(center_on_vessel)
+	_build_wind_legend()
+	_wind_toggle.button_pressed = wind_shown
+	_wind_toggle.toggled.connect(set_wind_shown)
+	set_wind_shown(wind_shown)
 	GameSession.route_changed.connect(_on_committed_changed)
 	GameSession.voyage_started.connect(_on_committed_changed)
 	GameSession.voyage_course_changed.connect(_on_committed_changed)
@@ -241,6 +252,7 @@ func _load_committed() -> void:
 		var planned := GameSession.get_planned_route()
 		if planned and planned.has_path():
 			_draft_route = planned
+			_draft_estimate_seconds = Simulation.estimate_route_seconds(planned.path)
 			_draft_destination = planned.destination_port_id
 			_draft_waypoints = planned.waypoints.duplicate()
 			for leg_range in planned.get_leg_ranges():
@@ -257,6 +269,7 @@ func _recalculate() -> void:
 		_draft_waypoints, _draft_destination)
 	_draft_route = result.route
 	_draft_error = result.error
+	_draft_estimate_seconds = Simulation.estimate_route_seconds(_draft_route.path) if _draft_route else 0.0
 	_draft_legs.clear()
 	var stops: Array[Vector2] = [GameSession.get_vessel_position()]
 	stops.append_array(_draft_waypoints)
@@ -376,7 +389,8 @@ func _refresh() -> void:
 
 	# Status and clock.
 	if GameSession.is_underway():
-		_status.text = "Underway to %s  ·  %.1f kn" % [catalog.get_display_name(GameSession.get_voyage_destination_id()), speed]
+		_status.text = "Underway to %s  ·  %.1f kn %s" % [catalog.get_display_name(GameSession.get_voyage_destination_id()),
+			speed, "under engine" if GameSession.is_motoring() else "under sail"]
 	elif location:
 		var verb := "Arrived at" if GameSession.get_vessel_status() == SessionState.STATUS_ARRIVED else "Moored at"
 		_status.text = "%s %s, %s" % [verb, location.display_name, location.country]
@@ -389,8 +403,8 @@ func _refresh() -> void:
 		var total := GameSession.get_voyage_total_nm()
 		var remaining := GameSession.get_voyage_remaining_nm()
 		_voyage_bar.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
-		var eta := GameSession.get_game_time() + remaining / speed * 3600.0
-		_voyage_label.text = "%d nm to go  ·  ETA %s" % [roundi(remaining), Simulation.format_game_time(eta)]
+		var eta := Simulation.get_eta()
+		_voyage_label.text = "%d nm to go  ·  ETA about %s" % [roundi(remaining), Simulation.format_game_time(eta)]
 
 	# Selected port.
 	var selected := catalog.get_port(_selected_port_id)
@@ -413,12 +427,13 @@ func _refresh() -> void:
 		_course_label.text = "No course planned."
 	else:
 		var distance := GeoMath.path_length_nm(_draft_route.path) if _draft_route else -1.0
+		var seconds := _draft_estimate_seconds
 		if _draft_route == null and not _draft_dirty and GameSession.is_underway():
 			distance = GameSession.get_voyage_remaining_nm()
+			seconds = Simulation.get_eta() - GameSession.get_game_time()
 		var summary := "To %s" % catalog.get_display_name(_draft_destination)
 		if distance >= 0.0:
-			summary += "  ·  %d nm  ·  about %s at %.1f kn" % [roundi(distance),
-				Simulation.format_duration(distance / speed * 3600.0), speed]
+			summary += "  ·  %d nm  ·  about %s with the expected wind" % [roundi(distance), Simulation.format_duration(seconds)]
 		if not _draft_waypoints.is_empty():
 			summary += "\n%d waypoint%s" % [_draft_waypoints.size(), "" if _draft_waypoints.size() == 1 else "s"]
 		_course_label.text = summary
@@ -458,12 +473,11 @@ func _describe_weather() -> String:
 	if encounters.is_empty():
 		return "No warnings along this course."
 	var lines := PackedStringArray()
-	var speed := GameSession.get_vessel_speed_kn()
 	for encounter in encounters:
 		var condition: WeatherCondition = encounter.condition
 		lines.append("%s (%s) in %d nm, about %s" % [condition.display_name,
 			"danger" if condition.severity == WeatherCondition.Severity.DANGER else "caution",
-			roundi(encounter.at_nm), Simulation.format_duration(encounter.at_nm / speed * 3600.0)])
+			roundi(encounter.at_nm), Simulation.format_duration(Simulation.estimate_route_seconds(path, 0.0, -1.0, encounter.at_nm))])
 	return "\n".join(lines)
 
 
@@ -473,4 +487,41 @@ func _fit_map_to_free_area(ui_scale: float) -> void:
 
 
 func _on_cursor_moved(geo: Variant) -> void:
-	_cursor_label.text = GeoMath.format_position(geo) if geo is Vector2 else ""
+	if not geo is Vector2:
+		_cursor_label.text = ""
+		return
+	_cursor_label.text = GeoMath.format_position(geo)
+	if wind_shown:
+		_cursor_label.text += "  ·  " + Hud.describe_wind(Simulation.get_wind_at(geo))
+
+
+## Shows or hides the wind overlay and its legend.
+func set_wind_shown(shown: bool) -> void:
+	wind_shown = shown
+	_wind_toggle.set_pressed_no_signal(shown)
+	_wind_legend.visible = shown
+	_map.wind_layer.set_shown(shown)
+	if shown:
+		_map.wind_layer.update_time(GameSession.get_game_time(), true)
+
+
+func is_wind_shown() -> bool:
+	return _map.wind_layer.visible
+
+
+func _build_wind_legend() -> void:
+	var bands := %WindLegendBands
+	var lower := 0
+	for band: Array in WindLayer.BANDS:
+		var swatch := ColorRect.new()
+		swatch.color = band[1]
+		swatch.custom_minimum_size = Vector2(18, 18)
+		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		swatch.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bands.add_child(swatch)
+		var label := Label.new()
+		label.text = "%d+" % lower if is_inf(band[0]) else "%d-%d" % [lower, int(band[0])]
+		label.theme_type_variation = &"MutedLabel"
+		label.add_theme_font_size_override(&"font_size", 16)
+		bands.add_child(label)
+		lower = int(band[0]) if not is_inf(band[0]) else lower

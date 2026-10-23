@@ -1,6 +1,6 @@
 # Next Harbor: Architecture
 
-This document describes how Next Harbor is put together (as of Iteration 002)
+This document describes how Next Harbor is put together (as of Iteration 003)
 and where future systems are meant to plug in. It is kept short on purpose; the scripts have
 doc comments for details.
 
@@ -14,8 +14,10 @@ doc comments for details.
   settings and audio each have one owner.
 - **One timeline.** Game time and vessel movement are advanced only by the
   `Simulation` service, never by scenes, menus or timers.
-- **Navigation data is geographic.** Ports, routes, the vessel and weather use
+- **Navigation data is geographic.** Ports, routes, the vessel, weather and wind use
   WGS84 longitude/latitude; projection to the screen is a display concern.
+- **One wind.** Every consumer (simulation, ETA, chart, HUD, sails) asks the same
+  `WindField` query; presentation never decides propulsion.
 - **No speculative systems.** Nothing exists yet for money, provisions, equipment
   and so on. The extension points below describe where they will go.
 
@@ -24,9 +26,9 @@ doc comments for details.
 | Autoload | Script | Responsibility |
 |---|---|---|
 | `SettingsManager` | `src/settings/settings_manager.gd` | Preferences: load/validate/save `user://settings.cfg`, apply bus volumes, window mode, VSync, UI scale. |
-| `AudioManager` | `src/audio/audio_manager.gd` | Music, looping ambience, pooled one-shots (SFX/UI) on the right buses. Owns no game state. |
+| `AudioManager` | `src/audio/audio_manager.gd` | Music, looping ambience, named loops with fades (the engine), pooled one-shots (SFX/UI) on the right buses. Owns no game state. |
 | `GameSession` | `src/core/game_session.gd` | Authoritative session state and its mutations, with change signals. |
-| `Simulation` | `src/core/simulation.gd` | The single simulation timeline: advances the game clock and the active voyage, detects arrival and due weather warnings, sleeping. Pausable. |
+| `Simulation` | `src/core/simulation.gd` | The single simulation timeline: advances the game clock and the active voyage, evaluates wind and propulsion at fixed evaluation points, detects arrival and due weather warnings, sleeping, wind-aware ETAs. Pausable. |
 | `SaveManager` | `src/persistence/save_manager.gd` | Save slots: JSON read/write, validation, metadata. Converts files ↔ `SessionState` only. |
 
 Screen transitions are deliberately **not** an autoload: they belong to the
@@ -35,10 +37,13 @@ application shell, the only code that changes screens.
 Dependency direction (no cycles): UI/screens → `App` (via signals) → services
 (`GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `AudioManager`)
 → data classes and data services (`SessionState`, `PlannedRoute`, `Voyage`,
-`PortCatalog`, `SeaRouter`, `WeatherCatalog`, …). `Simulation` reads and writes
+`PropulsionState`, `PortCatalog`, `SeaRouter`, `WeatherCatalog`, `WindField`,
+`VesselProfile`, …). `Simulation` reads and writes
 the session only through `GameSession`; `SaveManager` only converts files ↔
-`SessionState`. `PortCatalog`, `SeaRouter` and `WeatherCatalog` are shared,
-lazily loaded data services (`get_default()`); `GameSession` releases them on exit.
+`SessionState`. `PortCatalog`, `SeaRouter`, `WeatherCatalog`, `WindField` and
+`VesselProfile` are shared, lazily loaded data services (`get_default()`);
+`GameSession` releases them on exit. `PropulsionController` is pure logic with no
+state of its own.
 
 ## Scene architecture
 
@@ -102,16 +107,20 @@ Edit the generator and re-run it rather than hand-editing the `.tres`.
 | `time_scale` | 1, 5 or 20 |
 | `vessel_status` | `moored`, `underway` or `arrived` |
 | `vessel_position` | Vector2(lon, lat); while underway always derived from the voyage |
-| `vessel_speed_kn` | from the `VesselProfile` (5 kn) |
+| `propulsion` | `PropulsionState`: sail/engine mode, reason, speed, the controller's average and timers, last wind and angle, spinnaker |
+| `wind_seed` | seed of the deterministic wind field (1 for every game so far) |
 | `voyage` | `Voyage` while underway, else `null` |
 
 `GameSession` is the only writer. It exposes intent-level methods
 (`start_new_session`, `enter_boat_area`, `set_player_position`, `plan_route_to`,
 `set_planned_route`, `clear_planned_route`, `depart`, `change_course`,
 `set_time_scale`, `replace_state`), hooks used only by `Simulation`
-(`apply_simulation_step`, `complete_voyage`, `record_weather_warning`) and signals
-(`boat_area_changed`, `route_changed`, `voyage_started`, `voyage_course_changed`,
-`voyage_arrived`, `time_scale_changed`, `state_replaced`, `notice`, …). Every
+(`apply_simulation_step`, `set_propulsion`, `complete_voyage`,
+`record_weather_warning`) and signals (`boat_area_changed`, `route_changed`,
+`voyage_started`, `voyage_course_changed`, `voyage_arrived`, `propulsion_changed`,
+`time_scale_changed`, `state_replaced`, `notice`, …). Read-only accessors for
+presentation: `get_vessel_speed_kn()`, `get_propulsion()` (a copy), `is_motoring()`,
+`are_sails_set()`, `get_vessel_profile()`, `get_wind_seed()`. Every
 request that could break the rules (an unvalidated route, departing without a
 course) is refused with a reason string instead of applied. `get_planned_route()` and
 `get_state_snapshot()` return copies, so callers cannot modify state behind its back.
@@ -145,6 +154,19 @@ chart is open and no boat scene exists.
     anything with a `message` → notification.
   - The deck's `mooring` node (pontoon, lines, port name) is visible only in port.
     A new "flavour" object therefore needs no code, only an `Interactable` with a message.
+- **Sail rig** (`src/boat/sail_rig.gd`, `Fittings/SailRig` on deck, z below the
+  player and labels): draws the mainsail on its boom, the jib and the spinnaker
+  from `GameSession.get_propulsion()` every frame. Sails lie to leeward
+  (wind from starboard → sails to port; the deck has the bow at +x, port at −y).
+  Boom angle = clamp(|twa| × 0.55 − 17°, 5°, 50°); jib = clamp(|twa| × 0.4 − 10°,
+  6°, 38°). Motoring or in port, the main is furled on the boom (sail cover) and
+  the jib rolled on the forestay. The spinnaker is drawn whenever the state says
+  so: a crescent forward of the mast and beyond the bow, pole to windward, sheeted
+  to the leeward quarter, swung to leeward on a broad reach and centred dead
+  downwind; the jib is rolled away while it flies. Trim eases towards its target
+  (time constant ≈ 0.6 s) and the spinnaker hoists/drops over ≈ 1.2 s; on entering
+  the scene the rig snaps to the current state, so it never depends on which scene
+  was open when the state changed.
 
 ## Map data structures
 
@@ -154,7 +176,9 @@ chart is open and no boat scene exists.
 | `PortCatalog` (Resource) | `port_catalog.gd`, `data/navigation/port_catalog.tres` | the 15 ports; `get_default()` is the shared instance |
 | `PlannedRoute` | `planned_route.gd` | origin (port id or position at sea), destination, user waypoints, the calculated `path` and the waypoint indices in it |
 | `Voyage` | `voyage.gd` | the route being sailed, `progress_nm`, course `revision`, warned weather ids |
-| `VesselProfile` (Resource) | `vessel_profile.gd`, `data/vessel/starter_sloop.tres` | cruising speed (5 kn) |
+| `VesselProfile` (Resource) | `vessel_profile.gd`, `data/vessel/starter_sloop.tres` | sailing performance (polar), spinnaker, engine speed and all propulsion-controller thresholds |
+| `PropulsionState` / `PropulsionController` | `src/sailing/` | the saved sail/engine state and the pure decision logic |
+| `WindField` | `src/weather/wind_field.gd`, `data/weather/wind_climate.json` | deterministic wind for any position and time |
 | `GeoMath` | `geo_math.gd` | rhumb-line distance/interpolation, great-circle distance, formatting |
 | `MapProjection` | `map_projection.gd` | spherical Mercator, geo ↔ chart map units (display) |
 | `NavGrid` | `nav_grid.gd`, `data/navigation/europe_navmask.png/.json` | navigability raster and exact line checks |
@@ -182,16 +206,25 @@ is culled and only the light overlay is redrawn when the view moves.
   variable, so it can be rebalanced. The node is `PROCESS_MODE_PAUSABLE`: pause
   menus stop time; the cabin, deck and chart do not.
 - **Event-driven stepping.** `advance(seconds, stop_at_events)` computes the next
-  event on the active voyage (arrival, or the progress at which a weather warning
-  becomes due), steps the clock and the voyage *exactly* to it, handles it, and
-  repeats with the remaining time. Large steps (20×, eight hours of sleep) therefore
-  produce the same position, time and events as many small steps (tested). The cost
-  is proportional to the number of events, not to the simulated time.
+  event on the active voyage (arrival, the next route vertex, the progress at which
+  a weather warning becomes due, or the next wind/propulsion evaluation point),
+  steps the clock and the voyage *exactly* to it, handles it, and repeats with the
+  remaining time. Speed is constant between evaluation points, so every step is
+  exact. Large steps (20×, eight hours of sleep) therefore produce the same
+  position, time, sail/engine changes and events as many small steps (tested at
+  1×, 5×, 20× and sleep). The cost is proportional to the number of evaluation
+  points and events, not to the frame count.
+- **Evaluation points** (where wind is sampled and propulsion re-decided) are
+  fixed by the game, never by how time is chopped into frames:
+  - an absolute grid every `EVALUATION_INTERVAL` = 300 game seconds;
+  - every route vertex (the heading changes there);
+  - departure, a change of course (which forces a controller reset) and loading
+    a migrated save that has no controller state yet.
 - **Sleeping** is `Simulation.sleep(hours)`, the same `advance()` with
   `stop_at_events = true`: it stops at arrival or at a newly due warning and reports
   the elapsed time. There is no separate sleep timer or distance formula.
-- **Determinism.** Given the same state, course, speed and elapsed time, results
-  are identical (up to floating-point rounding); no randomness is involved.
+- **Determinism.** Given the same state, course, wind seed and elapsed time,
+  results are identical (up to floating-point rounding); no randomness is involved.
 - No offline time: time only advances while the game runs; loading resumes at the
   saved `game_time`.
 
@@ -205,8 +238,8 @@ moored ──depart()──► underway ──arrival──► arrived ──dep
 ```
 
 `arrived` behaves like `moored` but tells the player where they arrived. While
-underway, `voyage` holds the `Voyage` and `location_id` is empty. Travel time per
-segment is `distance_nm / speed_kn` hours. The vessel position is
+underway, `voyage` holds the `Voyage` and `location_id` is empty. Between two
+evaluation points the boat moves `speed_kn × elapsed / 3600` nm along the route. The vessel position is
 `GeoMath.point_along(route.path, progress_nm)`, so chart, HUD, simulation and saves
 cannot disagree.
 
@@ -333,17 +366,19 @@ Screen space is never used to compute positions.
   It samples every 0.5 nm, then bisects to 0.01 nm. It is pure data and maths, with
   no scene dependencies.
 - **Five-hour warning.** `Simulation` caches the encounters per course revision. A
-  warning becomes due when the vessel is `5 h × speed` (25 nm at 5 kn) of
-  *sailing distance* before the entry point. That horizon is geographic, so time
-  acceleration cannot change where it triggers; the warning is an event boundary in
-  `advance()`, so 20× and sleep cannot skip it.
+  warning becomes due when the vessel is `5 h × current speed` (25 nm at 5 kn) of
+  *sailing distance* before the entry point. The speed only changes at evaluation
+  points, which are independent of frame size, so time acceleration cannot change
+  where it triggers; the warning is an event boundary in `advance()`, so 20× and
+  sleep cannot skip it. A warning's "in about … h" uses the current speed.
 - **De-duplication.** Warned condition ids are stored on the voyage per course
   revision; a changed course is a new revision, so the warning is re-evaluated (and
   repeated only if the new course still meets the area). The list is saved, so loading
   does not repeat warnings.
 - When a warning fires, `App` shows a HUD banner (View chart / Dismiss) and a
   notification. Accelerated time drops to 1×; a sleep stops.
-- Weather has **no** effect on speed, the boat or the player in this iteration.
+- These demonstration areas have **no** effect on speed, the boat or the player.
+  Speed comes from the wind field (below), which is a separate model.
 
 ## Mid-voyage rerouting
 
@@ -361,16 +396,107 @@ validation as departures:
 The chart's draft may be a little behind a moving boat. That doesn't matter, because
 `change_course()` always replans from the position at the moment of applying.
 
-### How future wind effects may change speed
+## Wind, sailing performance and propulsion
 
-Speed is read in one place: `GameSession.get_vessel_speed_kn()` (from
-`VesselProfile.cruising_speed_kn`), used by `Simulation.advance()` and for
-ETAs/horizons. A later wind model would supply a speed as a function of position,
-heading and time (e.g. a polar table × wind). `advance()` then has to treat speed
-changes as additional event boundaries (e.g. entering a weather area or crossing a
-time step of the wind field) and integrate piecewise. ETAs and the warning horizon
-become sums over those pieces. Nothing in the route, voyage or save format assumes
-constant speed beyond `vessel_speed_kn`.
+### Wind field
+
+`WindField` (`src/weather/wind_field.gd`) is the only source of wind. The query is
+`sample(geo, game_time, seed) -> Sample{from_deg, speed_kn}`, used through
+`Simulation.get_wind_at(geo)` (current time) by the simulation, ETA, chart, HUD
+and sails.
+
+- **Convention:** meteorological. `from_deg` is where the wind comes FROM
+  (0 = north, 90 = east). Chart arrows point where it blows TO (`to_deg()`);
+  `to_vector()` is the air movement as Vector2(east, north).
+- **Climatology:** ~40 anchors in `data/weather/wind_climate.json` (Atlantic
+  westerlies, Portuguese trades, Mistral, Meltemi, a lighter and changeable Baltic,
+  …), blended with Gaussian weights (σ = 4°, longitude scaled by cos(lat)). The
+  blend is precomputed once on a 0.5° lattice covering 27°W–39°E, 31–73°N
+  (~0.3 s, lazily) and interpolated bilinearly, so the field is continuous with no
+  region borders. Points outside the lattice clamp to its edge.
+- **Weather on top:** three travelling sine waves veer/back the direction, two
+  scale the speed (scaled by each place's variability) and a lull wave sweeps
+  light-air patches across sea areas. All are pure functions of
+  (position, time, seed).
+- **Cost:** ~10–15 µs per sample (headless). The chart overlay caches samples per
+  lattice point.
+- **Tests:** `test_override` (a Callable) lets tests force a known wind; it is
+  never set in normal play.
+
+### Sailing performance
+
+`VesselProfile.sail_speed_kn(tws, twa)` (the potential sail-only speed):
+
+```
+max_sail_speed_kn (10) × (1 − e^(−tws / 9)) × smoothstep(0.8, 3.0, tws)
+  × angle_efficiency(|twa|) × (1.12 if spinnaker angle) , capped at 10 kn
+```
+
+- **Angle efficiency** (a `Curve`): 0 inside 35° (head to wind), 0.35 at 45°,
+  0.85 at 80°, 1.0 at 110°, 0.66 dead downwind.
+- **Examples at 12 kn of wind:** ≈2.6 kn at 45°, ≈7 kn on the beam, ≈7.8 kn at
+  130° (with spinnaker), ≈5.4 kn running. 10 kn needs ≈25 kn of wind on a broad
+  reach.
+- **Relative wind angle:** `WindField.relative_angle(heading, wind_from)` is
+  signed, in (−180, 180]: + = wind from starboard, − = from port.
+
+### Propulsion controller
+
+`PropulsionController.evaluate(state, profile, now, heading, wind, force_reset)`
+runs at every evaluation point. It returns a new `PropulsionState`; sail and
+engine are mutually exclusive. The thresholds below are all `VesselProfile`
+exports:
+
+| Rule | Value |
+|---|---|
+| Engine speed | 5 kn |
+| Rolling average of the potential sail speed | exponential, time constant 3600 game s, updated with elapsed game time |
+| Sail → engine (poor) | average < 3.5 kn, after ≥ 900 s under sail |
+| Sail → engine (near stall) | potential < 0.5 kn continuously for ≥ 600 s (any average) |
+| Engine → sail | average > 6.0 kn continuously for ≥ 1200 s, current potential > 6.0 kn, and ≥ 1800 s motoring |
+| Course change > 30° (or a change of course) | average restarts from the new heading's potential; stall/favourable timers reset |
+| Departure / first evaluation | engine (reason "start") if the potential < 3.5 kn, else sail |
+| Spinnaker | sailing and \|twa\| ≥ 115° (bonus ×1.12 in the polar) |
+
+The 3.5–6 kn gap plus the minimum times give the hysteresis; the potential is
+also evaluated while motoring. Speed is the engine speed or the potential sail
+speed until the next evaluation point.
+
+### ETA
+
+`Simulation.estimate_route_seconds(path, from_nm, start_time, to_nm)` walks the
+remaining route in 5 nm steps, sampling the wind expected at each point and
+time. It uses a simple rule: sail if the potential is ≥ 3.5 kn, else motor at
+5 kn. It is an estimate: it ignores the controller's averaging and hysteresis.
+`get_eta()` caches the result per voyage, wind seed, 2 nm of progress and 30 game
+minutes. The departure dialog, chart and HUD show it as "about …".
+
+### Presentation
+
+- **Chart** (`src/navigation/wind_layer.gd`): arrows (TO direction, coloured by
+  speed band) on an absolute map lattice whose spacing is a power of two chosen
+  for ~72 px on screen, skipped on land. A smooth speed tint (an image with one
+  pixel per half-lattice point, linear filtering) lies between the water and the
+  land fill. There is a legend and a **Wind** toggle in the toolbar; the cursor
+  readout includes the wind there. Samples are cached per lattice point; the tint
+  image covers the view plus a margin and is reused while panning; arrows are
+  batched into four draw calls. Wind time refreshes every 600 game seconds.
+- **HUD:** wind ("Wind WSW 14 kn · 135° starboard"), propulsion with reason
+  ("Under sail · broad reach · 7.4 kn · spinnaker set",
+  "Motoring · insufficient sailing performance · 5.0 kn",
+  "Motoring · becalmed or head to wind · …"), speed, distance to go and ETA.
+- **Sails:** see *Sail rig* above.
+- **Engine sound:** see *Audio framework*.
+
+### Extending it
+
+- **Real weather / forecasts:** replace the climatology and waves behind
+  `WindField.sample()`; callers do not change.
+- **Manual sail/engine control:** add an override field to `PropulsionState`
+  that `PropulsionController` respects.
+- **Tacking:** a router or controller concern. Today a head-to-wind leg is
+  simply motored.
+- **Currents:** add a drift vector to the speed over ground in `advance()`.
 
 ## Save/load architecture
 
@@ -381,8 +507,14 @@ SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─
 
 - File layout: `{format, version, game_version, saved_at_unix, saved_at_utc, session: SessionState.to_dict()}`,
   written with full float precision. Session sections: `boat`, `player`, `clock`,
-  `vessel`, `navigation` (location, planned route with its path, active voyage with
-  route, progress, revision and warned weather ids).
+  `wind` (seed), `vessel` (status, position, propulsion state), `navigation`
+  (location, planned route with its path, active voyage with route, progress,
+  revision and warned weather ids).
+- **Version 3** (Iteration 003) adds `wind.seed` and `vessel.propulsion`.
+  `_migrate_2_to_3` sets seed 1, removes the old constant `speed_kn` and adds an
+  uninitialised controller state. On load, `Simulation` evaluates it at once
+  from the wind at the saved position and time. No time passes and the boat
+  does not move (no offline travel). Migration chains 1 → 2 → 3.
 - **Version 2** (Iteration 002). `_migrate_1_to_2` upgrades Iteration 001 saves:
   - default clock (start time, 1×);
   - vessel moored at its port;
@@ -425,6 +557,22 @@ Do not serialize nodes or scene trees. Scenes rebuild themselves from the state.
   one-shot players (round-robin, oldest reused), so no nodes are created per sound.
   Looping is done by replaying on `finished`, so any stream can loop without
   editing its import settings. Playing the same ambience again is a no-op.
+- **Named loops** (`play_loop(id, stream, volume_db, fade, bus)`, `stop_loop`,
+  `is_loop_playing`): one player per id. Requesting a loop that already plays the
+  same stream only fades its volume, so it never restarts.
+- **Engine sound:** `App.update_engine_audio()` runs on `propulsion_changed`,
+  screen changes and `state_replaced`. Two sample-aligned loops play on the SFX
+  bus, so the SFX and Master volumes apply:
+  - `engine_hum.wav`, open air;
+  - `engine_hum_muffled.wav`, low-passed.
+
+  Both start together and are only cross-faded (1.5 s):
+  - on deck: open-air at −6 dB, muffled silent;
+  - in the cabin and at the chart: muffled at −16 dB.
+
+  They fade out when the sails are set, on arrival and in the main menu. The WAV
+  imports use forward looping (`edit/loop_mode=2`). The 2 s files contain whole
+  cycles of every component, so the loop is seamless.
 - Volumes are set by `SettingsManager` directly on the buses (`linear_to_db`, with
   mute at 0%). `AudioManager` does not deal with volume.
 - Every `BaseButton` gets the UI click sound automatically (`App` listens to `node_added`).
@@ -444,7 +592,7 @@ embedded in the editor.
 
 | Future system | Where it goes |
 |---|---|
-| Wind and sailing performance | Speed from a wind/polar model in `Simulation.advance()` with extra event boundaries (see "How future wind effects may change speed"). |
+| Real weather, forecasts, currents, tacking, manual sail/engine control | See "Wind, sailing performance and propulsion → Extending it". |
 | Moving or time-varying weather | Give `WeatherCondition` a time dependence and make `find_encounters` time-aware (encounter = position *and* time); `Simulation` already asks per course revision and can ask again when the forecast changes. |
 | Depth / draft limits | Another `NavGrid` cell class or a per-vessel mask; `SeaRouter` callers do not change. |
 | Money, provisions, equipment, vessel condition | Each its own section in `SessionState` and small owner API on `GameSession` (or a dedicated service if it grows); UI panels subscribe to signals. |
@@ -461,7 +609,15 @@ data model, routing (graph consistency, port approaches, land crossings against
 the vector coastline, straits, all port pairs, waypoints, failures), simulation
 (clock, voyages, step independence, sleep, weather warnings, rerouting), save
 manager, voyage persistence (underway saves, migration, invalid saves), settings
-and audio, and an end-to-end gameplay flow driving the real `App` with input
-events, including the Iteration 002 acceptance scenario.
+and audio, wind (conventions, determinism, range, continuity, plausibility,
+query speed, polar), sailing (controller rules and hysteresis, step independence
+at 1×/5×/20×/sleep with sail↔engine changes, ETA accuracy, warnings with
+variable speed, course changes, propulsion save/load and v2 migration),
+sailing presentation (sails by wind side, spinnaker, furling, HUD, chart overlay
+and toggle, engine audio across scenes), and an end-to-end gameplay flow driving
+the real `App` with input events, including the Iteration 002 acceptance scenario.
+Suites written for the constant-speed model run with a **calm-wind fixture**
+(`use_calm_wind()`): in a flat calm the boat motors at exactly 5 kn from
+departure, so their timing expectations stay exact.
 `tests/restart_check.tscn` verifies persistence across two separate processes.
 Tests use scratch files under `user://test_*`, never the player's saves or settings.

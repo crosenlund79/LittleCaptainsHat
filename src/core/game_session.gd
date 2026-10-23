@@ -18,6 +18,8 @@ signal voyage_started
 ## The active voyage's course was replaced (change of course at sea).
 signal voyage_course_changed
 signal voyage_arrived(port_id: StringName)
+## Sail <-> engine changed (or propulsion ended on arrival: mode is then &"").
+signal propulsion_changed(mode: StringName)
 ## Something the player should be told that is not an error of their action
 ## (e.g. an old save's route had to be dropped).
 signal notice(text: String)
@@ -43,6 +45,8 @@ func _exit_tree() -> void:
 	PortCatalog.clear_default()
 	SeaRouter.clear_default()
 	WeatherCatalog.clear_default()
+	WindField.clear_default()
+	VesselProfile.clear_default()
 
 
 # --- Lifecycle ----------------------------------------------------------------
@@ -165,8 +169,33 @@ func get_vessel_position() -> Vector2:
 	return _state.vessel_position if _state else Vector2.ZERO
 
 
+## Current speed through the water in knots (0 when not underway).
 func get_vessel_speed_kn() -> float:
-	return _state.vessel_speed_kn if _state else 0.0
+	return _state.propulsion.speed_kn if is_underway() else 0.0
+
+
+## The boat's performance profile (one starter boat for now).
+func get_vessel_profile() -> VesselProfile:
+	return VesselProfile.get_default()
+
+
+## A copy of the propulsion state (mode, potential speed, wind, sails).
+func get_propulsion() -> PropulsionState:
+	return _state.propulsion.duplicate_state() if _state else PropulsionState.new()
+
+
+## True while the engine is driving the boat.
+func is_motoring() -> bool:
+	return is_underway() and _state.propulsion.is_motoring()
+
+
+## True while sails are drawing on a voyage (false in port or when motoring).
+func are_sails_set() -> bool:
+	return is_underway() and _state.propulsion.initialised and _state.propulsion.sails_set()
+
+
+func get_wind_seed() -> int:
+	return _state.wind_seed if _state else 1
 
 
 # --- Planned route (in port) ---------------------------------------------------------
@@ -244,6 +273,16 @@ func get_voyage_total_nm() -> float:
 	return _state.voyage.get_total_nm() if _state and _state.voyage else 0.0
 
 
+## Distance along the course of the next route vertex ahead of the vessel
+## (where the heading changes), or the total if none is left.
+func get_voyage_next_vertex_nm() -> float:
+	if _state == null or _state.voyage == null:
+		return 0.0
+	var cumulative := _state.voyage.get_cumulative()
+	var i := cumulative.bsearch(_state.voyage.progress_nm + 1e-9, false)
+	return cumulative[mini(i, cumulative.size() - 1)]
+
+
 func get_voyage_revision() -> int:
 	return _state.voyage.revision if _state and _state.voyage else 0
 
@@ -264,6 +303,7 @@ func depart() -> String:
 	if not problem.is_empty():
 		return problem
 	_state.voyage = Voyage.create(route, _state.game_time)
+	_state.propulsion = PropulsionState.new()  # evaluated by Simulation on voyage_started
 	_state.planned_route = null
 	_state.vessel_status = SessionState.STATUS_UNDERWAY
 	_state.location_id = &""
@@ -310,6 +350,17 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 
 
 ## Ends the voyage at its destination.
+## Replaces the propulsion state (Simulation only). Announces mode changes.
+func set_propulsion(state: PropulsionState) -> void:
+	if _state == null:
+		return
+	var changed := state.mode != _state.propulsion.mode or not _state.propulsion.initialised
+	_state.propulsion = state.duplicate_state()
+	_has_unsaved_changes = true
+	if changed:
+		propulsion_changed.emit(state.mode)
+
+
 func complete_voyage() -> void:
 	if not is_underway():
 		return
@@ -318,7 +369,9 @@ func complete_voyage() -> void:
 	_state.vessel_status = SessionState.STATUS_ARRIVED
 	_state.location_id = destination.id
 	_state.vessel_position = destination.get_geo_position()
+	_state.propulsion = PropulsionState.new()
 	_has_unsaved_changes = true
+	propulsion_changed.emit(&"")
 	voyage_arrived.emit(destination.id)
 
 

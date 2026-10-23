@@ -6,7 +6,7 @@ extends RefCounted
 ## SaveManager writes. It contains no node references, so it exists regardless
 ## of which scene is visible. to_dict()/from_dict() define the save format;
 ## each subsystem keeps its data in its own top-level section ("boat",
-## "player", "clock", "vessel", "navigation") so future systems can add
+## "player", "clock", "wind", "vessel", "navigation") so future systems can add
 ## sections of their own.
 
 const AREA_INTERIOR := &"interior"
@@ -44,7 +44,10 @@ var time_scale := 1
 var vessel_status: StringName = STATUS_MOORED
 ## Vessel's geographic position Vector2(lon, lat).
 var vessel_position := Vector2.ZERO
-var vessel_speed_kn := 5.0
+## Sail/engine state and the automatic controller's memory (used while underway).
+var propulsion := PropulsionState.new()
+## Selects the deterministic weather variation of the wind field for this game.
+var wind_seed := 1
 ## The voyage being sailed, or null when not underway.
 var voyage: Voyage
 
@@ -57,7 +60,6 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.game_time = get_start_time()
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
-	state.vessel_speed_kn = VesselProfile.get_default().cruising_speed_kn
 	return state
 
 
@@ -81,7 +83,8 @@ func duplicate_state() -> SessionState:
 	copy.time_scale = time_scale
 	copy.vessel_status = vessel_status
 	copy.vessel_position = vessel_position
-	copy.vessel_speed_kn = vessel_speed_kn
+	copy.propulsion = propulsion.duplicate_state()
+	copy.wind_seed = wind_seed
 	copy.voyage = voyage.duplicate_voyage() if voyage else null
 	return copy
 
@@ -96,10 +99,11 @@ func to_dict() -> Dictionary:
 		"boat": {"area": String(boat_area)},
 		"player": player,
 		"clock": {"game_time": game_time, "time_scale": time_scale},
+		"wind": {"seed": wind_seed},
 		"vessel": {
 			"status": String(vessel_status),
 			"position": {"lon": vessel_position.x, "lat": vessel_position.y},
-			"speed_kn": vessel_speed_kn,
+			"propulsion": propulsion.to_dict(),
 		},
 		"navigation": {
 			"location_id": String(location_id),
@@ -158,18 +162,25 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		errors.append("invalid game time or time acceleration")
 		return null
 
+	var wind: Variant = data.get("wind")
+	if not wind is Dictionary or not _is_finite_number(wind.get("seed")):
+		errors.append("missing or invalid wind settings")
+		return null
+	state.wind_seed = int(wind.seed)
+
 	var vessel: Variant = data.get("vessel")
-	if not vessel is Dictionary or not vessel.get("status") is String or not _is_finite_number(vessel.get("speed_kn")):
+	if not vessel is Dictionary or not vessel.get("status") is String:
 		errors.append("missing or invalid vessel data")
 		return null
 	state.vessel_status = StringName(vessel.status)
-	state.vessel_speed_kn = float(vessel.speed_kn)
 	var vessel_position: Variant = PlannedRoute._point_from(vessel.get("position"))
-	if state.vessel_status not in STATUSES or vessel_position == null \
-			or state.vessel_speed_kn <= 0.0 or state.vessel_speed_kn > 50.0:
-		errors.append("invalid vessel status, position or speed")
+	if state.vessel_status not in STATUSES or vessel_position == null:
+		errors.append("invalid vessel status or position")
 		return null
 	state.vessel_position = vessel_position
+	state.propulsion = PropulsionState.from_dict(vessel.get("propulsion"), errors)
+	if state.propulsion == null:
+		return null
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:

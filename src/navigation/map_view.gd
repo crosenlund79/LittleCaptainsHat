@@ -97,6 +97,10 @@ var _moved := false
 @onready var _land: Node2D = $Land
 @onready var _overlay: Node2D = $Overlay
 
+## Wind arrows (above land) and tint (under the land fill).
+var wind_layer := WindLayer.new()
+var _wind_view_key := ""
+
 
 func _ready() -> void:
 	projection = MapProjection.new(units_per_degree)
@@ -104,6 +108,13 @@ func _ready() -> void:
 	_overlay.draw.connect(_draw_overlay)
 	_build_land()
 	_build_weather()
+	wind_layer.name = "Wind"
+	wind_layer.map_view = self
+	wind_layer.map_bounds = _map_bounds
+	add_child(wind_layer)
+	move_child(wind_layer, _overlay.get_index())
+	_land.add_child(wind_layer.tint)
+	_land.move_child(wind_layer.tint, 1)  # just above the water, below the land fill
 	reset_view()
 
 
@@ -338,6 +349,12 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 
 
 func _process(delta: float) -> void:
+	if wind_layer.visible:
+		wind_layer.update_time(GameSession.get_game_time())
+		var key := "%s|%s|%s" % [camera.position, camera.zoom.x, get_viewport_rect().size]
+		if key != _wind_view_key:
+			_wind_view_key = key
+			wind_layer.refresh_view()
 	var direction := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 	if direction != Vector2.ZERO:
 		camera.position += direction * keyboard_pan_speed * delta / camera.zoom.x

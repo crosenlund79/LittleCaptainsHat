@@ -17,10 +17,17 @@ signal chart_requested
 @onready var _route: Label = %RouteLabel
 @onready var _route_detail: Label = %RouteDetail
 @onready var _progress: ProgressBar = %VoyageProgress
+@onready var _propulsion: Label = %PropulsionLabel
+@onready var _wind: Label = %WindLabel
 @onready var _prompt_panel: Control = %PromptPanel
 @onready var _prompt: Label = %PromptLabel
 @onready var _warning_panel: Control = %WarningPanel
 @onready var _warning_text: Label = %WarningText
+
+
+var _planned_key := ""
+var _planned_estimated_at := -INF
+var _planned_seconds := 0.0
 
 
 func _ready() -> void:
@@ -74,16 +81,21 @@ func refresh() -> void:
 		return
 	var catalog := PortCatalog.get_default()
 	_clock.text = Simulation.format_game_time(GameSession.get_game_time())
-	var speed := GameSession.get_vessel_speed_kn()
+	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
+	_wind.text = describe_wind(wind)
 	if GameSession.is_underway():
 		var destination := catalog.get_display_name(GameSession.get_voyage_destination_id())
 		var remaining := GameSession.get_voyage_remaining_nm()
 		var total := GameSession.get_voyage_total_nm()
-		var eta := GameSession.get_game_time() + remaining / speed * 3600.0
+		var propulsion := GameSession.get_propulsion()
 		_location.text = "Underway to %s" % destination
-		_route_caption.text = "Underway  ·  %.1f kn" % speed
+		_route_caption.text = "Underway  ·  %.1f kn" % GameSession.get_vessel_speed_kn()
 		_route.text = "To %s  ·  %d nm to go" % [destination, roundi(remaining)]
-		_route_detail.text = "ETA %s" % Simulation.format_game_time(eta)
+		_route_detail.text = "ETA about %s (estimate)" % Simulation.format_game_time(Simulation.get_eta())
+		_propulsion.text = propulsion.describe()
+		_propulsion.visible = true
+		var side := PropulsionState.wind_side(propulsion.true_wind_angle)
+		_wind.text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else "off the bow"]
 		_progress.visible = true
 		_progress.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 	else:
@@ -93,7 +105,22 @@ func refresh() -> void:
 		var planned := GameSession.get_planned_route()
 		_route_caption.text = "Planned route"
 		_route.text = PlannedRoute.describe(planned, catalog)
-		_route_detail.text = "About %s at %.1f kn  ·  set sail at the helm" % [
-			Simulation.format_duration(planned.get_distance_nm() / speed * 3600.0), speed] if planned and planned.has_path() \
-			else "Plot a course at the chart table"
+		if planned and planned.has_path():
+			var key := "%s|%d|%.3f" % [planned.destination_port_id, planned.path.size(), planned.get_distance_nm()]
+			if key != _planned_key or GameSession.get_game_time() - _planned_estimated_at > 1800.0:
+				_planned_key = key
+				_planned_estimated_at = GameSession.get_game_time()
+				_planned_seconds = Simulation.estimate_route_seconds(planned.path)
+			_route_detail.text = "About %s with the expected wind  ·  set sail at the helm" % \
+				Simulation.format_duration(_planned_seconds)
+		else:
+			_route_detail.text = "Plot a course at the chart table"
+		_propulsion.visible = false
 		_progress.visible = false
+
+
+## "Wind WSW 14 kn" (where it blows from).
+static func describe_wind(wind: WindField.Sample) -> String:
+	if wind.speed_kn < 0.5:
+		return "Wind calm"
+	return "Wind %s %d kn" % [WindField.compass_name(wind.from_deg), roundi(wind.speed_kn)]
