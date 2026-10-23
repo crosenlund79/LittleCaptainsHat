@@ -1,0 +1,166 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/ui/settings_menu.gd" id="1_settings"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_music_arpeggio.wav" id="2_music"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_deck.wav" id="3_amb"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/test_sfx_blip.wav" id="4_sfx"]
+[ext_resource type="AudioStream" path="res://assets/audio/placeholder/ui_click.wav" id="5_ui"]
+
+[node name="SettingsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_settings")
+music_test_stream = ExtResource("2_music")
+ambience_test_stream = ExtResource("3_amb")
+sfx_test_stream = ExtResource("4_sfx")
+ui_test_stream = ExtResource("5_ui")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.09, 0.12, 0.6)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(860, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Settings"
+
+[node name="AudioSection" type="PanelContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"SectionPanel"
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/VBox/AudioSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="Center/Panel/VBox/AudioSection/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Audio"
+
+[node name="AudioGrid" type="GridContainer" parent="Center/Panel/VBox/AudioSection/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 8
+columns = 4
+
+[node name="DisplaySection" type="PanelContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"SectionPanel"
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/VBox/DisplaySection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="Label" parent="Center/Panel/VBox/DisplaySection/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Display"
+
+[node name="Grid" type="GridContainer" parent="Center/Panel/VBox/DisplaySection/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 18
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="WindowModeLabel" type="Label" parent="Center/Panel/VBox/DisplaySection/VBox/Grid"]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+text = "Window mode"
+
+[node name="WindowMode" type="OptionButton" parent="Center/Panel/VBox/DisplaySection/VBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="VSyncLabel" type="Label" parent="Center/Panel/VBox/DisplaySection/VBox/Grid"]
+layout_mode = 2
+text = "VSync"
+
+[node name="VSync" type="CheckButton" parent="Center/Panel/VBox/DisplaySection/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Enabled"
+
+[node name="UiScaleLabel" type="Label" parent="Center/Panel/VBox/DisplaySection/VBox/Grid"]
+layout_mode = 2
+text = "Interface scale"
+
+[node name="UiScaleRow" type="HBoxContainer" parent="Center/Panel/VBox/DisplaySection/VBox/Grid"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="UiScale" type="HSlider" parent="Center/Panel/VBox/DisplaySection/VBox/Grid/UiScaleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(380, 32)
+layout_mode = 2
+size_flags_vertical = 4
+min_value = 80.0
+max_value = 130.0
+step = 5.0
+value = 100.0
+
+[node name="UiScaleValue" type="Label" parent="Center/Panel/VBox/DisplaySection/VBox/Grid/UiScaleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 2
+
+[node name="Status" type="Label" parent="Center/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DefaultsButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Restore Defaults"
+
+[node name="Spacer" type="Control" parent="Center/Panel/VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Back"
+
+[node name="ApplyButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Apply"

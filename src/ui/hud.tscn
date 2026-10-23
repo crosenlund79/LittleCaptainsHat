@@ -1,0 +1,133 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+[ext_resource type="Texture2D" path="res://assets/branding/next_harbor_symbol.svg" id="2_symbol"]
+
+[node name="Hud" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="AreaPanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 360.0
+offset_bottom = 96.0
+theme_type_variation = &"HudPanel"
+
+[node name="HBox" type="HBoxContainer" parent="AreaPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Symbol" type="TextureRect" parent="AreaPanel/HBox"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+texture = ExtResource("2_symbol")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBox" type="VBoxContainer" parent="AreaPanel/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="AreaLabel" type="Label" parent="AreaPanel/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Cabin"
+
+[node name="LocationLabel" type="Label" parent="AreaPanel/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Moored"
+
+[node name="RoutePanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -520.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 96.0
+grow_horizontal = 0
+theme_type_variation = &"HudPanel"
+
+[node name="HBox" type="HBoxContainer" parent="RoutePanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="VBox" type="VBoxContainer" parent="RoutePanel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Caption" type="Label" parent="RoutePanel/HBox/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Planned route"
+
+[node name="RouteLabel" type="Label" parent="RoutePanel/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "No route planned"
+
+[node name="MenuButton" type="Button" parent="RoutePanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+tooltip_text = "Open the pause menu (Esc)"
+text = "Menu"
+
+[node name="PromptPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -160.0
+offset_top = -128.0
+offset_right = 160.0
+offset_bottom = -76.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"PromptPanel"
+
+[node name="HBox" type="HBoxContainer" parent="PromptPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="Key" type="Label" parent="PromptPanel/HBox"]
+layout_mode = 2
+theme_type_variation = &"KeyLabel"
+text = "E"
+
+[node name="PromptLabel" type="Label" parent="PromptPanel/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Interact"
+
+[node name="Controls" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -56.0
+offset_right = 900.0
+offset_bottom = -24.0
+grow_vertical = 0
+theme_type_variation = &"MutedLabel"
+text = "WASD / Arrow keys  move     E  interact     Esc  menu"

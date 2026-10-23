@@ -1,0 +1,158 @@
+extends Node
+## Minimal self-contained test runner (no external framework).
+##
+## Run headless:
+##   godot --headless --path . res://tests/test_runner.tscn
+## Run with rendering and save screenshots (e.g. under Xvfb):
+##   godot --path . res://tests/test_runner.tscn -- --screenshots=/some/dir
+##
+## Tests use scratch files (user://test_saves, user://test_settings.cfg) so the
+## player's real saves and settings are never touched. The exit code is 0
+## only if every check passed.
+
+const SUITES: Array[Script] = [
+	preload("res://tests/suites/test_data_model.gd"),
+	preload("res://tests/suites/test_save_manager.gd"),
+	preload("res://tests/suites/test_settings_and_audio.gd"),
+	preload("res://tests/suites/test_gameplay_flow.gd"),
+]
+
+const TEST_SAVE_DIR := "user://test_saves"
+const TEST_SETTINGS_PATH := "user://test_settings.cfg"
+
+var passed := 0
+var failed := 0
+var current_suite := ""
+var screenshot_dir := ""
+var _failures: PackedStringArray = []
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--screenshots="):
+			screenshot_dir = arg.trim_prefix("--screenshots=")
+	_run.call_deferred()
+
+
+func _run() -> void:
+	_reset_scratch_files()
+	SaveManager.save_dir = TEST_SAVE_DIR
+	SettingsManager.settings_path = TEST_SETTINGS_PATH
+	SettingsManager.load_settings()
+	for script in SUITES:
+		var suite: Object = script.new()
+		current_suite = script.resource_path.get_file().get_basename()
+		print("\n=== %s ===" % current_suite)
+		await suite.run(self)
+	print("\n%d checks passed, %d failed." % [passed, failed])
+	for failure in _failures:
+		print("  FAILED: ", failure)
+	_reset_scratch_files()
+	get_tree().quit(1 if failed > 0 else 0)
+
+
+# --- Assertions ---------------------------------------------------------------------
+
+func check(condition: bool, description: String) -> bool:
+	if condition:
+		passed += 1
+		print("  ok   ", description)
+	else:
+		failed += 1
+		_failures.append("[%s] %s" % [current_suite, description])
+		print("  FAIL ", description)
+	return condition
+
+
+func check_eq(actual: Variant, expected: Variant, description: String) -> bool:
+	var ok: bool = actual == expected
+	if not ok:
+		description += "  (expected %s, got %s)" % [str(expected), str(actual)]
+	return check(ok, description)
+
+
+# --- Helpers -------------------------------------------------------------------------
+
+func frames(count := 1) -> void:
+	for i in count:
+		await get_tree().process_frame
+
+
+func physics_frames(count := 1) -> void:
+	for i in count:
+		await get_tree().physics_frame
+
+
+## Waits until `condition` returns true or `timeout` seconds pass.
+func wait_until(condition: Callable, timeout := 3.0) -> bool:
+	var deadline := Time.get_ticks_msec() + int(timeout * 1000.0)
+	while not condition.call():
+		if Time.get_ticks_msec() > deadline:
+			return false
+		await get_tree().process_frame
+	return true
+
+
+## Sends an action press + release through the real input pipeline.
+func press_action(action: StringName) -> void:
+	for pressed in [true, false]:
+		var event := InputEventAction.new()
+		event.action = action
+		event.pressed = pressed
+		get_viewport().push_input(event, true)
+	await frames(2)
+
+
+## Holds an action (as polled by Input.get_vector) for `seconds`.
+func hold_actions(actions: Array, seconds: float) -> void:
+	for action in actions:
+		Input.action_press(action)
+	await get_tree().create_timer(seconds, true, true).timeout
+	for action in actions:
+		Input.action_release(action)
+	await physics_frames(2)
+
+
+## Clicks a Control with the mouse at its centre, like a player would.
+func click(control: Control) -> void:
+	var position := control.get_global_transform_with_canvas() * (control.size / 2.0)
+	await click_at(position)
+
+
+func click_at(position: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
+	var motion := InputEventMouseMotion.new()
+	motion.position = position
+	motion.global_position = position
+	get_viewport().push_input(motion, true)
+	for pressed in [true, false]:
+		var event := InputEventMouseButton.new()
+		event.button_index = button
+		event.pressed = pressed
+		event.position = position
+		event.global_position = position
+		event.button_mask = MOUSE_BUTTON_MASK_LEFT if pressed and button == MOUSE_BUTTON_LEFT else 0
+		get_viewport().push_input(event, true)
+	await frames(2)
+
+
+func screenshot(file_name: String) -> void:
+	if screenshot_dir.is_empty() or DisplayServer.get_name() == "headless":
+		return
+	await RenderingServer.frame_post_draw
+	var image := get_viewport().get_texture().get_image()
+	DirAccess.make_dir_recursive_absolute(screenshot_dir)
+	image.save_png(screenshot_dir.path_join(file_name + ".png"))
+
+
+func _reset_scratch_files() -> void:
+	var dir := DirAccess.open("user://")
+	if dir == null:
+		return
+	if dir.dir_exists("test_saves"):
+		for file in DirAccess.get_files_at(TEST_SAVE_DIR):
+			DirAccess.remove_absolute(TEST_SAVE_DIR.path_join(file))
+		for sub in DirAccess.get_directories_at(TEST_SAVE_DIR):
+			DirAccess.remove_absolute(TEST_SAVE_DIR.path_join(sub))
+	if FileAccess.file_exists(TEST_SETTINGS_PATH):
+		DirAccess.remove_absolute(TEST_SETTINGS_PATH)

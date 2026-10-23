@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="PortCatalog" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_catalog.gd" id="1_catalog"]
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="2_port"]
+[ext_resource type="Resource" path="res://data/navigation/ports/copenhagen.tres" id="3_cph"]
+[ext_resource type="Resource" path="res://data/navigation/ports/kiel.tres" id="4_kiel"]
+
+[resource]
+script = ExtResource("1_catalog")
+ports = Array[ExtResource("2_port")]([ExtResource("3_cph"), ExtResource("4_kiel")])

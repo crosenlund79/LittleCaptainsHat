@@ -1,0 +1,147 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Texture2D" path="res://assets/branding/next_harbor_logo.svg" id="2_logo"]
+
+[sub_resource type="Gradient" id="Gradient_sky"]
+offsets = PackedFloat32Array(0, 0.62, 0.6201, 1)
+colors = PackedColorArray(0.043, 0.133, 0.18, 1, 0.075, 0.2, 0.26, 1, 0.09, 0.235, 0.29, 1, 0.063, 0.176, 0.231, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_sky"]
+gradient = SubResource("Gradient_sky")
+width = 64
+height = 512
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_hint"]
+font_size = 18
+font_color = Color(0.651, 0.769, 0.788, 0.75)
+
+[node name="MainMenu" type="CanvasLayer"]
+script = ExtResource("1_menu")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="TextureRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("GradientTexture2D_sky")
+expand_mode = 1
+
+[node name="Horizon" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_top = 0.62
+anchor_right = 1.0
+anchor_bottom = 0.62
+offset_bottom = 2.0
+grow_horizontal = 2
+color = Color(0.651, 0.769, 0.788, 0.18)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Column" type="VBoxContainer" parent="Root/Center"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Logo" type="TextureRect" parent="Root/Center/Column"]
+custom_minimum_size = Vector2(640, 322)
+layout_mode = 2
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Gap" type="Control" parent="Root/Center/Column"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Root/Center/Column"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 12
+
+[node name="NewGameButton" type="Button" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "New Game"
+
+[node name="ContinueButton" type="Button" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "Continue"
+
+[node name="ContinueInfo" type="Label" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "No saved game yet"
+horizontal_alignment = 1
+
+[node name="LoadButton" type="Button" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "Load Game"
+
+[node name="SettingsButton" type="Button" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "Quit"
+
+[node name="Credits" type="Label" parent="Root"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = -52.0
+offset_right = 900.0
+offset_bottom = -24.0
+grow_vertical = 0
+text = "Coastlines: Natural Earth (public domain)  ·  Font: Barlow (SIL OFL)"
+label_settings = SubResource("LabelSettings_hint")
+
+[node name="Version" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -332.0
+offset_top = -52.0
+offset_right = -32.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "v0.1.0"
+label_settings = SubResource("LabelSettings_hint")
+horizontal_alignment = 2

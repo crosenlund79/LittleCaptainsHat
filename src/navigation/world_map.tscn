@@ -1,0 +1,207 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/navigation/world_map.gd" id="1_world"]
+[ext_resource type="Script" path="res://src/navigation/map_view.gd" id="2_view"]
+[ext_resource type="JSON" path="res://data/navigation/western_baltic_land.json" id="3_land"]
+[ext_resource type="Script" path="res://src/ui/ui_scale_layer.gd" id="4_layer"]
+
+[node name="WorldMap" type="Node2D"]
+script = ExtResource("1_world")
+
+[node name="MapView" type="Node2D" parent="."]
+script = ExtResource("2_view")
+land_data = ExtResource("3_land")
+
+[node name="Land" type="Node2D" parent="MapView"]
+
+[node name="Overlay" type="Node2D" parent="MapView"]
+
+[node name="Camera2D" type="Camera2D" parent="MapView"]
+
+[node name="Ui" type="CanvasLayer" parent="."]
+layer = 5
+script = ExtResource("4_layer")
+
+[node name="Root" type="Control" parent="Ui"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SidePanel" type="PanelContainer" parent="Ui/Root"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -520.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Root/SidePanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Chart"
+
+[node name="Region" type="Label" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Western Baltic  ·  Danish Straits"
+
+[node name="Sep1" type="HSeparator" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+
+[node name="PositionHeader" type="Label" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Your position"
+
+[node name="PositionLabel" type="Label" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+text = "Moored"
+autowrap_mode = 3
+
+[node name="PositionCoords" type="Label" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = ""
+
+[node name="Sep2" type="HSeparator" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+
+[node name="SelectionHeader" type="Label" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Selected port"
+
+[node name="SelectionTitle" type="Label" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+text = "No port selected"
+autowrap_mode = 3
+
+[node name="SelectionDetails" type="Label" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = ""
+autowrap_mode = 3
+
+[node name="PlotButton" type="Button" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Plot course"
+
+[node name="Sep3" type="HSeparator" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+
+[node name="RouteHeader" type="Label" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Planned route"
+
+[node name="RouteLabel" type="Label" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+text = "No route planned"
+autowrap_mode = 3
+
+[node name="RouteNote" type="Label" parent="Ui/Root/SidePanel/VBox"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Courses are shown as direct lines. Waypoints and travel are not available yet."
+autowrap_mode = 3
+
+[node name="ClearButton" type="Button" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Clear route"
+
+[node name="Spacer" type="Control" parent="Ui/Root/SidePanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Attribution" type="Label" parent="Ui/Root/SidePanel/VBox"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 15
+text = "Coastlines: Natural Earth 1:10m (public domain), simplified. Not for navigation."
+autowrap_mode = 3
+
+[node name="Help" type="Label" parent="Ui/Root/SidePanel/VBox"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Drag to pan  ·  Scroll or + / − to zoom  ·  WASD / arrows to pan  ·  Click a port to select it"
+autowrap_mode = 3
+
+[node name="BackButton" type="Button" parent="Ui/Root/SidePanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "Back to boat  (Esc)"
+
+[node name="Toolbar" type="PanelContainer" parent="Ui/Root"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -88.0
+offset_right = 760.0
+offset_bottom = -24.0
+grow_vertical = 0
+theme_type_variation = &"HudPanel"
+
+[node name="HBox" type="HBoxContainer" parent="Ui/Root/Toolbar"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ZoomInButton" type="Button" parent="Ui/Root/Toolbar/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+tooltip_text = "Zoom in (+ / Page Up / mouse wheel)"
+text = "+"
+
+[node name="ZoomOutButton" type="Button" parent="Ui/Root/Toolbar/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+tooltip_text = "Zoom out (− / Page Down / mouse wheel)"
+text = "−"
+
+[node name="ResetViewButton" type="Button" parent="Ui/Root/Toolbar/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reset view"
+
+[node name="CenterBoatButton" type="Button" parent="Ui/Root/Toolbar/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Find boat"
+
+[node name="CursorLabel" type="Label" parent="Ui/Root/Toolbar/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = ""

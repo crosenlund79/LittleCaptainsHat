@@ -1,0 +1,21 @@
+# Godot 4 generated/cache files
+.godot/
+/android/
+*.translation
+
+# Export output and credentials
+/build/
+/export/
+export_credentials.cfg
+
+# Mono / C# (not used, kept out defensively)
+.mono/
+data_*/
+mono_crash.*.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.tmp
+.vscode/
+.idea/
