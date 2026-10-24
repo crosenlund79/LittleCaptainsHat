@@ -457,19 +457,83 @@ See §5 and §10.
 
 ## 20. Headless test results
 
-<<HEADLESS>>
+Final run after all code, documents and screenshots were in place
+(`godot --headless --path . res://tests/test_runner.tscn`, Linux, Godot 4.7.2):
+
+**1709 checks passed, 0 failed, 0 skipped; exit code 0.** That is 21 suites, up
+from 1480 at the end of I005a.
+
+| Suite | Passed | | Suite | Passed |
+|---|---|---|---|---|
+| test_data_model | 29 | | test_life_aboard | 112 |
+| test_routing | 99 | | test_chart_and_pause | 80 |
+| test_simulation | 82 | | test_vessels | 325 |
+| test_wind | 41 | | test_catamaran_cabin | 56 |
+| test_sailing | 55 | | test_companion_art | 74 |
+| test_reassessment | 34 | | test_dev_guides | 57 |
+| test_save_manager | 28 | | test_weather | 103 |
+| test_voyage_persistence | 37 | | test_weather_ui | 30 |
+| test_settings_and_audio | 37 | | **test_upkeep** (new) | 128 |
+| test_sailing_presentation | 34 | | **test_upkeep_ui** (new) | 93 |
+| test_gameplay_flow | 175 | | | |
+
+**Adaptations to existing tests** (only where behaviour really changed):
+- `test_gameplay_flow`: its "state after loading equals the saved state"
+  helper now also allows the food and water used by the game time that passed
+  since loading. The clock was already allowed this.
+- `test_catamaran_cabin`: proportion checks added; none removed.
+- `test_dev_guides`: the new documents are added to its link checks.
+- No test was removed or weakened.
 
 ## 21. Full rendered test results
 
-<<RENDERED>>
+Final run after all files and screenshots were in place, under Xvfb (1920×1080,
+OpenGL 3 on Mesa llvmpipe), `--screenshots` on:
+
+**1717 checks passed, 0 failed, 0 skipped; exit code 0.** It has 8 more checks
+than headless: rendered-only window-size and audio checks in
+`test_chart_and_pause` (84) and `test_settings_and_audio` (41).
+
+Earlier full runs during the iteration found real problems, all fixed before
+this final run:
+- the cat taking the berth at the wake-up spot (facing rule too strong);
+- the boatyard's width following its specs;
+- a parse error in the new UI suite;
+- README links to screenshots not yet copied.
 
 ## 22. Restart test results
 
-<<RESTART>>
+`tests/restart_check.tscn`, write then read in two processes:
+**20/20 passed** (`read phase: PASS`), both phases exit code 0.
+
+- Before this iteration there were 18 checks.
+- New: money, food and water restored to the exact value (€10,000, 13.875
+  days); each boat's condition (the Petrel at 64 %, the Starling at 100 %); and
+  the damage bookkeeping.
 
 ## 23. Screenshot review
 
-<<SHOTS>>
+108 screenshots per rendered run. The new ones are in `docs/screenshots/`
+(80–104), and the existing ones were refreshed. **Reviewed by looking at them:**
+
+| # | Shows | Notes |
+|---|---|---|
+| 80–88 | each boat at 100 %, 40 %, 15 % | no marks at 100 %; clear scuffs and cracks at 40 %; heavy at 15 %; station rings stay on top |
+| 89, 90 | provisions panel before and after 12 h sleep | 14.0 → 13.5 days, readable |
+| 91, 92 | supply graphics full / low | four crates and cans vs one, amber |
+| 93, 94 | boatyard repair and restock | buttons enabled, then updated |
+| 95 | test storm ahead on the chart | STORM area on the course, Weather tab lists it |
+| 96 | test squall at the boat | SEVERE SQUALLS cell, warning, Weather tab |
+| 97 | rescue dialog | Copenhagen, €1,000, €9,000 |
+| 98 | Copenhagen after the rescue | moored, 100 %, €9,000 (earlier test notifications visible at the top) |
+| 99, 100, 51 | Halcyon cabin and exit | wider hulls, real berths, TO DECK by the lit doorway |
+| 101 | cat beside the provisions station | prompt "Check provisions" |
+| 102–104 | boatyard with each boat | identical panel size; details beside the preview |
+| 33–36 | chart sidebar | unchanged |
+
+Not reviewed by eye: the cabin damage overlays (checked by the tests only), and
+the 130 % boatyard (checked by measurement only). Aesthetic acceptance is the
+owner's.
 
 ## 24. Windows acceptance instructions
 
@@ -560,4 +624,12 @@ The owner's artwork (`Visuals/`) is untouched.
 
 ## 27. Git branch, commit and push status
 
-<<GIT>>
+- Branch: `claude/determined-brahmagupta-3v95mx` (the only branch).
+- Commits in this iteration, on top of `4cecf06`:
+  - `c5873b7`: checkpoint (condition, weather damage, rescue, money,
+    provisions, stations, overlays, boatyard, interaction rule, Halcyon
+    layout, developer tools);
+  - `3e737c6`: UI tests, playtest fixes, documents, screenshots;
+  - a final commit with the filled-in test results in this report.
+- Pushed to `origin/claude/determined-brahmagupta-3v95mx`; the head is the final
+  commit. No pull request was opened.
