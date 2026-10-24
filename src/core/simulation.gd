@@ -16,6 +16,14 @@ extends Node
 ## the same positions, propulsion changes and events. Cost per call grows with
 ## the number of evaluation points and events, not with frame count.
 ##
+## Weather (Iteration 005a) comes from WeatherModel, the single authoritative
+## source: propulsion, warnings, ETA, chart and HUD all read get_weather_at().
+## While underway the weather at the boat and along the route ahead is
+## assessed at every evaluation point (the same absolute 5-minute grid, plus
+## departure), so warnings, sleep interruptions and the exposure record are
+## identical at 1×, 20×, in one large step or while sleeping. Weather events
+## are pure functions of (seed, time); nothing here changes the weather.
+##
 ## The node is pausable: when the game is paused (menus), time stops.
 
 signal weather_warning(warning: Dictionary)
@@ -23,9 +31,16 @@ signal arrived(port_id: StringName)
 
 ## Real seconds to game seconds at 1× (1 real second = 1 game minute).
 const DEFAULT_GAME_SECONDS_PER_REAL_SECOND := 60.0
-## Warnings are given when a noteworthy condition lies within this much
-## sailing time (at the current speed) along the remaining course.
-const WARNING_HORIZON_HOURS := 5.0
+## Weather warnings look this far ahead along the course (sailing time at the
+## estimated speed). Only weather that already exists is foreseen: storms that
+## form later cannot be predicted.
+const WARNING_HORIZON_HOURS := 6.0
+## How far ahead the chart's Weather tab looks along a course.
+const DISPLAY_HORIZON_HOURS := 12.0
+## Distance step when looking along a course for weather (nm).
+const FORECAST_STEP_NM := 2.0
+## Thunderstorm cells this close (nm, from their edge) count as "nearby".
+const NEARBY_STORM_NM := 15.0
 ## Wind and propulsion are re-evaluated on this absolute game-time grid.
 const EVALUATION_INTERVAL := 300.0
 ## Step used to estimate remaining sailing time along a route (ETA).
@@ -42,8 +57,6 @@ var game_seconds_per_real_second := DEFAULT_GAME_SECONDS_PER_REAL_SECOND
 ## Tests can switch off frame-driven advancing to step time manually.
 var auto_advance := true
 
-var _encounters: Array[Dictionary] = []
-var _encounters_key := ""
 var _eta_key := ""
 var _eta_seconds := 0.0
 
@@ -107,14 +120,16 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 			evaluate_propulsion()
 			propulsion = GameSession.get_propulsion()
 			next_grid = _next_grid_time(propulsion.last_evaluation_time)
+			# The weather is assessed at every grid point (and nowhere else on
+			# the way), so the result never depends on how time is chopped.
+			if _assess_weather(result) and stop_at_events:
+				result.stopped_by = STOP_WARNING
+				break
 		var speed := propulsion.speed_kn
 		var progress := GameSession.get_voyage_progress_nm()
 		var total := GameSession.get_voyage_total_nm()
 		var vertex := GameSession.get_voyage_next_vertex_nm()
-		var due := _next_due_warning(progress, speed)
 		var event_at := minf(total, vertex)
-		if not due.is_empty():
-			event_at = minf(event_at, due.trigger_nm)
 		var to_event := (maxf(event_at - progress, 0.0) / speed * 3600.0) if speed > 0.0 else INF
 		var to_grid := maxf(next_grid - time, 0.0)
 		var step := minf(remaining, minf(to_event, to_grid))
@@ -125,15 +140,7 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 		remaining -= step
 		if not reached_event:
 			continue  # a grid point or the end of the requested time
-		if not due.is_empty() and due.trigger_nm <= event_at + 1e-9 and due.trigger_nm < total:
-			var warning := _make_warning(due, event_at, speed)
-			GameSession.record_weather_warning(due.condition.id)
-			result.warnings.append(warning)
-			weather_warning.emit(warning)
-			if stop_at_events:
-				result.stopped_by = STOP_WARNING
-				break
-		elif event_at >= total - 1e-9:
+		if event_at >= total - 1e-9:
 			var destination := GameSession.get_voyage_destination_id()
 			GameSession.complete_voyage()
 			result.arrived_at = destination
@@ -173,10 +180,23 @@ func reassess_propulsion() -> Dictionary:
 	return {"changed": before.mode != after.mode, "before": before, "after": after}
 
 
-## The wind anywhere at the current game time (the one query used by the
-## chart, HUD, sails and simulation).
-func get_wind_at(geo: Vector2) -> WindField.Sample:
-	return WindField.get_default().sample(geo, GameSession.get_game_time(), GameSession.get_wind_seed())
+## The weather (and wind) anywhere at the current game time: the one query
+## used by the chart, HUD, sails, sounds and simulation. The returned sample's
+## from_deg/speed_kn are the sustained effective wind (what propulsion uses).
+func get_wind_at(geo: Vector2) -> WeatherSample:
+	return get_weather_at(geo)
+
+
+## The weather at `geo` at `time` (default: now). With `known_at`, only weather
+## events that exist by then are included (a forecast made at that time).
+func get_weather_at(geo: Vector2, time := -1.0, known_at := INF) -> WeatherSample:
+	var at := GameSession.get_game_time() if time < 0.0 else time
+	return WeatherModel.get_default().sample(geo, at, GameSession.get_wind_seed(), known_at)
+
+
+## The weather at the vessel now.
+func get_weather_at_vessel() -> WeatherSample:
+	return get_weather_at(GameSession.get_vessel_position())
 
 
 ## Heading (true, degrees) of the route leg the vessel is on.
@@ -195,6 +215,7 @@ func _next_grid_time(last_evaluation: float) -> float:
 func _on_voyage_started() -> void:
 	invalidate_estimates()
 	evaluate_propulsion()
+	_assess_weather(null)
 
 
 func _on_course_changed() -> void:
@@ -233,11 +254,12 @@ func estimate_route_seconds(path: PackedVector2Array, from_nm := 0.0, start_time
 	var time := GameSession.get_game_time() if start_time < 0.0 else start_time
 	var seconds := 0.0
 	var d := from_nm
-	var field := WindField.get_default()
+	var model := WeatherModel.get_default()
+	var known_at := GameSession.get_game_time()
 	while d < total - 1e-6:
 		var i := GeoMath.segment_index_at(cumulative, d)
 		var heading := GeoMath.rhumb_bearing(path[i - 1], path[i])
-		var wind := field.sample(GeoMath.point_along(path, cumulative, d), time + seconds, GameSession.get_wind_seed())
+		var wind := model.sample(GeoMath.point_along(path, cumulative, d), time + seconds, GameSession.get_wind_seed(), known_at)
 		var potential := profile.sail_speed_kn(wind.speed_kn, WindField.relative_angle(heading, wind.from_deg))
 		var speed := potential if potential >= profile.engine_start_below_kn else profile.engine_speed_kn
 		var ds := minf(ESTIMATE_STEP_NM, total - d)
@@ -273,59 +295,193 @@ func sleep(hours: float) -> AdvanceResult:
 	return advance(hours * 3600.0, true)
 
 
-## All noteworthy conditions still ahead on the active course, nearest first:
-## [{"condition", "at_nm" (distance ahead), "hours"}]. For display.
-func get_conditions_ahead() -> Array[Dictionary]:
-	var ahead: Array[Dictionary] = []
+# --- Weather along the course and warnings ------------------------------------------
+
+## Hazardous weather (CAUTION or worse) along `path` from `from_nm`, within
+## `horizon_hours` of sailing at the estimated speed: one entry per event (or
+## per strong background wind), the first place it is met, with its worst
+## level on the way: [{"key", "event_id", "label", "hazard", "hours",
+## "distance_nm", "speed_kn", "gust_kn", "sample"}], nearest first.
+## A forecast made now: only weather that already exists is foreseen. Times
+## are estimates (the same simple propulsion rule as the ETA).
+func route_hazards(path: PackedVector2Array, from_nm := 0.0, horizon_hours := DISPLAY_HORIZON_HOURS) -> Array[Dictionary]:
+	var found: Array[Dictionary] = []
+	if path.size() < 2:
+		return found
+	var profile := GameSession.get_vessel_profile()
+	var cumulative := GeoMath.cumulative_distances(path)
+	var total := cumulative[cumulative.size() - 1]
+	var now := GameSession.get_game_time()
+	var model := WeatherModel.get_default()
+	var seed := GameSession.get_wind_seed()
+	var seconds := 0.0
+	var d := from_nm
+	var by_key := {}
+	while seconds <= horizon_hours * 3600.0:
+		var geo := GeoMath.point_along(path, cumulative, d)
+		var sample := model.sample(geo, now + seconds, seed, now)
+		if sample.hazard >= WeatherModel.HAZARD_CAUTION:
+			var key := String(sample.event_id) if not sample.event_id.is_empty() else "wind"
+			if not by_key.has(key):
+				by_key[key] = {"key": key, "event_id": sample.event_id, "label": sample.get_label(), "hazard": sample.hazard,
+					"hours": seconds / 3600.0, "distance_nm": d - from_nm, "speed_kn": sample.speed_kn, "gust_kn": sample.gust_kn,
+					"sample": sample}
+				found.append(by_key[key])
+			elif sample.hazard > by_key[key].hazard:
+				by_key[key].hazard = sample.hazard
+				by_key[key].label = sample.get_label()
+				by_key[key].speed_kn = maxf(by_key[key].speed_kn, sample.speed_kn)
+				by_key[key].gust_kn = maxf(by_key[key].gust_kn, sample.gust_kn)
+		if d >= total - 1e-6:
+			break
+		var i := GeoMath.segment_index_at(cumulative, d)
+		var heading := GeoMath.rhumb_bearing(path[i - 1], path[i])
+		var potential := profile.sail_speed_kn(sample.speed_kn, WindField.relative_angle(heading, sample.from_deg))
+		var speed := potential if potential >= profile.engine_start_below_kn else profile.engine_speed_kn
+		var ds := minf(FORECAST_STEP_NM, total - d)
+		seconds += ds / maxf(speed, MIN_ESTIMATE_SPEED_KN) * 3600.0
+		d += ds
+	return found
+
+
+## Hazards ahead on the active course (the Weather tab and HUD), nearest first.
+func get_hazards_ahead(horizon_hours := DISPLAY_HORIZON_HOURS) -> Array[Dictionary]:
 	if not GameSession.is_underway():
-		return ahead
-	var progress := GameSession.get_voyage_progress_nm()
-	var speed := maxf(GameSession.get_vessel_speed_kn(), MIN_ESTIMATE_SPEED_KN)
-	for encounter in _get_encounters():
-		if encounter.at_nm >= progress - 1e-6:
-			var distance: float = encounter.at_nm - progress
-			ahead.append({"condition": encounter.condition, "at_nm": distance, "hours": distance / speed})
-	return ahead
+		var empty: Array[Dictionary] = []
+		return empty
+	var voyage := GameSession.get_voyage()
+	return route_hazards(voyage.route.path, voyage.progress_nm, horizon_hours)
 
 
-## The earliest not-yet-announced encounter and the progress at which its
-## warning is due (when it is WARNING_HORIZON_HOURS of sailing away).
-func _next_due_warning(progress: float, speed: float) -> Dictionary:
-	var horizon := WARNING_HORIZON_HOURS * speed
-	var best := {}
-	for encounter in _get_encounters():
-		var condition: WeatherCondition = encounter.condition
-		if GameSession.is_weather_warned(condition.id) or encounter.at_nm < progress - 1e-6:
+## Thunderstorm cells near (within NEARBY_STORM_NM of their edge) `geo` now.
+func get_storms_near(geo: Vector2) -> Array[WeatherEvent]:
+	var near: Array[WeatherEvent] = []
+	var now := GameSession.get_game_time()
+	for event in WeatherModel.get_default().events_of_kind(now, WeatherEvent.KIND_THUNDERSTORM, GameSession.get_wind_seed()):
+		var distance := event.offset_nm(geo, now).length()
+		if distance - event.outline_radius(atan2(event.offset_nm(geo, now).x, event.offset_nm(geo, now).y), now) <= NEARBY_STORM_NM \
+				and event.life_factor(now) > 0.3:
+			near.append(event)
+	return near
+
+
+## Assesses the weather at the boat and ahead (at evaluation points while
+## underway): records the exposure and gives at most one new warning. Returns
+## true when a warning was given.
+func _assess_weather(result: AdvanceResult) -> bool:
+	if not GameSession.is_underway():
+		return false
+	var here := get_weather_at_vessel()
+	GameSession.update_weather_exposure(here)
+	var warning := _local_warning(here)
+	if warning.is_empty():
+		warning = _nearby_storm_warning()
+	if warning.is_empty():
+		warning = _route_warning()
+	if warning.is_empty():
+		return false
+	GameSession.record_weather_warning(StringName(warning.key))
+	if result:
+		result.warnings.append(warning)
+	weather_warning.emit(warning)
+	return true
+
+
+## True when this event (or the background wind) was already announced at
+## `level` or worse on this voyage.
+static func _is_warned(event_key: String, level: int) -> bool:
+	for l in range(level, WeatherModel.HAZARD_SEVERE + 1):
+		if GameSession.is_weather_warned(StringName("%s>%d" % [event_key, l])):
+			return true
+	return false
+
+
+static func _event_key(sample: WeatherSample) -> String:
+	return String(sample.event_id) if not sample.event_id.is_empty() else "wind"
+
+
+func _local_warning(here: WeatherSample) -> Dictionary:
+	if here.hazard < WeatherModel.HAZARD_CAUTION or _is_warned(_event_key(here), here.hazard):
+		return {}
+	var what := here.get_label()
+	var text := ""
+	match here.hazard:
+		WeatherModel.HAZARD_CAUTION:
+			text = "%s at the boat: wind %s, gusts %d kn." % [what, _wind_text(here), roundi(here.gust_kn)]
+		WeatherModel.HAZARD_DANGEROUS:
+			text = "Dangerous conditions at the boat (%s): wind %s, gusts %d kn." % [what.to_lower(), _wind_text(here), roundi(here.gust_kn)]
+		_:
+			text = "Severe conditions at the boat (%s): wind %s, gusts %d kn." % [what.to_lower(), _wind_text(here), roundi(here.gust_kn)]
+	if here.classification == WeatherModel.CLASS_THUNDER_RISK:
+		text = "Thunderstorm risk at the boat: thunderstorms may develop nearby."
+	return _warning(here, "%s>%d" % [_event_key(here), here.hazard], text, 0.0, 0.0)
+
+
+func _nearby_storm_warning() -> Dictionary:
+	var vessel := GameSession.get_vessel_position()
+	for storm in get_storms_near(vessel):
+		var key := "%s>near" % storm.id
+		if GameSession.is_weather_warned(StringName(key)) or _is_warned(String(storm.id), WeatherModel.HAZARD_CAUTION):
 			continue
-		var trigger := maxf(encounter.at_nm - horizon, progress)
-		if best.is_empty() or trigger < best.trigger_nm:
-			best = {"condition": condition, "at_nm": encounter.at_nm, "trigger_nm": trigger}
-	return best
+		var offset := storm.offset_nm(vessel, GameSession.get_game_time())
+		var bearing := WindField.compass_name(rad_to_deg(atan2(-offset.x, -offset.y)))
+		var severe := storm.peak_kn + storm.gust_kn >= WeatherModel.SEVERE_STORM_KN
+		var text := "%s %d nm to the %s, moving %s." % ["Severe squalls nearby:" if severe else "Thunderstorm nearby:",
+			roundi(maxf(offset.length() - storm.radius_nm, 0.0)), bearing, WindField.compass_name(storm.heading_at(GameSession.get_game_time()))]
+		var sample := get_weather_at(storm.center_at(GameSession.get_game_time()))
+		return _warning(sample, key, text, 0.0, offset.length())
+	return {}
 
 
-func _make_warning(due: Dictionary, progress: float, speed: float) -> Dictionary:
-	var condition: WeatherCondition = due.condition
-	var hours: float = maxf(due.at_nm - progress, 0.0) / maxf(speed, MIN_ESTIMATE_SPEED_KN)
-	var when := "now" if hours < 0.1 else "in about %s" % format_duration(hours * 3600.0)
-	return {
-		"condition": condition,
-		"hours": hours,
-		"distance_nm": maxf(due.at_nm - progress, 0.0),
-		"text": "%s expected along your route %s." % [condition.display_name, when],
-	}
+func _route_warning() -> Dictionary:
+	for hazard in get_hazards_ahead(WARNING_HORIZON_HOURS):
+		var sample: WeatherSample = hazard.sample
+		if _is_warned(hazard.key, hazard.hazard):
+			continue
+		var expected := expected_strength(hazard)
+		var text := "%s ahead on your route %s: wind up to %d kn, gusts %d kn." % [hazard.label, describe_when(hazard.hours),
+			roundi(expected[0]), roundi(expected[1])]
+		if sample.classification == WeatherModel.CLASS_THUNDER_RISK:
+			text = "Thunderstorm risk ahead on your route %s." % describe_when(hazard.hours)
+		var warning := _warning(sample, "%s>%d" % [hazard.key, hazard.hazard], text, hazard.hours, hazard.distance_nm)
+		warning.hazard = hazard.hazard
+		return warning
+	return {}
 
 
-## Encounters along the active course, cached per voyage revision.
-func _get_encounters() -> Array[Dictionary]:
-	var voyage_key := "%d:%d:%s" % [GameSession.get_voyage_revision(), GameSession.get_voyage_total_nm() * 1000.0,
-		GameSession.get_voyage_destination_id()]
-	if voyage_key != _encounters_key:
-		_encounters_key = voyage_key
-		_encounters.clear()
-		var voyage := GameSession.get_voyage()
-		if voyage:
-			_encounters = WeatherCatalog.get_default().find_encounters(voyage.route.path, voyage.get_cumulative(), 0.0)
-	return _encounters
+## The strongest wind and gusts a hazard ahead may bring: what the forecast
+## met on the course, or the responsible event's core strength if more.
+func expected_strength(hazard: Dictionary) -> Array:
+	var sustained: float = hazard.speed_kn
+	var gust: float = hazard.gust_kn
+	var event := WeatherModel.get_default().find_event(hazard.event_id, GameSession.get_game_time(), GameSession.get_wind_seed()) \
+		if not String(hazard.event_id).is_empty() else null
+	if event:
+		var sample: WeatherSample = hazard.sample
+		var core := WeatherModel.event_strength(event, GameSession.get_game_time() + hazard.hours * 3600.0, sample.background_kn)
+		sustained = maxf(sustained, core[0])
+		gust = maxf(gust, core[1])
+	return [sustained, gust]
+
+
+func _warning(sample: WeatherSample, key: String, text: String, hours: float, distance_nm: float) -> Dictionary:
+	return {"key": key, "text": text, "title": sample.get_label(), "hazard": sample.hazard, "hours": hours,
+		"distance_nm": distance_nm, "event_id": sample.event_id, "classification": sample.classification,
+		"event_kind": sample.event_kind, "sample": sample}
+
+
+static func _wind_text(sample: WeatherSample) -> String:
+	return "%s %d kn" % [WindField.compass_name(sample.from_deg), roundi(sample.speed_kn)]
+
+
+## "now", "within the hour", "in about 2–3 h": forecast times are estimates,
+## shown as a range rather than to the minute.
+static func describe_when(hours: float) -> String:
+	if hours < 0.25:
+		return "now"
+	if hours < 1.0:
+		return "within the hour"
+	return "in about %d–%d h" % [floori(hours), floori(hours) + 1]
 
 
 ## "4 h 50 min", "35 min", "2 d 3 h".

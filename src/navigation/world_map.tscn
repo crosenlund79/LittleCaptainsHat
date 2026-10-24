@@ -235,7 +235,7 @@ autowrap_mode = 3
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 15
-text = "Warnings appear when a caution or danger area is within about 5 hours of sailing. Weather areas are demonstration data."
+text = "Warnings come when hazardous weather is within about 6 hours of sailing, or at the boat. The forecast covers weather that already exists: thunderstorms can form with little warning. Times are estimates."
 autowrap_mode = 3
 
 [node name="Details" type="ScrollContainer" parent="Ui/Root/SidePanel/VBox/Tabs"]

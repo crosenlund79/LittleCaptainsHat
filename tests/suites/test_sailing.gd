@@ -26,7 +26,10 @@ func run(runner: Node) -> void:
 	_test_spinnaker_state()
 	_test_step_independence()
 	_test_eta()
+	WeatherFixtures.use([WeatherFixtures.gale("test_strong_winds", Vector2(12.2, 54.78), 9.0, 26.0,
+		SessionState.get_start_time() - 3600.0, 24.0 * 365.0)])
 	_test_warnings_with_wind()
+	WeatherFixtures.clear()
 	_test_course_change_at_sea()
 	_test_save_and_load()
 	_test_migration_from_v2()
@@ -288,8 +291,8 @@ func _test_warnings_with_wind() -> void:
 	if not received.is_empty():
 		var w := received[0]
 		var speed := GameSession.get_vessel_speed_kn()
-		t.check(w.hours <= Simulation.WARNING_HORIZON_HOURS + 0.01 and absf(w.hours * speed - w.distance_nm) < 0.01,
-			"the warning horizon uses the current speed (%.1f kn, %.1f h ahead)" % [speed, w.hours])
+		t.check(w.hours <= Simulation.WARNING_HORIZON_HOURS + 0.01 and w.distance_nm > 0.0,
+			"the warning looks ahead in sailing time (%.1f kn now, %.1f h / %.1f nm ahead)" % [speed, w.hours, w.distance_nm])
 
 
 func _test_course_change_at_sea() -> void:

@@ -142,3 +142,45 @@ def dog_pant(dur, amp):
 # SFX bus: ship's companion responses to petting (soft, never harsh test tones).
 write("companion_purr.wav", purr(1.6, 0.4))
 write("companion_dog_pant.wav", dog_pant(1.6, 0.3))
+
+
+def storm_wind(dur, amp):
+    """Strong wind in the rigging (Iteration 005a): bright gusting noise with a
+    faint whistle, crossfaded to loop. Played louder the stronger the wind."""
+    random.seed(31)
+    n = int(dur * RATE)
+    out, v, w = [], 0.0, 0.0
+    for i in range(n):
+        t = i / RATE
+        v += (random.uniform(-1, 1) - v) * 0.35
+        w += (random.uniform(-1, 1) - w) * 0.03
+        gust = 0.55 + 0.45 * math.sin(2 * math.pi * 0.23 * t + 1.3 * math.sin(2 * math.pi * 0.07 * t)) ** 2
+        whistle = 0.08 * math.sin(2 * math.pi * (620 + 80 * math.sin(2 * math.pi * 0.3 * t)) * t)
+        out.append((v * 0.7 + w * 0.6 + whistle) * gust)
+    peak = max(abs(s) for s in out) or 1.0
+    out = [s / peak * amp for s in out]
+    fade = int(0.6 * RATE)
+    for i in range(fade):
+        a = i / fade
+        out[i] = out[i] * a + out[n - fade + i] * (1 - a)
+    return out[: n - fade]
+
+
+def thunder(dur, amp):
+    """Distant thunder (Iteration 005a): a soft crack, then a low rolling rumble."""
+    random.seed(37)
+    n = int(dur * RATE)
+    out, v = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        v += (random.uniform(-1, 1) - v) * 0.012
+        crack = random.uniform(-1, 1) * math.exp(-t * 18.0) * 0.3
+        roll = (0.6 + 0.4 * math.sin(2 * math.pi * 1.7 * t) ** 2) * math.exp(-t * 0.9)
+        out.append(v * roll * 9.0 + crack)
+    peak = max(abs(s) for s in out) or 1.0
+    return [s / peak * amp * envelope(i, n, 0.005, 0.4) for i, s in enumerate(out)]
+
+
+# Ambience bus: hazardous weather (strong wind loop, occasional thunder).
+write("storm_wind.wav", storm_wind(6.0, 0.4))
+write("thunder.wav", thunder(3.5, 0.45))

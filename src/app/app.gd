@@ -24,6 +24,9 @@ extends Node
 ## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
 @export var engine_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum.wav")
 @export var engine_muffled_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum_muffled.wav")
+## Hazardous weather (Ambience bus): strong wind loop and occasional thunder.
+@export var storm_wind_sound: AudioStream = preload("res://assets/audio/placeholder/storm_wind.wav")
+@export var thunder_sound: AudioStream = preload("res://assets/audio/placeholder/thunder.wav")
 
 ## Spawn marker in the cabin where the player wakes after sleeping.
 const WAKE_SPAWN := &"v_berth"
@@ -33,6 +36,12 @@ const ENGINE_MUFFLED_LOOP := &"engine_muffled"
 const ENGINE_OUTSIDE_DB := -6.0
 const ENGINE_INSIDE_DB := -16.0
 const ENGINE_FADE_SECONDS := 1.5
+const STORM_LOOP := &"storm_wind"
+## The storm wind is heard from this sustained wind (knots) and is loudest at
+## STORM_FULL_KN; quieter below deck. Checked once per real second.
+const STORM_AUDIBLE_KN := 20.0
+const STORM_FULL_KN := 45.0
+const WEATHER_AUDIO_INTERVAL := 1.0
 
 @onready var router: SceneRouter = $SceneRouter
 @onready var hud: Hud = $HudLayer/Hud
@@ -42,6 +51,9 @@ const ENGINE_FADE_SECONDS := 1.5
 
 
 var _toast_offsets := Vector2.ZERO
+var _weather_audio_timer := 0.0
+var _thunder_timer := 0.0
+var _thunder_rng := RandomNumberGenerator.new()  # cosmetic only (sound timing)
 
 
 func _ready() -> void:
@@ -64,6 +76,51 @@ func _ready() -> void:
 	GameSession.state_replaced.connect(update_engine_audio)
 	_hud_layer.hide()
 	show_main_menu()
+
+
+func _process(delta: float) -> void:
+	_weather_audio_timer -= delta
+	if _weather_audio_timer <= 0.0:
+		_weather_audio_timer = WEATHER_AUDIO_INTERVAL
+		update_weather_audio()
+	if _thunder_timer > 0.0 and not get_tree().paused:
+		_thunder_timer -= delta
+		if _thunder_timer <= 0.0:
+			AudioManager.play_one_shot(thunder_sound, AudioManager.BUS_AMBIENCE, -4.0 if _is_on_deck() else -10.0)
+
+
+## Weather sounds follow the weather at the boat (the same weather model as
+## everything else): a strong-wind loop rising with the sustained wind, and
+## thunder now and then while a thunderstorm is active at or near the boat.
+## Only in the boat's cabin or on deck; quieter below deck. Volumes follow
+## the Ambience and Master settings (their bus).
+func update_weather_audio() -> void:
+	var area := router.current_screen as BoatArea
+	if not GameSession.is_active() or area == null:
+		AudioManager.stop_loop(STORM_LOOP, ENGINE_FADE_SECONDS)
+		_thunder_timer = 0.0
+		return
+	var here := Simulation.get_weather_at_vessel()
+	var level := inverse_lerp(STORM_AUDIBLE_KN, STORM_FULL_KN, here.speed_kn)
+	if level <= 0.0:
+		AudioManager.stop_loop(STORM_LOOP, ENGINE_FADE_SECONDS * 2.0)
+	else:
+		var volume := lerpf(-30.0, -6.0, clampf(level, 0.0, 1.0)) - (0.0 if _is_on_deck() else 10.0)
+		AudioManager.play_loop(STORM_LOOP, storm_wind_sound, volume, ENGINE_FADE_SECONDS * 2.0, AudioManager.BUS_AMBIENCE)
+	var thunder_near := here.thunder_active or (GameSession.is_underway() and not Simulation.get_storms_near(GameSession.get_vessel_position()).is_empty())
+	if thunder_near and _thunder_timer <= 0.0:
+		_thunder_timer = _thunder_rng.randf_range(8.0, 25.0)
+	elif not thunder_near:
+		_thunder_timer = 0.0
+
+
+func is_storm_audio_playing() -> bool:
+	return AudioManager.is_loop_playing(STORM_LOOP)
+
+
+func _is_on_deck() -> bool:
+	var area := router.current_screen as BoatArea
+	return area != null and area.area_id == SessionState.AREA_EXTERIOR
 
 
 func _unhandled_input(event: InputEvent) -> void:

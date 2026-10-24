@@ -161,8 +161,17 @@ func refresh() -> void:
 		_progress.visible = false
 
 
-## "Wind WSW 14 kn" (where it blows from).
+## "Wind WSW 14 kn" (where it blows from), with gusts when they stand out
+## ("gusts 31") and the weather when it is hazardous ("Gale"): the sustained
+## wind, as the boat sails with it.
 static func describe_wind(wind: WindField.Sample) -> String:
 	if wind.speed_kn < 0.5:
 		return "Wind calm"
-	return "Wind %s %d kn" % [WindField.compass_name(wind.from_deg), roundi(wind.speed_kn)]
+	var text := "Wind %s %d kn" % [WindField.compass_name(wind.from_deg), roundi(wind.speed_kn)]
+	var weather := wind as WeatherSample
+	if weather:
+		if weather.gust_kn >= weather.speed_kn + 6.0:
+			text += ", gusts %d" % roundi(weather.gust_kn)
+		if weather.hazard >= WeatherModel.HAZARD_CAUTION:
+			text += "  ·  %s" % weather.get_label()
+	return text

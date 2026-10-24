@@ -357,6 +357,9 @@ func _test_sleep_from_chart() -> void:
 func _test_interrupted_sleep() -> void:
 	# A weather warning wakes the crew early (calm: 5 kn under engine to Kiel).
 	t.use_calm_wind()
+	# A fixed strong-wind area on the course (a fixture of the weather model).
+	WeatherFixtures.use([WeatherFixtures.gale("test_strong_winds", Vector2(12.2, 54.78), 9.0, 26.0,
+		SessionState.get_start_time() - 3600.0, 24.0 * 365.0)])
 	GameSession.start_new_session()
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"start")
 	app._show_current_boat_area()
@@ -372,6 +375,7 @@ func _test_interrupted_sleep() -> void:
 	_check_woke_at_berth("after a weather warning (sleep started on deck)")
 	t.check(absf(GameSession.get_voyage_progress_nm() - slept / 3600.0 * 5.0) < 1e-6, "[sleep] the boat moved exactly as far as the time slept")
 	app.hud.hide_warning()
+	WeatherFixtures.clear()
 
 	# Arrival wakes the crew too.
 	for i in 6:

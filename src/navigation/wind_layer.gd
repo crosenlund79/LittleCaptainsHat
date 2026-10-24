@@ -2,8 +2,9 @@ class_name WindLayer
 extends Node2D
 ## The chart's wind overlay: arrows showing where the wind blows TO, coloured
 ## by speed, over a faint speed tint of the sea. Both read the one central
-## wind query (WindField) for the time shown, so the chart always agrees with
-## the simulation, HUD and sails.
+## weather query (WeatherModel: the sustained effective wind, storms included)
+## for the time shown, so the chart always agrees with the simulation, HUD and
+## sails.
 ##
 ## Performance: arrows sit on an absolute lattice in map space whose spacing
 ## is a power-of-two step chosen for ~ARROW_SPACING_PX on screen. Panning
@@ -98,7 +99,7 @@ func _point(key: Vector3i, map_point: Vector2) -> Array:
 			_cache.clear()
 		var geo := map_view.projection.map_to_geo(map_point)
 		var sea := _grid == null or _grid.cell_class_at_geo(geo) != NavGrid.LAND
-		entry = [WindField.get_default().sample(geo, _time, GameSession.get_wind_seed()), sea]
+		entry = [WeatherModel.get_default().sample(geo, _time, GameSession.get_wind_seed()), sea]
 		_cache[key] = entry
 	return entry
 

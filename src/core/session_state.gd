@@ -49,8 +49,15 @@ var vessel_status: StringName = STATUS_MOORED
 var vessel_position := Vector2.ZERO
 ## Sail/engine state and the automatic controller's memory (used while underway).
 var propulsion := PropulsionState.new()
-## Selects the deterministic weather variation of the wind field for this game.
+## Selects this game's deterministic weather: the wind field's variation and
+## every weather event (WeatherModel). Events are a pure function of this seed
+## and time, so saving the seed saves the weather.
 var wind_seed := 1
+## Which WeatherModel generation rules the weather follows (data/weather/
+## weather_events.json "model_version"; for future compatibility checks).
+var weather_model_version := 1
+## The weather the boat has been in and for how long (see WeatherExposure).
+var weather_exposure := WeatherExposure.new()
 ## Which boat the player owns (a VesselDefinition id, stable across versions).
 var vessel_id: StringName = &"starling_33"
 ## The ship's companion (kind and resting spot in the cabin).
@@ -66,6 +73,7 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.boat_area = start_area
 	state.spawn_point = start_spawn
 	state.game_time = get_start_time()
+	state.weather_exposure.reset(state.game_time)
 	state.companion = CompanionState.create(companion_kind, state.game_time)
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
@@ -95,6 +103,8 @@ func duplicate_state() -> SessionState:
 	copy.vessel_position = vessel_position
 	copy.propulsion = propulsion.duplicate_state()
 	copy.wind_seed = wind_seed
+	copy.weather_model_version = weather_model_version
+	copy.weather_exposure = weather_exposure.duplicate_exposure()
 	copy.companion = companion.duplicate_state()
 	copy.vessel_id = vessel_id
 	copy.voyage = voyage.duplicate_voyage() if voyage else null
@@ -112,6 +122,7 @@ func to_dict() -> Dictionary:
 		"player": player,
 		"clock": {"game_time": game_time, "time_scale": time_scale, "paused": paused},
 		"wind": {"seed": wind_seed},
+		"weather": {"model_version": weather_model_version, "exposure": weather_exposure.to_dict()},
 		"companion": companion.to_dict(),
 		"vessel": {
 			"id": String(vessel_id),
@@ -187,6 +198,14 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		errors.append("missing or invalid wind settings")
 		return null
 	state.wind_seed = int(wind.seed)
+	var weather: Variant = data.get("weather")
+	if not weather is Dictionary or not _is_finite_number(weather.get("model_version")):
+		errors.append("missing or invalid weather data")
+		return null
+	state.weather_model_version = int(weather.model_version)
+	state.weather_exposure = WeatherExposure.from_dict(weather.get("exposure"), errors)
+	if state.weather_exposure == null:
+		return null
 	state.companion = CompanionState.from_dict(data.get("companion"), errors)
 	if state.companion == null:
 		return null

@@ -176,7 +176,7 @@ func _test_behaviour() -> void:
 			last = cat.pose
 			seen[last] = true
 	cat.pose_changed.disconnect(on_change)
-	t.check(seen.has(&"sleeping") and seen.has(&"stretching") and seen.has(&"resting"), "[cat art] over 30 minutes it rests, naps and stretches (%s)" % seen.keys())
+	t.check(seen.has(&"sleeping") and seen.has(&"stretching") and seen.has(&"resting"), "[cat art] over 30 minutes it rests, naps and stretches (%s)" % [seen.keys()])
 	t.check(changes.size() >= 10 and changes.size() <= 120, "[cat art] pose changes are occasional (%d in 30 min)" % changes.size())
 	t.check(shortest >= set.stretch_seconds - 0.15, "[cat art] no flickering: each pose holds at least %.1f s (shortest %.1f s)" % [set.stretch_seconds, shortest])
 	cat.set_pose(&"resting")

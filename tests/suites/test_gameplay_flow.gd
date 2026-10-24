@@ -26,6 +26,7 @@ func run(runner: Node) -> void:
 	await _test_save_and_load()
 	await _test_main_menu_return_and_continue()
 	await _test_first_voyage_acceptance()
+	WeatherFixtures.clear()
 	await _test_quit()
 
 
@@ -613,7 +614,13 @@ func _test_first_voyage_acceptance() -> void:
 		t.check(absf(GameSession.get_voyage_progress_nm() - saved.voyage.progress_nm) < 0.5,
 			"[voyage] the voyage resumes from the saved position, not from Copenhagen")
 
-	# 24. A weather warning within five sailing hours (sleep is cut short by it).
+	# 24. A weather warning cuts the sleep short. A strong-wind area forms an
+	# hour into the sleep on the Copenhagen -> Kiel course 40 nm ahead (a
+	# fixture of the weather model, off Darss as in Iteration 002).
+	var course := GameSession.get_voyage().route.path
+	var area_center := GeoMath.point_along(course, GeoMath.cumulative_distances(course), GameSession.get_voyage_progress_nm() + 40.0)
+	WeatherFixtures.use([WeatherFixtures.gale("test_strong_winds", area_center, 9.0, 26.0,
+		GameSession.get_game_time() + 3600.0, 24.0 * 365.0)])
 	app.sleep_for(8.0)
 	await _settle()
 	t.check(app.hud.is_warning_visible(), "[voyage] the strong-wind warning is shown in the HUD")
@@ -641,8 +648,7 @@ func _test_first_voyage_acceptance() -> void:
 	await t.frames(2)
 	var new_course := map.get_draft_route()
 	t.check(new_course != null and new_course.origin_port_id.is_empty(), "[voyage] the new course starts at sea from the vessel")
-	var avoids := new_course != null and WeatherCatalog.get_default().find_encounters(new_course.path,
-		GeoMath.cumulative_distances(new_course.path), 0.0).is_empty()
+	var avoids := new_course != null and Simulation.route_hazards(new_course.path, 0.0, 1000.0).is_empty()
 	t.check(avoids, "[voyage] the adjusted course avoids the strong winds")
 	await t.screenshot("17_chart_reroute")
 	await t.click(map.find_child("ApplyButton", true, false))

@@ -50,6 +50,8 @@ var _live_timer := 0.0
 var _feedback := ""
 ## Estimated sailing time of the draft course (seconds), refreshed when it changes.
 var _draft_estimate_seconds := 0.0
+var _hazards_key := ""
+var _hazards: Array[Dictionary] = []
 
 @onready var _map: MapView = $MapView
 @onready var _status: Label = %StatusLabel
@@ -107,6 +109,9 @@ func _ready() -> void:
 	%ResetViewButton.pressed.connect(_map.reset_view)
 	%CenterBoatButton.pressed.connect(center_on_vessel)
 	_build_wind_legend()
+	var legend := WeatherLegend.new()
+	legend.name = "WeatherLegend"
+	_weather_label.get_parent().add_child(legend)
 	_wind_toggle.button_pressed = wind_shown
 	_wind_toggle.toggled.connect(set_wind_shown)
 	set_wind_shown(wind_shown)
@@ -512,12 +517,15 @@ func get_current_tab() -> int:
 	return _tabs.current_tab
 
 
-## Wind at the boat (and how it sails in it) for the Weather tab.
+## Weather at the boat (and how it sails in it) for the Weather tab.
 func _refresh_wind() -> void:
-	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
-	var text := Hud.describe_wind(wind)
-	if wind.speed_kn >= 0.5:
-		text += " (from the %s)" % WindField.compass_name(wind.from_deg)
+	var here := Simulation.get_weather_at_vessel()
+	var text := Hud.describe_wind(here)
+	if here.speed_kn >= 0.5:
+		text += " (from the %s)" % WindField.compass_name(here.from_deg)
+	text += "\nGusts %d kn  ·  %s  ·  %s" % [roundi(here.gust_kn), here.get_label(), here.get_hazard_name()]
+	if here.cyclone_risk > 0.05:
+		text += "\nTropical cyclone season: %s risk (%s)" % ["high" if here.cyclone_risk > 0.6 else "some", here.cyclone_basin]
 	_set_text(_wind_here, text)
 	if GameSession.is_underway():
 		var propulsion := GameSession.get_propulsion()
@@ -528,39 +536,57 @@ func _refresh_wind() -> void:
 		_set_text(_propulsion, "In port. The boat chooses sail or engine itself once underway.")
 
 
-## Caution/danger areas the draft (or current) course meets.
-func _count_weather_warnings() -> int:
+## The course shown (draft or active) as one path, or empty when it is not navigable.
+func _shown_path() -> PackedVector2Array:
 	var path := PackedVector2Array()
 	for leg in _draft_legs:
 		if not leg.ok:
-			return 0
+			return PackedVector2Array()
 		for p: Vector2 in leg.path:
 			if path.is_empty() or not path[path.size() - 1].is_equal_approx(p):
 				path.append(p)
-	if path.size() < 2:
-		return 0
-	return WeatherCatalog.get_default().find_encounters(path, GeoMath.cumulative_distances(path), 0.0).size()
+	return path
+
+
+## Hazardous weather along the shown course (from the weather model; cached
+## per course and 5 game minutes).
+func get_route_hazards() -> Array[Dictionary]:
+	var path := _shown_path()
+	var from_nm := 0.0
+	if GameSession.is_underway() and not _draft_dirty:
+		var voyage := GameSession.get_voyage()
+		path = voyage.route.path
+		from_nm = voyage.progress_nm
+	var key := "%d|%s|%.2f|%d" % [path.size(), path[path.size() - 1] if path.size() > 0 else Vector2.ZERO, from_nm,
+		floori(GameSession.get_game_time() / 300.0)]
+	if key != _hazards_key:
+		_hazards_key = key
+		_hazards = Simulation.route_hazards(path, from_nm) if path.size() >= 2 else ([] as Array[Dictionary])
+	return _hazards
+
+
+func _count_weather_warnings() -> int:
+	return get_route_hazards().size()
 
 
 func _describe_weather() -> String:
-	var path := PackedVector2Array()
-	for leg in _draft_legs:
-		if not leg.ok:
-			return "Weather along the course is shown once the course is navigable."
-		for p: Vector2 in leg.path:
-			if path.is_empty() or not path[path.size() - 1].is_equal_approx(p):
-				path.append(p)
-	if path.size() < 2:
-		return "Plot a course to see the weather along it."
-	var encounters := WeatherCatalog.get_default().find_encounters(path, GeoMath.cumulative_distances(path), 0.0)
-	if encounters.is_empty():
-		return "No warnings along this course."
 	var lines := PackedStringArray()
-	for encounter in encounters:
-		var condition: WeatherCondition = encounter.condition
-		lines.append("%s (%s) in %d nm, about %s" % [condition.display_name,
-			"danger" if condition.severity == WeatherCondition.Severity.DANGER else "caution",
-			roundi(encounter.at_nm), Simulation.format_duration(Simulation.estimate_route_seconds(path, 0.0, -1.0, encounter.at_nm))])
+	if GameSession.is_underway():
+		for storm in Simulation.get_storms_near(GameSession.get_vessel_position()):
+			lines.append("%s nearby, moving %s." % [WeatherStyle.label(storm, GameSession.get_game_time()).capitalize(),
+				WindField.compass_name(storm.heading_at(GameSession.get_game_time()))])
+	var path := _shown_path()
+	if path.size() < 2 and not GameSession.is_underway():
+		lines.append("Plot a course to see the weather along it.")
+		return "\n".join(lines)
+	var hazards := get_route_hazards()
+	if hazards.is_empty():
+		lines.append("No hazardous weather expected along the next %d hours of the course." % roundi(Simulation.DISPLAY_HORIZON_HOURS))
+	for hazard in hazards:
+		var expected := Simulation.expected_strength(hazard)
+		lines.append("%s (%s): %s, %d nm ahead. Wind to %d kn, gusts %d kn." % [hazard.label,
+			WeatherModel.hazard_name(hazard.hazard).to_lower(), Simulation.describe_when(hazard.hours),
+			roundi(hazard.distance_nm), roundi(expected[0]), roundi(expected[1])])
 	return "\n".join(lines)
 
 

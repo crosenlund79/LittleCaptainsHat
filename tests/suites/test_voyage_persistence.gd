@@ -8,7 +8,12 @@ var t: Node
 func run(runner: Node) -> void:
 	t = runner
 	Simulation.auto_advance = false
+	# The Copenhagen -> Kiel course meets a fixed strong-wind area (fixture of
+	# the weather model, where the Iteration 002 demonstration area was).
+	WeatherFixtures.use([WeatherFixtures.gale("test_strong_winds", Vector2(12.2, 54.78), 9.0, 26.0,
+		SessionState.get_start_time() - 3600.0, 24.0 * 365.0)])
 	_test_underway_round_trip()
+	WeatherFixtures.clear()
 	_test_migration_from_iteration_001()
 	_test_invalid_voyage_saves()
 	SaveManager.delete_slot(1)
@@ -52,7 +57,8 @@ func _test_underway_round_trip() -> void:
 	t.check_eq(GameSession.get_voyage_destination_id(), &"kiel", "destination is restored")
 	t.check_eq(GameSession.get_boat_area(), SessionState.AREA_EXTERIOR, "boat area is restored")
 	t.check(GameSession.get_player_position().is_equal_approx(Vector2(-260.5, 12.25)), "player position is restored")
-	t.check(GameSession.is_weather_warned(&"strong_winds_western_baltic"), "the handled warning is restored")
+	t.check(GameSession.is_weather_warned(&"test_strong_winds>1"), "the handled warning is restored")
+	t.check_eq(GameSession.get_weather_exposure().to_dict(), saved.weather_exposure.to_dict(), "the weather exposure record is restored")
 	warnings.clear()
 	GameSession.set_time_scale(1)
 	Simulation.advance(10.0 * 3600.0)

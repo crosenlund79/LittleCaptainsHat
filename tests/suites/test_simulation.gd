@@ -2,7 +2,11 @@ extends RefCounted
 ## Game clock, voyages, sleeping, weather warnings and changing course,
 ## driven directly through Simulation and GameSession.
 
-const STRONG_WINDS := &"strong_winds_western_baltic"
+## A fixed strong-wind area where Iteration 002's demonstration area was
+## (between Møn and Rügen, on the Copenhagen -> Kiel course), as a fixture of
+## the one weather model.
+const STRONG_WINDS := &"test_strong_winds"
+const STRONG_WINDS_CENTER := Vector2(12.2, 54.78)
 const AVOID_WAYPOINT := Vector2(12.62, 54.55)
 
 var t: Node
@@ -18,14 +22,20 @@ func run(runner: Node) -> void:
 	_test_step_independence()
 	_test_arrival_and_next_voyage()
 	_test_sleep()
+	WeatherFixtures.use([WeatherFixtures.gale(String(STRONG_WINDS), STRONG_WINDS_CENTER, 9.0, 26.0,
+		SessionState.get_start_time() - 3600.0, 24.0 * 365.0)])
 	_test_weather_warnings()
 	_test_rerouting()
+	WeatherFixtures.clear()
 	Simulation.weather_warning.disconnect(_on_warning)
 	Simulation.auto_advance = true
 	GameSession.end_session()
 
 
 func _on_warning(warning: Dictionary) -> void:
+	# Where and when it was given (the warning fires at an evaluation point).
+	warning["at_progress"] = GameSession.get_voyage_progress_nm()
+	warning["at_time"] = GameSession.get_game_time()
 	warnings.append(warning)
 
 
@@ -162,76 +172,96 @@ func _test_sleep() -> void:
 		"sleeping in port advances time only")
 
 
-func _test_weather_warnings() -> void:
-	var horizon := Simulation.WARNING_HORIZON_HOURS * 5.0
-	# Where does Copenhagen -> Kiel enter the strong-wind area?
-	var route: PlannedRoute = t.make_route(&"copenhagen", &"kiel")
-	var encounters := WeatherCatalog.get_default().find_encounters(route.path, GeoMath.cumulative_distances(route.path), 0.0)
-	t.check(encounters.size() == 1 and encounters[0].condition.id == STRONG_WINDS, "Copenhagen -> Kiel runs into the demo strong-wind area")
-	var entry: float = encounters[0].at_nm if not encounters.is_empty() else 0.0
-	var trigger := entry - horizon
+func _hazard_start_nm(path: PackedVector2Array) -> float:
+	var hazards := Simulation.route_hazards(path, 0.0, 1000.0)
+	return hazards[0].distance_nm if not hazards.is_empty() else -1.0
 
-	# At 1× in one-minute steps.
+
+func _test_weather_warnings() -> void:
+	var horizon := Simulation.WARNING_HORIZON_HOURS * 5.0  # calm: motoring at 5 kn
+	var route: PlannedRoute = t.make_route(&"copenhagen", &"kiel")
+	var hazards := Simulation.route_hazards(route.path, 0.0, 1000.0)
+	t.check(hazards.size() == 1 and hazards[0].event_id == STRONG_WINDS and hazards[0].hazard == WeatherModel.HAZARD_CAUTION,
+		"Copenhagen -> Kiel runs into the strong-wind area (caution)")
+	var entry := _hazard_start_nm(route.path)
+
+	# At 1× in one-minute steps: one warning, about 6 hours of sailing before the area.
 	_new_game_with_route(&"copenhagen", &"kiel")
 	GameSession.depart()
 	warnings.clear()
-	Simulation.advance((trigger - 1.0) / 5.0 * 3600.0)
-	t.check(warnings.is_empty(), "no warning 1 nm before the 5-hour horizon")
 	var progress_at_warning := -1.0
-	for i in 60:
+	for i in 20 * 60:
 		Simulation.advance(60.0)
 		if not warnings.is_empty() and progress_at_warning < 0.0:
-			progress_at_warning = GameSession.get_voyage_progress_nm()
-	t.check_eq(warnings.size(), 1, "one warning is given at the horizon")
-	t.check(not warnings.is_empty() and absf(warnings[0].distance_nm - horizon) < 0.01, "the warning comes 25 nm (5 h at 5 kn) before the area")
-	t.check(not warnings.is_empty() and "Strong winds" in warnings[0].text and "5 h" in warnings[0].text,
-		"warning text names the condition and time: %s" % (warnings[0].text if not warnings.is_empty() else ""))
+			progress_at_warning = warnings[0].at_progress
+			break
+	t.check_eq(warnings.size(), 1, "one warning is given before the area")
+	var ahead := entry - progress_at_warning
+	t.check(ahead <= horizon + Simulation.FORECAST_STEP_NM and ahead >= horizon - 1.0,
+		"it comes about 6 h of sailing (30 nm at 5 kn) before the area (%.1f nm)" % ahead)
+	t.check(not warnings.is_empty() and "Strong winds" in warnings[0].text and "h" in warnings[0].text and warnings[0].hazard == WeatherModel.HAZARD_CAUTION,
+		"warning text names the weather and when: %s" % (warnings[0].text if not warnings.is_empty() else ""))
 	Simulation.advance(6.0 * 3600.0)
 	for i in 120:
 		Simulation.advance(60.0)
-	t.check_eq(warnings.size(), 1, "the same condition is not announced again")
-	t.check(GameSession.is_weather_warned(STRONG_WINDS), "the warning is recorded on the voyage")
+	t.check_eq(warnings.size(), 1, "the same weather is not announced again (also not on entering it)")
+	t.check(GameSession.is_weather_warned(StringName("%s>1" % STRONG_WINDS)), "the warning is recorded on the voyage")
 
-	# At 20× with large frame steps the warning fires at the same place, and
+	# At 20× with large frame steps the warning fires at the same point, and
 	# accelerated time drops back to 1×.
 	_new_game_with_route(&"copenhagen", &"kiel")
 	GameSession.depart()
 	warnings.clear()
 	GameSession.set_time_scale(20)
-	var warned_progress := -1.0
 	for i in 200:
 		Simulation.tick(1.0)  # 1 real second = 20 game minutes
 		if not warnings.is_empty():
-			warned_progress = warnings[0].distance_nm
 			break
-	t.check(absf(warned_progress - horizon) < 0.01, "at 20× the warning comes at the same distance (%.3f nm before the area)" % warned_progress)
+	var warned_time: float = warnings[0].at_time if not warnings.is_empty() else -1.0
+	t.check(not warnings.is_empty() and absf(warnings[0].at_progress - progress_at_warning) < 1e-6,
+		"at 20× the warning comes at exactly the same point")
 	t.check_eq(GameSession.get_time_scale(), 1, "a warning returns accelerated time to 1×")
 
-	# Sleeping does not sleep through a warning.
+	# Sleeping does not sleep through a warning: woken at the same evaluation point.
 	_new_game_with_route(&"copenhagen", &"kiel")
 	GameSession.depart()
-	Simulation.advance((trigger - 5.0) / 5.0 * 3600.0)  # 1 h before the warning
 	warnings.clear()
-	var result := Simulation.sleep(8.0)
+	var departed := GameSession.get_game_time()
+	var result := Simulation.sleep(12.0)
 	t.check_eq(result.stopped_by, Simulation.STOP_WARNING, "sleep is interrupted by the warning")
-	t.check(absf(result.elapsed_seconds - 3600.0) < 1.0, "woken exactly when the warning became due (after %.2f h)" % (result.elapsed_seconds / 3600.0))
-	t.check(absf(GameSession.get_voyage_progress_nm() - trigger) < 0.01, "the vessel stopped advancing at the warning point")
+	t.check(absf(GameSession.get_voyage_progress_nm() - progress_at_warning) < 1e-6,
+		"woken at exactly the point where the 1× voyage was warned (%.3f nm)" % GameSession.get_voyage_progress_nm())
+	t.check(absf(GameSession.get_game_time() - warned_time) < 1e-6,
+		"at the same game time as the 20× voyage was warned")
 
-	# Weather has no effect on speed in this iteration.
-	Simulation.advance(6.0 * 3600.0)  # into the area
-	var area: WeatherCondition = WeatherCatalog.get_default().get_condition(STRONG_WINDS)
-	t.check(area.contains(GameSession.get_vessel_position()), "the vessel is inside the strong-wind area")
-	var progress := GameSession.get_voyage_progress_nm()
-	Simulation.advance(3600.0)
-	t.check(absf(GameSession.get_voyage_progress_nm() - progress - 5.0) < 1e-6, "speed is still 5 kn inside the area (no weather effects)")
+	# Weather now acts on the boat: inside the area the wind is the area's.
+	# Sail on until the closest approach to the area's centre (the course
+	# passes about 3 nm from it).
+	var inside := false
+	var previous := INF
+	for i in 12 * 60:
+		var area := WeatherModel.get_default().find_event(STRONG_WINDS, GameSession.get_game_time())
+		var d := area.normalized_distance(GameSession.get_vessel_position(), GameSession.get_game_time())
+		if d > previous and previous < 0.6:
+			inside = true
+			break
+		previous = d
+		Simulation.advance(60.0)
+	var here := Simulation.get_weather_at_vessel()
+	t.check(inside and here.speed_kn >= 22.0 and here.event_id == STRONG_WINDS, "inside the area the wind is strong (%.0f kn), from the area" % here.speed_kn)
+	Simulation.advance(Simulation.EVALUATION_INTERVAL)
+	t.check(absf(GameSession.get_propulsion().wind_speed_kn - Simulation.get_weather_at_vessel().speed_kn) < 3.0,
+		"propulsion uses that same wind (%.0f kn)" % GameSession.get_propulsion().wind_speed_kn)
+	t.check(GameSession.get_weather_exposure().level == WeatherModel.HAZARD_CAUTION and GameSession.get_weather_exposure().event_id == STRONG_WINDS,
+		"the exposure record knows the boat is in it")
 	t.check(GameSession.is_underway(), "weather does not stop or harm the boat")
 
-	# A course that never meets a condition gives no warnings.
+	# A course that never meets the area gives no warnings.
 	_new_game_with_route(&"kiel", &"gothenburg", [], true)
 	GameSession.depart()
 	warnings.clear()
 	Simulation.advance(1000.0 * 3600.0)
-	t.check(warnings.is_empty(), "no warnings on a course that avoids all areas")
+	t.check(warnings.is_empty(), "no warnings on a course that avoids all weather")
 
 
 func _test_rerouting() -> void:
@@ -239,7 +269,6 @@ func _test_rerouting() -> void:
 	GameSession.enter_boat_area(SessionState.AREA_INTERIOR, &"start")
 	GameSession.set_player_position(Vector2(-150, 10))
 	GameSession.depart()
-	var horizon := Simulation.WARNING_HORIZON_HOURS * 5.0
 	warnings.clear()
 	for i in 40:
 		Simulation.advance(1800.0)
@@ -268,8 +297,7 @@ func _test_rerouting() -> void:
 	t.check_eq(voyage.revision, 2, "the course revision increased")
 	t.check_eq(GameSession.get_boat_area(), SessionState.AREA_INTERIOR, "the boat area is preserved")
 	t.check(GameSession.get_player_position().is_equal_approx(Vector2(-150, 10)), "the player position is preserved")
-	var encounters := WeatherCatalog.get_default().find_encounters(voyage.route.path, voyage.get_cumulative(), 0.0)
-	t.check(encounters.is_empty(), "the new course avoids the strong-wind area")
+	t.check(Simulation.route_hazards(voyage.route.path, 0.0, 1000.0).is_empty(), "the new course avoids the strong-wind area")
 	warnings.clear()
 	var result := Simulation.advance(100.0 * 3600.0, true)
 	t.check(warnings.is_empty(), "no further warnings after avoiding the area")

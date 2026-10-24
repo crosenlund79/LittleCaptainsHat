@@ -50,7 +50,7 @@ func has_unsaved_changes() -> bool:
 func _exit_tree() -> void:
 	PortCatalog.clear_default()
 	SeaRouter.clear_default()
-	WeatherCatalog.clear_default()
+	WeatherModel.clear_default()
 	WindField.clear_default()
 	VesselProfile.clear_default()
 	VesselCatalog.clear_default()
@@ -397,6 +397,7 @@ func depart() -> String:
 	if not problem.is_empty():
 		return problem
 	_state.voyage = Voyage.create(route, _state.game_time)
+	_state.weather_exposure.reset(_state.game_time)
 	_state.propulsion = PropulsionState.new()  # evaluated by Simulation on voyage_started
 	_state.planned_route = null
 	_state.vessel_status = SessionState.STATUS_UNDERWAY
@@ -467,11 +468,27 @@ func complete_voyage() -> void:
 	_state.location_id = destination.id
 	_state.vessel_position = destination.get_geo_position()
 	_state.propulsion = PropulsionState.new()
+	_state.weather_exposure.reset(_state.game_time)
 	_has_unsaved_changes = true
 	propulsion_changed.emit(&"")
 	voyage_arrived.emit(destination.id)
 
 
+## Records the weather at the boat (Simulation only, on its evaluation grid).
+func update_weather_exposure(sample: WeatherSample) -> void:
+	if _state == null:
+		return
+	_state.weather_exposure.record(sample, _state.game_time)
+	_has_unsaved_changes = true
+
+
+## A copy of the weather exposure record: the hazard level the boat is in, since
+## when, the responsible event and the peaks (see WeatherExposure).
+func get_weather_exposure() -> WeatherExposure:
+	return _state.weather_exposure.duplicate_exposure() if _state else WeatherExposure.new()
+
+
+## Records that a weather warning (key "<event>><level>") was given on this voyage.
 func record_weather_warning(condition_id: StringName) -> void:
 	if _state and _state.voyage and condition_id not in _state.voyage.warned_conditions:
 		_state.voyage.warned_conditions.append(condition_id)

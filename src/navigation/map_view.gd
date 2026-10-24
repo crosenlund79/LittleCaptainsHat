@@ -47,7 +47,8 @@ const HOVER := Color("#A6C4C9")
 const INVALID := Color("#E06A4E")
 const LABEL_COUNTRY := Color(0.36, 0.31, 0.22, 0.75)
 const LABEL_SEA := Color(0.651, 0.769, 0.788, 0.55)
-const WEATHER_COLORS := {0: Color("#7FB89A"), 1: Color("#E0A84E"), 2: Color("#E06A4E")}
+## How often (game seconds) the weather overlay follows the moving events.
+const WEATHER_REFRESH_SECONDS := 300.0
 
 const LABEL_FONT: Font = preload("res://assets/fonts/Barlow-SemiBold.ttf")
 const PICK_RADIUS_PX := 18.0
@@ -86,7 +87,10 @@ var editing_enabled := false
 var _geo_bounds := Rect2()
 var _map_bounds := Rect2()
 var _labels: Array[Dictionary] = []
+## Weather events drawn on the chart (projected outlines), for weather_time.
 var _weather_shapes: Array[Dictionary] = []
+## Game time the weather overlay shows (follows the game clock in steps).
+var weather_time := -1.0
 var _hovered_port_id: StringName
 var _press := Press.NONE
 var _press_position := Vector2.ZERO
@@ -107,7 +111,6 @@ func _ready() -> void:
 	catalog = PortCatalog.get_default()
 	_overlay.draw.connect(_draw_overlay)
 	_build_land()
-	_build_weather()
 	wind_layer.name = "Wind"
 	wind_layer.map_view = self
 	wind_layer.map_bounds = _map_bounds
@@ -349,6 +352,10 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 
 
 func _process(delta: float) -> void:
+	if GameSession.is_active():
+		var shown := floorf(GameSession.get_game_time() / WEATHER_REFRESH_SECONDS) * WEATHER_REFRESH_SECONDS
+		if weather_time < 0.0 or not is_equal_approx(shown, weather_time):
+			set_weather_time(shown)
 	if wind_layer.visible:
 		wind_layer.update_time(GameSession.get_game_time())
 		var key := "%s|%s|%s" % [camera.position, camera.zoom.x, get_viewport_rect().size]
@@ -426,14 +433,51 @@ func _project_ring(ring: Array) -> PackedVector2Array:
 	return points
 
 
-## Weather areas as geographic circles projected to map space.
-func _build_weather() -> void:
-	for condition in WeatherCatalog.get_default().conditions:
-		var outline := PackedVector2Array()
-		for i in 48:
-			var bearing := TAU * i / 48.0
-			outline.append(projection.geo_to_map(_destination(condition.get_center(), bearing, condition.radius_nm)))
-		_weather_shapes.append({"condition": condition, "outline": outline})
+## Projects the weather events existing at `time` (from the one weather
+## model) to map space. Rebuilt only when the shown time changes.
+func set_weather_time(time: float) -> void:
+	if is_equal_approx(time, weather_time):
+		return
+	weather_time = time
+	_weather_shapes.clear()
+	var model := WeatherModel.get_default()
+	for event in model.active_events(time, GameSession.get_wind_seed()):
+		var outline := _project_geo(event.outline(time))
+		if not Rect2(outline[0], Vector2.ZERO).merge(_bounds_of(outline)).intersects(_map_bounds):
+			continue
+		var shape := {"event": event, "outline": outline, "center": projection.geo_to_map(event.center_at(time)),
+			"label": WeatherStyle.label(event, time), "strength": event.life_factor(time)}
+		if WeatherStyle.style(event.kind).core:
+			shape["core"] = _project_geo(event.ring(time, 0.35 if event.kind != WeatherEvent.KIND_CYCLONE else 0.0, 32)) \
+				if event.kind != WeatherEvent.KIND_CYCLONE else _project_geo(_circle(event.center_at(time), event.eye_radius_nm * 2.0))
+		_weather_shapes.append(shape)
+	_overlay.queue_redraw()
+
+
+## The drawn weather shapes (tests): [{"event", "outline", "center", "label"}].
+func get_weather_shapes() -> Array[Dictionary]:
+	return _weather_shapes
+
+
+func _project_geo(points: PackedVector2Array) -> PackedVector2Array:
+	var projected := PackedVector2Array()
+	for p in points:
+		projected.append(projection.geo_to_map(p))
+	return projected
+
+
+static func _bounds_of(points: PackedVector2Array) -> Rect2:
+	var box := Rect2(points[0], Vector2.ZERO)
+	for p in points:
+		box = box.expand(p)
+	return box
+
+
+static func _circle(center: Vector2, radius_nm: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for i in 24:
+		points.append(_destination(center, TAU * i / 24.0, radius_nm))
+	return points
 
 
 static func _destination(origin: Vector2, bearing: float, distance_nm: float) -> Vector2:
@@ -515,22 +559,30 @@ func _draw_graticule(s: float) -> void:
 
 
 func _draw_weather(s: float) -> void:
-	for shape in _weather_shapes:
-		var condition: WeatherCondition = shape.condition
-		var color: Color = WEATHER_COLORS.get(condition.severity, SEAFOAM)
-		var outline: PackedVector2Array = shape.outline
-		_overlay.draw_colored_polygon(outline, Color(color, 0.16))
-		for i in outline.size():
-			var a := outline[i]
-			var b := outline[(i + 1) % outline.size()]
-			if condition.severity == WeatherCondition.Severity.NONE:
-				_overlay.draw_line(a, b, Color(color, 0.7), 2.0 * s, true)
-			else:
-				_overlay.draw_dashed_line(a, b, Color(color, 0.9), 2.5 * s, 8.0 * s, true, true)
-		var center := projection.geo_to_map(condition.get_center())
-		var tag: String = ["FAIR", "CAUTION", "DANGER"][condition.severity]
-		_draw_text(condition.display_name.to_upper(), center + Vector2(0, -4) * s, 17 * s, Color(color, 1.0), true, true)
-		_draw_text(tag, center + Vector2(0, 16) * s, 13 * s, Color(color, 0.95), true, true)
+	# Risk areas first (underneath), then gales, then storm cells and cyclones.
+	var order := [WeatherEvent.KIND_THUNDER_RISK, WeatherEvent.KIND_GALE, WeatherEvent.KIND_CYCLONE, WeatherEvent.KIND_THUNDERSTORM]
+	for kind in order:
+		for shape in _weather_shapes:
+			var event: WeatherEvent = shape.event
+			if event.kind != kind:
+				continue
+			var style := WeatherStyle.style(kind)
+			var color: Color = style.color
+			var strength: float = clampf(shape.strength, 0.25, 1.0)
+			var outline: PackedVector2Array = shape.outline
+			if float(style.fill) > 0.0:
+				_overlay.draw_colored_polygon(outline, Color(color, float(style.fill) * strength))
+			WeatherStyle.draw_outline(_overlay, outline, style.outline, Color(color, 0.9), 2.5 * s)
+			if shape.has("core") and shape.core.size() >= 3:
+				_overlay.draw_colored_polygon(shape.core, Color(color, float(style.fill) * strength))
+				WeatherStyle.draw_outline(_overlay, shape.core, "dotted", Color(color, 0.8), 1.5 * s)
+			# Glyph and label, sized for the screen; labels only on larger shapes.
+			var extent := _bounds_of(outline).size
+			var on_screen := maxf(extent.x, extent.y) / s
+			var center: Vector2 = shape.center
+			WeatherStyle.draw_glyph(_overlay, kind, center, clampf(on_screen * 0.25, 14.0, 30.0) * s, Color(color, 1.0))
+			if on_screen >= 90.0:
+				_draw_text(shape.label, center + Vector2(0, 34) * s, 15 * s, Color(color, 1.0), true, true)
 
 
 func _draw_courses(s: float) -> void:
