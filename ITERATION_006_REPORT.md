@@ -214,11 +214,15 @@ Representative trips (all pass, distances along the course):
 | `test_harbours` | 34 |
 | `test_harbour_chart` | 17 |
 
-- **Final full headless run** after the documentation commit: <<HEADLESS>>.
+- **Final full headless run** after the documentation commit: **2,162 checks passed, 0 failed**, exit code 0. This includes the new documents linked from `test_dev_guides`.
 
 ## 14. Rendered test results
 
-<<RENDERED>>
+- **Full rendered run** (Xvfb, OpenGL 3, Mesa llvmpipe, `--screenshots`): **2,168 checks passed, 0 failed**, exit code 0. It produced 121 screenshots.
+- **Screenshots in `docs/screenshots`:**
+  - the 10 new ones (108–117) were added;
+  - the 104 existing ones were refreshed from this run. The chart shots now show the larger harbour set.
+- The rendered run has 6 more checks than the headless one: checks that only run with a real display.
 
 ## 15. Restart results
 
@@ -274,4 +278,6 @@ The I005 checklist still applies. Owner acceptance is not claimed from automated
 
 ## 20. Final Git commit and push status
 
-<<GIT>>
+- **Branch:** `claude/determined-brahmagupta-3v95mx`, pushed.
+- **Commits:** I005c `9ff3360`; I006 A `718304f`, B `80eba01`, C `d8786a5`, D+E `c343dc2`, F `4eaf122` (restart check and documents) plus a final commit with these results and the refreshed screenshots (the branch head; see `git log`).
+- **No pull request** was created, and nothing of I007 was implemented.
