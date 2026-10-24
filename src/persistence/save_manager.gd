@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 8
+const SAVE_VERSION := 9
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -246,6 +246,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_6_to_7(data)
 	if from_version < 8:
 		data = _migrate_7_to_8(data)
+	if from_version < 9:
+		data = _migrate_8_to_9(data)
 	return data
 
 
@@ -387,6 +389,19 @@ func _migrate_7_to_8(data: Dictionary) -> Dictionary:
 			log.visited[id] = {"first": CaptainsLog.UNKNOWN_TIME, "arrivals": 0}
 	session["log"] = log.to_dict()
 	data["version"] = 8
+	return data
+
+
+## Version 9 (Iteration 006) adds renown and the objectives completed. An
+## older game starts with no renown and no objective completed; nothing is
+## paid for the past. Objectives are checked again at the next voyage's end,
+## from the Captain's Log as it then stands.
+func _migrate_8_to_9(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary:
+		return data
+	session["progress"] = ObjectiveProgress.new().to_dict()
+	data["version"] = 9
 	return data
 
 

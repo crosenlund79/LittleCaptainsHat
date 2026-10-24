@@ -990,6 +990,57 @@ events. There is no second voyage or arrival system.
   read-only, with Log and Harbours tabs, a fixed size, and scrolling lists.
   The application shows one short message on a first visit.
 
+## Objectives and renown (Iteration 006)
+
+Optional goals that are tracked automatically. There is no quest engine, no
+accepting objectives and no story.
+
+- **Data:** `data/progression/objectives.json`:
+  - the handcrafted objectives (id, title, text, type, target/port/hazard,
+    reward, repeatable, category);
+  - the publishing rate (`euros_per_renown`);
+  - the settings for the generated objectives.
+- **`ObjectiveCatalog`** (`src/core/objective_catalog.gd`) loads the file,
+  validates every entry and leaves out invalid ones with an error (for
+  example an unknown harbour). It adds the generated ones: "Far horizons:
+  <harbour>", `count` harbours at least `min_nm` from the start harbour,
+  evenly spread by distance, with the reward scaled between `min_reward` and
+  `max_reward`. They are built from the harbour catalogue, so they can only
+  name harbours that exist.
+- **Types:**
+  - `voyage_count`, `total_distance`, `visit_count`: Captain's Log totals;
+  - `visit_harbour`: an arrival at that harbour;
+  - `passage_length`: one completed passage of at least N nm;
+  - `clean_passage`: the same, without damage;
+  - `weather_arrival`: arrived after meeting at least hazard N;
+  - `new_harbour`: a first visit.
+
+  The last three need a `fully_recorded` voyage, so a voyage migrated from
+  an older save cannot qualify on weather it may not have met.
+- **`ObjectiveProgress`** (`src/core/objective_progress.gd`), the `progress`
+  save section, holds:
+  - `lifetime_renown` (only ever increases);
+  - `unpublished_renown`;
+  - `completed`: id → `{count, first, last_event}`;
+  - `recent`: the latest 20 rewards;
+  - the publishing totals.
+- **When:** GameSession evaluates objectives in `_award_objectives()`, called
+  inside `complete_voyage()` and `rescue()` right after the log record. The
+  reward is part of the same transaction as the record. `renown_awarded`
+  follows `voyage_logged`.
+- **Paying once:**
+  - A one-time objective pays once.
+  - A repeatable one pays only for a voyage that ended later than the one it
+    last paid for (`ObjectiveProgress.can_pay`).
+  - Re-evaluating an event, loading a save, waiting, sleeping and returning
+    to a known harbour therefore pay nothing.
+  - A lost (rescued) voyage counts only towards distance; passage, harbour
+    and weather objectives need an arrival.
+- **UI:** the Captain's Log's Objectives tab lists open objectives (with
+  their requirement, progress and reward; repeatable ones stay listed) and
+  the completed ones. The Log tab shows lifetime and unpublished renown. The
+  application shows one short "+N renown: …" message per voyage.
+
 ## Mid-voyage rerouting
 
 `SeaRouter.plan_route()` accepts either a port origin or an arbitrary origin
@@ -1142,6 +1193,10 @@ SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─
   `wind` (seed), `vessel` (status, position, propulsion state), `navigation`
   (location, planned route with its path, active voyage with route, progress,
   revision and warned weather ids).
+- **Version 9** (Iteration 006) adds the `progress` section
+  (`ObjectiveProgress`). `_migrate_8_to_9` starts it empty: no renown is paid
+  for the past. Objectives are checked against the Captain's Log at the next
+  voyage's end.
 - **Version 8** (Iteration 006) adds the `log` section (`CaptainsLog`) and,
   in an active voyage, `departure_port_id`, `departure_position`,
   `sailed_nm`, `worst_hazard`, `damage_percent` and `fully_recorded`.

@@ -79,6 +79,7 @@ func _ready() -> void:
 	Simulation.arrived.connect(_on_arrived)
 	GameSession.rescued.connect(_on_rescued)
 	GameSession.voyage_logged.connect(_on_voyage_logged)
+	GameSession.renown_awarded.connect(_on_renown_awarded)
 	# Test weather never outlives the game it was made in.
 	GameSession.session_started.connect(DevTools.on_session_changed)
 	GameSession.state_replaced.connect(DevTools.on_session_changed)
@@ -453,6 +454,16 @@ func _on_voyage_logged(record: Dictionary, new_harbour: bool) -> void:
 		notify("New harbour in the Captain's Log: %s (%d of %d visited)." % [
 			PortCatalog.get_default().get_display_name(StringName(record.to)), log.get_distinct_harbours(),
 			PortCatalog.get_default().ports.size()])
+
+
+## Renown earned on a voyage: one short message for all of it.
+func _on_renown_awarded(awards: Array) -> void:
+	var total := 0
+	var titles: Array[String] = []
+	for award: Dictionary in awards:
+		total += int(award.reward)
+		titles.append(award.title)
+	notify("+%d renown: %s." % [total, ", ".join(titles)])
 
 
 func _show_current_boat_area() -> void:

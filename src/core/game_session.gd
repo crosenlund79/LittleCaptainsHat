@@ -43,6 +43,9 @@ signal rescued(info: Dictionary)
 ## A voyage ended and was written to the Captain's Log (see
 ## CaptainsLog.make_record()); `new_harbour` is true on a first visit.
 signal voyage_logged(record: Dictionary, new_harbour: bool)
+## Objectives completed by a voyage paid renown: [{"id", "title", "reward"}].
+## Emitted once per voyage, after voyage_logged.
+signal renown_awarded(awards: Array)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -68,6 +71,7 @@ func has_unsaved_changes() -> bool:
 
 func _exit_tree() -> void:
 	PortCatalog.clear_default()
+	ObjectiveCatalog.clear_default()
 	SeaRouter.clear_default()
 	WeatherModel.clear_default()
 	WindField.clear_default()
@@ -494,6 +498,7 @@ func complete_voyage() -> void:
 	var destination := PortCatalog.get_default().get_port(_state.voyage.route.destination_port_id)
 	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_ARRIVED)
 	var new_harbour := _state.captains_log.record_voyage(record)
+	var awards := _award_objectives(record, new_harbour)
 	_state.voyage = null
 	_state.vessel_status = SessionState.STATUS_ARRIVED
 	_state.location_id = destination.id
@@ -503,6 +508,8 @@ func complete_voyage() -> void:
 	_has_unsaved_changes = true
 	propulsion_changed.emit(&"")
 	voyage_logged.emit(record, new_harbour)
+	if not awards.is_empty():
+		renown_awarded.emit(awards)
 	voyage_arrived.emit(destination.id)
 
 
@@ -604,6 +611,7 @@ func rescue() -> void:
 	_state.funds -= fee
 	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_RESCUED)
 	_state.captains_log.record_voyage(record)
+	var awards := _award_objectives(record, false)
 	_state.voyage = null
 	_state.planned_route = null
 	_state.vessel_status = SessionState.STATUS_MOORED
@@ -628,6 +636,8 @@ func rescue() -> void:
 	condition_changed.emit(get_condition())
 	funds_changed.emit(_state.funds)
 	voyage_logged.emit(record, false)
+	if not awards.is_empty():
+		renown_awarded.emit(awards)
 	rescued.emit(info)
 
 
@@ -647,6 +657,33 @@ func get_total_nm_sailed() -> float:
 
 func get_voyage_sailed_nm() -> float:
 	return _state.voyage.sailed_nm if _state and _state.voyage else 0.0
+
+
+# --- Objectives and renown ----------------------------------------------------------
+
+## A copy of renown and the objectives completed.
+func get_objective_progress() -> ObjectiveProgress:
+	return _state.progress.duplicate_progress() if _state else ObjectiveProgress.new()
+
+
+## All renown ever earned (never decreases).
+func get_lifetime_renown() -> int:
+	return _state.progress.lifetime_renown if _state else 0
+
+
+## Renown not yet published in a travel update.
+func get_unpublished_renown() -> int:
+	return _state.progress.unpublished_renown if _state else 0
+
+
+## Pays the objectives the voyage just logged completes (inside
+## complete_voyage() and rescue(), so the reward is part of the same
+## transaction as the record and can never be paid twice).
+func _award_objectives(record: Dictionary, new_harbour: bool) -> Array[Dictionary]:
+	var awards := ObjectiveCatalog.get_default().evaluate(_state.captains_log, record, new_harbour, _state.progress)
+	for award in awards:
+		_state.progress.award(StringName(award.id), award.title, award.reward, float(record.ended))
+	return awards
 
 
 func get_rescue_count() -> int:

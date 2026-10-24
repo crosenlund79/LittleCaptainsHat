@@ -1,13 +1,15 @@
 class_name CaptainsLogMenu
 extends SimplePanel
-## The Captain's Log (L, or the pause menu): the player's statistics, recent
-## passages and the harbours visited. It only reads GameSession; nothing here
-## changes the game. The panel has a fixed size; long lists scroll.
+## The Captain's Log (L, or the pause menu): the player's statistics and
+## renown, recent passages, the harbours visited and the sailing objectives.
+## It only reads GameSession; nothing here changes the game. The panel has a
+## fixed size; long lists scroll.
 
 const PANEL_SIZE := Vector2(1080, 0)
 const TABS_SIZE := Vector2(1020, 560)
 const TAB_LOG := 0
 const TAB_HARBOURS := 1
+const TAB_OBJECTIVES := 2
 
 var _tabs: TabContainer
 
@@ -20,6 +22,7 @@ func _ready() -> void:
 	_box.add_child(_tabs)
 	_tabs.add_child(_build_log_tab())
 	_tabs.add_child(_build_harbours_tab())
+	_tabs.add_child(_build_objectives_tab())
 	_button("CloseButton", "Close", close)
 
 
@@ -58,6 +61,7 @@ func _build_log_tab() -> Control:
 		["Harbour arrivals", str(log.arrivals), "ArrivalsValue"],
 		["Longest passage", longest_text, "LongestValue"],
 		["Rescues", str(GameSession.get_rescue_count()), "RescuesValue"],
+		["Renown", "%d  (%d unpublished)" % [GameSession.get_lifetime_renown(), GameSession.get_unpublished_renown()], "RenownValue"],
 	]
 	for stat: Array in stats:
 		var name_label := Label.new()
@@ -133,6 +137,64 @@ func _build_harbours_tab() -> Control:
 	names.sort()
 	_add_text(list, "Unvisited", ", ".join(names) if not names.is_empty() else "None: you have been everywhere on the chart.", &"MutedLabel")
 	return list.get_parent()
+
+
+# --- Objectives tab -----------------------------------------------------------------
+
+func _build_objectives_tab() -> Control:
+	var list := _tab_page("Objectives")
+	var catalog := ObjectiveCatalog.get_default()
+	var progress := GameSession.get_objective_progress()
+	var log := GameSession.get_captains_log()
+	_add_text(list, "RenownSummary", "Renown: %d earned in all, %d not yet published. Objectives are tracked automatically and pay renown when a voyage completes them." % [
+		progress.lifetime_renown, progress.unpublished_renown], &"MutedLabel")
+	_add_text(list, "OpenTitle", "Objectives", &"HeaderLabel")
+	var open := VBoxContainer.new()
+	open.name = "Open"
+	open.add_theme_constant_override("separation", 10)
+	list.add_child(open)
+	var done := VBoxContainer.new()
+	done.name = "Completed"
+	done.add_theme_constant_override("separation", 10)
+	for objective in catalog.objectives:
+		var count := progress.get_count(StringName(objective.id))
+		if count == 0 or objective.repeatable:
+			_add_objective(open, objective, describe_progress(objective, log, count))
+		if count > 0:
+			var entry: Dictionary = progress.completed[objective.id]
+			var when := Simulation.format_game_time(float(entry.first), false)
+			var times := "  ·  %d times" % count if count > 1 else ""
+			_add_text(done, "Done_%s" % objective.id, "%s  ·  %d renown  ·  first %s%s" % [objective.title, objective.reward, when, times])
+	_add_text(list, "CompletedTitle", "Completed", &"HeaderLabel")
+	list.add_child(done)
+	if done.get_child_count() == 0:
+		_add_text(done, "NoneCompleted", "None yet.", &"MutedLabel")
+	return list.get_parent()
+
+
+func _add_objective(parent: Control, objective: Dictionary, status: String) -> void:
+	var box := VBoxContainer.new()
+	box.name = "Objective_%s" % objective.id
+	box.add_theme_constant_override("separation", 2)
+	parent.add_child(box)
+	var repeat := "  (repeatable)" if objective.repeatable else ""
+	_add_text(box, "Title", "%s  ·  %d renown%s" % [objective.title, objective.reward, repeat])
+	_add_text(box, "Detail", "%s  %s" % [objective.text, status], &"MutedLabel")
+
+
+## The progress line for an objective in the list.
+static func describe_progress(objective: Dictionary, log: CaptainsLog, count: int) -> String:
+	if objective.repeatable and count > 0:
+		return "Completed %d time%s so far." % [count, "" if count == 1 else "s"]
+	var value := ObjectiveCatalog.get_progress(objective, log, GameSession.get_total_nm_sailed())
+	match objective.type:
+		ObjectiveCatalog.TYPE_TOTAL_DISTANCE:
+			return "Progress: %s of %s nm." % [_nm(minf(value[0], value[1])), _nm(value[1])]
+		ObjectiveCatalog.TYPE_VOYAGE_COUNT, ObjectiveCatalog.TYPE_VISIT_COUNT:
+			return "Progress: %d of %d." % [mini(int(value[0]), int(value[1])), int(value[1])]
+		ObjectiveCatalog.TYPE_PASSAGE_LENGTH:
+			return "Longest passage so far: %s nm." % _nm(value[0])
+	return "Not yet achieved."
 
 
 # --- Helpers ----------------------------------------------------------------------

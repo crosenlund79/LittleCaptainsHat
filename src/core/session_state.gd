@@ -7,7 +7,7 @@ extends RefCounted
 ## of which scene is visible. to_dict()/from_dict() define the save format;
 ## each subsystem keeps its data in its own top-level section ("boat",
 ## "player", "clock", "wind", "vessel", "navigation", "economy", "provisions",
-## "rescue", "log") so future systems can add sections of their own.
+## "rescue", "log", "progress") so future systems can add sections of their own.
 
 const AREA_INTERIOR := &"interior"
 const AREA_EXTERIOR := &"exterior"
@@ -83,6 +83,8 @@ var rescue_count := 0
 var last_rescue := {}
 ## The Captain's Log: sailing statistics, harbours visited, recent voyages.
 var captains_log := CaptainsLog.new()
+## Renown and the sailing objectives completed.
+var progress := ObjectiveProgress.new()
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -136,6 +138,7 @@ func duplicate_state() -> SessionState:
 	copy.rescue_count = rescue_count
 	copy.last_rescue = last_rescue.duplicate(true)
 	copy.captains_log = captains_log.duplicate_log()
+	copy.progress = progress.duplicate_progress()
 	return copy
 
 
@@ -173,6 +176,7 @@ func to_dict() -> Dictionary:
 		"provisions": provisions.to_dict(),
 		"rescue": {"count": rescue_count, "last": last_rescue.duplicate(true)},
 		"log": captains_log.to_dict(),
+		"progress": progress.to_dict(),
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -299,6 +303,9 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 	state.last_rescue = (rescue.get("last", {}) as Dictionary).duplicate(true)
 	state.captains_log = CaptainsLog.from_dict(data.get("log"), errors)
 	if state.captains_log == null:
+		return null
+	state.progress = ObjectiveProgress.from_dict(data.get("progress"), errors)
+	if state.progress == null:
 		return null
 
 	var navigation: Variant = data.get("navigation")
