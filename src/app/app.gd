@@ -17,6 +17,8 @@ extends Node
 @export var new_game_menu_scene: PackedScene
 ## The boatyard (in harbour only): browse and choose the vessel.
 @export var boatyard_menu_scene: PackedScene
+## Developer guides viewer (main menu, development builds only).
+@export var dev_guides_menu_scene: PackedScene
 ## Played on every button press, routed to the UI bus.
 @export var ui_click_sound: AudioStream
 ## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
@@ -352,6 +354,14 @@ func switch_vessel(vessel_id: StringName) -> void:
 	notify("Welcome aboard the %s." % GameSession.get_vessel_definition().display_name)
 
 
+## The developer guides (DEV_GUIDES/). Not a gameplay feature: offered only
+## in development builds, from the main menu.
+func open_dev_guides() -> void:
+	if not modals.is_empty() or router.is_busy() or not DevGuides.is_available():
+		return
+	modals.push(dev_guides_menu_scene.instantiate() as ModalPanel)
+
+
 func open_settings() -> void:
 	modals.push(settings_menu_scene.instantiate() as ModalPanel)
 
@@ -377,6 +387,7 @@ func _connect_main_menu(menu: MainMenu) -> void:
 	menu.load_requested.connect(open_load_menu)
 	menu.settings_requested.connect(open_settings)
 	menu.quit_requested.connect(quit_game)
+	menu.dev_guides_requested.connect(open_dev_guides)
 
 
 func _connect_boat_area(area: BoatArea) -> void:

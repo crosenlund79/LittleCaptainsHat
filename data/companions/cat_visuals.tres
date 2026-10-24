@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CompanionVisualSet" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/companion/companion_visual_set.gd" id="1_set"]
+[ext_resource type="Script" path="res://src/companion/companion_pose_art.gd" id="2_pose"]
+
+[sub_resource type="Resource" id="Pose_resting"]
+script = ExtResource("2_pose")
+pose = &"resting"
+image_path = "res://Visuals/Cat/Cat_resting.png"
+
+[sub_resource type="Resource" id="Pose_sleeping"]
+script = ExtResource("2_pose")
+pose = &"sleeping"
+image_path = "res://Visuals/Cat/Cat_SleepingBack.png"
+
+[sub_resource type="Resource" id="Pose_alert"]
+script = ExtResource("2_pose")
+pose = &"alert"
+image_path = "res://Visuals/Cat/Cat_alert.png"
+
+[sub_resource type="Resource" id="Pose_stretching"]
+script = ExtResource("2_pose")
+pose = &"stretching"
+image_path = "res://Visuals/Cat/Cat_stretching.png"
+
+[resource]
+script = ExtResource("1_set")
+kind = &"cat"
+poses = Array[ExtResource("2_pose")]([SubResource("Pose_resting"), SubResource("Pose_sleeping"), SubResource("Pose_alert"), SubResource("Pose_stretching")])

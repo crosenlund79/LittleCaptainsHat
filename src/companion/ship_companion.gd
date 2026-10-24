@@ -7,17 +7,24 @@ extends Node2D
 ##
 ## Where it rests comes from the cabin's layout: the marker named after the
 ## spot under `spots_path` (Layout/CompanionSpots), so every vessel places its
-## own spots. The look is procedural unless a sprite exists at
-## res://assets/companions/<kind>.png (drawn facing +x, centred on the
-## animal); then that is shown instead, with the same breathing and reactions.
+## own spots. It moves instantly between its resting spots when the schedule
+## says so (no walking, no pathfinding, no collision, so it never blocks the
+## player).
 ##
-## It moves instantly between its resting spots when the schedule says so
-## (no walking, no pathfinding, no collision, so it never blocks the player).
+## Look: when the kind has a CompanionVisualSet (data/companions/<kind>_visuals.tres,
+## currently the cat) the companion shows pose images: resting most of the
+## time, now and then a nap or a stretch, a short alert look when the player
+## comes close, and the alert pose with hearts when petted. Poses change with
+## a short cross-fade; the timing comes from the set. Poses are presentation
+## only and never saved. Without a set, or when its images are missing, the
+## procedural top-down drawing is used (currently the dog).
+##
 ## Petting it (E, via its Interactable) plays a short sound on the SFX bus and
-## a small reaction: the cat purrs, settles and shows a few hearts; the dog
-## pants softly and wags its tail.
+## a small reaction: the cat purrs and shows a few hearts; the dog pants softly
+## and wags its tail.
 
 signal petted(kind: StringName)
+signal pose_changed(pose: StringName)
 
 const REACTION_SECONDS := 1.6
 const INTERACT_RADIUS := 34.0
@@ -43,8 +50,19 @@ const HEART := Color("#E07A6A")
 var kind: StringName = CompanionState.DEFAULT_KIND
 var spot: StringName = &""
 var interactable: Interactable
+## The pose images of the current kind (null: procedural drawing).
+var visual_set: CompanionVisualSet
+## The pose shown now (sprite mode only).
+var pose: StringName = CompanionVisualSet.POSE_RESTING
 
-var _textures := {}
+var _textures := {}             # pose -> Texture2D (only poses that loaded)
+var _pose_left := 0.0           # seconds until the next idle change
+var _previous_texture: Texture2D
+var _previous_pose: StringName
+var _fade := 1.0                # 0 -> 1 while cross-fading to the new pose
+var _alert_ready_at := 0.0      # _time from which an approach may alert again
+var _was_focused := false
+var _rng := RandomNumberGenerator.new()
 var _time := 0.0
 var _reaction := 0.0
 
@@ -52,6 +70,7 @@ var _reaction := 0.0
 func _ready() -> void:
 	z_index = 5
 	if preview:
+		_load_visuals()
 		return
 	interactable = Interactable.new()
 	interactable.name = "Pet"
@@ -71,6 +90,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	_reaction = maxf(_reaction - delta, 0.0)
+	if is_sprite_mode():
+		advance_behaviour(delta)
 	queue_redraw()
 
 
@@ -78,12 +99,15 @@ func _process(delta: float) -> void:
 func pet() -> void:
 	_reaction = REACTION_SECONDS
 	AudioManager.play_sfx(purr_sound if kind == CompanionState.KIND_CAT else dog_sound)
+	if is_sprite_mode():
+		set_pose(CompanionVisualSet.POSE_ALERT, maxf(visual_set.alert_seconds, REACTION_SECONDS))
 	petted.emit(kind)
 
 
 ## Preview only: shows the given kind.
 func show_kind(companion_kind: StringName) -> void:
 	kind = companion_kind
+	_load_visuals()
 	queue_redraw()
 
 
@@ -99,6 +123,120 @@ func get_sound() -> AudioStream:
 	return purr_sound if kind == CompanionState.KIND_CAT else dog_sound
 
 
+## True when pose images are shown (false: procedural drawing).
+func is_sprite_mode() -> bool:
+	return _textures.has(CompanionVisualSet.POSE_RESTING)
+
+
+## The texture shown for `pose_name` (falls back to resting), or null.
+func get_pose_texture(pose_name: StringName) -> Texture2D:
+	return _textures.get(pose_name, _textures.get(CompanionVisualSet.POSE_RESTING))
+
+
+## Shows `pose_name` for `seconds` (then the idle behaviour continues). A pose
+## without an image shows the resting image instead.
+func set_pose(pose_name: StringName, seconds := -1.0) -> void:
+	if pose_name != pose:
+		_previous_texture = get_pose_texture(pose)
+		_previous_pose = pose
+		_fade = 0.0 if visual_set and visual_set.fade_seconds > 0.0 else 1.0
+		pose = pose_name
+		pose_changed.emit(pose)
+	_pose_left = seconds if seconds >= 0.0 else _idle_duration(pose_name)
+
+
+## Runs the pose behaviour for `delta` seconds (called every frame; tests
+## call it directly to fast-forward).
+func advance_behaviour(delta: float) -> void:
+	if not is_sprite_mode():
+		return
+	if visual_set.fade_seconds > 0.0:
+		_fade = minf(_fade + delta / visual_set.fade_seconds, 1.0)
+	# Looking up when the player comes close (not while napping or reacting).
+	var focused := interactable != null and interactable.is_focused()
+	if focused and not _was_focused and pose == CompanionVisualSet.POSE_RESTING \
+			and visual_set.approach_alert_cooldown > 0.0 and _time >= _alert_ready_at:
+		_alert_ready_at = _time + visual_set.approach_alert_cooldown
+		set_pose(CompanionVisualSet.POSE_ALERT, visual_set.alert_seconds * 0.75)
+	_was_focused = focused
+	_pose_left -= delta
+	if _pose_left > 0.0:
+		return
+	match pose:
+		CompanionVisualSet.POSE_RESTING:
+			if _rng.randf() < visual_set.sleep_chance and _textures.has(CompanionVisualSet.POSE_SLEEPING):
+				set_pose(CompanionVisualSet.POSE_SLEEPING)
+			elif _textures.has(CompanionVisualSet.POSE_STRETCHING):
+				set_pose(CompanionVisualSet.POSE_STRETCHING)
+			else:
+				set_pose(CompanionVisualSet.POSE_RESTING)
+		CompanionVisualSet.POSE_SLEEPING:
+			# Waking up: usually a stretch first.
+			if _rng.randf() < 0.5 and _textures.has(CompanionVisualSet.POSE_STRETCHING):
+				set_pose(CompanionVisualSet.POSE_STRETCHING)
+			else:
+				set_pose(CompanionVisualSet.POSE_RESTING)
+		_:
+			set_pose(CompanionVisualSet.POSE_RESTING)
+
+
+func _idle_duration(pose_name: StringName) -> float:
+	if visual_set == null:
+		return 1.0
+	match pose_name:
+		CompanionVisualSet.POSE_SLEEPING:
+			return _rng.randf_range(visual_set.sleep_seconds.x, visual_set.sleep_seconds.y)
+		CompanionVisualSet.POSE_STRETCHING:
+			return visual_set.stretch_seconds
+		CompanionVisualSet.POSE_ALERT:
+			return visual_set.alert_seconds
+		_:
+			return _rng.randf_range(visual_set.rest_seconds.x, visual_set.rest_seconds.y)
+
+
+## Loads the pose images of the current kind (missing ones are skipped with a
+## warning; without a resting image the procedural drawing is used).
+func _load_visuals() -> void:
+	_textures.clear()
+	visual_set = CompanionVisualSet.for_kind(kind)
+	if visual_set == null:
+		return
+	for pose_name in visual_set.get_pose_names():
+		var texture := visual_set.get_texture(pose_name)
+		if texture:
+			_textures[pose_name] = texture
+	if not _textures.has(CompanionVisualSet.POSE_RESTING):
+		if not visual_set.get_pose_names().is_empty():
+			push_warning("Companion art '%s' has no usable 'resting' image; using the procedural %s." % [kind, CompanionState.display_name(kind)])
+		_textures.clear()
+		return
+	_rng.seed = hash(String(kind) + String(spot))
+	_previous_texture = null
+	_fade = 1.0
+	pose = CompanionVisualSet.POSE_RESTING
+	_pose_left = _idle_duration(pose)
+
+
+## Uses `visual_set_override` instead of the kind's set (tests and tools; a
+## null set shows the procedural drawing).
+func use_visual_set(visual_set_override: CompanionVisualSet) -> void:
+	_textures.clear()
+	visual_set = visual_set_override
+	if visual_set:
+		for pose_name in visual_set.get_pose_names():
+			var texture := visual_set.get_texture(pose_name)
+			if texture:
+				_textures[pose_name] = texture
+		if not _textures.has(CompanionVisualSet.POSE_RESTING):
+			_textures.clear()
+	pose = CompanionVisualSet.POSE_RESTING
+	_previous_texture = null
+	_fade = 1.0
+	_pose_left = _idle_duration(pose)
+	_sync_rotation()
+	queue_redraw()
+
+
 ## Shows the companion from the session state (kind and resting spot).
 func _sync() -> void:
 	var companion := GameSession.get_companion()
@@ -106,12 +244,20 @@ func _sync() -> void:
 		visible = false
 		return
 	visible = true
+	if companion.kind != kind or (visual_set == null and _textures.is_empty()):
+		kind = companion.kind
+		_load_visuals()
 	kind = companion.kind
 	spot = companion.spot
 	position = get_spot_position(spot)
-	# Each spot has its own (fixed) lying direction.
-	rotation = deg_to_rad(float(absi(hash(String(spot))) % 360))
+	_sync_rotation()
 	interactable.prompt = "Pet %s" % CompanionState.display_name(kind)
+
+
+func _sync_rotation() -> void:
+	# The procedural drawing lies in its own (fixed) direction per spot; pose
+	# images are drawn upright, never rotated.
+	rotation = 0.0 if is_sprite_mode() else deg_to_rad(float(absi(hash(String(spot))) % 360))
 
 
 ## The resting position of `spot_id` in this cabin (its marker), or the
@@ -125,21 +271,16 @@ func get_spot_position(spot_id: StringName) -> Vector2:
 	return marker.position
 
 
-## The optional sprite for `companion_kind` (null: draw procedurally).
-func get_texture(companion_kind: StringName) -> Texture2D:
-	if not _textures.has(companion_kind):
-		var path := "res://assets/companions/%s.png" % companion_kind
-		_textures[companion_kind] = load(path) as Texture2D if ResourceLoader.exists(path) else null
-	return _textures[companion_kind]
+## Where the current pose image is drawn (local), for tests and tools.
+func get_pose_rect(pose_name: StringName = pose) -> Rect2:
+	var texture := get_pose_texture(pose_name)
+	return visual_set.get_draw_rect(pose_name, texture) if texture and visual_set else Rect2()
 
 
 func _draw() -> void:
-	var texture := get_texture(kind)
-	if texture:
-		var swell := 1.0 + 0.025 * sin(_time * TAU * 0.25) + (0.03 * sin(_time * TAU * 1.8) if is_reacting() else 0.0)
-		var size := texture.get_size() * swell
-		draw_texture_rect(texture, Rect2(-size / 2.0, size), false)
-		if is_reacting() and kind == CompanionState.KIND_CAT:
+	if is_sprite_mode():
+		_draw_pose()
+		if is_reacting():
 			_draw_hearts()
 		return
 	# Breathing: a slow, very small swell; a little deeper while reacting.
@@ -150,6 +291,29 @@ func _draw() -> void:
 		_draw_cat(breath)
 	if is_reacting() and kind == CompanionState.KIND_CAT:
 		_draw_hearts()
+
+
+func _draw_pose() -> void:
+	# Breathing: a very small vertical swell from the bottom (slower asleep).
+	var rate := 0.18 if pose == CompanionVisualSet.POSE_SLEEPING else 0.25
+	var swell := 0.012 * sin(_time * TAU * rate)
+	if _previous_texture and _fade < 1.0:
+		_draw_pose_texture(_previous_pose, _previous_texture, 1.0 - _fade, swell)
+	_draw_pose_texture(pose, get_pose_texture(pose), _fade if _previous_texture else 1.0, swell)
+
+
+func _draw_pose_texture(pose_name: StringName, texture: Texture2D, alpha: float, swell: float) -> void:
+	if texture == null or alpha <= 0.0:
+		return
+	var rect := visual_set.get_draw_rect(pose_name, texture)
+	var bottom := rect.end.y
+	rect.size.y *= 1.0 + swell
+	rect.position.y = bottom - rect.size.y
+	var art := visual_set.get_pose_art(pose_name)
+	if art and art.flip_h:
+		rect.position.x += rect.size.x
+		rect.size.x = -rect.size.x
+	draw_texture_rect(texture, rect, false, Color(1, 1, 1, alpha))
 
 
 func _draw_cat(breath: float) -> void:
@@ -195,7 +359,9 @@ func _draw_dog(breath: float) -> void:
 func _draw_hearts() -> void:
 	var t := 1.0 - _reaction / REACTION_SECONDS
 	for i in 2:
-		var at := Vector2(8 + i * 12, -22 - t * 22 - i * 6).rotated(-rotation)
+		# Above the head: the procedural cat's, or the top of the pose image.
+		var top := get_pose_rect().position.y + 14.0 if is_sprite_mode() else -22.0
+		var at := Vector2(8 + i * 12, top - t * 22 - i * 6).rotated(-rotation)
 		var alpha := clampf(1.0 - t, 0.0, 1.0)
 		var size := 4.0
 		draw_circle(at + Vector2(-size * 0.5, 0), size * 0.6, Color(HEART, alpha))

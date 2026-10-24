@@ -1,0 +1,97 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/dev_guides_menu.gd" id="1_guides"]
+
+[node name="DevGuidesMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_guides")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.09, 0.12, 0.75)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = 60.0
+offset_right = -80.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"TitleLabel"
+text = "Developer guides"
+
+[node name="CloseButton" type="Button" parent="Panel/VBox/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+text = "Close"
+
+[node name="Info" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Practical instructions from DEV_GUIDES/ in the project folder (shown in development builds only)."
+autowrap_mode = 3
+
+[node name="Body" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 18
+
+[node name="ListScroll" type="ScrollContainer" parent="Panel/VBox/Body"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="GuideList" type="VBoxContainer" parent="Panel/VBox/Body/ListScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="Reader" type="VBoxContainer" parent="Panel/VBox/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="GuideTitle" type="Label" parent="Panel/VBox/Body/Reader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+[node name="ContentFrame" type="PanelContainer" parent="Panel/VBox/Body/Reader"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"SectionPanel"
+
+[node name="Content" type="RichTextLabel" parent="Panel/VBox/Body/Reader/ContentFrame"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 2
+bbcode_enabled = true
+scroll_active = true
+selection_enabled = true

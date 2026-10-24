@@ -1,0 +1,18 @@
+class_name CompanionPoseArt
+extends Resource
+## One pose of a companion: which image to show for it and small presentation
+## adjustments. Part of a CompanionVisualSet; see
+## DEV_GUIDES/COMPANION_ANIMATION.md.
+
+## Logical pose name, e.g. &"resting", &"sleeping", &"alert", &"stretching".
+@export var pose: StringName
+## The image (PNG). Kept as a path so a missing file never stops the set from
+## loading: the pose then falls back (see CompanionVisualSet).
+@export_file("*.png") var image_path := ""
+## Shift in scene units (+x right, +y down) when this pose's drawing is not
+## centred like the others on the shared canvas.
+@export var offset := Vector2.ZERO
+## Size multiplier for this pose only (1 = same logical size as the others).
+@export_range(0.25, 4.0, 0.01) var scale := 1.0
+## Mirror the image horizontally.
+@export var flip_h := false

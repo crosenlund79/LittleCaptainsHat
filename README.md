@@ -12,21 +12,33 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 004: The Boatyard & Sprite-Ready Vessel Architecture**.
-It builds on Iteration 003b (ship's cat or dog, adjustable sleep, sail check, chart
-sidebar, simulation pause), 003 (wind, sails, automatic propulsion), 002 (sea routes,
-voyages, game clock, weather warnings) and 001 (boat, menus, save/load, settings,
-audio). Iteration 004 adds:
-- **three boats**: the Starling 33 monohull (the boat you start with), the Halcyon 40
-  catamaran and the Petrel 36 trimaran. Each has its own deck, cabin, sailing
-  performance and engine;
-- a **boatyard**, reached from the pontoon while moored in harbour, to browse the
-  boats (preview, specs, a performance comparison) and move aboard another one for
-  free;
-- a **sprite-ready art architecture**: every boat's art is in named visual slots that
-  take drawn PNGs without code changes, with procedural art as a fallback. There are
-  per-vessel art templates; see [ART_PIPELINE.md](ART_PIPELINE.md).
+Current state: **Iteration 004b: Cabin Refinement, Companion Animation & Developer
+Workflow**, a focused follow-up to Iteration 004 (three boats, the boatyard,
+sprite-ready vessel art). Earlier iterations built:
+- 003b: ship's cat or dog, adjustable sleep, sail check, chart sidebar, simulation
+  pause;
+- 003: wind, sails, automatic propulsion;
+- 002: sea routes, voyages, game clock, weather warnings;
+- 001: boat, menus, save/load, settings, audio.
 
+Iteration 004b adds:
+- **the ship's cat drawn by the owner** (`Visuals/Cat/`). It rests, naps on its
+  back, stretches now and then, looks up when you come close, and sits up purring
+  with hearts when petted. The poses are configured in data, so the art can be
+  replaced without code;
+- **a refined Halcyon 40 cabin**: a clearly drawn saloon door to the deck, an
+  L-shaped galley, a U-settee with table, a nav station, a full-width owner's
+  berth, and a guest cabin with heads, shower and bunk;
+- **developer guides** in [DEV_GUIDES/](DEV_GUIDES/README.md): practical
+  instructions for sprites, companion poses, vessel art, audio and future
+  modding, also readable in the game from the main menu in development builds.
+
+Iteration 004 introduced the Starling 33 monohull, the Halcyon 40 catamaran and
+the Petrel 36 trimaran, the boatyard, and named visual slots with procedural
+fallback art.
+
+![The ship's cat in its four poses](docs/screenshots/54_cat_pose_resting.png)
+![The refined catamaran cabin](docs/screenshots/51_catamaran_cabin.png)
 ![The boatyard](docs/screenshots/40_boatyard_halcyon_40.png)
 ![The catamaran with its spinnaker set](docs/screenshots/44_deck_spinnaker_halcyon_40.png)
 ![The trimaran on a beam reach](docs/screenshots/43_deck_sailing_petrel_36.png)
@@ -179,10 +191,15 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   by wind angle and side, and an engine sound loop (loud on deck, muffled below,
   never restarting on scene changes, following the SFX volume).
 - **Ship's companion**: on New Game you choose a **cat** or a **dog** (the cat is
-  preselected). It lives in the cabin and rests in a few spots of its own, moving to
-  another spot every few game hours. Walk up to it and press **E** to pet it: the cat
-  purrs and the dog pants happily. There are no stats, needs or bonuses; it is
-  company.
+  preselected). It lives in the cabin of whichever boat you sail and rests in a few
+  spots of its own, moving to another spot every few game hours.
+  - The cat is drawn with the owner's artwork in four poses: resting, napping on
+    its back, stretching, and alert.
+  - Walk up to it and it looks up. Press **E** to pet it: the cat sits up, purrs
+    and shows hearts; the dog pants happily.
+  - There are no stats, needs or bonuses; it is company.
+- **Developer guides** (development builds only): a **Developer guides** button in
+  the main menu's top-right corner opens the guides from `DEV_GUIDES/`.
 - **Pause menu**, **save/load** (3 slots), **settings** (audio, display, interface scale),
   audio buses and placeholder sounds, as in Iteration 001.
 
@@ -233,7 +250,11 @@ src/app/         application shell (main scene) and screen transitions
 src/core/        game session state and the simulation (game clock, voyages)
 src/boat/        boat area logic, collision fixtures, sail rig, visual slots (visuals/)
 src/vessels/     vessel definition and catalog; deck/cabin scenes per vessel (<id>/)
-src/companion/   ship's companion: its state (kind, resting spot) and the cabin animal
+src/companion/   ship's companion: state (kind, resting spot), the cabin animal, pose art data types
+src/dev/         developer guide index for the in-game viewer
+data/companions/ companion pose sets (cat_visuals.tres: pose -> image, placement, timing)
+Visuals/Cat/     the owner's original cat drawings (used directly by the game)
+DEV_GUIDES/      practical developer guides (sprites, companion, vessel art, audio, modding)
 src/player/      player token
 src/interaction/ interactables and the player's interaction sensor
 src/navigation/  ports, routes, voyages, projection, sea router, chart screen, chart wind layer
@@ -249,9 +270,14 @@ tools/           generators for the theme, logo exports, placeholder audio, navi
 docs/            screenshots
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together,
-[ART_PIPELINE.md](ART_PIPELINE.md) for replacing the art, and
-[ITERATION_004_REPORT.md](ITERATION_004_REPORT.md) (and the reports for
+**Developer guides:** [DEV_GUIDES/README.md](DEV_GUIDES/README.md) is the practical
+manual for replacing art and sounds, the companion poses, and the vessel art
+templates. **Rule:** whenever an iteration changes an asset workflow or a
+documented system, the matching guide is updated in the same iteration.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
+[ITERATION_004B_REPORT.md](ITERATION_004B_REPORT.md) (and the reports for
+[004](ITERATION_004_REPORT.md),
 [003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
 [003](ITERATION_003_REPORT.md),
 [002](ITERATION_002_REPORT.md) and [001](ITERATION_001_REPORT.md)) for what was
@@ -266,8 +292,9 @@ built and verified.
   - the weather areas are static demonstration data and only produce warnings;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
-- The companion only rests (no walking, no needs) and stays in the cabin. Its sounds
-  are synthetic placeholders.
+- The companion only rests and changes pose (no walking, no needs) and stays in the
+  cabin. Its sounds are synthetic placeholders. The dog has no drawn artwork yet
+  (it uses the placeholder drawing).
 - **Routing coverage.** All 15 ports are reachable from each other. Waters the chart
   data cannot represent are **not** navigable, and are reported as such instead of being
   crossed. These include:

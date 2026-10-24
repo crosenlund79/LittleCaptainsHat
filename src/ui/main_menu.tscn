@@ -128,6 +128,21 @@ grow_vertical = 0
 text = "Coastlines: Natural Earth (public domain)  ·  Font: Barlow (SIL OFL)"
 label_settings = SubResource("LabelSettings_hint")
 
+[node name="DevGuidesButton" type="Button" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -292.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = 68.0
+grow_horizontal = 0
+tooltip_text = "Developer guides (development builds only)"
+text = "Developer guides"
+
 [node name="Version" type="Label" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 1

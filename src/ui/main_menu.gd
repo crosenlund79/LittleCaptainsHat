@@ -8,6 +8,8 @@ signal continue_requested
 signal load_requested
 signal settings_requested
 signal quit_requested
+## Development builds only: the DEV_GUIDES viewer.
+signal dev_guides_requested
 
 @onready var _new_game: Button = %NewGameButton
 @onready var _continue: Button = %ContinueButton
@@ -22,6 +24,9 @@ func _ready() -> void:
 	_load.pressed.connect(load_requested.emit)
 	%SettingsButton.pressed.connect(settings_requested.emit)
 	%QuitButton.pressed.connect(quit_requested.emit)
+	# Developer resources: only when running from the project in a debug build.
+	%DevGuidesButton.visible = DevGuides.is_available()
+	%DevGuidesButton.pressed.connect(dev_guides_requested.emit)
 	%Version.text = "v%s" % ProjectSettings.get_setting("application/config/version", "")
 	SaveManager.slots_changed.connect(refresh_saves)
 	refresh_saves()

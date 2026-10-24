@@ -416,10 +416,59 @@ def cat_cabin_outline(c):
     return port + star + [(s0, hi), (s0, -hi)]
 
 
+# Halcyon 40 cabin (Iteration 004b layout). Port hull = owner's hull (big aft
+# berth, wardrobe, desk, sofa, ensuite forward); starboard hull = guest hull
+# (aft double berth, heads and shower, forward bunk). Saloon: galley aft to
+# port, U-settee and table to starboard, nav desk forward to port, the saloon
+# door (to the cockpit) in the middle of the aft wall. Steps lead down into the
+# hulls through openings in the saloon walls.
+# Furniture: name, centre, size or polygon (relative to centre), solid, colour.
+CAT_PORT_OPENING = (-60, 20)    # x range of the opening into the port hull
+CAT_STBD_OPENING = (50, 115)    # ... into the starboard hull
+CAT_DOOR_HALF = 46              # half width of the saloon door (aft wall)
+BERTH_SHAPE = [(-72, -46), (72, -46), (72, 46), (-72, 46)]
+
+
+def cat_furniture(c):
+    hy = c["hull_y"]
+    return [
+        # Saloon
+        ("GalleyAft", (-185, -115), (26, 90), None, True, WOOD),
+        ("GalleySide", (-126, -147), (92, 26), None, True, WOOD),
+        ("Settee", (-55, 147), (190, 26), None, True, CUSHION),
+        ("SetteeEnd", (-147, 112), (26, 70), None, True, CUSHION),
+        ("SaloonTable", (-55, 100), (110, 40), None, True, WOOD),
+        ("NavDesk", (105, -115), (26, 80), None, True, WOOD),
+        ("NavSeat", (74, -115), None, ellipse(0, 0, 11, 11, 12), False, TEAK_DARK),
+        # Port (owner's) hull
+        ("OwnerBerth", (-392, -hy), None, [(-73, -46), (72, -46), (72, 46), (-73, 46)], True, BLANKET),
+        ("Wardrobe", (-215, -hy - 31), (70, 26), None, True, WOOD),
+        ("Desk", (-120, -hy - 31), (60, 26), None, True, WOOD),
+        ("OwnerSofa", (200, -hy - 31), (110, 26), None, True, CUSHION),
+        ("Ensuite", (0, 0), None, [(320, -hy - 44), (415, -hy - 22), (445, -hy), (415, -hy + 42), (320, -hy + 48)], True, "#7A8A8F"),
+        # Starboard (guest) hull
+        ("GuestBerth", (-400, hy), (130, 92), None, True, BLANKET),
+        ("GuestLocker", (-280, hy + 31), (60, 26), None, True, WOOD),
+        ("Heads", (225, hy + 29), (90, 30), None, True, "#7A8A8F"),
+        ("Shower", (300, hy + 22), (50, 44), None, True, "#8FA3A8"),
+        ("Bunk", (0, 0), None, [(340, hy - 48), (415, hy - 42), (445, hy), (415, hy + 22), (340, hy + 44)], True, BLANKET),
+    ]
+
+
+def cat_bulkheads(c):
+    """Saloon side walls (y = +-166) with the openings into the hulls."""
+    hi = c["hull_y"] - 52
+    return [("BulkheadPortAft", (-206, -hi), (CAT_PORT_OPENING[0], -hi)),
+            ("BulkheadPortFwd", (CAT_PORT_OPENING[1], -hi), (126, -hi)),
+            ("BulkheadStbdAft", (-206, hi), (CAT_STBD_OPENING[0], hi)),
+            ("BulkheadStbdFwd", (CAT_STBD_OPENING[1], hi), (126, hi))]
+
+
 def build_cat_cabin_visual(c):
     b = Builder()
     visual_root(b, c["canvas"])
     hy = c["hull_y"]
+    hi = hy - 52
     outline = cat_cabin_outline(c)
     b.slot("CabinBase")
     for i, h in enumerate(cat_hulls(c)):
@@ -432,39 +481,69 @@ def build_cat_cabin_visual(c):
     for i, side in enumerate((-1, 1)):
         b.line(f"HullSeam{i}", "CabinBase", [(-465, side * hy), (320, side * hy)], 2, "#5E4733", 0.35)
     b.line("CabinSide", "CabinBase", outline, 12, "#5E4733", closed=True)
+    # Saloon windows along the forward wall.
+    for i, y in enumerate((-110, -40, 40, 110)):
+        b.line(f"Window{i}", "CabinBase", [(122, y - 26), (122, y + 26)], 6, GLASS, 0.85)
 
     b.slot("FurnitureVisual")
-    hi = hy - 52
+    # The saloon door: an opening in the aft wall with the cockpit beyond, a
+    # half-open sliding door, a step and chevrons pointing out to the deck.
+    d = CAT_DOOR_HALF
+    b.poly("CockpitBeyond", "FurnitureVisual", [(-240, -d), (-203, -d), (-203, d), (-240, d)], NONSKID)
+    b.poly("CockpitShade", "FurnitureVisual", [(-240, -d), (-232, -d), (-232, d), (-240, d)], WELL)
     for i, side in enumerate((-1, 1)):
-        for j, (x0, x1) in enumerate(((-206, -40), (40, 126))):
-            b.shape(f"Bulkhead{i}{j}", "FurnitureVisual", ((x0 + x1) / 2, side * hi), "#5E4733", size=(x1 - x0, 12))
-        b.shape(f"Steps{i}", "FurnitureVisual", (0, side * (hi + 18)), "#7A5C40", size=(80, 30))
+        b.poly(f"DoorPost{i}", "FurnitureVisual", [(-209, side * d - 5), (-195, side * d - 5), (-195, side * d + 5), (-209, side * d + 5)], TEAK_DARK)
+    b.poly("SlidingDoor", "FurnitureVisual", [(-206, -d - 40), (-200, -d - 40), (-200, -4), (-206, -4)], GLASS, 0.55)
+    b.line("DoorTrack", "FurnitureVisual", [(-203, -d - 40), (-203, d)], 2, TEAK_DARK, 0.8)
+    b.shape("DoorStep", "FurnitureVisual", (-188, 0), "#7A5C40", size=(16, 2 * d - 8))
+    b.line("StepNosing", "FurnitureVisual", [(-181, -d + 6), (-181, d - 6)], 3, "#4A3626", 0.8)
+    for i in range(3):
+        x = -214 - i * 9
+        b.line(f"Chevron{i}", "FurnitureVisual", [(x + 6, -12), (x, 0), (x + 6, 12)], 3, "#102D3B", 0.75 - i * 0.2)
+    # Steps down into each hull.
+    for i, (side, (x0, x1)) in enumerate(((-1, CAT_PORT_OPENING), (1, CAT_STBD_OPENING))):
+        cx = (x0 + x1) / 2
+        b.shape(f"HullSteps{i}", "FurnitureVisual", (cx, side * (hi + 20)), "#7A5C40", size=(x1 - x0 - 6, 34))
         for k in range(3):
-            b.line(f"Step{i}{k}", f"FurnitureVisual/Steps{i}", [(-38 + k * 26, -13), (-38 + k * 26, 13)], 3, "#4A3626", 0.8)
-    b.shape("Galley", "FurnitureVisual", (-140, -130), WOOD, size=(100, 40))
-    b.poly("Burner0", "FurnitureVisual/Galley", ellipse(-25, 0, 9, 9, 12), "#2A2F33")
-    b.poly("Burner1", "FurnitureVisual/Galley", ellipse(0, 0, 9, 9, 12), "#2A2F33")
-    b.poly("Sink", "FurnitureVisual/Galley", [(16, -10), (40, -10), (40, 10), (16, 10)], "#A6C4C9", 0.8)
-    b.shape("Settee", "FurnitureVisual", (78, -130), CUSHION, size=(84, 34), label="SETTEE")
-    b.shape("SaloonTable", "FurnitureVisual", (78, -78), WOOD, size=(76, 40))
-    b.shape("NavTable", "FurnitureVisual", (80, 134), WOOD, size=(72, 40))
-    b.poly("ChartPaper", "FurnitureVisual/NavTable", [(-28, -14), (24, -14), (24, 12), (-28, 12)], "#EFE5CC", 0.9)
-    b.shape("EngineHatch", "FurnitureVisual", (-160, 120), "#4B5357", size=(50, 40))
-    b.shape("MasterBerth", "FurnitureVisual", (395, -hy), BLANKET, polygon=[(-85, -45), (25, -45), (60, -15), (60, 15), (25, 45), (-85, 45)], label="BERTH")
-    b.poly("Pillow0", "FurnitureVisual/MasterBerth", [(20, -38), (48, -16), (48, -2), (20, -2)], "#EFE5CC", 0.85)
-    b.poly("Pillow1", "FurnitureVisual/MasterBerth", [(20, 2), (48, 2), (48, 16), (20, 38)], "#EFE5CC", 0.85)
-    b.shape("GuestBerthPort", "FurnitureVisual", (-395, -hy), BLANKET, size=(130, 90))
-    b.shape("GuestBerthStbd", "FurnitureVisual", (-395, hy), BLANKET, size=(130, 90))
-    b.shape("Heads", "FurnitureVisual", (380, hy), "#7A8A8F", size=(110, 80), label="HEADS")
-    b.shape("Wardrobe", "FurnitureVisual", (150, -hy - 32), WOOD, size=(70, 26))
+            y = -12 + k * 12
+            b.line(f"Tread{i}{k}", f"FurnitureVisual/HullSteps{i}", [(-(x1 - x0) / 2 + 6, y), ((x1 - x0) / 2 - 6, y)], 2, "#4A3626", 0.7)
+    for name, (x0, y0), (x1, y1) in cat_bulkheads(c):
+        b.shape(name, "FurnitureVisual", ((x0 + x1) / 2, y0), "#5E4733", size=(abs(x1 - x0), 12))
+    for name, pos, size, poly, solid, col in cat_furniture(c):
+        b.shape(name, "FurnitureVisual", pos, col, size=size, polygon=poly)
+    # Galley details.
+    b.poly("Burner0", "FurnitureVisual/GalleySide", ellipse(-22, 0, 8, 8, 12), "#2A2F33")
+    b.poly("Burner1", "FurnitureVisual/GalleySide", ellipse(2, 0, 8, 8, 12), "#2A2F33")
+    b.poly("Sink", "FurnitureVisual/GalleyAft", [(-9, -30), (9, -30), (9, -6), (-9, -6)], "#A6C4C9", 0.85)
+    b.poly("Fridge", "FurnitureVisual/GalleyAft", [(-10, 14), (10, 14), (10, 38), (-10, 38)], "#C9D2D6", 0.8)
+    # Saloon and nav station details.
+    for i in range(3):
+        b.line(f"Cushion{i}", "FurnitureVisual/Settee", [(-95 + 63 * (i + 1), -11), (-95 + 63 * (i + 1), 11)], 2, "#2E5A60", 0.8)
+    b.poly("ChartPaper", "FurnitureVisual/NavDesk", [(-9, -34), (9, -34), (9, 8), (-9, 8)], "#EFE5CC", 0.9)
+    b.poly("Instruments", "FurnitureVisual/NavDesk", [(-9, 14), (9, 14), (9, 34), (-9, 34)], "#2A2F33", 0.9)
+    # Berths: blanket folded back, pillows at the aft end.
+    for berth, half in (("OwnerBerth", 46), ("GuestBerth", 46)):
+        for k, sign in enumerate((-1, 1)):
+            b.poly(f"Pillow{k}", f"FurnitureVisual/{berth}", [(-62, sign * 4), (-40, sign * 4), (-40, sign * (half - 6)), (-62, sign * (half - 6))], "#EFE5CC", 0.9)
+        b.poly("Fold", f"FurnitureVisual/{berth}", [(-30, -half + 2), (-18, -half + 2), (-18, half - 2), (-30, half - 2)], "#C9D1BE", 0.9)
+    b.poly("BunkPillow", "FurnitureVisual/Bunk", [(346, hy - 36), (362, hy - 36), (362, hy + 30), (346, hy + 30)], "#EFE5CC", 0.9)
+    b.poly("Toilet", "FurnitureVisual/Heads", ellipse(-22, 0, 10, 8, 12), "#EFE5CC")
+    b.poly("Basin", "FurnitureVisual/Heads", ellipse(22, 0, 9, 7, 12), "#A6C4C9")
+    b.poly("Drain", "FurnitureVisual/Shower", ellipse(0, 0, 4, 4, 8), "#4B5357")
+    b.poly("EnsuiteToilet", "FurnitureVisual/Ensuite", ellipse(426, -hy, 8, 7, 12), "#EFE5CC")
+    b.poly("EnsuiteShower", "FurnitureVisual/Ensuite", [(330, -hy - 34), (370, -hy - 34), (370, -hy + 34), (330, -hy + 34)], "#8FA3A8")
 
     b.slot("CabinDetails")
     b.node("Labels", "Node2D", "CabinDetails", ["z_index = 5"])
     big = b.label_settings(15, "#EFE5CC", 0.62)
     small = b.label_settings(13, "#EFE5CC", 0.55)
-    for name, text, pos, st in [("Saloon", "SALOON", (-40, 0), big), ("Galley", "GALLEY", (-140, -88), small),
-                                ("Chart", "NAV STATION", (80, 96), small), ("PortHull", "OWNER'S HULL", (120, -hy - 30), small),
-                                ("StbdHull", "GUEST HULL", (100, hy + 30), small), ("Door", "SALOON DOOR", (-150, 40), small)]:
+    dark = b.label_settings(13, "#102D3B", 0.7)
+    for name, text, pos, st in [("Saloon", "SALOON", (-20, -10), big), ("Galley", "GALLEY", (-120, -110), small),
+                                ("Chart", "NAV STATION", (60, -60), small), ("OwnerCabin", "OWNER'S CABIN", (-250, -hy + 30), small),
+                                ("Ensuite", "ENSUITE", (385, -hy - 24), dark), ("GuestCabin", "GUEST CABIN", (-280, hy - 30), small),
+                                ("Heads", "HEADS", (225, hy + 6), small), ("Bunk", "BUNK", (395, hy + 6), dark),
+                                ("PortSteps", "STEPS DOWN", (-20, -hi + 50), small), ("StbdSteps", "STEPS DOWN", (82, hi - 50), small),
+                                ("Door", "TO DECK", (-150, 62), big)]:
         b.label(name, "CabinDetails/Labels", text, pos, st)
     return b
 
@@ -477,27 +556,17 @@ def build_cat_cabin(c):
     b.node("Layout", "Node2D", ".")
     b.node("Collision", "Node2D", "Layout")
     b.boundary("Hull", [cat_cabin_outline(c)])
-    hi = hy - 52
-    for i, side in enumerate((-1, 1)):
-        b.wall(f"BulkheadAft{i}", (-206, side * hi), (-40, side * hi))
-        b.wall(f"BulkheadFwd{i}", (40, side * hi), (126, side * hi))
-    b.fixture("Galley", (-140, -130), size=(100, 40))
-    b.fixture("Settee", (78, -130), size=(84, 34))
-    b.fixture("SaloonTable", (78, -78), size=(76, 40))
-    b.fixture("NavTable", (80, 134), size=(72, 40))
-    b.fixture("EngineHatch", (-160, 120), size=(50, 40), solid=False)
-    b.fixture("MasterBerth", (395, -hy), polygon=[(-85, -45), (25, -45), (60, -15), (60, 15), (25, 45), (-85, 45)])
-    b.fixture("GuestBerthPort", (-395, -hy), size=(130, 90))
-    b.fixture("GuestBerthStbd", (-395, hy), size=(130, 90))
-    b.fixture("Heads", (380, hy), size=(110, 80))
-    b.fixture("Wardrobe", (150, -hy - 32), size=(70, 26))
+    for name, a, z in cat_bulkheads(c):
+        b.wall(name, a, z)
+    for name, pos, size, poly, solid, col in cat_furniture(c):
+        b.fixture(name, pos, size=size, polygon=poly, solid=solid)
     b.node("Stations", "Node2D", "Layout")
-    b.station("Companionway", (-185, 0), "companionway", "Go on deck", ("rect", (30, 96)))
-    b.station("Chart", (80, 98), "nav_table", "Open chart", ("rect", (72, 26)))
-    b.station("Berth", (292, -hy), "bed", "Sleep", ("rect", (30, 90)))
-    b.markers("SpawnPoints", {"start": (-60, 30), "from_deck": (-160, 0), "v_berth": (268, -hy)})
-    b.markers("CompanionSpots", {"settee": (78, -132), "nav_station": (20, 140), "v_berth": (405, -hy + 22),
-                                 "cabin_floor": (-60, 70), "companionway": (-165, -70), "seating": (-20, -100)})
+    b.station("Companionway", (-185, 0), "companionway", "Go on deck", ("rect", (30, 2 * CAT_DOOR_HALF)))
+    b.station("Chart", (70, -115), "nav_table", "Open chart", ("rect", (30, 80)))
+    b.station("Berth", (-306, -hy), "bed", "Sleep", ("rect", (24, 92)))
+    b.markers("SpawnPoints", {"start": (-40, -20), "from_deck": (-160, 0), "v_berth": (-288, -hy)})
+    b.markers("CompanionSpots", {"settee": (-80, 147), "nav_station": (105, -142), "v_berth": (-345, -hy + 20),
+                                 "cabin_floor": (10, 40), "companionway": (-150, -50), "seating": (25, 108)})
     cabin_tail(b, (-10, 0), 1.3)
     return b
 

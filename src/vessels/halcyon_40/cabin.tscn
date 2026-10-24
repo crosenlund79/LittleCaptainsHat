@@ -10,13 +10,13 @@
 [ext_resource type="PackedScene" path="res://src/player/player.tscn" id="8_r"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Companionway"]
-size = Vector2(30, 96)
+size = Vector2(30, 92)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Chart"]
-size = Vector2(72, 26)
+size = Vector2(30, 80)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Berth"]
-size = Vector2(30, 90)
+size = Vector2(24, 92)
 
 [node name="Interior" type="Node2D"]
 script = ExtResource("1_r")
@@ -47,76 +47,111 @@ collision_mask = 0
 build_mode = 1
 polygon = PackedVector2Array(-470, -166, -470, -266, 330, -266, 420, -240, 455, -218, 420, -160, 330, -166, 120, -166, 120, 166, 330, 166, 420, 160, 455, 218, 420, 240, 330, 266, -470, 266, -470, 166, -200, 166, -200, -166)
 
-[node name="BulkheadAft0" type="StaticBody2D" parent="Layout/Collision"]
+[node name="BulkheadPortAft" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(-123, -166)
-size = Vector2(166, 12)
+position = Vector2(-133, -166)
+size = Vector2(146, 12)
 
-[node name="BulkheadFwd0" type="StaticBody2D" parent="Layout/Collision"]
+[node name="BulkheadPortFwd" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(83, -166)
-size = Vector2(86, 12)
+position = Vector2(73, -166)
+size = Vector2(106, 12)
 
-[node name="BulkheadAft1" type="StaticBody2D" parent="Layout/Collision"]
+[node name="BulkheadStbdAft" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(-123, 166)
-size = Vector2(166, 12)
+position = Vector2(-78, 166)
+size = Vector2(256, 12)
 
-[node name="BulkheadFwd1" type="StaticBody2D" parent="Layout/Collision"]
+[node name="BulkheadStbdFwd" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(83, 166)
-size = Vector2(86, 12)
+position = Vector2(120.5, 166)
+size = Vector2(11, 12)
 
-[node name="Galley" type="StaticBody2D" parent="Layout/Collision"]
+[node name="GalleyAft" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(-140, -130)
-size = Vector2(100, 40)
+position = Vector2(-185, -115)
+size = Vector2(26, 90)
+
+[node name="GalleySide" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-126, -147)
+size = Vector2(92, 26)
 
 [node name="Settee" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(78, -130)
-size = Vector2(84, 34)
+position = Vector2(-55, 147)
+size = Vector2(190, 26)
+
+[node name="SetteeEnd" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-147, 112)
+size = Vector2(26, 70)
 
 [node name="SaloonTable" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(78, -78)
-size = Vector2(76, 40)
+position = Vector2(-55, 100)
+size = Vector2(110, 40)
 
-[node name="NavTable" type="StaticBody2D" parent="Layout/Collision"]
+[node name="NavDesk" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(80, 134)
-size = Vector2(72, 40)
+position = Vector2(105, -115)
+size = Vector2(26, 80)
 
-[node name="EngineHatch" type="StaticBody2D" parent="Layout/Collision"]
+[node name="NavSeat" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(-160, 120)
-size = Vector2(50, 40)
+position = Vector2(74, -115)
+polygon = PackedVector2Array(11, 0, 9.53, 5.5, 5.5, 9.53, 0., 11, -5.5, 9.53, -9.53, 5.5, -11, 0., -9.53, -5.5, -5.5, -9.53, -0., -11, 5.5, -9.53, 9.53, -5.5)
 solid = false
 
-[node name="MasterBerth" type="StaticBody2D" parent="Layout/Collision"]
+[node name="OwnerBerth" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(395, -218)
-polygon = PackedVector2Array(-85, -45, 25, -45, 60, -15, 60, 15, 25, 45, -85, 45)
-
-[node name="GuestBerthPort" type="StaticBody2D" parent="Layout/Collision"]
-script = ExtResource("5_r")
-position = Vector2(-395, -218)
-size = Vector2(130, 90)
-
-[node name="GuestBerthStbd" type="StaticBody2D" parent="Layout/Collision"]
-script = ExtResource("5_r")
-position = Vector2(-395, 218)
-size = Vector2(130, 90)
-
-[node name="Heads" type="StaticBody2D" parent="Layout/Collision"]
-script = ExtResource("5_r")
-position = Vector2(380, 218)
-size = Vector2(110, 80)
+position = Vector2(-392, -218)
+polygon = PackedVector2Array(-73, -46, 72, -46, 72, 46, -73, 46)
 
 [node name="Wardrobe" type="StaticBody2D" parent="Layout/Collision"]
 script = ExtResource("5_r")
-position = Vector2(150, -250)
+position = Vector2(-215, -249)
 size = Vector2(70, 26)
+
+[node name="Desk" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-120, -249)
+size = Vector2(60, 26)
+
+[node name="OwnerSofa" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(200, -249)
+size = Vector2(110, 26)
+
+[node name="Ensuite" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(0, 0)
+polygon = PackedVector2Array(320, -262, 415, -240, 445, -218, 415, -176, 320, -170)
+
+[node name="GuestBerth" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-400, 218)
+size = Vector2(130, 92)
+
+[node name="GuestLocker" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(-280, 249)
+size = Vector2(60, 26)
+
+[node name="Heads" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(225, 247)
+size = Vector2(90, 30)
+
+[node name="Shower" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(300, 240)
+size = Vector2(50, 44)
+
+[node name="Bunk" type="StaticBody2D" parent="Layout/Collision"]
+script = ExtResource("5_r")
+position = Vector2(0, 0)
+polygon = PackedVector2Array(340, 170, 415, 176, 445, 218, 415, 240, 340, 262)
 
 [node name="Stations" type="Node2D" parent="Layout"]
 
@@ -131,7 +166,7 @@ highlight_target = NodePath("")
 shape = SubResource("RectangleShape2D_Companionway")
 
 [node name="Chart" type="Area2D" parent="Layout/Stations"]
-position = Vector2(80, 98)
+position = Vector2(70, -115)
 script = ExtResource("6_r")
 interaction_id = &"nav_table"
 prompt = "Open chart"
@@ -141,7 +176,7 @@ highlight_target = NodePath("")
 shape = SubResource("RectangleShape2D_Chart")
 
 [node name="Berth" type="Area2D" parent="Layout/Stations"]
-position = Vector2(292, -218)
+position = Vector2(-306, -218)
 script = ExtResource("6_r")
 interaction_id = &"bed"
 prompt = "Sleep"
@@ -153,33 +188,33 @@ shape = SubResource("RectangleShape2D_Berth")
 [node name="SpawnPoints" type="Node2D" parent="Layout"]
 
 [node name="start" type="Marker2D" parent="Layout/SpawnPoints"]
-position = Vector2(-60, 30)
+position = Vector2(-40, -20)
 
 [node name="from_deck" type="Marker2D" parent="Layout/SpawnPoints"]
 position = Vector2(-160, 0)
 
 [node name="v_berth" type="Marker2D" parent="Layout/SpawnPoints"]
-position = Vector2(268, -218)
+position = Vector2(-288, -218)
 
 [node name="CompanionSpots" type="Node2D" parent="Layout"]
 
 [node name="settee" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(78, -132)
+position = Vector2(-80, 147)
 
 [node name="nav_station" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(20, 140)
+position = Vector2(105, -142)
 
 [node name="v_berth" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(405, -196)
+position = Vector2(-345, -198)
 
 [node name="cabin_floor" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(-60, 70)
+position = Vector2(10, 40)
 
 [node name="companionway" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(-165, -70)
+position = Vector2(-150, -50)
 
 [node name="seating" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(-20, -100)
+position = Vector2(25, 108)
 
 [node name="Companion" type="Node2D" parent="."]
 script = ExtResource("7_r")
