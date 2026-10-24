@@ -100,6 +100,21 @@ func _test_layout() -> void:
 		"[cat cabin] the guest berth is a double berth too (%d × %d)" % [guest_size.x, guest_size.y])
 	t.check(owner_size.x * owner_size.y >= guest_size.x * guest_size.y, "[cat cabin] the owner's berth is the largest")
 	t.check((cabin.get_node("Layout/Stations/Berth") as Node2D).position.y < 0.0, "[cat cabin] the sleeping station is in the owner's (port) hull")
+	# Iteration 005b proportions (October 24 playtest): hull cabins wide
+	# enough for a double berth across them, berths sized for people (about
+	# 2 m x 1.6 m at ~80 units per metre), furniture with real depths.
+	var outline: PackedVector2Array = (cabin.get_node("Layout/Collision/Hull/CollisionPolygon2D") as CollisionPolygon2D).polygon
+	var ys := Array(outline).map(func(p: Vector2) -> float: return absf(p.y))
+	var hull_width: float = ys.max() - 158.0  # outer edge minus the saloon wall line
+	t.check(hull_width >= 140.0, "[cat cabin] each hull cabin is at least 140 units (~1.8 m) wide (%d)" % hull_width)
+	t.check(owner_size.x >= 4.0 * player_width and owner_size.y >= 3.0 * player_width,
+		"[cat cabin] the owner's berth is about 2 m × 1.6 m (%d × %d)" % [owner_size.x, owner_size.y])
+	var shallow := []
+	for name in ["GalleyAft", "GalleySide", "Settee", "NavDesk", "Wardrobe", "Desk", "OwnerSofa", "Heads"]:
+		var size := _size_of(collision.get_node(name) as BoatFixture)
+		if minf(size.x, size.y) < 40.0:
+			shallow.append("%s %d" % [name, minf(size.x, size.y)])
+	t.check(shallow.is_empty(), "[cat cabin] counters, settees, desks and heads are at least 40 units (~0.5 m) deep %s" % (shallow if shallow else ""))
 	await t.screenshot("51_catamaran_cabin")
 
 

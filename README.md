@@ -12,11 +12,13 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 005a: The Dangerous Sea**. The sea now has real
-weather hazards: moving gale areas, thunderstorms that form, peak and die away,
-and seasonal tropical cyclones far from Europe, all from **one deterministic
-weather model** that drives the boat's speed, the chart, the HUD, the warnings
-and sleep. Earlier iterations built:
+Current state: **Iteration 005b: The Price of the Passage**. Heavy weather now
+wears the boat down. If its condition reaches zero, a rescue brings you back to
+Copenhagen for a €1,000 fee. Food and water run down with time and must be
+restocked in harbour. This iteration also includes the corrections from the
+owner's October 24 Windows playtest. Earlier iterations built:
+- 005a: one deterministic weather model with moving gales, thunderstorms and
+  seasonal tropical cyclones;
 - 004b: the owner's cat artwork, the refined catamaran cabin, developer guides;
 - 004: three boats, the boatyard, sprite-ready vessel art;
 - 003b: ship's cat or dog, adjustable sleep, sail check, chart sidebar, simulation
@@ -25,7 +27,36 @@ and sleep. Earlier iterations built:
 - 002: sea routes, voyages, game clock, weather warnings;
 - 001: boat, menus, save/load, settings, audio.
 
-Iteration 005a adds:
+Iteration 005b adds:
+- **boat condition** (0-100 %, per boat): Sound, Worn, Damaged, Critical. It is
+  shown in the HUD and the boatyard, and drawn as scuffs, cracks and damaged
+  planking on deck and below.
+- **weather damage**: gales, storms and squall gusts cost condition while
+  underway. Ordinary weather and "strong winds" do not. The result is the same
+  at any speed, while sleeping and after loading.
+- **rescue at sea**: at 0 % one rescue brings you, the boat and the companion
+  back to Copenhagen. The boat is repaired, and €1,000 is deducted (never more
+  than you have).
+- **money**: €10,000 to start, shown in the HUD. The rescue fee is the only cost
+  for now.
+- **food and water**: 14 days of each, one day used per game day (in harbour
+  too). A **provisions station** at every galley shows the days left. The food
+  crates and water cans drawn there empty as they are used. There are warnings
+  when low, and no departure with empty stores.
+- **harbour services**: free **Repair vessel** and **Restock provisions** in the
+  boatyard (restocking also at the provisions station).
+- **playtest corrections**: a better-proportioned Halcyon 40 cabin with a
+  clearly marked exit; the cat no longer blocks stations (face the cat to pet
+  it); a fixed-size boatyard panel.
+- **developer test tools** (F9, only when run from the Godot editor): test
+  storms, squalls, condition levels, the real rescue, stores and time, for
+  [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md).
+
+![Rescued at Sea](docs/screenshots/97_rescue_dialog.png)
+![Provisions in the cabin](docs/screenshots/90_provisions_after_sleep.png)
+![Storm damage on the trimaran](docs/screenshots/88_damage_petrel_36_15.png)
+
+Iteration 005a added:
 - **one weather model** (`WeatherModel`): every wind value in the game, from the
   sails to the ETA, comes from it. The old demonstration circles are gone;
 - **moving, irregular weather areas**: strong-wind and gale areas over the
@@ -116,6 +147,9 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Chart: show/hide wind | **Wind** switch in the toolbar |
 | Chart: sleep | **Sleep** button in the side panel |
 | Sleep dialog: duration | **<** / **>** buttons (or Left / Right): 1–12 hours |
+| Cat beside a station | stand at the station to use it; **face the cat** (the arrow on your token) to pet it |
+| Provisions | **E** at the galley's provisions station (every cabin) |
+| Developer test tools | **F9** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |
 
 Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / Space to press).
 
@@ -171,11 +205,16 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    **Pause** to stop the clock: the boat, wind and time wait while you look around
    or plan on the chart. Sleeping still works while paused (it moves time on by the
    hours you choose) and the game stays paused afterwards.
-5. **Sleep.** Use the berth in the cabin, or the **Sleep** button on the chart. Choose
+5. **Look after the boat and the crew.** The HUD shows the hull condition,
+   money, food and water. Check the stores at the galley's provisions station.
+   In harbour, the boatyard repairs the boat and restocks for free. Heavy weather
+   at sea costs condition. If it reaches zero you are rescued back to
+   Copenhagen for €1,000.
+6. **Sleep.** Use the berth in the cabin, or the **Sleep** button on the chart. Choose
    1–12 hours with the arrows. The dialog shows when you will wake. The boat sails
    on while you sleep, and you are woken early on arrival or when a weather warning
    comes in. Wherever you went to sleep, you wake in the cabin beside the V-berth.
-6. **Weather.** The chart shows the weather as it is now: strong-wind and gale
+7. **Weather.** The chart shows the weather as it is now: strong-wind and gale
    areas, thunderstorm-risk areas, thunderstorms and (outside Europe) tropical
    cyclones, each with its outline, label and symbol, and a legend in the
    Weather tab. Weather moves and changes with time. The boat sails in that
@@ -185,10 +224,10 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    **6 hours of sailing** on the course. Accelerated time drops back to 1× and a
    sleep is cut short. The forecast only knows weather that already exists:
    a thunderstorm can form with little warning.
-7. **Change course at sea.** Open the chart while underway, edit the remaining course
+8. **Change course at sea.** Open the chart while underway, edit the remaining course
    or pick another destination, and press **Change course**. The new course starts
    where the boat is. If no sea route exists, the current voyage is kept unchanged.
-8. **Arrive.** On arrival you get a notification, the HUD shows **Arrived at …**, and
+9. **Arrive.** On arrival you get a notification, the HUD shows **Arrived at …**, and
    the next voyage starts from there.
 
 ## What works
@@ -261,9 +300,12 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
     current weather (for Iteration 005b);
   - the boat area and player position;
   - the ship's companion (cat or dog, resting spot and when it next moves);
-  - the boat you sail (by its stable id, e.g. `halcyon_40`).
+  - the boat you sail (by its stable id, e.g. `halcyon_40`);
+  - money, food and water, each boat's condition, and the rescues so far.
 - Loading resumes exactly where you saved. **No time passes while the game is closed.**
-- Save format version 6. **Older saves still load:**
+- Save format version 7. **Older saves still load:**
+  - Iteration 005a saves (v6) start the new systems as a new game does: €10,000,
+    14 days of food and water, every boat at 100 %. A voyage underway is kept.
   - Iteration 004/004b saves (v5) get the new weather section. Their old
     warnings belonged to the retired demonstration areas and are cleared, so
     the new weather is announced normally.
@@ -296,11 +338,11 @@ data/weather/    weather event zones and cyclone basins (weather_events.json), w
 data/vessel/     sailing performance profiles (polar, engine, controller thresholds)
 data/vessels/    vessel definitions, the vessel catalog and visual profiles
 src/app/         application shell (main scene) and screen transitions
-src/core/        game session state and the simulation (game clock, voyages)
+src/core/        game session state and the simulation (game clock, voyages), provisions, boat condition
 src/boat/        boat area logic, collision fixtures, sail rig, visual slots (visuals/)
 src/vessels/     vessel definition and catalog; deck/cabin scenes per vessel (<id>/)
 src/companion/   ship's companion: state (kind, resting spot), the cabin animal, pose art data types
-src/dev/         developer guide index for the in-game viewer
+src/dev/         developer guide index, developer test tools (F9) and weather fixtures
 data/companions/ companion pose sets (cat_visuals.tres: pose -> image, placement, timing)
 Visuals/Cat/     the owner's original cat drawings (used directly by the game)
 DEV_GUIDES/      practical developer guides (sprites, companion, vessel art, audio, modding)
@@ -312,7 +354,7 @@ src/sailing/     propulsion state and the automatic sail/engine controller
 src/weather/     the weather model, weather events, samples, exposure; the background wind field
 src/ui/          menus, HUD, time controls, new-game and sleep dialogs, notifications, dialogs
 src/audio/       audio manager
-src/persistence/ save manager (format v6 + migration)
+src/persistence/ save manager (format v7 + migration)
 src/settings/    settings manager
 tests/           self-contained test runner and suites
 tools/           generators for the theme, logo exports, placeholder audio, navigation data,
@@ -326,8 +368,9 @@ templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
-[ITERATION_005A_REPORT.md](ITERATION_005A_REPORT.md) (and the reports for
-[004b](ITERATION_004B_REPORT.md), [004](ITERATION_004_REPORT.md),
+[ITERATION_005B_REPORT.md](ITERATION_005B_REPORT.md), the Windows checklist
+[WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md) (and the reports for
+[005a](ITERATION_005A_REPORT.md), [004b](ITERATION_004B_REPORT.md), [004](ITERATION_004_REPORT.md),
 [003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
 [003](ITERATION_003_REPORT.md),
 [002](ITERATION_002_REPORT.md) and [001](ITERATION_001_REPORT.md)) for what was
@@ -339,9 +382,9 @@ built and verified.
   - there is no manual sail or engine control (the helm only asks for a fresh
     check), no tacking (a head-to-wind leg is motored), and no fuel;
   - there are no currents, waves, depth or tides;
-  - weather changes the wind the boat sails in, but does no damage yet (no boat
-    condition, rescue, money or provisions: Iteration 005b). There are no
-    waves, rain or visibility effects;
+  - weather damage is one general condition value (no separate hull, engine,
+    sail or rigging damage), and there are no waves, rain or visibility
+    effects. Repairs and restocking are free, and there is no income;
   - the chart shows the weather now; it does not animate a forecast;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
@@ -365,8 +408,8 @@ built and verified.
 - All audio is temporary synthetic test sound. Boat graphics are still procedural
   placeholders: the sprite pipeline is ready, but only one demo sprite exists (the
   Starling's coachroof, not enabled by default).
-- Boats are only swapped, never bought: there is no money, maintenance, upgrades or
-  decoration yet. The catamaran's and trimaran's layouts are first versions.
+- Boats are only swapped, never bought: money is only used for rescues; there is
+  no maintenance, upgrades or decoration yet. The catamaran's and trimaran's layouts are first versions.
 - Tested on Linux with Godot 4.7.2 (headless and under a virtual display with software
   OpenGL). Not run on Windows yet. VSync could not be verified in that environment.
 

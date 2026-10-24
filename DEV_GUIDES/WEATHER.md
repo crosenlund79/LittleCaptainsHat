@@ -129,3 +129,43 @@ covers the chart, Weather tab, HUD, sound and sleep. With a display, add
 - **Changing weather state while reading it.** Sampling must never change
   anything. New weather data belongs in the JSON or in event formulas, not in
   counters updated by queries.
+
+## Developer test tools (F9)
+
+When the game runs from the Godot editor (**F5**), **F9** opens a test panel
+(also: pause menu → Developer tests). It acts on the real game:
+
+- **Weather:**
+  - Normal weather, a gale around the boat, a severe storm at the boat, a
+    thunderstorm / severe squall cell at the boat, and a severe storm 20 nm
+    ahead on the course;
+  - these are `WeatherFixtures` events in the one weather model, at full
+    strength at once, so the boat sails in them, the chart draws them, and
+    warnings and damage follow;
+  - the same game state always gives the same test weather.
+- **Condition** 100 / 75 / 40 / 15 / 1 %, and the **rescue test**: at sea, 1 %
+  plus a storm, so the real damage reaches zero within 5 game minutes and the
+  real rescue runs.
+- **Provisions** 3 days, 0.5 day, empty or full, and **Advance** 1 / 6 / 24 h
+  through the normal simulation.
+
+Test weather is never saved. It is removed by Normal weather, New Game, Load and
+Main menu. The panel does not exist in exported games. Start the project with
+`-- --no-dev-tools` to hide it while testing as a player. Code:
+`src/dev/dev_tools.gd`, `src/dev/dev_test_panel.gd`. The step-by-step Windows
+checklist is [../WINDOWS_ACCEPTANCE_I005.md](../WINDOWS_ACCEPTANCE_I005.md).
+
+## Weather damage
+
+Heavy weather wears the boat down (Iteration 005b). The rate and its tuning are
+in `src/sailing/weather_damage.gd`:
+
+- `SUSTAINED_FROM_KN` and `GUST_FROM_KN`: where damage starts;
+- the two scale factors;
+- each boat's `weather_damage_factor` in `data/vessel/<profile>.tres`.
+
+The table of expected losses is in [../ARCHITECTURE.md](../ARCHITECTURE.md)
+(*Boat condition, rescue, money and provisions*). After tuning, run
+`test_upkeep`: it checks that ordinary weather and strong winds stay harmless,
+that gales and storms cost a sensible amount, and that results do not depend on
+the time step.

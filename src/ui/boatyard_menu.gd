@@ -23,7 +23,7 @@ signal vessel_chosen(vessel_id: StringName)
 ## Conditions used for the comparison table.
 const COMPARE_WIND_KN := 12.0
 const COMPARE_ANGLES: Array[float] = [45.0, 90.0, 150.0]
-const PREVIEW_SIZE := Vector2i(560, 250)
+const PREVIEW_SIZE := Vector2i(440, 220)
 ## The panel's fixed size, and the margin kept to the window edges.
 const PANEL_SIZE := Vector2(1180, 860)
 const WINDOW_MARGIN := 24.0
@@ -149,7 +149,11 @@ func select(vessel_id: StringName) -> void:
 		child.queue_free()
 	for key: String in vessel.specs:
 		_specs.add_child(_label(key, &"MutedLabel"))
-		_specs.add_child(_label(vessel.specs[key]))
+		var value := _label(vessel.specs[key])
+		# Wraps inside the fixed panel instead of widening it.
+		value.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		value.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		_specs.add_child(value)
 	for key: Array in _compare_cells:
 		var cell := _compare_cells[key] as Label
 		cell.modulate = Color.WHITE if key[0] == vessel_id else Color(1, 1, 1, 0.55)

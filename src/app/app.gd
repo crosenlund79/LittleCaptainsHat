@@ -377,9 +377,9 @@ func _on_rescued(info: Dictionary) -> void:
 	_show_current_boat_area()
 	var dialog := rescue_dialog_scene.instantiate() as RescueDialog
 	dialog.setup(info)
-	dialog.closed.connect(func() -> void:
-		_rescue_open = false
-		_on_modal_stack_changed.call_deferred(modals.depth()))
+	# Cleared before the stack reports the dialog closed (connected first), so
+	# that report un-pauses the game.
+	dialog.closed.connect(func() -> void: _rescue_open = false)
 	modals.push(dialog)
 	_on_modal_stack_changed(modals.depth())
 

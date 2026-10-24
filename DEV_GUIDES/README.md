@@ -16,9 +16,9 @@ version of each guide.
 |---|---|---|
 | [SPRITES.md](SPRITES.md) | replace any artwork with a PNG: formats, transparency, import settings, sizes, alignment, fallback, common mistakes | all sprites |
 | [COMPANION_ANIMATION.md](COMPANION_ANIMATION.md) | change or add the ship's cat poses, adjust their placement, prepare dog artwork | `Visuals/Cat/`, `data/companions/` |
-| [VESSEL_ART.md](VESSEL_ART.md) | draw a boat's deck, cabin or sails; use the art templates; understand layouts, visual profiles and slots | `assets/vessels/`, `src/vessels/`, `data/vessels/` |
+| [VESSEL_ART.md](VESSEL_ART.md) | draw a boat's deck, cabin or sails, damage overlays and the provisions display; use the art templates; understand layouts, visual profiles and slots | `assets/vessels/`, `src/vessels/`, `data/vessels/` |
 | [AUDIO.md](AUDIO.md) | replace a sound (purr, engine, storm wind, thunder, ambience, clicks); understand the audio buses | `assets/audio/` |
-| [WEATHER.md](WEATHER.md) | tune where gales, thunderstorms and cyclones form, hazard levels and warnings; restyle the chart's weather; test with weather fixtures | `data/weather/`, `src/weather/` |
+| [WEATHER.md](WEATHER.md) | tune where gales, thunderstorms and cyclones form, hazard levels, warnings and weather damage; restyle the chart's weather; use the F9 developer test tools and weather fixtures | `data/weather/`, `src/weather/`, `src/dev/` |
 | [MODDING_FUTURE.md](MODDING_FUTURE.md) | keep the project open for user content later (no mod support exists) | design principles |
 
 ## Where things belong

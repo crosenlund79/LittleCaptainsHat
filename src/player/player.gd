@@ -42,6 +42,18 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 
+## The direction the player faces (unit vector; the last direction moved).
+func get_facing() -> Vector2:
+	return _facing
+
+
+## Turns the player to face `direction` (used when placing the player).
+func set_facing(direction: Vector2) -> void:
+	if direction != Vector2.ZERO:
+		_facing = direction.normalized()
+		queue_redraw()
+
+
 func get_focused_interactable() -> Interactable:
 	return _sensor.focused
 

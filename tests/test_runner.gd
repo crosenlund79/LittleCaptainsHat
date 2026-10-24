@@ -30,6 +30,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_weather.gd"),
 	preload("res://tests/suites/test_weather_ui.gd"),
 	preload("res://tests/suites/test_upkeep.gd"),
+	preload("res://tests/suites/test_upkeep_ui.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
 
@@ -152,6 +153,17 @@ func press_action(action: StringName) -> void:
 
 
 ## Holds an action (as polled by Input.get_vector) for `seconds`.
+## Presses and releases a physical key (keys that are not input actions, e.g. F9).
+func press_key(keycode: Key) -> void:
+	for pressed in [true, false]:
+		var event := InputEventKey.new()
+		event.keycode = keycode
+		event.physical_keycode = keycode
+		event.pressed = pressed
+		get_viewport().push_input(event, true)
+	await frames(2)
+
+
 func hold_actions(actions: Array, seconds: float) -> void:
 	for action in actions:
 		Input.action_press(action)

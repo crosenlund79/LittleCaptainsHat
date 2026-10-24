@@ -96,6 +96,12 @@ only when a new drawing sits somewhere else on its canvas.
 ## 5. How petting works
 
 - The cat's interaction (E, prompt "Pet cat") calls `pet()`.
+- **Next to a station** (Iteration 005b): a resting cat never takes over a
+  station, door or berth the player is standing at. To pet a cat lying right by
+  a station, step up to the cat and face it (the arrow on the player token);
+  the prompt then says "Pet cat". The rule is in
+  `src/interaction/interaction_sensor.gd` (`focus_priority` −1 for the
+  companion), so it holds on every boat without per-station exceptions.
 - That plays the purr on the SFX bus (`assets/audio/placeholder/companion_purr.wav`,
   see [AUDIO.md](AUDIO.md)), shows the `alert` pose for `Alert Seconds` (at least
   1.6 s) with rising hearts, then returns to `resting`.

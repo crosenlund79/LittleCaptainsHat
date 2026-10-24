@@ -8,10 +8,11 @@ extends Area2D
 ## from the player to each interactable's centre, but every step of
 ## focus_priority below another's counts as PRIORITY_MARGIN more distance.
 ## Stations, doors and the berth all have priority 0, so among them the
-## nearest wins as always; the ship's companion has -1, so it never takes the
-## focus from a station the player is at unless the player stands clearly
-## closer to the animal (walking round to its far side pets it). Exact ties
-## are broken by node name, so the choice is always predictable.
+## nearest wins as always. The ship's companion has -1: it never takes the
+## focus from a station the player is at. When the player faces it (within
+## FACING_COS of the arrow on the player token) the margin is dropped and it
+## competes on plain distance: step up to the animal and face it to pet it.
+## Exact ties are broken by node name, so the choice is always predictable.
 
 signal focus_changed(interactable: Interactable)
 
@@ -44,6 +45,8 @@ func clear_focus() -> void:
 
 ## Extra distance (px) a lower-priority interactable must make up to win.
 const PRIORITY_MARGIN := 60.0
+## Facing an interactable means its direction is within ~45° of the facing.
+const FACING_COS := 0.7
 
 
 func _update_focus() -> void:
@@ -52,15 +55,22 @@ func _update_focus() -> void:
 		var candidate := area as Interactable
 		if candidate != null and candidate.enabled:
 			candidates.append(candidate)
-	_set_focus(choose(candidates, global_position))
+	var owner_node := get_parent()
+	var facing: Vector2 = owner_node.get_facing() if owner_node and owner_node.has_method("get_facing") else Vector2.ZERO
+	_set_focus(choose(candidates, global_position, facing))
 
 
-## The interactable a player at `from` (global) would use (see above).
-static func choose(candidates: Array[Interactable], from: Vector2) -> Interactable:
+## The interactable a player at `from` (global), facing `facing` (a unit
+## vector, or zero), would use (see above).
+static func choose(candidates: Array[Interactable], from: Vector2, facing := Vector2.ZERO) -> Interactable:
 	var best: Interactable = null
 	var best_score := INF
 	for candidate in candidates:
-		var score := from.distance_to(candidate.get_interaction_position()) - candidate.focus_priority * PRIORITY_MARGIN
+		var offset := candidate.get_interaction_position() - from
+		var margin := candidate.focus_priority * PRIORITY_MARGIN
+		if candidate.focus_priority < 0 and offset.length() > 0.001 and facing.dot(offset.normalized()) >= FACING_COS:
+			margin = 0.0  # faced, it competes on plain distance
+		var score := offset.length() - margin
 		if best == null or score < best_score - 0.5 \
 				or (absf(score - best_score) <= 0.5 and String(candidate.name) < String(best.name)):
 			best = candidate

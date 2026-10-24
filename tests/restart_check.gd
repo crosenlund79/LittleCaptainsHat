@@ -43,13 +43,16 @@ func _write() -> void:
 	GameSession.plan_route_to(&"kiel")
 	GameSession.depart()
 	Simulation.advance(3.0 * 3600.0)  # three hours out of Copenhagen, in the game's wind
+	GameSession.set_condition_for_testing(64.0)  # a worn trimaran
 	GameSession.set_time_scale(5)
 	SaveManager.save_to_slot(2, GameSession.get_state_snapshot())
 	var file := FileAccess.open(EXPECT_PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"progress_nm": GameSession.get_voyage_progress_nm(),
 		"propulsion": GameSession.get_propulsion().to_dict(), "companion": GameSession.get_companion().to_dict(),
 		"weather": _weather_snapshot(GameSession.get_vessel_position(), GameSession.get_game_time(), GameSession.get_wind_seed()),
-		"exposure": GameSession.get_weather_exposure().to_dict()}, "", true, true))
+		"exposure": GameSession.get_weather_exposure().to_dict(),
+		"upkeep": {"funds": GameSession.get_funds(), "food": GameSession.get_food_days(), "water": GameSession.get_water_days(),
+			"condition": GameSession.get_condition(), "damage_until": GameSession.get_damage_applied_until()}}, "", true, true))
 	file.close()
 	print("write phase done")
 
@@ -85,6 +88,12 @@ func _read() -> bool:
 			"the same weather after restart (%d events active, %.1f kn at the boat)" % [weather.events.size(), weather.here.speed_kn]) and ok
 		ok = _expect(JSON.parse_string(JSON.stringify(state.weather_exposure.to_dict(), "", true, true)) == expected.exposure,
 			"weather exposure record restored") and ok
+		var upkeep: Dictionary = expected.upkeep
+		ok = _expect(state.funds == int(upkeep.funds) and absf(state.provisions.food_days - upkeep.food) < 1e-9
+			and absf(state.provisions.water_days - upkeep.water) < 1e-9, "money, food and water restored (%s, %.3f days)" % [
+				GameSession.format_money(state.funds), state.provisions.food_days]) and ok
+		ok = _expect(absf(state.get_condition(&"petrel_36") - upkeep.condition) < 1e-9 and is_equal_approx(state.get_condition(&"starling_33"), 100.0)
+			and absf(state.damage_applied_until - upkeep.damage_until) < 1e-6, "each boat's condition restored (Petrel %d %%)" % roundi(upkeep.condition)) and ok
 	# Clean up the scratch files.
 	DirAccess.remove_absolute(SETTINGS_PATH)
 	DirAccess.remove_absolute(EXPECT_PATH)

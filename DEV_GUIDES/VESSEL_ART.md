@@ -116,6 +116,28 @@ children, never both. The slots are listed bottom to top.
 The ship's cat or dog is **not** vessel art: one set of companion images is used
 on every boat. See [COMPANION_ANIMATION.md](COMPANION_ANIMATION.md).
 
+**Damage overlays (optional, Iteration 005b).** The boat's wear and damage is
+drawn over the art by the game (scuffs, rust, cracks, damaged planking; water
+on the cabin sole when critical). It follows the boat's condition: nothing when
+Sound, then more at Worn, Damaged and Critical. To replace the drawn marks,
+paint transparent PNGs on the same canvas as the slots:
+
+| File | Shown when the boat is |
+|---|---|
+| `deck/damage_worn.png`, `cabin/damage_worn.png` | Worn (41–75 %) |
+| `deck/damage_damaged.png`, `cabin/damage_damaged.png` | Damaged (16–40 %) |
+| `deck/damage_critical.png`, `cabin/damage_critical.png` | Critical (1–15 %) |
+
+They can also be assigned in the profile's **Damage** group. A missing file
+keeps the drawn marks. Damage never changes collision. Keep the overlays light
+over doors and stations, so the way out and the station markers stay visible.
+
+**Provisions in the cabin (optional).** The food crates and water cans by the
+galley are drawn from the real stores. To replace the drawing, put
+`cabin/provisions_full.png`, `provisions_moderate.png`, `provisions_low.png` and
+`provisions_empty.png` in the boat's art folder. Each is a small image centred on
+the `ProvisionDisplay` node, not a full-canvas sprite.
+
 The deck's water and pontoon (`Surroundings`) and the cabin's darkness
 (`Backdrop`) belong to the gameplay scene, not to the vessel art.
 
@@ -182,7 +204,19 @@ top-down sprite.
     "Go on deck".
 - The companion's resting places are the markers in `Layout/CompanionSpots`
   (`settee`, `nav_station`, `v_berth`, `cabin_floor`, `companionway`, `seating`).
-  Leave a little room in the art where they are.
+  Leave a little room in the art where they are. A spot must be within the
+  player's reach (about 75 units from a place the player can stand), or the cat
+  cannot be petted there; the tests check this.
+- **Provisions station:** every cabin has one at the galley
+  (`Layout/Stations/Provisions`, prompt "Check provisions"), with the `ProvisionDisplay` drawing
+  on the counter. Draw a pantry or locker there.
+- **Halcyon 40 proportions (Iteration 005b):**
+  - the hull cabins are 152 units wide;
+  - the owner's and guest berths are 160×132 and 146×124 units;
+  - counters, settees and desks are 44 units deep.
+
+  At the player's scale, about 80 units are one metre. Keep to this scale when
+  redrawing (the templates show the exact shapes).
 
 ## 7. Templates
 

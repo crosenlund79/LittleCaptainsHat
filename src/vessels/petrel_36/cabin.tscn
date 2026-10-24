@@ -167,7 +167,7 @@ position = Vector2(-40, -90)
 position = Vector2(-232, 86)
 
 [node name="v_berth" type="Marker2D" parent="Layout/CompanionSpots"]
-position = Vector2(372, 30)
+position = Vector2(318, 48)
 
 [node name="cabin_floor" type="Marker2D" parent="Layout/CompanionSpots"]
 position = Vector2(110, 40)

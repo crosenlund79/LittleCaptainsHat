@@ -76,6 +76,8 @@ static func activate_scenario(id: StringName) -> String:
 			event.display_name = "Storm"
 		_:
 			return "Unknown scenario '%s'." % id
+	# Test weather is at full strength at once (no slow build-up).
+	event.develop_fraction = minf(event.develop_fraction, 0.5 / (event.lifetime / 3600.0))
 	WeatherFixtures.use([event], true)
 	scenario = id
 	return ""
