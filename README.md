@@ -12,10 +12,19 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 005c: A Sailor's Living**. You can now earn money by
-working remotely from the boat while moored (€25 an hour). Food and water are
-bought at the grocery store in every harbour (€10 per missing day); free
-restocking is gone. Earlier iterations built:
+Current state: **Iteration 006: Making Waves**. Sail, arrive, record, earn
+renown, publish, get paid, and sail again:
+- a **Captain's Log** (**L**, or the pause menu) records your distance,
+  voyages, harbours visited, longest passage, rescues and recent passages;
+- 16 optional **sailing objectives**, tracked automatically, pay **renown**
+  (lifetime renown never decreases);
+- **Publish travel update** turns unpublished renown into money (€2 per
+  renown), in harbour, from the log or the work station;
+- **163 European harbours** (from 15), with a decluttered chart and a
+  *Find a harbour…* search.
+
+Earlier iterations built:
+- 005c: remote work (€25 an hour) and the paid grocery store;
 - 005b: boat condition and weather damage, rescue at sea (€1,000), money, food
   and water, and the October 24 playtest corrections;
 - 005a: one deterministic weather model with moving gales, thunderstorms and
@@ -150,6 +159,8 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Sleep dialog: duration | **<** / **>** buttons (or Left / Right): 1–12 hours |
 | Cat beside a station | stand at the station to use it; **face the cat** (the arrow on your token) to pet it |
 | Provisions | **E** at the galley's provisions station (every cabin) |
+| Captain's Log | **L** (aboard or on the chart), or **Captain's Log** in the pause menu: Log, Harbours and Objectives tabs; *Publish travel update…* |
+| Chart: find a harbour | type in **Find a harbour…** on the Course tab, then click a result (works for harbours hidden at the current zoom) |
 | Developer test tools | **F9** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |
 
 Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / Space to press).
@@ -255,8 +266,9 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   closed.
 - **European chart** (Iceland to Cyprus, North Cape to North Africa) from Natural Earth
   coastlines. It has zoom, pan, "All Europe", "Find boat", a cursor coordinate readout
-  and **15 ports**: Copenhagen, Kiel, Gothenburg, Bergen, Helsinki, Portsmouth, Dublin,
-  Brest, Lisbon, Gibraltar, Barcelona, Marseille, Naples, Piraeus and Reykjavík.
+  and **163 harbours** from the Arctic to Cyprus (Iteration 006). Major harbours are
+  shown at every zoom; smaller ones appear as you zoom in, and names never overlap.
+  Every harbour can be found with the search on the Course tab.
 - **Sea routing** that never crosses land, through straits such as the Øresund, Great
   Belt, Dover, Gibraltar and Bonifacio. Routes have editable waypoints,
   and distances are measured along the actual course.
@@ -287,6 +299,16 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - Walk up to it and it looks up. Press **E** to pet it: the cat sits up, purrs
     and shows hearts; the dog pants happily.
   - There are no stats, needs or bonuses; it is company.
+- **Captain's Log** (Iteration 006): distance sailed, voyages, harbours visited (of
+  163), arrivals, longest passage, rescues, lifetime and unpublished renown, the latest
+  50 passages and the harbours visited, all taken from the real voyage events.
+- **Objectives and renown**: introductory, exploration, challenge and weather
+  objectives (for example: the first hundred miles, 5 harbours, a 200 nm passage,
+  a passage without damage, arriving after heavy weather), plus first visits to new
+  harbours. Each pays renown once (repeatable ones once per qualifying voyage).
+- **Social-media income**: in harbour, *Publish travel update* converts all
+  unpublished renown into money at €2 per renown, with a confirmation. Your
+  lifetime renown stays.
 - **Developer guides** (development builds only): a **Developer guides** button in
   the main menu's top-right corner opens the guides from `DEV_GUIDES/`.
 - **Pause menu**, **save/load** (3 slots), **settings** (audio, display, interface scale),
@@ -374,7 +396,9 @@ templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
-[ITERATION_005C_REPORT.md](ITERATION_005C_REPORT.md), [005b](ITERATION_005B_REPORT.md), the Windows checklist
+[ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) with its Windows checklist
+[WINDOWS_ACCEPTANCE_I006.md](WINDOWS_ACCEPTANCE_I006.md), [005c](ITERATION_005C_REPORT.md),
+[005b](ITERATION_005B_REPORT.md), the Windows checklist
 [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md) (and the reports for
 [005a](ITERATION_005A_REPORT.md), [004b](ITERATION_004B_REPORT.md), [004](ITERATION_004_REPORT.md),
 [003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
@@ -390,14 +414,15 @@ built and verified.
   - there are no currents, waves, depth or tides;
   - weather damage is one general condition value (no separate hull, engine,
     sail or rigging damage), and there are no waves, rain or visibility
-    effects. Repairs are free; remote work is the only income;
+    effects. Repairs are free; income is remote work and travel updates;
   - the chart shows the weather now; it does not animate a forecast;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
 - The companion only rests and changes pose (no walking, no needs) and stays in the
   cabin. Its sounds are synthetic placeholders. The dog has no drawn artwork yet
   (it uses the placeholder drawing).
-- **Routing coverage.** All 15 ports are reachable from each other. Waters the chart
+- **Routing coverage.** All 163 harbours are reachable (each is tested against the
+  chart and router). Waters the chart
   data cannot represent are **not** navigable, and are reported as such instead of being
   crossed. These include:
   - the Black Sea, Sea of Marmara and Sea of Azov (the Bosporus and Dardanelles are too
@@ -405,8 +430,9 @@ built and verified.
   - the Gulf of Corinth, the White Sea and the inner Oslofjord;
   - the inner Stockholm archipelago and many small sounds and fjords.
 
-  Oslo and Stockholm are therefore not in the port list. Canals such as the Kiel Canal
-  are not modelled.
+  Oslo, Stockholm and 15 other candidate harbours are therefore not in the list (see
+  `tools/navigation/harbours_rejected.csv`). Canals such as the Kiel Canal are not
+  modelled.
 - Harbour coordinates often sit on generalised coastline. Each port gets a **bounded
   harbour approach**: up to 2 nm from the berth and at most 10 nm through mostly-water
   cells, which may graze the simplified coastline. All other legs stay strictly clear of land.
@@ -421,6 +447,8 @@ built and verified.
 
 ## Credits and licences
 
+- Harbour coordinates added in Iteration 006: [UN/LOCODE](https://unece.org/trade/cefact/unlocode-code-list-country-and-territory)
+  (UNECE), via the `datasets/un-locode` code list; see `tools/navigation/harbours.csv`.
 - Coastlines: [Natural Earth](https://www.naturalearthdata.com/) 1:10m land, public domain.
   Clipped, simplified and rasterised by `tools/navigation/build_navigation_data.py`,
   **not for navigation**.

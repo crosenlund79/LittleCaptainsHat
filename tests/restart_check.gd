@@ -37,12 +37,18 @@ func _write() -> void:
 	SettingsManager.save()
 	Simulation.auto_advance = false
 	GameSession.start_new_session(CompanionState.KIND_DOG)
+	# A first passage to Gothenburg (Captain's Log, renown), then a travel update.
+	GameSession.plan_route_to(&"gothenburg")
+	GameSession.depart()
+	while GameSession.is_underway():
+		Simulation.advance(24.0 * 3600.0, true)
+	GameSession.publish_travel_update()
 	GameSession.switch_vessel(&"petrel_36")  # sail the trimaran
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"from_cabin")
 	GameSession.set_player_position(Vector2(-300.5, 42.25))
 	GameSession.plan_route_to(&"kiel")
 	GameSession.depart()
-	Simulation.advance(3.0 * 3600.0)  # three hours out of Copenhagen, in the game's wind
+	Simulation.advance(3.0 * 3600.0)  # three hours out of Gothenburg, in the game's wind
 	GameSession.set_condition_for_testing(64.0)  # a worn trimaran
 	GameSession.set_time_scale(5)
 	SaveManager.save_to_slot(2, GameSession.get_state_snapshot())
@@ -51,8 +57,12 @@ func _write() -> void:
 		"propulsion": GameSession.get_propulsion().to_dict(), "companion": GameSession.get_companion().to_dict(),
 		"weather": _weather_snapshot(GameSession.get_vessel_position(), GameSession.get_game_time(), GameSession.get_wind_seed()),
 		"exposure": GameSession.get_weather_exposure().to_dict(),
+		"game_time": GameSession.get_game_time(),
+		"log": GameSession.get_captains_log().to_dict(), "progress": GameSession.get_objective_progress().to_dict(),
+		"sailed_nm": GameSession.get_voyage_sailed_nm(),
 		"upkeep": {"funds": GameSession.get_funds(), "food": GameSession.get_food_days(), "water": GameSession.get_water_days(),
-			"condition": GameSession.get_condition(), "damage_until": GameSession.get_damage_applied_until()}}, "", true, true))
+			"condition": GameSession.get_condition(),
+			"starling": GameSession.get_vessel_condition(&"starling_33"), "damage_until": GameSession.get_damage_applied_until()}}, "", true, true))
 	file.close()
 	print("write phase done")
 
@@ -78,7 +88,15 @@ func _read() -> bool:
 		ok = _expect(state.propulsion.to_dict() == expected.propulsion, "propulsion mode and controller state restored (%s)" % state.propulsion.mode) and ok
 		ok = _expect(JSON.parse_string(JSON.stringify(state.companion.to_dict())) == expected.companion, "ship's companion restored (%s, %s)" % [state.companion.kind, state.companion.spot]) and ok
 		ok = _expect(state.voyage != null and state.voyage.route.destination_port_id == &"kiel", "destination restored") and ok
-		ok = _expect(is_equal_approx(state.game_time, SessionState.get_start_time() + 3.0 * 3600.0), "game clock restored") and ok
+		ok = _expect(is_equal_approx(state.game_time, float(expected.game_time)), "game clock restored") and ok
+		ok = _expect(JSON.parse_string(JSON.stringify(state.captains_log.to_dict(), "", true, true)) == expected.log
+			and state.captains_log.has_visited(&"gothenburg") and state.captains_log.voyages_completed == 1,
+			"Captain's Log restored (1 voyage, %d harbours)" % state.captains_log.get_distinct_harbours()) and ok
+		ok = _expect(JSON.parse_string(JSON.stringify(state.progress.to_dict(), "", true, true)) == expected.progress
+			and state.progress.lifetime_renown > 0 and state.progress.publications == 1 and state.progress.unpublished_renown == 0,
+			"renown and objectives restored (lifetime %d, 1 travel update published)" % state.progress.lifetime_renown) and ok
+		ok = _expect(state.voyage != null and absf(state.voyage.sailed_nm - float(expected.sailed_nm)) < 1e-9
+			and state.voyage.departure_port_id == &"gothenburg", "the voyage's log data restored (%.1f nm from Gothenburg)" % float(expected.sailed_nm)) and ok
 		ok = _expect(state.time_scale == 5, "time acceleration restored") and ok
 		ok = _expect(state.vessel_id == &"petrel_36", "active vessel restored (%s)" % state.vessel_id) and ok
 		# The weather is recomputed from the seed in this new process: the same
@@ -92,7 +110,7 @@ func _read() -> bool:
 		ok = _expect(state.funds == int(upkeep.funds) and absf(state.provisions.food_days - upkeep.food) < 1e-9
 			and absf(state.provisions.water_days - upkeep.water) < 1e-9, "money, food and water restored (%s, %.3f days)" % [
 				GameSession.format_money(state.funds), state.provisions.food_days]) and ok
-		ok = _expect(absf(state.get_condition(&"petrel_36") - upkeep.condition) < 1e-9 and is_equal_approx(state.get_condition(&"starling_33"), 100.0)
+		ok = _expect(absf(state.get_condition(&"petrel_36") - upkeep.condition) < 1e-9 and absf(state.get_condition(&"starling_33") - upkeep.starling) < 1e-9
 			and absf(state.damage_applied_until - upkeep.damage_until) < 1e-6, "each boat's condition restored (Petrel %d %%)" % roundi(upkeep.condition)) and ok
 	# Clean up the scratch files.
 	DirAccess.remove_absolute(SETTINGS_PATH)
