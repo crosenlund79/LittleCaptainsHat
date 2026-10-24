@@ -249,6 +249,14 @@ def cabin_tail(b, camera_pos, zoom):
     b.node("Camera2D", "Camera2D", ".", [f"position = {vec(*camera_pos)}", f"zoom = {vec(zoom, zoom)}"])
 
 
+PROVISION_DISPLAY = "res://src/boat/provision_display.gd"
+
+
+def provision_display(b, pos):
+    """The food and water stores drawn from the real quantities (on the counter)."""
+    b.node("ProvisionDisplay", "Node2D", ".", [f"position = {vec(*pos)}", f"script = {b.res('Script', PROVISION_DISPLAY)}"])
+
+
 def visual_root(b, canvas):
     b.node("Visual", "Node2D", None, [f"script = {b.res('Script', VISUAL)}", f"canvas = {rect(*canvas)}"])
 
@@ -405,92 +413,112 @@ def build_cat_deck(c):
     return b
 
 
+# Halcyon 40 cabin (Iteration 005b proportions). The cabin has its own
+# numbers (CAB): the hull passages are 152 units wide (~1.9 m at the player's
+# scale of ~80 units per metre) so a real double berth fits across each hull,
+# and the furniture has realistic depths (counters and settees ~0.55 m).
+# Port hull = owner's hull (aft double berth, wardrobe, desk, sofa, ensuite
+# forward); starboard hull = guest hull (aft double berth, locker, heads and
+# shower, forward bunk). Saloon: galley aft to port with the pantry
+# (provisions), U-settee and table to starboard, nav desk forward to port,
+# the saloon door (to the cockpit) in the middle of the aft wall. Steps lead
+# down into the hulls through openings in the saloon side walls.
+CAB = {
+    "hull_y": 234,          # hull centreline in the cabin
+    "inner": 158,           # saloon side wall / inner edge of the hull passages
+    "outer": 310,           # outer edge of the hull passages
+    "hull_half": 88,        # drawn hull half beam (dark hull around the passage)
+    "stern": -470, "bow": 455,
+    "saloon": (-200, 120),  # saloon x range (aft wall .. forward wall)
+}
+CAT_PORT_OPENING = (-60, 20)    # x range of the opening into the port hull
+CAT_STBD_OPENING = (50, 115)    # ... into the starboard hull
+CAT_DOOR_HALF = 46              # half width of the saloon door (aft wall)
+# Furniture: name, centre, size or polygon (relative to centre), solid, colour.
+
+
+def cat_cabin_hulls():
+    return [hull_outline(CAB["stern"] - 6, CAB["bow"] + 6, CAB["hull_half"], CAB["hull_half"] * 0.9,
+                         cy=side * CAB["hull_y"], bluff=0.6) for side in (-1, 1)]
+
+
 def cat_cabin_outline(c):
     """Union of the saloon and the two hull passages (the walls between the
     saloon and the hulls are separate fixtures with openings)."""
-    hy = c["hull_y"]
-    ho, hi = hy + 48, hy - 52   # hull passage outer and inner edge
-    s0, s1 = -200, 120
-    port = [(-470, -hi), (-470, -ho), (330, -ho), (420, -hy - 22), (455, -hy), (420, -hi + 6), (330, -hi), (s1, -hi)]
+    hi, ho, hy = CAB["inner"], CAB["outer"], CAB["hull_y"]
+    s0, s1 = CAB["saloon"]
+    port = [(-470, -hi), (-470, -ho), (300, -ho), (390, -ho + 30), (445, -hy), (410, -hi - 17), (330, -hi), (s1, -hi)]
     star = [(x, -y) for x, y in reversed(port)]
     return port + star + [(s0, hi), (s0, -hi)]
 
 
-# Halcyon 40 cabin (Iteration 004b layout). Port hull = owner's hull (big aft
-# berth, wardrobe, desk, sofa, ensuite forward); starboard hull = guest hull
-# (aft double berth, heads and shower, forward bunk). Saloon: galley aft to
-# port, U-settee and table to starboard, nav desk forward to port, the saloon
-# door (to the cockpit) in the middle of the aft wall. Steps lead down into the
-# hulls through openings in the saloon walls.
-# Furniture: name, centre, size or polygon (relative to centre), solid, colour.
-CAT_PORT_OPENING = (-60, 20)    # x range of the opening into the port hull
-CAT_STBD_OPENING = (50, 115)    # ... into the starboard hull
-CAT_DOOR_HALF = 46              # half width of the saloon door (aft wall)
-BERTH_SHAPE = [(-72, -46), (72, -46), (72, 46), (-72, 46)]
-
-
 def cat_furniture(c):
-    hy = c["hull_y"]
+    hy = CAB["hull_y"]
     return [
         # Saloon
-        ("GalleyAft", (-185, -115), (26, 90), None, True, WOOD),
-        ("GalleySide", (-126, -147), (92, 26), None, True, WOOD),
-        ("Settee", (-55, 147), (190, 26), None, True, CUSHION),
-        ("SetteeEnd", (-147, 112), (26, 70), None, True, CUSHION),
-        ("SaloonTable", (-55, 100), (110, 40), None, True, WOOD),
-        ("NavDesk", (105, -115), (26, 80), None, True, WOOD),
-        ("NavSeat", (74, -115), None, ellipse(0, 0, 11, 11, 12), False, TEAK_DARK),
+        ("GalleyAft", (-178, -105), (44, 100), None, True, WOOD),
+        ("GalleySide", (-110, -134), (100, 44), None, True, WOOD),
+        ("Settee", (-60, 134), (200, 44), None, True, CUSHION),
+        ("SetteeEnd", (-138, 84), (44, 60), None, True, CUSHION),
+        ("SaloonTable", (-50, 70), (120, 56), None, True, WOOD),
+        ("NavDesk", (96, -110), (44, 80), None, True, WOOD),
+        ("NavSeat", (60, -110), None, ellipse(0, 0, 13, 13, 12), False, TEAK_DARK),
         # Port (owner's) hull
-        ("OwnerBerth", (-392, -hy), None, [(-73, -46), (72, -46), (72, 46), (-73, 46)], True, BLANKET),
-        ("Wardrobe", (-215, -hy - 31), (70, 26), None, True, WOOD),
-        ("Desk", (-120, -hy - 31), (60, 26), None, True, WOOD),
-        ("OwnerSofa", (200, -hy - 31), (110, 26), None, True, CUSHION),
-        ("Ensuite", (0, 0), None, [(320, -hy - 44), (415, -hy - 22), (445, -hy), (415, -hy + 42), (320, -hy + 48)], True, "#7A8A8F"),
+        ("OwnerBerth", (-385, -hy), None, [(-80, -66), (80, -66), (80, 66), (-80, 66)], True, BLANKET),
+        ("Wardrobe", (-250, -hy - 50), (70, 44), None, True, WOOD),
+        ("Desk", (-150, -hy - 50), (70, 44), None, True, WOOD),
+        ("OwnerSofa", (190, -hy - 50), (120, 44), None, True, CUSHION),
+        ("Ensuite", (0, 0), None, [(305, -hy - 66), (385, -hy - 42), (432, -hy), (400, -hy + 52), (305, -hy + 58)], True, "#7A8A8F"),
         # Starboard (guest) hull
-        ("GuestBerth", (-400, hy), (130, 92), None, True, BLANKET),
-        ("GuestLocker", (-280, hy + 31), (60, 26), None, True, WOOD),
-        ("Heads", (225, hy + 29), (90, 30), None, True, "#7A8A8F"),
-        ("Shower", (300, hy + 22), (50, 44), None, True, "#8FA3A8"),
-        ("Bunk", (0, 0), None, [(340, hy - 48), (415, hy - 42), (445, hy), (415, hy + 22), (340, hy + 44)], True, BLANKET),
+        ("GuestBerth", (-392, hy), (146, 124), None, True, BLANKET),
+        ("GuestLocker", (-270, hy + 50), (60, 44), None, True, WOOD),
+        ("Heads", (210, hy + 48), (100, 44), None, True, "#7A8A8F"),
+        ("Shower", (285, hy + 34), (50, 60), None, True, "#8FA3A8"),
+        ("Bunk", (0, 0), None, [(335, hy - 58), (400, hy - 48), (430, hy), (385, hy + 38), (335, hy + 56)], True, BLANKET),
     ]
 
 
 def cat_bulkheads(c):
-    """Saloon side walls (y = +-166) with the openings into the hulls."""
-    hi = c["hull_y"] - 52
-    return [("BulkheadPortAft", (-206, -hi), (CAT_PORT_OPENING[0], -hi)),
-            ("BulkheadPortFwd", (CAT_PORT_OPENING[1], -hi), (126, -hi)),
-            ("BulkheadStbdAft", (-206, hi), (CAT_STBD_OPENING[0], hi)),
-            ("BulkheadStbdFwd", (CAT_STBD_OPENING[1], hi), (126, hi))]
+    """Saloon side walls (y = +-inner) with the openings into the hulls."""
+    hi = CAB["inner"]
+    s0, s1 = CAB["saloon"]
+    return [("BulkheadPortAft", (s0 - 6, -hi), (CAT_PORT_OPENING[0], -hi)),
+            ("BulkheadPortFwd", (CAT_PORT_OPENING[1], -hi), (s1 + 6, -hi)),
+            ("BulkheadStbdAft", (s0 - 6, hi), (CAT_STBD_OPENING[0], hi)),
+            ("BulkheadStbdFwd", (CAT_STBD_OPENING[1], hi), (s1 + 6, hi))]
 
 
 def build_cat_cabin_visual(c):
     b = Builder()
     visual_root(b, c["canvas"])
-    hy = c["hull_y"]
-    hi = hy - 52
+    hy = CAB["hull_y"]
+    hi = CAB["inner"]
+    s0, s1 = CAB["saloon"]
     outline = cat_cabin_outline(c)
     b.slot("CabinBase")
-    for i, h in enumerate(cat_hulls(c)):
+    for i, h in enumerate(cat_cabin_hulls()):
         b.poly(f"HullShape{i}", "CabinBase", h, CABIN_HULL)
-    b.poly("SaloonShape", "CabinBase", [(-215, -hy + 40), (135, -hy + 40), (135, hy - 40), (-215, hy - 40)], CABIN_HULL)
+    b.poly("SaloonShape", "CabinBase", [(s0 - 15, -hi - 10), (s1 + 15, -hi - 10), (s1 + 15, hi + 10), (s0 - 15, hi + 10)], CABIN_HULL)
     b.poly("CabinSole", "CabinBase", outline, SOLE)
     for i in range(7):
-        y = -150 + i * 50
-        b.line(f"Seam{i}", "CabinBase", [(-195, y), (115, y)], 2, "#5E4733", 0.35)
+        y = -138 + i * 46
+        b.line(f"Seam{i}", "CabinBase", [(s0 + 5, y), (s1 - 5, y)], 2, "#5E4733", 0.35)
     for i, side in enumerate((-1, 1)):
-        b.line(f"HullSeam{i}", "CabinBase", [(-465, side * hy), (320, side * hy)], 2, "#5E4733", 0.35)
+        for k, dy in enumerate((-38, 38)):
+            b.line(f"HullSeam{i}{k}", "CabinBase", [(-465, side * hy + dy), (300, side * hy + dy)], 2, "#5E4733", 0.3)
     b.line("CabinSide", "CabinBase", outline, 12, "#5E4733", closed=True)
     # Saloon windows along the forward wall.
     for i, y in enumerate((-110, -40, 40, 110)):
-        b.line(f"Window{i}", "CabinBase", [(122, y - 26), (122, y + 26)], 6, GLASS, 0.85)
+        b.line(f"Window{i}", "CabinBase", [(s1 + 2, y - 26), (s1 + 2, y + 26)], 6, GLASS, 0.85)
 
     b.slot("FurnitureVisual")
     # The saloon door: an opening in the aft wall with the cockpit beyond, a
     # half-open sliding door, a step and chevrons pointing out to the deck.
     d = CAT_DOOR_HALF
-    b.poly("CockpitBeyond", "FurnitureVisual", [(-240, -d), (-203, -d), (-203, d), (-240, d)], NONSKID)
-    b.poly("CockpitShade", "FurnitureVisual", [(-240, -d), (-232, -d), (-232, d), (-240, d)], WELL)
+    b.poly("CockpitBeyond", "FurnitureVisual", [(-262, -d - 8), (-203, -d - 8), (-203, d + 8), (-262, d + 8)], NONSKID)
+    b.poly("CockpitShade", "FurnitureVisual", [(-262, -d - 8), (-252, -d - 8), (-252, d + 8), (-262, d + 8)], WELL)
+    # A bright doorway frame and a lamp above it: the way out is seen at once.
+    b.poly("DoorGlow", "FurnitureVisual", [(-212, -d - 4), (-200, -d - 4), (-200, d + 4), (-212, d + 4)], "#EFE5CC", 0.75)
     for i, side in enumerate((-1, 1)):
         b.poly(f"DoorPost{i}", "FurnitureVisual", [(-209, side * d - 5), (-195, side * d - 5), (-195, side * d + 5), (-209, side * d + 5)], TEAK_DARK)
     b.poly("SlidingDoor", "FurnitureVisual", [(-206, -d - 40), (-200, -d - 40), (-200, -4), (-206, -4)], GLASS, 0.55)
@@ -498,8 +526,8 @@ def build_cat_cabin_visual(c):
     b.shape("DoorStep", "FurnitureVisual", (-188, 0), "#7A5C40", size=(16, 2 * d - 8))
     b.line("StepNosing", "FurnitureVisual", [(-181, -d + 6), (-181, d - 6)], 3, "#4A3626", 0.8)
     for i in range(3):
-        x = -214 - i * 9
-        b.line(f"Chevron{i}", "FurnitureVisual", [(x + 6, -12), (x, 0), (x + 6, 12)], 3, "#102D3B", 0.75 - i * 0.2)
+        x = -218 - i * 12
+        b.line(f"Chevron{i}", "FurnitureVisual", [(x + 9, -16), (x, 0), (x + 9, 16)], 4, "#102D3B", 0.85 - i * 0.2)
     # Steps down into each hull.
     for i, (side, (x0, x1)) in enumerate(((-1, CAT_PORT_OPENING), (1, CAT_STBD_OPENING))):
         cx = (x0 + x1) / 2
@@ -512,47 +540,48 @@ def build_cat_cabin_visual(c):
     for name, pos, size, poly, solid, col in cat_furniture(c):
         b.shape(name, "FurnitureVisual", pos, col, size=size, polygon=poly)
     # Galley details.
-    b.poly("Burner0", "FurnitureVisual/GalleySide", ellipse(-22, 0, 8, 8, 12), "#2A2F33")
-    b.poly("Burner1", "FurnitureVisual/GalleySide", ellipse(2, 0, 8, 8, 12), "#2A2F33")
-    b.poly("Sink", "FurnitureVisual/GalleyAft", [(-9, -30), (9, -30), (9, -6), (-9, -6)], "#A6C4C9", 0.85)
-    b.poly("Fridge", "FurnitureVisual/GalleyAft", [(-10, 14), (10, 14), (10, 38), (-10, 38)], "#C9D2D6", 0.8)
+    b.poly("Burner0", "FurnitureVisual/GalleySide", ellipse(-36, -4, 10, 10, 12), "#2A2F33")
+    b.poly("Burner1", "FurnitureVisual/GalleySide", ellipse(-12, -4, 10, 10, 12), "#2A2F33")
+    b.poly("Sink", "FurnitureVisual/GalleyAft", [(-14, -40), (14, -40), (14, -10), (-14, -10)], "#A6C4C9", 0.85)
+    b.poly("Fridge", "FurnitureVisual/GalleyAft", [(-16, 14), (16, 14), (16, 44), (-16, 44)], "#C9D2D6", 0.8)
     # Saloon and nav station details.
     for i in range(3):
-        b.line(f"Cushion{i}", "FurnitureVisual/Settee", [(-95 + 63 * (i + 1), -11), (-95 + 63 * (i + 1), 11)], 2, "#2E5A60", 0.8)
-    b.poly("ChartPaper", "FurnitureVisual/NavDesk", [(-9, -34), (9, -34), (9, 8), (-9, 8)], "#EFE5CC", 0.9)
-    b.poly("Instruments", "FurnitureVisual/NavDesk", [(-9, 14), (9, 14), (9, 34), (-9, 34)], "#2A2F33", 0.9)
+        b.line(f"Cushion{i}", "FurnitureVisual/Settee", [(-100 + 50 * (i + 1), -19), (-100 + 50 * (i + 1), 19)], 2, "#2E5A60", 0.8)
+    b.poly("ChartPaper", "FurnitureVisual/NavDesk", [(-16, -34), (16, -34), (16, 8), (-16, 8)], "#EFE5CC", 0.9)
+    b.poly("Instruments", "FurnitureVisual/NavDesk", [(-16, 14), (16, 14), (16, 34), (-16, 34)], "#2A2F33", 0.9)
     # Berths: blanket folded back, pillows at the aft end.
-    for berth, half in (("OwnerBerth", 46), ("GuestBerth", 46)):
+    for berth, half_x, half in (("OwnerBerth", 80, 66), ("GuestBerth", 73, 62)):
         for k, sign in enumerate((-1, 1)):
-            b.poly(f"Pillow{k}", f"FurnitureVisual/{berth}", [(-62, sign * 4), (-40, sign * 4), (-40, sign * (half - 6)), (-62, sign * (half - 6))], "#EFE5CC", 0.9)
-        b.poly("Fold", f"FurnitureVisual/{berth}", [(-30, -half + 2), (-18, -half + 2), (-18, half - 2), (-30, half - 2)], "#C9D1BE", 0.9)
-    b.poly("BunkPillow", "FurnitureVisual/Bunk", [(346, hy - 36), (362, hy - 36), (362, hy + 30), (346, hy + 30)], "#EFE5CC", 0.9)
-    b.poly("Toilet", "FurnitureVisual/Heads", ellipse(-22, 0, 10, 8, 12), "#EFE5CC")
-    b.poly("Basin", "FurnitureVisual/Heads", ellipse(22, 0, 9, 7, 12), "#A6C4C9")
+            b.poly(f"Pillow{k}", f"FurnitureVisual/{berth}", [(-half_x + 8, sign * 5), (-half_x + 34, sign * 5), (-half_x + 34, sign * (half - 8)), (-half_x + 8, sign * (half - 8))], "#EFE5CC", 0.9)
+        b.poly("Fold", f"FurnitureVisual/{berth}", [(-half_x + 46, -half + 2), (-half_x + 60, -half + 2), (-half_x + 60, half - 2), (-half_x + 46, half - 2)], "#C9D1BE", 0.9)
+    b.poly("BunkPillow", "FurnitureVisual/Bunk", [(341, hy - 44), (360, hy - 44), (360, hy + 42), (341, hy + 42)], "#EFE5CC", 0.9)
+    b.poly("Toilet", "FurnitureVisual/Heads", ellipse(-26, 0, 12, 10, 12), "#EFE5CC")
+    b.poly("Basin", "FurnitureVisual/Heads", ellipse(24, 0, 11, 9, 12), "#A6C4C9")
     b.poly("Drain", "FurnitureVisual/Shower", ellipse(0, 0, 4, 4, 8), "#4B5357")
-    b.poly("EnsuiteToilet", "FurnitureVisual/Ensuite", ellipse(426, -hy, 8, 7, 12), "#EFE5CC")
-    b.poly("EnsuiteShower", "FurnitureVisual/Ensuite", [(330, -hy - 34), (370, -hy - 34), (370, -hy + 34), (330, -hy + 34)], "#8FA3A8")
+    b.poly("EnsuiteToilet", "FurnitureVisual/Ensuite", ellipse(405, -hy, 11, 9, 12), "#EFE5CC")
+    b.poly("EnsuiteShower", "FurnitureVisual/Ensuite", [(318, -hy - 44), (368, -hy - 44), (368, -hy + 44), (318, -hy + 44)], "#8FA3A8")
 
     b.slot("CabinDetails")
     b.node("Labels", "Node2D", "CabinDetails", ["z_index = 5"])
     big = b.label_settings(15, "#EFE5CC", 0.62)
     small = b.label_settings(13, "#EFE5CC", 0.55)
     dark = b.label_settings(13, "#102D3B", 0.7)
-    for name, text, pos, st in [("Saloon", "SALOON", (-20, -10), big), ("Galley", "GALLEY", (-120, -110), small),
-                                ("Chart", "NAV STATION", (60, -60), small), ("OwnerCabin", "OWNER'S CABIN", (-250, -hy + 30), small),
-                                ("Ensuite", "ENSUITE", (385, -hy - 24), dark), ("GuestCabin", "GUEST CABIN", (-280, hy - 30), small),
-                                ("Heads", "HEADS", (225, hy + 6), small), ("Bunk", "BUNK", (395, hy + 6), dark),
+    for name, text, pos, st in [("Saloon", "SALOON", (-20, -10), big), ("Galley", "GALLEY · PANTRY", (-110, -86), small),
+                                ("Chart", "NAV STATION", (40, -60), small), ("OwnerCabin", "OWNER'S CABIN", (-250, -hy + 20), small),
+                                ("Ensuite", "ENSUITE", (360, -hy - 14), dark), ("GuestCabin", "GUEST CABIN", (-270, hy - 20), small),
+                                ("Heads", "HEADS", (210, hy + 10), small), ("Bunk", "BUNK", (378, hy), dark),
                                 ("PortSteps", "STEPS DOWN", (-20, -hi + 50), small), ("StbdSteps", "STEPS DOWN", (82, hi - 50), small),
-                                ("Door", "TO DECK", (-150, 62), big)]:
+                                ("Door", "TO DECK", (-232, 74), big)]:
         b.label(name, "CabinDetails/Labels", text, pos, st)
     return b
 
 
 def build_cat_cabin(c):
     b = Builder()
-    hy = c["hull_y"]
-    cabin_root(b, (-480, -290, 960, 580))
+    hy = CAB["hull_y"]
+    cabin_root(b, (-480, -320, 960, 640))
     b.node("Visual", None, ".", [], instance=b.res("PackedScene", f"res://src/vessels/{c['id']}/cabin_visual.tscn"))
+    provision_display(b, (-110, -134))
     b.node("Layout", "Node2D", ".")
     b.node("Collision", "Node2D", "Layout")
     b.boundary("Hull", [cat_cabin_outline(c)])
@@ -562,12 +591,13 @@ def build_cat_cabin(c):
         b.fixture(name, pos, size=size, polygon=poly, solid=solid)
     b.node("Stations", "Node2D", "Layout")
     b.station("Companionway", (-185, 0), "companionway", "Go on deck", ("rect", (30, 2 * CAT_DOOR_HALF)))
-    b.station("Chart", (70, -115), "nav_table", "Open chart", ("rect", (30, 80)))
-    b.station("Berth", (-306, -hy), "bed", "Sleep", ("rect", (24, 92)))
-    b.markers("SpawnPoints", {"start": (-40, -20), "from_deck": (-160, 0), "v_berth": (-288, -hy)})
-    b.markers("CompanionSpots", {"settee": (-80, 147), "nav_station": (105, -142), "v_berth": (-345, -hy + 20),
-                                 "cabin_floor": (10, 40), "companionway": (-150, -50), "seating": (25, 108)})
-    cabin_tail(b, (-10, 0), 1.3)
+    b.station("Chart", (58, -110), "nav_table", "Open chart", ("rect", (30, 80)))
+    b.station("Berth", (-293, -hy), "bed", "Sleep", ("rect", (24, 120)))
+    b.station("Provisions", (-110, -100), "provisions", "Check provisions", ("rect", (96, 24)))
+    b.markers("SpawnPoints", {"start": (-40, -20), "from_deck": (-160, 0), "v_berth": (-278, -hy)})
+    b.markers("CompanionSpots", {"settee": (-80, 134), "nav_station": (96, -140), "v_berth": (-345, -hy + 24),
+                                 "cabin_floor": (0, 10), "companionway": (-140, -40), "seating": (30, 100)})
+    cabin_tail(b, (-10, 0), 1.2)
     return b
 
 
@@ -784,6 +814,7 @@ def build_tri_cabin(t):
     b = Builder()
     cabin_root(b, (-440, -110, 900, 220))
     b.node("Visual", None, ".", [], instance=b.res("PackedScene", f"res://src/vessels/{t['id']}/cabin_visual.tscn"))
+    provision_display(b, (-290, -82))
     b.node("Layout", "Node2D", ".")
     b.node("Collision", "Node2D", "Layout")
     b.boundary("Hull", [tri_cabin_outline(t)])
@@ -800,6 +831,7 @@ def build_tri_cabin(t):
     b.node("Stations", "Node2D", "Layout")
     b.station("Companionway", (-345, 0), "companionway", "Go on deck", ("rect", (30, 80)))
     b.station("Chart", (-290, 52), "nav_table", "Open chart", ("rect", (80, 26)))
+    b.station("Provisions", (-290, -54), "provisions", "Check provisions", ("rect", (90, 20)))
     b.station("Berth", (282, 0), "bed", "Sleep", ("rect", (30, 120)))
     b.markers("SpawnPoints", {"start": (-120, 40), "from_deck": (-322, 0), "v_berth": (258, 0)})
     b.markers("CompanionSpots", {"settee": (-40, -90), "nav_station": (-232, 86), "v_berth": (372, 30),

@@ -40,3 +40,19 @@ func get_slot(slot_name: StringName) -> VisualSlot:
 		if slot.slot == slot_name:
 			return slot
 	return null
+
+
+## Shows wear and damage for `percent` (0-100) over the art (DamageOverlay,
+## created on first use). `key` makes the marks this boat's own.
+func set_condition(percent: float, key: String) -> void:
+	var overlay := get_damage_overlay()
+	if overlay == null:
+		overlay = DamageOverlay.new()
+		overlay.name = "DamageOverlay"
+		add_child(overlay)
+		overlay.setup(self, "cabin" if get_slot(&"CabinBase") != null else "deck", key)
+	overlay.set_condition(percent)
+
+
+func get_damage_overlay() -> DamageOverlay:
+	return get_node_or_null("DamageOverlay") as DamageOverlay

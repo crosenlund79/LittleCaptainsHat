@@ -19,6 +19,9 @@ extends Node
 @export var boatyard_menu_scene: PackedScene
 ## Developer guides viewer (main menu, development builds only).
 @export var dev_guides_menu_scene: PackedScene
+## The provisions locker (cabin station) and the rescue report.
+@export var provisions_menu_scene: PackedScene = preload("res://src/ui/provisions_menu.tscn")
+@export var rescue_dialog_scene: PackedScene = preload("res://src/ui/rescue_dialog.tscn")
 ## Played on every button press, routed to the UI bus.
 @export var ui_click_sound: AudioStream
 ## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
@@ -54,6 +57,9 @@ var _toast_offsets := Vector2.ZERO
 var _weather_audio_timer := 0.0
 var _thunder_timer := 0.0
 var _thunder_rng := RandomNumberGenerator.new()  # cosmetic only (sound timing)
+## True from a rescue until its dialog is closed: gameplay stays paused (also
+## while the screen changes to the harbour underneath).
+var _rescue_open := false
 
 
 func _ready() -> void:
@@ -71,6 +77,12 @@ func _ready() -> void:
 	GameSession.notice.connect(notify)
 	Simulation.weather_warning.connect(_on_weather_warning)
 	Simulation.arrived.connect(_on_arrived)
+	GameSession.rescued.connect(_on_rescued)
+	# Test weather never outlives the game it was made in.
+	GameSession.session_started.connect(DevTools.on_session_changed)
+	GameSession.state_replaced.connect(DevTools.on_session_changed)
+	GameSession.session_ended.connect(DevTools.on_session_changed)
+	GameSession.provisions_warning.connect(func(_level: int, text: String) -> void: notify(text))
 	router.screen_changed.connect(_on_screen_changed)
 	GameSession.propulsion_changed.connect(func(_mode: StringName) -> void: update_engine_audio())
 	GameSession.state_replaced.connect(update_engine_audio)
@@ -124,6 +136,11 @@ func _is_on_deck() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F9:
+		if DevTools.is_enabled():
+			get_viewport().set_input_as_handled()
+			toggle_dev_tests()
+		return
 	if not event.is_action_pressed(&"pause") or event.is_echo():
 		return
 	get_viewport().set_input_as_handled()
@@ -323,6 +340,8 @@ func open_sleep_menu() -> void:
 func sleep_for(hours: float) -> void:
 	modals.clear()
 	var result := Simulation.sleep(hours)
+	if result.stopped_by == Simulation.STOP_RESCUE:
+		return  # the rescue has already brought the player ashore and reports itself
 	_wake_in_berth()
 	var slept := Simulation.format_duration(result.elapsed_seconds)
 	var now := Simulation.format_game_time(GameSession.get_game_time())
@@ -345,6 +364,31 @@ func _wake_in_berth() -> void:
 		area.place_player_at_spawn(WAKE_SPAWN)
 	else:
 		_show_current_boat_area()  # closes the chart (or leaves the deck)
+
+
+## The boat was lost at sea and the crew rescued (GameSession.rescue(), which
+## has already moved everything to the home harbour). Shows the boat there,
+## aboard in the cabin, with the rescue report on top. Gameplay is paused
+## until the report is closed; time then runs at 1× (a player pause stays).
+func _on_rescued(info: Dictionary) -> void:
+	hud.hide_warning()
+	modals.clear()
+	_rescue_open = true
+	_show_current_boat_area()
+	var dialog := rescue_dialog_scene.instantiate() as RescueDialog
+	dialog.setup(info)
+	dialog.closed.connect(func() -> void:
+		_rescue_open = false
+		_on_modal_stack_changed.call_deferred(modals.depth()))
+	modals.push(dialog)
+	_on_modal_stack_changed(modals.depth())
+
+
+## The provisions locker in the cabin: the numbers, and restocking in harbour.
+func open_provisions() -> void:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return
+	modals.push(provisions_menu_scene.instantiate() as ModalPanel)
 
 
 func _on_weather_warning(warning: Dictionary) -> void:
@@ -382,7 +426,23 @@ func open_pause_menu() -> void:
 	menu.load_requested.connect(open_load_menu)
 	menu.settings_requested.connect(open_settings)
 	menu.main_menu_requested.connect(request_main_menu)
+	menu.dev_tests_requested.connect(func() -> void:
+		modals.clear()
+		toggle_dev_tests())
 	modals.push(menu)
+
+
+## The developer test panel (DevTools): F9 opens and closes it, in the boat or
+## on the chart. Development builds only; it does not exist for players.
+func toggle_dev_tests() -> void:
+	if not DevTools.is_enabled() or not GameSession.is_active() or router.is_busy():
+		return
+	if modals.get_top() is DevTestPanel:
+		modals.get_top().close()
+		return
+	if not modals.is_empty() or not (router.current_screen is BoatArea or router.current_screen is WorldMap):
+		return
+	modals.push(DevTestPanel.new())
 
 
 ## The boatyard: only in harbour, never underway.
@@ -455,6 +515,7 @@ func _connect_boat_area(area: BoatArea) -> void:
 	area.message_requested.connect(notify)
 	area.interaction_prompt_changed.connect(hud.set_prompt)
 	area.boatyard_requested.connect(open_boatyard)
+	area.provisions_requested.connect(open_provisions)
 
 
 func _connect_world_map(map: WorldMap) -> void:
@@ -502,7 +563,7 @@ func update_engine_audio() -> void:
 func _on_modal_stack_changed(depth: int) -> void:
 	# Gameplay pauses while any menu is open over it. Menus, the HUD and
 	# notifications run with PROCESS_MODE_ALWAYS and stay responsive.
-	get_tree().paused = depth > 0 and is_in_gameplay()
+	get_tree().paused = (depth > 0 and is_in_gameplay()) or _rescue_open
 	if depth == 0 and router.current_screen is MainMenu:
 		var menu := router.current_screen as MainMenu
 		menu.refresh_saves()

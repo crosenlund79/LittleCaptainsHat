@@ -14,3 +14,4 @@ angle_efficiency_curve = PackedVector2Array(0, 0, 32, 0, 42, 0.42, 52, 0.62, 65,
 spinnaker_min_angle = 120.0
 spinnaker_bonus = 1.15
 engine_speed_kn = 5.5
+weather_damage_factor = 1.15

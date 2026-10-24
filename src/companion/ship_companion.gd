@@ -75,6 +75,7 @@ func _ready() -> void:
 	interactable = Interactable.new()
 	interactable.name = "Pet"
 	interactable.interaction_id = &"pet"
+	interactable.focus_priority = -1  # stations and doors nearby keep precedence
 	interactable.highlight_target = ^".."
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()

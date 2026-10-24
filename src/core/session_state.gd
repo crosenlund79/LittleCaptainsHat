@@ -6,8 +6,8 @@ extends RefCounted
 ## SaveManager writes. It contains no node references, so it exists regardless
 ## of which scene is visible. to_dict()/from_dict() define the save format;
 ## each subsystem keeps its data in its own top-level section ("boat",
-## "player", "clock", "wind", "vessel", "navigation") so future systems can add
-## sections of their own.
+## "player", "clock", "wind", "vessel", "navigation", "economy", "provisions",
+## "rescue") so future systems can add sections of their own.
 
 const AREA_INTERIOR := &"interior"
 const AREA_EXTERIOR := &"exterior"
@@ -22,6 +22,9 @@ const STATUSES: Array[StringName] = [STATUS_MOORED, STATUS_UNDERWAY, STATUS_ARRI
 const TIME_SCALES: Array[int] = [1, 5, 20]
 ## New games start on 1 May 2026, 08:00 UTC (start of the sailing season).
 const START_TIME_ISO := "2026-05-01T08:00:00"
+## Money a new game starts with (whole euros) and what a rescue at sea costs.
+const STARTING_FUNDS := 10000
+const RESCUE_FEE := 1000
 
 ## Boat area the player is in.
 var boat_area: StringName = AREA_INTERIOR
@@ -64,6 +67,20 @@ var vessel_id: StringName = &"starling_33"
 var companion := CompanionState.new()
 ## The voyage being sailed, or null when not underway.
 var voyage: Voyage
+## Euros (whole). Never negative.
+var funds := STARTING_FUNDS
+## Food and water aboard (days).
+var provisions := Provisions.new()
+## Each boat's overall condition in percent, by vessel id (String). A boat
+## that is not listed is in perfect condition (100), so switching boats keeps
+## every boat's own damage.
+var vessel_conditions := {}
+## Weather damage has been applied for the voyage up to this game time, so no
+## stretch of time is ever counted twice (see Simulation._assess_weather).
+var damage_applied_until := 0.0
+## Rescues so far, and the last one: {"time", "fee", "funds_after", "from"}.
+var rescue_count := 0
+var last_rescue := {}
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -74,6 +91,7 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.spawn_point = start_spawn
 	state.game_time = get_start_time()
 	state.weather_exposure.reset(state.game_time)
+	state.damage_applied_until = state.game_time
 	state.companion = CompanionState.create(companion_kind, state.game_time)
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
@@ -108,7 +126,22 @@ func duplicate_state() -> SessionState:
 	copy.companion = companion.duplicate_state()
 	copy.vessel_id = vessel_id
 	copy.voyage = voyage.duplicate_voyage() if voyage else null
+	copy.funds = funds
+	copy.provisions = provisions.duplicate_provisions()
+	copy.vessel_conditions = vessel_conditions.duplicate()
+	copy.damage_applied_until = damage_applied_until
+	copy.rescue_count = rescue_count
+	copy.last_rescue = last_rescue.duplicate(true)
 	return copy
+
+
+## The condition (0-100 %) of boat `id`.
+func get_condition(id: StringName) -> float:
+	return float(vessel_conditions.get(String(id), VesselCondition.FULL))
+
+
+func set_condition(id: StringName, percent: float) -> void:
+	vessel_conditions[String(id)] = clampf(percent, 0.0, VesselCondition.FULL)
 
 
 func to_dict() -> Dictionary:
@@ -129,7 +162,12 @@ func to_dict() -> Dictionary:
 			"status": String(vessel_status),
 			"position": {"lon": vessel_position.x, "lat": vessel_position.y},
 			"propulsion": propulsion.to_dict(),
+			"conditions": vessel_conditions.duplicate(),
+			"damage_applied_until": damage_applied_until,
 		},
+		"economy": {"funds": funds},
+		"provisions": provisions.to_dict(),
+		"rescue": {"count": rescue_count, "last": last_rescue.duplicate(true)},
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -229,6 +267,31 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 	state.propulsion = PropulsionState.from_dict(vessel.get("propulsion"), errors)
 	if state.propulsion == null:
 		return null
+	var conditions: Variant = vessel.get("conditions")
+	if not conditions is Dictionary or not _is_finite_number(vessel.get("damage_applied_until")):
+		errors.append("missing or invalid vessel condition")
+		return null
+	for id: Variant in conditions:
+		if not id is String or not _is_finite_number(conditions[id]):
+			errors.append("invalid vessel condition")
+			return null
+		state.vessel_conditions[id] = clampf(float(conditions[id]), 0.0, VesselCondition.FULL)
+	state.damage_applied_until = float(vessel.damage_applied_until)
+
+	var economy: Variant = data.get("economy")
+	if not economy is Dictionary or not _is_finite_number(economy.get("funds")) or int(economy.funds) < 0:
+		errors.append("missing or invalid funds")
+		return null
+	state.funds = int(economy.funds)
+	state.provisions = Provisions.from_dict(data.get("provisions"), errors)
+	if state.provisions == null:
+		return null
+	var rescue: Variant = data.get("rescue")
+	if not rescue is Dictionary or not _is_finite_number(rescue.get("count")) or not rescue.get("last", {}) is Dictionary:
+		errors.append("missing or invalid rescue record")
+		return null
+	state.rescue_count = maxi(int(rescue.count), 0)
+	state.last_rescue = (rescue.get("last", {}) as Dictionary).duplicate(true)
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:

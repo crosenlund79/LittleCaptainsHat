@@ -21,6 +21,8 @@ signal chart_requested
 signal sleep_requested
 signal helm_requested
 signal boatyard_requested
+## The provisions station (cabin) was used.
+signal provisions_requested
 signal message_requested(text: String)
 ## Prompt text for the focused interactable, or "" when nothing is in range.
 signal interaction_prompt_changed(prompt: String)
@@ -57,6 +59,8 @@ func _ready() -> void:
 	for node in find_children("*", "Interactable", true, false):
 		(node as Interactable).interacted.connect(_on_interacted)
 	AudioManager.play_ambience(ambience)
+	show_condition()
+	GameSession.condition_changed.connect(func(_percent: float) -> void: show_condition())
 	_update_mooring()
 	GameSession.voyage_started.connect(_update_mooring)
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
@@ -71,6 +75,13 @@ func apply_visual_profile(profile: VesselVisualProfile) -> void:
 	var rig := get_node_or_null("SailRig") as SailRig
 	if rig:
 		rig.apply_profile(profile)
+
+
+## Shows the boat's wear and damage over its art (VesselVisual.set_condition).
+func show_condition() -> void:
+	var visual := get_node_or_null("Visual") as VesselVisual
+	if visual:
+		visual.set_condition(GameSession.get_condition(), "%s/%s" % [GameSession.get_vessel_id(), area_id])
 
 
 ## A spawn point's position, or Vector2.INF when it does not exist.
@@ -133,6 +144,8 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			helm_requested.emit()
 		&"boatyard":
 			boatyard_requested.emit()
+		&"provisions":
+			provisions_requested.emit()
 		&"pet":
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:

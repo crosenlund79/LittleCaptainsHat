@@ -63,6 +63,11 @@ static var _default: VesselProfile
 ## A course change larger than this restarts the averaging from the new heading.
 @export_range(0.0, 180.0, 1.0) var heading_reset_deg := 30.0
 
+@export_group("Seaworthiness")
+## Weather damage multiplier (1.0 = the reference boat). Below 1 the boat takes
+## heavy weather better, above 1 worse. See WeatherDamage.
+@export_range(0.25, 3.0, 0.05) var weather_damage_factor := 1.0
+
 
 static func get_default() -> VesselProfile:
 	if _default == null:

@@ -7,6 +7,8 @@ signal save_requested
 signal load_requested
 signal settings_requested
 signal main_menu_requested
+## Development builds only (DevTools): open the developer test panel.
+signal dev_tests_requested
 
 @onready var _resume: Button = %ResumeButton
 
@@ -17,6 +19,14 @@ func _ready() -> void:
 	%LoadButton.pressed.connect(load_requested.emit)
 	%SettingsButton.pressed.connect(settings_requested.emit)
 	%MainMenuButton.pressed.connect(main_menu_requested.emit)
+	# Developer tests: added only where the developer tools are enabled, so
+	# a player's build has no such button at all.
+	if DevTools.is_enabled():
+		var dev := Button.new()
+		dev.name = "DevTestsButton"
+		dev.text = "Developer tests (F9)"
+		dev.pressed.connect(dev_tests_requested.emit)
+		%MainMenuButton.get_parent().add_child(dev)
 
 
 func focus_default() -> void:

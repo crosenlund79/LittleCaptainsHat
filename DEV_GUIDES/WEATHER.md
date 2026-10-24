@@ -102,7 +102,7 @@ WeatherFixtures.use([
 WeatherFixtures.clear()
 ```
 
-`tests/helpers/weather_fixtures.gd` builds gales, thunderstorm-risk areas,
+`src/dev/weather_fixtures.gd` builds gales, thunderstorm-risk areas,
 thunderstorms and cyclones. With `use(events)` only these events exist; with
 `use(events, true)` they are added to the generated weather. The test runner's
 calm-wind fixture (`use_calm_wind()`) also switches the generated weather off.

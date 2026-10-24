@@ -9,6 +9,14 @@ extends ModalPanel
 ## SubViewport, so it shows exactly the art the game uses, sprites included,
 ## without any gameplay nodes. The comparison is computed from each boat's
 ## VesselProfile, so it always matches how the boats really sail.
+##
+## The panel has a fixed size (PANEL_SIZE, made smaller only when the window
+## is too small for it), like the chart's sidebar: choosing another boat only
+## changes the text inside it. Long details scroll in their own area, and the
+## services and buttons stay where they are.
+##
+## Harbour services for the boat you are aboard: Repair vessel (back to 100 %)
+## and Restock provisions, both free in this version (GameSession).
 
 signal vessel_chosen(vessel_id: StringName)
 
@@ -16,6 +24,9 @@ signal vessel_chosen(vessel_id: StringName)
 const COMPARE_WIND_KN := 12.0
 const COMPARE_ANGLES: Array[float] = [45.0, 90.0, 150.0]
 const PREVIEW_SIZE := Vector2i(560, 250)
+## The panel's fixed size, and the margin kept to the window edges.
+const PANEL_SIZE := Vector2(1180, 860)
+const WINDOW_MARGIN := 24.0
 
 var selected: VesselDefinition
 
@@ -30,6 +41,11 @@ var _compare_cells := {}
 @onready var _specs: GridContainer = %Specs
 @onready var _compare: GridContainer = %Comparison
 @onready var _choose: Button = %ChooseButton
+@onready var _panel: PanelContainer = %Panel
+@onready var _condition: Label = %ConditionLabel
+@onready var _service_status: Label = %ServiceStatus
+@onready var _repair: Button = %RepairButton
+@onready var _restock: Button = %RestockButton
 
 
 func _ready() -> void:
@@ -50,7 +66,54 @@ func _ready() -> void:
 	_build_comparison(catalog.vessels)
 	_choose.pressed.connect(func() -> void: vessel_chosen.emit(selected.id))
 	%CloseButton.pressed.connect(close)
+	_repair.pressed.connect(_on_repair)
+	_restock.pressed.connect(_on_restock)
+	resized.connect(_fit_panel)
+	_fit_panel()
 	select(GameSession.get_vessel_id())
+
+
+func _process(_delta: float) -> void:
+	if is_visible_in_tree():
+		_update_services()
+
+
+## Keeps the panel at PANEL_SIZE, or as large as the window allows.
+func _fit_panel() -> void:
+	var available := size - Vector2.ONE * WINDOW_MARGIN * 2.0
+	if available.x <= 0.0 or available.y <= 0.0:
+		available = PANEL_SIZE
+	_panel.custom_minimum_size = Vector2(minf(PANEL_SIZE.x, available.x), minf(PANEL_SIZE.y, available.y))
+
+
+## The panel's size on screen (tests compare it across selections).
+func get_panel_rect() -> Rect2:
+	return _panel.get_global_rect()
+
+
+func _update_services() -> void:
+	var provisions := GameSession.get_provisions()
+	var vessel := GameSession.get_vessel_definition()
+	_service_status.text = "Your boat, the %s: hull %s  ·  %s  ·  food %s, water %s" % [vessel.display_name,
+		VesselCondition.describe(GameSession.get_condition()), GameSession.format_money(GameSession.get_funds()),
+		Provisions.format_days(provisions.food_days), Provisions.format_days(provisions.water_days)]
+	var harbour := GameSession.is_moored_in_harbour()
+	_repair.disabled = not harbour or GameSession.get_condition() >= VesselCondition.FULL
+	_restock.disabled = not harbour or provisions.is_full()
+
+
+func _on_repair() -> void:
+	var error := GameSession.repair_vessel()
+	notify(error if not error.is_empty() else "The %s has been repaired: 100 %%, sound." % GameSession.get_vessel_definition().display_name)
+	_update_services()
+	if selected:
+		select(selected.id)
+
+
+func _on_restock() -> void:
+	var error := GameSession.restock_provisions()
+	notify(error if not error.is_empty() else "Provisions restocked: %s of food and water." % Provisions.format_days(Provisions.CAPACITY_DAYS))
+	_update_services()
 
 
 func _input(event: InputEvent) -> void:
@@ -80,6 +143,7 @@ func select(vessel_id: StringName) -> void:
 	_name.text = vessel.display_name
 	_hull.text = vessel.get_hull_type_name()
 	_description.text = vessel.description
+	_condition.text = "Condition %s" % VesselCondition.describe(GameSession.get_vessel_condition(vessel_id))
 	for child in _specs.get_children():
 		_specs.remove_child(child)
 		child.queue_free()
@@ -145,6 +209,7 @@ func _show_preview(vessel: VesselDefinition) -> void:
 	root.name = "Preview"
 	root.add_child(visual)
 	visual.apply(vessel.visual_profile)
+	visual.set_condition(GameSession.get_vessel_condition(vessel.id), "%s/exterior" % vessel.id)
 	var camera := Camera2D.new()
 	var fit := minf(PREVIEW_SIZE.x / visual.canvas.size.x, PREVIEW_SIZE.y / visual.canvas.size.y) * 0.95
 	camera.zoom = Vector2(fit, fit)

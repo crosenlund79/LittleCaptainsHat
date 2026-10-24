@@ -51,6 +51,8 @@ const MIN_ESTIMATE_SPEED_KN := 0.5
 const STOP_NONE := &""
 const STOP_ARRIVAL := &"arrival"
 const STOP_WARNING := &"warning"
+## The boat was lost and its crew rescued (the voyage ended mid-advance).
+const STOP_RESCUE := &"rescue"
 
 ## Tunable for balancing (and for tests).
 var game_seconds_per_real_second := DEFAULT_GAME_SECONDS_PER_REAL_SECOND
@@ -68,6 +70,8 @@ class AdvanceResult:
 	var stopped_by: StringName = &""
 	var warnings: Array[Dictionary] = []
 	var arrived_at: StringName = &""
+	## True when a rescue ended the voyage during this advance.
+	var rescued := false
 
 
 func _ready() -> void:
@@ -76,6 +80,7 @@ func _ready() -> void:
 	GameSession.voyage_course_changed.connect(_on_course_changed)
 	GameSession.state_replaced.connect(_on_state_replaced)
 	GameSession.vessel_changed.connect(_on_vessel_changed)
+	GameSession.rescued.connect(func(_info: Dictionary) -> void: invalidate_estimates())
 
 
 func _process(delta: float) -> void:
@@ -107,7 +112,11 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 		return result
 	var remaining := seconds
 	var guard := 1000000
-	while remaining > 1e-9 and guard > 0:
+	# A leftover below a microsecond is floating-point residue, not time: it
+	# must not run one more iteration, or an evaluation point exactly at the
+	# end would be handled in this call after one big step but in the next
+	# call after many small ones (and the results would differ).
+	while remaining > 1e-6 and guard > 0:
 		guard -= 1
 		var time := GameSession.get_game_time()
 		if not GameSession.is_underway():
@@ -122,7 +131,12 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 			next_grid = _next_grid_time(propulsion.last_evaluation_time)
 			# The weather is assessed at every grid point (and nowhere else on
 			# the way), so the result never depends on how time is chopped.
-			if _assess_weather(result) and stop_at_events:
+			var warned := _assess_weather(result)
+			if result.rescued:
+				# The voyage is over: never continue along it, whatever was asked.
+				result.stopped_by = STOP_RESCUE
+				break
+			if warned and stop_at_events:
 				result.stopped_by = STOP_WARNING
 				break
 		var speed := propulsion.speed_kn
@@ -370,6 +384,16 @@ func get_storms_near(geo: Vector2) -> Array[WeatherEvent]:
 ## true when a warning was given.
 func _assess_weather(result: AdvanceResult) -> bool:
 	if not GameSession.is_underway():
+		return false
+	# Damage for the time since it was last applied, sampled on the fixed
+	# WeatherDamage grid (so gust bursts between evaluation points count, and
+	# no stretch of time is counted twice).
+	var now := GameSession.get_game_time()
+	var damage := WeatherDamage.damage_between(GameSession.get_damage_applied_until(), now,
+		GameSession.get_vessel_position(), GameSession.get_wind_seed(), GameSession.get_vessel_profile().weather_damage_factor)
+	if GameSession.apply_weather_damage(damage, now):
+		if result:
+			result.rescued = true
 		return false
 	var here := get_weather_at_vessel()
 	GameSession.update_weather_exposure(here)

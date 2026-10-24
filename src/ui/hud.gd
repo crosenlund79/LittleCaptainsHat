@@ -16,6 +16,7 @@ signal chart_requested
 
 @onready var _area: Label = %AreaLabel
 @onready var _location: Label = %LocationLabel
+@onready var _status: Label = %StatusLabel
 @onready var _clock: Label = %ClockLabel
 @onready var _paused_badge: Control = %PausedBadge
 @onready var _clock_panel: Control = $ClockPanel
@@ -123,6 +124,9 @@ func refresh() -> void:
 	if not is_equal_approx(_warning_panel.offset_top, warning_top):
 		_warning_panel.offset_top = warning_top
 		_warning_panel.offset_bottom = warning_top + 124.0
+	_status.text = describe_status()
+	var alarm := GameSession.get_condition() <= 40.0 or GameSession.get_provisions().endurance_days() <= Provisions.LOW_DAYS
+	_status.modulate = Color(1.0, 0.72, 0.55) if alarm else Color.WHITE
 	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
 	_wind.text = describe_wind(wind)
 	if GameSession.is_underway():
@@ -159,6 +163,15 @@ func refresh() -> void:
 			_route_detail.text = "Plot a course at the chart table"
 		_propulsion.visible = false
 		_progress.visible = false
+
+
+## The boat's condition, money and stores in one compact line:
+## "Hull 87 % · Sound   €9,000   Food 12.5 d · Water 12.5 d".
+static func describe_status() -> String:
+	var provisions := GameSession.get_provisions()
+	return "Hull %s   %s   Food %.1f d · Water %.1f d" % [VesselCondition.describe(GameSession.get_condition()),
+		GameSession.format_money(GameSession.get_funds()), floorf(provisions.food_days * 10.0 + 1e-6) / 10.0,
+		floorf(provisions.water_days * 10.0 + 1e-6) / 10.0]
 
 
 ## "Wind WSW 14 kn" (where it blows from), with gusts when they stand out

@@ -19,6 +19,11 @@ const COLLISION_LAYER := 1 << 2
 ## Optional text shown as a notification when used.
 @export_multiline var message := ""
 @export var enabled := true
+## Which interactable wins when several are in reach (see InteractionSensor):
+## stations, doors and the berth keep the default 0; the ship's companion
+## uses -1, so it never takes the focus from a nearby station unless the
+## player stands clearly closer to it.
+@export var focus_priority := 0
 ## Node tinted while this interactable has focus.
 @export var highlight_target: NodePath = ^".."
 
@@ -72,3 +77,4 @@ func is_focused() -> bool:
 ## Point used to rank interactables by distance from the player.
 func get_interaction_position() -> Vector2:
 	return global_position
+

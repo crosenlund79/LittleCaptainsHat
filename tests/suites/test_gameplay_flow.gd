@@ -712,7 +712,14 @@ func _same_state(actual: Dictionary, expected: Dictionary) -> bool:
 	var drift: float = a.clock.game_time - b.clock.game_time
 	a.clock.erase("game_time")
 	b.clock.erase("game_time")
-	return a == b and drift >= 0.0 and drift < 20.0 * Simulation.game_seconds_per_real_second
+	# Food and water are used up with the game time that passed since loading.
+	var stores_ok := true
+	for key in ["food_days", "water_days"]:
+		var used: float = b.provisions[key] - a.provisions[key]
+		stores_ok = stores_ok and absf(used - drift / Provisions.DAY_SECONDS) < 1e-6
+		a.provisions.erase(key)
+		b.provisions.erase(key)
+	return a == b and stores_ok and drift >= 0.0 and drift < 20.0 * Simulation.game_seconds_per_real_second
 
 
 # --- Helpers -------------------------------------------------------------------------

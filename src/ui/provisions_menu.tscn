@@ -1,0 +1,121 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/provisions_menu.gd" id="1_prov"]
+
+[node name="ProvisionsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_prov")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.09, 0.12, 0.6)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Provisions"
+
+[node name="Intro" type="Label" parent="Center/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+autowrap_mode = 3
+
+[node name="Grid" type="GridContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 28
+theme_override_constants/v_separation = 8
+columns = 3
+
+[node name="FoodTitle" type="Label" parent="Center/Panel/VBox/Grid"]
+layout_mode = 2
+text = "Food"
+
+[node name="FoodValue" type="Label" parent="Center/Panel/VBox/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+[node name="FoodLevel" type="Label" parent="Center/Panel/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+
+[node name="WaterTitle" type="Label" parent="Center/Panel/VBox/Grid"]
+layout_mode = 2
+text = "Water"
+
+[node name="WaterValue" type="Label" parent="Center/Panel/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+[node name="WaterLevel" type="Label" parent="Center/Panel/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+
+[node name="EnduranceTitle" type="Label" parent="Center/Panel/VBox/Grid"]
+layout_mode = 2
+text = "Endurance"
+
+[node name="EnduranceValue" type="Label" parent="Center/Panel/VBox/Grid"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+[node name="EnduranceNote" type="Label" parent="Center/Panel/VBox/Grid"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "the scarcer of the two"
+
+[node name="Note" type="Label" parent="Center/Panel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 2
+
+[node name="RestockButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+text = "Restock provisions (free)"
+
+[node name="CloseButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Close"

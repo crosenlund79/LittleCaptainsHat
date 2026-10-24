@@ -743,7 +743,7 @@ underway and at departure:
 ### Tests and fixtures
 
 `WeatherModel.fixture_events` adds hand-made events (built by
-`tests/helpers/weather_fixtures.gd`); `generated_enabled = false`, or a
+`src/dev/weather_fixtures.gd`); `generated_enabled = false`, or a
 `WindField.test_override` (the calm-wind fixture), switches the generated
 weather off so older suites keep exact numbers.
 

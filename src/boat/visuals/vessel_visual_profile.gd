@@ -57,6 +57,17 @@ const SLOT_FILES := {
 @export var cabin_base: Texture2D
 @export var furniture: Texture2D
 @export var cabin_details: Texture2D
+@export_group("Damage")
+## Optional drawn wear/damage overlays per condition band (transparent PNGs on
+## the area's art canvas). Empty: the procedural marks are used. Files named
+## damage_<worn|damaged|critical>.png in <art_folder>/<deck|cabin>/ are picked
+## up automatically, like the slot sprites.
+@export var deck_damage_worn: Texture2D
+@export var deck_damage_damaged: Texture2D
+@export var deck_damage_critical: Texture2D
+@export var cabin_damage_worn: Texture2D
+@export var cabin_damage_damaged: Texture2D
+@export var cabin_damage_critical: Texture2D
 
 
 ## The sprite for `slot`, or null to keep the procedural art.
@@ -88,3 +99,17 @@ func get_source(slot: StringName) -> String:
 		return "profile"
 	var path := conventional_path(slot)
 	return "file" if not path.is_empty() and ResourceLoader.exists(path) else "procedural"
+
+
+## The drawn damage overlay for `area` ("deck"/"cabin") in condition `band`,
+## or null to use the procedural marks (always null when sound).
+func get_damage_texture(area: String, band: StringName) -> Texture2D:
+	if procedural_only or band == VesselCondition.BAND_SOUND:
+		return null
+	var assigned: Variant = get("%s_damage_%s" % [area, band])
+	if assigned is Texture2D:
+		return assigned
+	if art_folder.is_empty():
+		return null
+	var path := art_folder.path_join(area).path_join("damage_%s.png" % band)
+	return load(path) as Texture2D if ResourceLoader.exists(path) else null

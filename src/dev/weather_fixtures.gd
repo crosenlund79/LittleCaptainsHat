@@ -1,9 +1,10 @@
 class_name WeatherFixtures
 extends RefCounted
-## Test helper: deterministic synthetic weather events, added to the one
-## weather model as fixtures (WeatherModel.fixture_events). Events made here
-## behave exactly like generated ones (same WeatherEvent code), but their
-## place, time and strength are chosen by the test.
+## Deterministic synthetic weather events, added to the one weather model as
+## fixtures (WeatherModel.fixture_events), for the automated tests and the
+## development-only test tools (DevTools). Events made here behave exactly
+## like generated ones (same WeatherEvent code), but their place, time and
+## strength are chosen by the caller. Never used by normal gameplay.
 ##
 ##   WeatherFixtures.use([WeatherFixtures.gale(...)])   # only these events
 ##   WeatherFixtures.clear()                            # back to normal

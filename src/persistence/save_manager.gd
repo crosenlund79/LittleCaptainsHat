@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 6
+const SAVE_VERSION := 7
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -242,6 +242,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_4_to_5(data)
 	if from_version < 6:
 		data = _migrate_5_to_6(data)
+	if from_version < 7:
+		data = _migrate_6_to_7(data)
 	return data
 
 
@@ -338,6 +340,28 @@ func _migrate_5_to_6(data: Dictionary) -> Dictionary:
 	if navigation is Dictionary and navigation.get("voyage") is Dictionary:
 		navigation.voyage["warned_conditions"] = []
 	data["version"] = 6
+	return data
+
+
+## Version 7 (Iteration 005b) adds money, provisions, boat condition and the
+## rescue record. Older games start the new systems as a new game does:
+## EUR 10,000, 14 days of food and water, every boat in perfect condition, no
+## rescues. Weather damage counts from the saved time on (never backwards).
+## Everything else, including a voyage underway, is kept as it was.
+func _migrate_6_to_7(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("clock") is Dictionary:
+		return data
+	var game_time: Variant = session.clock.get("game_time")
+	var now := float(game_time) if game_time is float or game_time is int else SessionState.get_start_time()
+	var vessel: Variant = session.get("vessel")
+	if vessel is Dictionary:
+		vessel["conditions"] = {}
+		vessel["damage_applied_until"] = now
+	session["economy"] = {"funds": SessionState.STARTING_FUNDS}
+	session["provisions"] = Provisions.new().to_dict()
+	session["rescue"] = {"count": 0, "last": {}}
+	data["version"] = 7
 	return data
 
 

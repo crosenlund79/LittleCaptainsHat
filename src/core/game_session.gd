@@ -29,8 +29,24 @@ signal companion_moved(spot: StringName)
 ## Something the player should be told that is not an error of their action
 ## (e.g. an old save's route had to be dropped).
 signal notice(text: String)
+## The active boat's condition (percent) changed (weather, repair, rescue).
+signal condition_changed(percent: float)
+signal funds_changed(funds: int)
+## Food or water changed noticeably (restock, a new warning level; the
+## steady consumption is read every frame by the UI instead).
+signal provisions_changed
+## Stores ran low (Provisions.WARN_*): given once per level until restocked.
+signal provisions_warning(level: int, text: String)
+## The boat was lost and its crew rescued: the voyage is over and the boat is
+## back in the home harbour. `info` = {"fee", "funds_after", "port_id", "from"}.
+signal rescued(info: Dictionary)
 
 const START_LOCATION := &"copenhagen"
+## Where a rescued boat is brought back to (fixed in this version).
+const HOME_PORT := &"copenhagen"
+## Where the player is put aboard after a rescue (a cabin spawn every boat has).
+const RESCUE_AREA := SessionState.AREA_INTERIOR
+const RESCUE_SPAWN := &"start"
 const START_AREA := SessionState.AREA_INTERIOR
 const START_SPAWN := &"start"
 
@@ -390,6 +406,8 @@ func depart() -> String:
 	var route := _state.planned_route
 	if route == null or not route.has_path():
 		return "Plot a course at the chart table first."
+	if _state.provisions.is_empty():
+		return "You are out of food or water. Restock your provisions before setting sail."
 	var location := get_location()
 	if location == null or route.origin_port_id != location.id:
 		return "The planned course does not start here."
@@ -398,6 +416,7 @@ func depart() -> String:
 		return problem
 	_state.voyage = Voyage.create(route, _state.game_time)
 	_state.weather_exposure.reset(_state.game_time)
+	_state.damage_applied_until = _state.game_time
 	_state.propulsion = PropulsionState.new()  # evaluated by Simulation on voyage_started
 	_state.planned_route = null
 	_state.vessel_status = SessionState.STATUS_UNDERWAY
@@ -434,10 +453,15 @@ func change_course(destination_id: StringName, waypoints: Array[Vector2]) -> Str
 # --- Simulation hooks (called by Simulation only) ------------------------------------
 
 ## Applies a simulation step: new game time and, when underway, new progress.
+## Food and water are used up with the elapsed game time, wherever the boat is.
 func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 	if _state == null:
 		return
+	var elapsed := game_time - _state.game_time
 	_state.game_time = game_time
+	if elapsed > 0.0:
+		_state.provisions.consume(elapsed / Provisions.DAY_SECONDS)
+		_check_provisions()
 	# The companion's resting schedule runs on the same clock (pure function of time).
 	if _state.companion.advance_to(game_time):
 		companion_moved.emit(_state.companion.spot)
@@ -497,6 +521,193 @@ func record_weather_warning(condition_id: StringName) -> void:
 
 func is_weather_warned(condition_id: StringName) -> bool:
 	return _state != null and _state.voyage != null and condition_id in _state.voyage.warned_conditions
+
+
+# --- Condition, repair and rescue ---------------------------------------------------
+
+## The active boat's condition in percent (100 = perfect).
+func get_condition() -> float:
+	return _state.get_condition(_state.vessel_id) if _state else VesselCondition.FULL
+
+
+## Condition of any boat (each boat keeps its own, also when not sailed).
+func get_vessel_condition(vessel_id: StringName) -> float:
+	return _state.get_condition(vessel_id) if _state else VesselCondition.FULL
+
+
+## Weather damage has been applied up to this game time (Simulation only).
+func get_damage_applied_until() -> float:
+	return _state.damage_applied_until if _state else 0.0
+
+
+## Applies weather damage for the voyage up to `until` (Simulation only, at
+## its evaluation points). When the condition reaches zero the crew is rescued
+## at once (see rescue()). Returns true if that happened.
+func apply_weather_damage(percent: float, until: float) -> bool:
+	if _state == null or not is_underway():
+		return false
+	_state.damage_applied_until = maxf(_state.damage_applied_until, until)
+	_has_unsaved_changes = true
+	if percent <= 0.0:
+		return false
+	var before := get_condition()
+	_state.set_condition(_state.vessel_id, before - percent)
+	condition_changed.emit(get_condition())
+	if get_condition() <= 0.0:
+		rescue()
+		return true
+	return false
+
+
+## Repairs and restocking are harbour services: moored or arrived in port.
+func is_moored_in_harbour() -> bool:
+	return _state != null and not is_underway() and get_location() != null
+
+
+## Repairs the active boat to 100 % (free in this version). Harbour only.
+## Returns "" on success, otherwise the reason.
+func repair_vessel() -> String:
+	if not is_moored_in_harbour():
+		return "Repairs can only be made while moored in harbour."
+	if get_condition() >= VesselCondition.FULL:
+		return "The %s is already in perfect condition." % get_vessel_definition().display_name
+	_state.set_condition(_state.vessel_id, VesselCondition.FULL)
+	_has_unsaved_changes = true
+	condition_changed.emit(get_condition())
+	return ""
+
+
+## Rescue at sea: the boat's condition reached zero. One complete transaction,
+## applied to the state at once, so a save can never hold half of it: the
+## voyage ends, the boat and crew are brought back to the home harbour, the
+## boat is repaired, and the fee (at most what the player has) is paid. The
+## companion, provisions, other boats and the clock are kept; time acceleration
+## drops to 1× (a player pause stays as it was). Does nothing if not underway,
+## so one incident can only ever be rescued once.
+func rescue() -> void:
+	if _state == null or not is_underway():
+		return
+	var port := PortCatalog.get_default().get_port(HOME_PORT)
+	var from := _state.vessel_position
+	var fee := mini(SessionState.RESCUE_FEE, _state.funds)
+	_state.funds -= fee
+	_state.voyage = null
+	_state.planned_route = null
+	_state.vessel_status = SessionState.STATUS_MOORED
+	_state.location_id = port.id
+	_state.vessel_position = port.get_geo_position()
+	_state.propulsion = PropulsionState.new()
+	_state.weather_exposure.reset(_state.game_time)
+	_state.damage_applied_until = _state.game_time
+	_state.set_condition(_state.vessel_id, VesselCondition.FULL)
+	_state.boat_area = RESCUE_AREA
+	_state.spawn_point = RESCUE_SPAWN
+	_state.has_player_position = false
+	_state.time_scale = 1
+	_state.rescue_count += 1
+	var info := {"time": _state.game_time, "fee": fee, "funds_after": _state.funds, "port_id": String(port.id),
+		"from": {"lon": from.x, "lat": from.y}}
+	_state.last_rescue = info.duplicate(true)
+	_has_unsaved_changes = true
+	time_scale_changed.emit(1)
+	propulsion_changed.emit(&"")
+	route_changed.emit(null)
+	condition_changed.emit(get_condition())
+	funds_changed.emit(_state.funds)
+	rescued.emit(info)
+
+
+func get_rescue_count() -> int:
+	return _state.rescue_count if _state else 0
+
+
+func get_last_rescue() -> Dictionary:
+	return _state.last_rescue.duplicate(true) if _state else {}
+
+
+## Development tools only (DevTools): sets the active boat's condition.
+## Zero is not allowed here; losing the boat is left to the real weather path.
+func set_condition_for_testing(percent: float) -> void:
+	if _state == null:
+		return
+	_state.set_condition(_state.vessel_id, clampf(percent, 0.1, VesselCondition.FULL))
+	_has_unsaved_changes = true
+	condition_changed.emit(get_condition())
+
+
+# --- Money ----------------------------------------------------------------------------
+
+## Euros (whole).
+func get_funds() -> int:
+	return _state.funds if _state else 0
+
+
+static func format_money(euros: int) -> String:
+	var digits := str(absi(euros))
+	var grouped := ""
+	for i in digits.length():
+		if i > 0 and (digits.length() - i) % 3 == 0:
+			grouped += ","
+		grouped += digits[i]
+	return "€%s" % grouped
+
+
+# --- Provisions -----------------------------------------------------------------------
+
+## A copy of the food and water aboard.
+func get_provisions() -> Provisions:
+	return _state.provisions.duplicate_provisions() if _state else Provisions.new()
+
+
+func get_food_days() -> float:
+	return _state.provisions.food_days if _state else 0.0
+
+
+func get_water_days() -> float:
+	return _state.provisions.water_days if _state else 0.0
+
+
+## Fills food and water to capacity (free in this version). Harbour only.
+## Returns "" on success, otherwise the reason.
+func restock_provisions() -> String:
+	if not is_moored_in_harbour():
+		return "Provisions can only be restocked while moored in harbour."
+	if _state.provisions.is_full():
+		return "Food and water are already full."
+	_state.provisions.restock()
+	_has_unsaved_changes = true
+	provisions_changed.emit()
+	return ""
+
+
+## Development tools only (DevTools): sets food and water to `days`.
+func set_provisions_for_testing(days: float) -> void:
+	if _state == null:
+		return
+	_state.provisions.food_days = clampf(days, 0.0, Provisions.CAPACITY_DAYS)
+	_state.provisions.water_days = clampf(days, 0.0, Provisions.CAPACITY_DAYS)
+	_state.provisions.warning_level = Provisions.WARN_NONE
+	_has_unsaved_changes = true
+	_check_provisions()
+	provisions_changed.emit()
+
+
+## Gives each low-stores warning once (until the next restock).
+func _check_provisions() -> void:
+	var needed := _state.provisions.needed_warning()
+	if needed <= _state.provisions.warning_level:
+		return
+	_state.provisions.warning_level = needed
+	var text := ""
+	match needed:
+		Provisions.WARN_LOW:
+			text = "Provisions are running low: %s of food and water left." % Provisions.format_days(_state.provisions.endurance_days())
+		Provisions.WARN_CRITICAL:
+			text = "Provisions are critically low: less than a day of food or water left."
+		_:
+			text = "You have run out of food or water. Head for a harbour and restock before the next passage."
+	provisions_changed.emit()
+	provisions_warning.emit(needed, text)
 
 
 # --- Internals ------------------------------------------------------------------------
