@@ -12,16 +12,49 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 004b: Cabin Refinement, Companion Animation & Developer
-Workflow**, a focused follow-up to Iteration 004 (three boats, the boatyard,
-sprite-ready vessel art). Earlier iterations built:
+Current state: **Iteration 005a: The Dangerous Sea**. The sea now has real
+weather hazards: moving gale areas, thunderstorms that form, peak and die away,
+and seasonal tropical cyclones far from Europe, all from **one deterministic
+weather model** that drives the boat's speed, the chart, the HUD, the warnings
+and sleep. Earlier iterations built:
+- 004b: the owner's cat artwork, the refined catamaran cabin, developer guides;
+- 004: three boats, the boatyard, sprite-ready vessel art;
 - 003b: ship's cat or dog, adjustable sleep, sail check, chart sidebar, simulation
   pause;
 - 003: wind, sails, automatic propulsion;
 - 002: sea routes, voyages, game clock, weather warnings;
 - 001: boat, menus, save/load, settings, audio.
 
-Iteration 004b adds:
+Iteration 005a adds:
+- **one weather model** (`WeatherModel`): every wind value in the game, from the
+  sails to the ETA, comes from it. The old demonstration circles are gone;
+- **moving, irregular weather areas**: strong-wind and gale areas over the
+  Atlantic, Biscay, North Sea, Baltic, the Mistral and the Meltemi. They form,
+  strengthen, drift, change shape and fade over a day or two;
+- **thunderstorms**: areas of thunderstorm risk where storm cells develop, peak
+  and dissipate within hours, with outflow winds and gust bursts. Strong cells
+  are **severe squalls**;
+- **hazard levels**: Normal, Caution, Dangerous, Severe, from sustained wind and
+  gusts;
+- **warnings** at the boat, for storms nearby and for weather up to about
+  6 hours ahead on the course. Each is given once, and again only if it gets
+  worse. They wake you and drop time to 1×. Storms that have not formed yet
+  cannot be foreseen;
+- **tropical cyclone seasons** per ocean basin and hemisphere, following the game
+  date, and the occasional active cyclone, never in European waters;
+- **the chart's weather overlay and Weather tab**: real outlines with labels,
+  glyphs and outline styles (not colour alone), a legend, and the hazards along
+  the course;
+- **storm sounds**: a wind loop that rises with the wind and distant thunder near
+  storms (placeholders, on the Ambience bus).
+
+Weather hazards do not damage the boat yet: there is no boat condition, damage,
+rescue, money or provisions (planned for Iteration 005b).
+
+![Weather on the chart near Copenhagen](docs/screenshots/70_weather_chart_copenhagen.png)
+![The Weather tab with its legend](docs/screenshots/71_weather_tab.png)
+
+Iteration 004b added:
 - **the ship's cat drawn by the owner** (`Visuals/Cat/`). It rests, naps on its
   back, stretches now and then, looks up when you come close, and sits up purring
   with hearts when petted. The poses are configured in data, so the art can be
@@ -142,11 +175,16 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    1–12 hours with the arrows. The dialog shows when you will wake. The boat sails
    on while you sleep, and you are woken early on arrival or when a weather warning
    comes in. Wherever you went to sleep, you wake in the cabin beside the V-berth.
-6. **Weather.** The chart shows demonstration weather areas (fair, caution, danger).
-   When your course will reach a caution or danger area within **5 hours of sailing**
-   at the current speed, a warning appears with **View chart** and **Dismiss**.
-   Accelerated time drops back to 1×. These areas only produce warnings; the
-   boat's speed comes from the wind field.
+6. **Weather.** The chart shows the weather as it is now: strong-wind and gale
+   areas, thunderstorm-risk areas, thunderstorms and (outside Europe) tropical
+   cyclones, each with its outline, label and symbol, and a legend in the
+   Weather tab. Weather moves and changes with time. The boat sails in that
+   weather: a gale is a lot of wind. A warning appears with **View chart** and
+   **Dismiss** when the weather at the boat becomes hazardous, when a
+   thunderstorm is close, or when hazardous weather lies within about
+   **6 hours of sailing** on the course. Accelerated time drops back to 1× and a
+   sleep is cut short. The forecast only knows weather that already exists:
+   a thunderstorm can form with little warning.
 7. **Change course at sea.** Open the chart while underway, edit the remaining course
    or pick another destination, and press **Change course**. The new course starts
    where the boat is. If no sea route exists, the current voyage is kept unchanged.
@@ -181,6 +219,12 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   It pauses with the pause menu and runs in the cabin, on deck and on the chart.
 - **Voyages**: departure, continuous travel, arrival, sleeping, weather warnings and
   changing course at sea.
+- **Weather** (Iteration 005a): one deterministic model for all of Europe and the
+  tropical basins. Moving gale areas, thunderstorm risk areas with storm cells
+  and gusts, seasonal tropical cyclones; hazard levels Normal / Caution /
+  Dangerous / Severe; deduplicated warnings at the boat, nearby and along the
+  course; storm sounds. The same weather at 1×, 20×, while sleeping and after
+  loading.
 - **Wind** for all of Europe (25°W–37°E, 33–72°N): deterministic and continuous,
   changing slowly with time, with plausible regional character. Examples: westerlies
   in the Atlantic, northerlies off Portugal, the Mistral and the Meltemi, and a
@@ -211,13 +255,18 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - the game clock and time acceleration;
   - the boat's position and status, and the exact course being sailed with the
     progress along it;
-  - sail or engine and the automatic controller's state, and the wind seed;
-  - the weather warnings already given;
+  - sail or engine and the automatic controller's state, and the wind seed (the
+    weather itself is recomputed from it, so it is the same after loading);
+  - the weather warnings already given, and how long the boat has been in its
+    current weather (for Iteration 005b);
   - the boat area and player position;
   - the ship's companion (cat or dog, resting spot and when it next moves);
   - the boat you sail (by its stable id, e.g. `halcyon_40`).
 - Loading resumes exactly where you saved. **No time passes while the game is closed.**
-- Save format version 5. **Older saves still load:**
+- Save format version 6. **Older saves still load:**
+  - Iteration 004/004b saves (v5) get the new weather section. Their old
+    warnings belonged to the retired demonstration areas and are cleared, so
+    the new weather is announced normally.
   - Iteration 003b saves (v4) load aboard the Starling 33 monohull.
   - A save naming a boat this version does not know loads aboard the Starling 33,
     and you are told.
@@ -243,7 +292,7 @@ Borderless fullscreen. Interface scale 80–130% scales menus and HUD only.
 assets/          branding, fonts (Barlow, OFL), UI theme, placeholder audio,
                  vessel art folders and templates (assets/vessels/<id>/)
 data/navigation/ ports, coastlines, navigation raster and sea-route graph (generated)
-data/weather/    demonstration weather areas, wind climatology
+data/weather/    weather event zones and cyclone basins (weather_events.json), wind climatology
 data/vessel/     sailing performance profiles (polar, engine, controller thresholds)
 data/vessels/    vessel definitions, the vessel catalog and visual profiles
 src/app/         application shell (main scene) and screen transitions
@@ -257,12 +306,13 @@ Visuals/Cat/     the owner's original cat drawings (used directly by the game)
 DEV_GUIDES/      practical developer guides (sprites, companion, vessel art, audio, modding)
 src/player/      player token
 src/interaction/ interactables and the player's interaction sensor
-src/navigation/  ports, routes, voyages, projection, sea router, chart screen, chart wind layer
+src/navigation/  ports, routes, voyages, projection, sea router, chart screen, chart wind layer,
+                 weather overlay style and legend
 src/sailing/     propulsion state and the automatic sail/engine controller
-src/weather/     weather conditions, wind field
+src/weather/     the weather model, weather events, samples, exposure; the background wind field
 src/ui/          menus, HUD, time controls, new-game and sleep dialogs, notifications, dialogs
 src/audio/       audio manager
-src/persistence/ save manager (format v5 + migration)
+src/persistence/ save manager (format v6 + migration)
 src/settings/    settings manager
 tests/           self-contained test runner and suites
 tools/           generators for the theme, logo exports, placeholder audio, navigation data,
@@ -276,8 +326,8 @@ templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
-[ITERATION_004B_REPORT.md](ITERATION_004B_REPORT.md) (and the reports for
-[004](ITERATION_004_REPORT.md),
+[ITERATION_005A_REPORT.md](ITERATION_005A_REPORT.md) (and the reports for
+[004b](ITERATION_004B_REPORT.md), [004](ITERATION_004_REPORT.md),
 [003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
 [003](ITERATION_003_REPORT.md),
 [002](ITERATION_002_REPORT.md) and [001](ITERATION_001_REPORT.md)) for what was
@@ -285,11 +335,14 @@ built and verified.
 
 ## Known limitations
 
-- The wind is synthetic, not real weather and not a forecast. Sailing is simplified:
+- The wind and weather are synthetic, not real weather and not a forecast. Sailing is simplified:
   - there is no manual sail or engine control (the helm only asks for a fresh
     check), no tacking (a head-to-wind leg is motored), and no fuel;
   - there are no currents, waves, depth or tides;
-  - the weather areas are static demonstration data and only produce warnings;
+  - weather changes the wind the boat sails in, but does no damage yet (no boat
+    condition, rescue, money or provisions: Iteration 005b). There are no
+    waves, rain or visibility effects;
+  - the chart shows the weather now; it does not animate a forecast;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
 - The companion only rests and changes pose (no walking, no needs) and stays in the
@@ -324,4 +377,4 @@ built and verified.
   **not for navigation**.
 - Font: [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, SIL Open Font License
   (`assets/fonts/OFL.txt`).
-- Logo, UI, scenes, weather areas and placeholder sounds were made for this project.
+- Logo, UI, scenes, weather data and placeholder sounds were made for this project.

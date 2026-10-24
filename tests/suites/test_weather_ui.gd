@@ -67,6 +67,10 @@ func _test_chart_overlay() -> void:
 	var now := GameSession.get_game_time()
 	t.check(view.weather_time == floorf(now / MapView.WEATHER_REFRESH_SECONDS) * MapView.WEATHER_REFRESH_SECONDS,
 		"[overlay] the chart shows the weather at the current game time (5-minute steps)")
+	var legacy := ProjectSettings.get_global_class_list().filter(func(c: Dictionary) -> bool:
+		return c["class"] in [&"WeatherCatalog", &"WeatherCondition"])
+	t.check(legacy.is_empty() and not ResourceLoader.exists("res://data/weather/demo_conditions.tres") and not "WEATHER_COLORS" in view,
+		"[overlay] the old demonstration weather circles are gone (no catalog, no data, no circle drawing)")
 	var shapes := view.get_weather_shapes()
 	var ids := {}
 	for shape in shapes:
@@ -89,7 +93,7 @@ func _test_chart_overlay() -> void:
 		"[overlay] areas are labelled by kind, not only coloured")
 	t.check(ids.has("ui_gale") and ids.ui_gale.has("core") and ids.has("ui_risk") and not ids.ui_risk.has("core"),
 		"[overlay] the gale shows its core; the risk area has none")
-	await t.screenshot("61_weather_chart_copenhagen")
+	await t.screenshot("70_weather_chart_copenhagen")
 
 	# Pan and zoom do not change what is drawn (shapes are in map space).
 	var before: Vector2 = ids.ui_storm.center if ids.has("ui_storm") else Vector2.ZERO
@@ -167,7 +171,7 @@ func _test_weather_tab() -> void:
 		styles["%s|%s|%s" % [WeatherStyle.style(kind).outline, WeatherStyle.style(kind).core, WeatherStyle.style(kind).label]] = true
 	t.check(styles.size() == 4 and WeatherStyle.style(WeatherEvent.KIND_THUNDER_RISK).outline == "dashed",
 		"[tab] each kind has its own label, glyph and outline style, not only a colour")
-	await t.screenshot("62_weather_tab")
+	await t.screenshot("71_weather_tab")
 	map.show_tab(WorldMap.TAB_COURSE)
 
 
@@ -184,7 +188,7 @@ func _test_hud_and_audio() -> void:
 	var text := (app.hud.find_child("WindLabel", true, false) as Label).text
 	t.check(text.contains("Gale") and text.contains("gusts"), "[hud] in a gale the HUD shows the wind, the gusts and 'Gale' (%s)" % text)
 	t.check(here.hazard >= WeatherModel.HAZARD_DANGEROUS and here.gust_kn > here.speed_kn, "[hud] the gale is dangerous here, with gusts above the wind")
-	await t.screenshot("63_hud_gale")
+	await t.screenshot("72_hud_gale")
 
 	app.update_weather_audio()
 	t.check(app.is_storm_audio_playing(), "[audio] the storm-wind loop plays aboard in a gale")

@@ -33,6 +33,8 @@ right bus; scenes only say *what* to play. `SettingsManager` sets the bus volume
 | `test_sfx_blip.wav` | SFX | interaction feedback; SFX test button | `interaction_sound` of every deck and cabin scene |
 | `ui_click.wav` | UI | every button press; UI test button | `App.ui_click_sound` (`src/app/app.tscn`) |
 | `test_music_arpeggio.wav` | Music | the Music test button | `src/ui/settings_menu.tscn` |
+| `storm_wind.wav` | Ambience | strong-wind loop aboard, louder with more wind (from 20 kn), quieter below deck | `App.storm_wind_sound` (`src/app/app.gd`) |
+| `thunder.wav` | Ambience | distant thunder now and then near an active thunderstorm | `App.thunder_sound` |
 
 ## Replace a sound (shortest way)
 
@@ -64,11 +66,15 @@ three at once.
   - loop seamlessly;
   - have the same length in both files;
   - keep that loop setting (Import dock → Loop Mode: Forward → Reimport).
+- **The storm wind** (`storm_wind.wav`) also uses forward looping
+  (`edit/loop_mode=2` in `storm_wind.wav.import`) and must loop seamlessly. Its
+  volume follows the wind at the boat; see [WEATHER.md](WEATHER.md).
 
 ## Check it
 
 - Settings has a **Test** button for Music, Ambience, SFX and UI.
 - In the game: pet the cat (E), motor out of the harbour (engine on deck, quieter
   below), and walk between deck and cabin (ambience).
-- The automated tests check that the companion sound plays on the SFX bus, and
-  that the engine loops follow the propulsion state.
+- The automated tests check that the companion sound plays on the SFX bus,
+  that the engine loops follow the propulsion state, and that the storm-wind
+  loop plays in a gale and stops when the wind drops (`test_weather_ui`).

@@ -47,7 +47,9 @@ func _write() -> void:
 	SaveManager.save_to_slot(2, GameSession.get_state_snapshot())
 	var file := FileAccess.open(EXPECT_PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify({"progress_nm": GameSession.get_voyage_progress_nm(),
-		"propulsion": GameSession.get_propulsion().to_dict(), "companion": GameSession.get_companion().to_dict()}, "", true, true))
+		"propulsion": GameSession.get_propulsion().to_dict(), "companion": GameSession.get_companion().to_dict(),
+		"weather": _weather_snapshot(GameSession.get_vessel_position(), GameSession.get_game_time(), GameSession.get_wind_seed()),
+		"exposure": GameSession.get_weather_exposure().to_dict()}, "", true, true))
 	file.close()
 	print("write phase done")
 
@@ -76,6 +78,13 @@ func _read() -> bool:
 		ok = _expect(is_equal_approx(state.game_time, SessionState.get_start_time() + 3.0 * 3600.0), "game clock restored") and ok
 		ok = _expect(state.time_scale == 5, "time acceleration restored") and ok
 		ok = _expect(state.vessel_id == &"petrel_36", "active vessel restored (%s)" % state.vessel_id) and ok
+		# The weather is recomputed from the seed in this new process: the same
+		# storms in the same places, and the same weather at the boat.
+		var weather := _weather_snapshot(state.vessel_position, state.game_time, state.wind_seed)
+		ok = _expect(JSON.parse_string(JSON.stringify(weather, "", true, true)) == expected.weather,
+			"the same weather after restart (%d events active, %.1f kn at the boat)" % [weather.events.size(), weather.here.speed_kn]) and ok
+		ok = _expect(JSON.parse_string(JSON.stringify(state.weather_exposure.to_dict(), "", true, true)) == expected.exposure,
+			"weather exposure record restored") and ok
 	# Clean up the scratch files.
 	DirAccess.remove_absolute(SETTINGS_PATH)
 	DirAccess.remove_absolute(EXPECT_PATH)
@@ -85,6 +94,16 @@ func _read() -> bool:
 	SettingsManager.load_settings()
 	print("read phase: ", "PASS" if ok else "FAIL")
 	return ok
+
+
+## The weather at `geo` and every active event's place and strength.
+func _weather_snapshot(geo: Vector2, time: float, seed: int) -> Dictionary:
+	var model := WeatherModel.get_default()
+	var events := []
+	for event in model.active_events(time, seed):
+		var center := event.center_at(time)
+		events.append([String(event.id), center.x, center.y, event.radius_at(time), event.life_factor(time)])
+	return {"here": model.sample(geo, time, seed).to_dict(), "events": events}
 
 
 func _expect(condition: bool, description: String) -> bool:

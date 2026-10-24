@@ -378,6 +378,31 @@ func _test_warnings_and_dedup() -> void:
 	t.check(received.any(func(w: Dictionary) -> bool: return w.hazard >= WeatherModel.HAZARD_DANGEROUS), "[warnings] the danger level is part of the warning")
 	t.check(received.all(func(w: Dictionary) -> bool: return w.event_id == &"fx_storm"), "[warnings] they name the responsible event")
 
+	# Escalation: the same event is announced again only when it gets worse.
+	var here := PortCatalog.get_default().get_port(&"copenhagen").get_geo_position()
+	var level := func(peak: float) -> void:
+		WeatherFixtures.use([WeatherFixtures.gale("fx_level", here, 30.0, peak, START - 3600.0, 24.0 * 365.0)])
+	level.call(26.0)
+	received.clear()
+	Simulation.weather_warning.connect(on_warning)
+	GameSession.start_new_session()
+	GameSession.plan_route_to(&"kiel")
+	GameSession.depart()
+	var at_departure := received.map(func(w: Dictionary) -> String: return w.key)
+	level.call(40.0)
+	Simulation.advance(Simulation.EVALUATION_INTERVAL + 1.0)  # past the next evaluation point
+	var escalated := received.map(func(w: Dictionary) -> String: return w.key)
+	level.call(26.0)
+	Simulation.advance(2.0 * Simulation.EVALUATION_INTERVAL)
+	level.call(40.0)
+	Simulation.advance(2.0 * Simulation.EVALUATION_INTERVAL)
+	Simulation.weather_warning.disconnect(on_warning)
+	var all_keys := received.map(func(w: Dictionary) -> String: return w.key)
+	t.check(at_departure == ["fx_level>1"], "[warnings] strong winds at the boat are announced at departure (%s)" % [at_departure])
+	t.check(escalated == ["fx_level>1", "fx_level>2"], "[warnings] the same area turning dangerous is announced again (%s)" % [escalated])
+	t.check(all_keys == escalated, "[warnings] easing and worsening again to an announced level gives no repeat (%s)" % [all_keys])
+	WeatherFixtures.use([])
+
 
 ## One voyage through a moving thunderstorm and a gale, driven in different
 ## ways; meaningful outcomes must be identical.
