@@ -214,15 +214,23 @@ Representative trips (all pass, distances along the course):
 | `test_harbours` | 34 |
 | `test_harbour_chart` | 17 |
 
-- **Final full headless run** after the documentation commit: **2,162 checks passed, 0 failed**, exit code 0. This includes the new documents linked from `test_dev_guides`.
+- **Final full headless run: 2,162 checks, 2,162 passed, 0 failed, exit code 0.**
+  - It ran after the last code or test change (`test_dev_guides` listing the I006 documents). It is therefore the final implementation.
+  - Its log includes the checks that every link in `ITERATION_006_REPORT.md` and `WINDOWS_ACCEPTANCE_I006.md` resolves.
+  - Since then only documentation and screenshots have changed. Between `c343dc2` (D+E) and the final commit, the only non-documentation changes are `tests/restart_check.gd` and `tests/suites/test_dev_guides.gd`; there are no game-code changes.
 
 ## 14. Rendered test results
 
-- **Full rendered run** (Xvfb, OpenGL 3, Mesa llvmpipe, `--screenshots`): **2,168 checks passed, 0 failed**, exit code 0. It produced 121 screenshots.
-- **Screenshots in `docs/screenshots`:**
-  - the 10 new ones (108–117) were added;
-  - the 104 existing ones were refreshed from this run. The chart shots now show the larger harbour set.
-- The rendered run has 6 more checks than the headless one: checks that only run with a real display.
+- **Full rendered run** (Xvfb 1920×1080, OpenGL 3, Mesa llvmpipe, `--screenshots`): **2,168 checks, 2,168 passed, 0 failed, exit code 0.** It produced 121 screenshots.
+- **Covers the final game code.** No game file changed after it.
+  - It started before `test_dev_guides` was extended with the two I006 documents, so it does not contain those two link checks. Those are covered by the final headless run (§13).
+  - It also contains checks that only run with a real display, which is why its total differs from the headless run.
+- **Screenshots:** `docs/screenshots` holds 105 files.
+  - 104 were replaced by this run's output, including the 10 new I006 screenshots, 108–117.
+  - One was not: `61_cat_art_swap_same_filename.png` is a composite made in I004b, not produced by the test runner.
+- **Review:**
+  - The 10 I006 screenshots were examined at full size when their suites first produced them.
+  - All 105 files were then examined together on contact sheets after this run: none blank, broken or wrongly framed. The chart shots show the 163-harbour layout.
 
 ## 15. Restart results
 
@@ -278,6 +286,18 @@ The I005 checklist still applies. Owner acceptance is not claimed from automated
 
 ## 20. Final Git commit and push status
 
-- **Branch:** `claude/determined-brahmagupta-3v95mx`, pushed.
-- **Commits:** I005c `9ff3360`; I006 A `718304f`, B `80eba01`, C `d8786a5`, D+E `c343dc2`, F `4eaf122` (restart check and documents) plus a final commit with these results and the refreshed screenshots (the branch head; see `git log`).
+- **Branch:** `claude/determined-brahmagupta-3v95mx`.
+- **Commits:**
+
+| Part | Commit |
+|---|---|
+| I005c | `9ff3360` |
+| I006 A | `718304f` |
+| I006 B | `80eba01` |
+| I006 C | `d8786a5` |
+| I006 D+E | `c343dc2` |
+| I006 F | `4eaf122`, `fb324db` |
+
+- **Verified before this correction:** HEAD `fb324db` was identical to `origin/claude/determined-brahmagupta-3v95mx` (`git rev-parse` after `git fetch`), and the working tree was clean.
+- **This correction of the report** is the final commit, the branch head. A commit cannot contain its own hash; it is given in the delivery message and in `git log`.
 - **No pull request** was created, and nothing of I007 was implemented.
