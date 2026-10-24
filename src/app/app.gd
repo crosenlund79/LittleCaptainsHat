@@ -420,6 +420,7 @@ func open_work_menu() -> void:
 		return
 	var menu := WorkMenu.new()
 	menu.work_requested.connect(work_for)
+	menu.publish_requested.connect(open_publish_menu)
 	modals.push(menu)
 
 
@@ -516,8 +517,32 @@ func open_captains_log() -> CaptainsLogMenu:
 		return null
 	var menu := CaptainsLogMenu.new()
 	menu.name = "CaptainsLogMenu"
+	menu.publish_requested.connect(open_publish_menu)
 	modals.push(menu)
 	return menu
+
+
+## The travel-update dialog (from the Captain's Log or the work station), on
+## top of the menu that asked for it.
+func open_publish_menu() -> void:
+	if not GameSession.is_active() or router.is_busy():
+		return
+	var menu := PublishMenu.new()
+	menu.name = "PublishMenu"
+	menu.publish_confirmed.connect(publish_travel_update)
+	modals.push(menu)
+
+
+## Publishes the confirmed travel update (GameSession.publish_travel_update)
+## and reports the income.
+func publish_travel_update() -> void:
+	modals.clear()
+	var result := GameSession.publish_travel_update()
+	if not String(result.error).is_empty():
+		notify(result.error)
+		return
+	notify("Travel update published: %d renown earned you %s. Funds: %s." % [result.renown,
+		GameSession.format_money(result.euros), GameSession.format_money(result.funds_after)])
 
 
 ## The developer test panel (DevTools): F9 opens and closes it, in the boat or

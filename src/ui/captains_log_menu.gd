@@ -11,6 +11,9 @@ const TAB_LOG := 0
 const TAB_HARBOURS := 1
 const TAB_OBJECTIVES := 2
 
+## The player asked to publish a travel update (Log tab).
+signal publish_requested
+
 var _tabs: TabContainer
 
 
@@ -74,6 +77,25 @@ func _build_log_tab() -> Control:
 		value.custom_minimum_size = Vector2(320, 0)
 		value.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		grid.add_child(value)
+	var renown_row := HBoxContainer.new()
+	renown_row.add_theme_constant_override("separation", 16)
+	list.add_child(renown_row)
+	var quote := GameSession.get_publish_quote()
+	var publish := Button.new()
+	publish.name = "PublishButton"
+	publish.text = "Publish travel update (%s)…" % GameSession.format_money(int(quote.euros)) if int(quote.euros) > 0 else "Publish travel update…"
+	publish.disabled = not String(quote.error).is_empty()
+	publish.tooltip_text = quote.error
+	publish.pressed.connect(publish_requested.emit)
+	renown_row.add_child(publish)
+	var hint := Label.new()
+	hint.name = "PublishHint"
+	hint.theme_type_variation = &"MutedLabel"
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint.text = quote.error if not String(quote.error).is_empty() else \
+		"Turns your %d unpublished renown into income (%s per renown)." % [quote.renown, GameSession.format_money(int(quote.rate))]
+	renown_row.add_child(hint)
 	if GameSession.is_underway():
 		_add_text(list, "UnderwayNote", "Under way to %s: %s nm sailed on this voyage so far." % [
 			catalog.get_display_name(GameSession.get_voyage_destination_id()), _nm(GameSession.get_voyage_sailed_nm())], &"MutedLabel")

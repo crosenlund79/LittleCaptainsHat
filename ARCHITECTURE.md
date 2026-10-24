@@ -1041,6 +1041,26 @@ accepting objectives and no story.
   the completed ones. The Log tab shows lifetime and unpublished renown. The
   application shows one short "+N renown: …" message per voyage.
 
+## Social-media income (Iteration 006)
+
+Renown can be turned into money once, as an abstract "travel update". There
+are no followers, platforms or sponsors.
+
+- **Transaction:** `GameSession.publish_travel_update()`, in harbour only. In
+  one step it takes all `unpublished_renown`, pays `renown ×
+  euros_per_renown` (data file, €2), and adds to `publications`,
+  `published_renown` and `published_euros`. Lifetime renown is untouched, so
+  `lifetime = published + unpublished` always holds. With no unpublished
+  renown, or at sea, it refuses and changes nothing.
+- **Quote:** `get_publish_quote()` returns the renown, rate, euros, funds
+  before and after, and the reason it is not possible. The dialogs show
+  this; they never compute money themselves.
+- **UI:** `PublishMenu` is the confirmation (renown, rate, earnings, funds
+  before → after; *Publish for €X* / Cancel). It is reached from the Captain's
+  Log (*Publish travel update…*) and from the cabin's work station dialog (the
+  same online connection), so there is no new interactable on board. Remote
+  work and the grocery store are unchanged.
+
 ## Mid-voyage rerouting
 
 `SeaRouter.plan_route()` accepts either a port origin or an arbitrary origin

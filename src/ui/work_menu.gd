@@ -5,6 +5,8 @@ extends SimplePanel
 ## The work itself is Simulation.work(); this dialog only reports the choice.
 
 signal work_requested(hours: int)
+## Publishing a travel update is offered here too (the same connection).
+signal publish_requested
 
 const DEFAULT_HOURS := 4
 
@@ -45,6 +47,9 @@ func _ready() -> void:
 	_box.add_child(row)
 	_detail = _label("Detail", "")
 	_button("CancelButton", "Cancel", close)
+	var publish := _button("PublishButton", "Publish travel update…", publish_requested.emit, 200.0)
+	publish.disabled = GameSession.get_unpublished_renown() <= 0
+	publish.tooltip_text = "%d unpublished renown" % GameSession.get_unpublished_renown()
 	_work = _button("WorkButton", "Work", func() -> void: work_requested.emit(hours), 200.0)
 	_update()
 

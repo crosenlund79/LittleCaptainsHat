@@ -46,6 +46,8 @@ signal voyage_logged(record: Dictionary, new_harbour: bool)
 ## Objectives completed by a voyage paid renown: [{"id", "title", "reward"}].
 ## Emitted once per voyage, after voyage_logged.
 signal renown_awarded(awards: Array)
+## A travel update was published: {"renown", "euros", "funds_after"}.
+signal travel_update_published(info: Dictionary)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -674,6 +676,45 @@ func get_lifetime_renown() -> int:
 ## Renown not yet published in a travel update.
 func get_unpublished_renown() -> int:
 	return _state.progress.unpublished_renown if _state else 0
+
+
+## What publishing a travel update would do now: {"renown", "rate", "euros",
+## "funds", "funds_after", "error"} ("" when it is possible).
+func get_publish_quote() -> Dictionary:
+	var rate := ObjectiveCatalog.get_default().euros_per_renown
+	var renown := get_unpublished_renown()
+	var error := ""
+	if not is_moored_in_harbour():
+		error = "Publishing needs a steady connection: moor in a harbour first."
+	elif renown <= 0:
+		error = "No unpublished renown yet: sail, explore and complete objectives to earn some."
+	return {"renown": renown, "rate": rate, "euros": renown * rate, "funds": get_funds(),
+		"funds_after": get_funds() + renown * rate, "error": error}
+
+
+## Publishes a travel update (social media): all unpublished renown becomes
+## money at the configured rate, in one transaction. The renown deduction and
+## the payment happen together or not at all; lifetime renown stays. In
+## harbour only. Returns {"error", "renown", "euros", "funds_after"}.
+func publish_travel_update() -> Dictionary:
+	if _state == null:
+		return {"error": "No game is running.", "renown": 0, "euros": 0, "funds_after": 0}
+	var quote := get_publish_quote()
+	if not String(quote.error).is_empty():
+		return {"error": quote.error, "renown": 0, "euros": 0, "funds_after": _state.funds}
+	var progress := _state.progress
+	var renown := progress.unpublished_renown
+	var euros: int = renown * int(quote.rate)
+	progress.unpublished_renown = 0
+	progress.publications += 1
+	progress.published_renown += renown
+	progress.published_euros += euros
+	_state.funds += euros
+	_has_unsaved_changes = true
+	var info := {"error": "", "renown": renown, "euros": euros, "funds_after": _state.funds}
+	funds_changed.emit(_state.funds)
+	travel_update_published.emit(info.duplicate())
+	return info
 
 
 ## Pays the objectives the voyage just logged completes (inside
