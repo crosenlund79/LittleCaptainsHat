@@ -249,4 +249,4 @@ offset_right = 900.0
 offset_bottom = -24.0
 grow_vertical = 0
 theme_type_variation = &"MutedLabel"
-text = "WASD / Arrow keys  move     E  interact     Esc  menu"
+text = "WASD / Arrow keys  move     E  interact     L  Captain's Log     Esc  menu"

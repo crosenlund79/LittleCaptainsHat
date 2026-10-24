@@ -16,6 +16,20 @@ var revision := 1
 var warned_conditions: Array[StringName] = []
 ## Game time (seconds) when the vessel left the departure port.
 var departed_at := 0.0
+## Where the voyage began (kept through changes of course, which replace
+## `route`): the port id, and its position.
+var departure_port_id: StringName
+var departure_position := Vector2.ZERO
+## Distance actually sailed on this voyage, nm, across every change of course
+## (progress_nm restarts with each new course). Advanced by the simulation.
+var sailed_nm := 0.0
+## The worst weather hazard (WeatherModel.HAZARD_*) the boat was in, and the
+## condition (percent) the weather took from it on this voyage.
+var worst_hazard := 0
+var damage_percent := 0.0
+## False for a voyage loaded from a save made before the Captain's Log
+## (Iteration 006): its weather and damage before then are unknown.
+var fully_recorded := true
 
 var _cumulative := PackedFloat64Array()
 
@@ -24,6 +38,8 @@ static func create(planned: PlannedRoute, start_time: float) -> Voyage:
 	var voyage := Voyage.new()
 	voyage.route = planned.duplicate_route()
 	voyage.departed_at = start_time
+	voyage.departure_port_id = planned.origin_port_id
+	voyage.departure_position = planned.origin_position
 	return voyage
 
 
@@ -34,6 +50,12 @@ func duplicate_voyage() -> Voyage:
 	copy.revision = revision
 	copy.warned_conditions = warned_conditions.duplicate()
 	copy.departed_at = departed_at
+	copy.departure_port_id = departure_port_id
+	copy.departure_position = departure_position
+	copy.sailed_nm = sailed_nm
+	copy.worst_hazard = worst_hazard
+	copy.damage_percent = damage_percent
+	copy.fully_recorded = fully_recorded
 	return copy
 
 
@@ -91,6 +113,12 @@ func to_dict() -> Dictionary:
 		"revision": revision,
 		"warned_conditions": warned_conditions.map(func(id: StringName) -> String: return String(id)),
 		"departed_at": departed_at,
+		"departure_port_id": String(departure_port_id),
+		"departure_position": {"lon": departure_position.x, "lat": departure_position.y},
+		"sailed_nm": sailed_nm,
+		"worst_hazard": worst_hazard,
+		"damage_percent": damage_percent,
+		"fully_recorded": fully_recorded,
 	}
 
 
@@ -126,6 +154,29 @@ static func from_dict(data: Variant, catalog: PortCatalog, errors: Array[String]
 			errors.append("voyage warning id is invalid")
 			return null
 		voyage.warned_conditions.append(StringName(id))
+	# Captain's Log fields (Iteration 006). A voyage saved before then starts
+	# from what is certain: it left the course's origin, has sailed at least
+	# its progress, and its earlier weather and damage are unknown.
+	if data.has("sailed_nm"):
+		var departure_position: Variant = PlannedRoute._point_from(data.get("departure_position"))
+		var log_fields_ok := data.get("departure_port_id") is String and departure_position != null \
+			and _is_number(data.get("sailed_nm")) and float(data.sailed_nm) >= 0.0 \
+			and _is_number(data.get("worst_hazard")) and _is_number(data.get("damage_percent")) \
+			and data.get("fully_recorded") is bool
+		if not log_fields_ok:
+			errors.append("voyage log data is invalid")
+			return null
+		voyage.departure_port_id = StringName(data.departure_port_id)
+		voyage.departure_position = departure_position
+		voyage.sailed_nm = float(data.sailed_nm)
+		voyage.worst_hazard = int(data.worst_hazard)
+		voyage.damage_percent = float(data.damage_percent)
+		voyage.fully_recorded = data.fully_recorded
+	else:
+		voyage.departure_port_id = voyage.route.origin_port_id
+		voyage.departure_position = voyage.route.origin_position
+		voyage.sailed_nm = voyage.progress_nm
+		voyage.fully_recorded = false
 	return voyage
 
 

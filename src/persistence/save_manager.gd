@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 7
+const SAVE_VERSION := 8
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -244,6 +244,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_5_to_6(data)
 	if from_version < 7:
 		data = _migrate_6_to_7(data)
+	if from_version < 8:
+		data = _migrate_7_to_8(data)
 	return data
 
 
@@ -362,6 +364,29 @@ func _migrate_6_to_7(data: Dictionary) -> Dictionary:
 	session["provisions"] = Provisions.new().to_dict()
 	session["rescue"] = {"count": 0, "last": {}}
 	data["version"] = 7
+	return data
+
+
+## Version 8 (Iteration 006) adds the Captain's Log. Nothing is invented: an
+## older game has no recorded voyages, no distance and no arrivals. Only the
+## harbours there is evidence for are listed as visited (first visit unknown):
+## Copenhagen, where every game has started, and the harbour the boat lies in.
+## A voyage under way is kept; Voyage.from_dict() gives it the log fields
+## from what is certain (see there).
+func _migrate_7_to_8(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary:
+		return data
+	var log := CaptainsLog.new()
+	var known: Array[String] = [String(CaptainsLog.LEGACY_START_PORT)]
+	var navigation: Variant = session.get("navigation")
+	if navigation is Dictionary and navigation.get("location_id") is String and not String(navigation.location_id).is_empty():
+		known.append(String(navigation.location_id))
+	for id in known:
+		if PortCatalog.get_default().has_port(StringName(id)):
+			log.visited[id] = {"first": CaptainsLog.UNKNOWN_TIME, "arrivals": 0}
+	session["log"] = log.to_dict()
+	data["version"] = 8
 	return data
 
 

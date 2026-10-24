@@ -40,6 +40,9 @@ signal provisions_warning(level: int, text: String)
 ## The boat was lost and its crew rescued: the voyage is over and the boat is
 ## back in the home harbour. `info` = {"fee", "funds_after", "port_id", "from"}.
 signal rescued(info: Dictionary)
+## A voyage ended and was written to the Captain's Log (see
+## CaptainsLog.make_record()); `new_harbour` is true on a first visit.
+signal voyage_logged(record: Dictionary, new_harbour: bool)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -466,7 +469,9 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 	if _state.companion.advance_to(game_time):
 		companion_moved.emit(_state.companion.spot)
 	if _state.voyage:
-		_state.voyage.progress_nm = clampf(progress_nm, 0.0, _state.voyage.get_total_nm())
+		var progress := clampf(progress_nm, 0.0, _state.voyage.get_total_nm())
+		_state.voyage.sailed_nm += maxf(progress - _state.voyage.progress_nm, 0.0)
+		_state.voyage.progress_nm = progress
 		_state.vessel_position = _state.voyage.get_position()
 	_has_unsaved_changes = true
 
@@ -487,6 +492,8 @@ func complete_voyage() -> void:
 	if not is_underway():
 		return
 	var destination := PortCatalog.get_default().get_port(_state.voyage.route.destination_port_id)
+	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_ARRIVED)
+	var new_harbour := _state.captains_log.record_voyage(record)
 	_state.voyage = null
 	_state.vessel_status = SessionState.STATUS_ARRIVED
 	_state.location_id = destination.id
@@ -495,6 +502,7 @@ func complete_voyage() -> void:
 	_state.weather_exposure.reset(_state.game_time)
 	_has_unsaved_changes = true
 	propulsion_changed.emit(&"")
+	voyage_logged.emit(record, new_harbour)
 	voyage_arrived.emit(destination.id)
 
 
@@ -503,6 +511,8 @@ func update_weather_exposure(sample: WeatherSample) -> void:
 	if _state == null:
 		return
 	_state.weather_exposure.record(sample, _state.game_time)
+	if _state.voyage:
+		_state.voyage.worst_hazard = maxi(_state.voyage.worst_hazard, sample.hazard)
 	_has_unsaved_changes = true
 
 
@@ -552,6 +562,7 @@ func apply_weather_damage(percent: float, until: float) -> bool:
 		return false
 	var before := get_condition()
 	_state.set_condition(_state.vessel_id, before - percent)
+	_state.voyage.damage_percent += before - get_condition()
 	condition_changed.emit(get_condition())
 	if get_condition() <= 0.0:
 		rescue()
@@ -591,6 +602,8 @@ func rescue() -> void:
 	var from := _state.vessel_position
 	var fee := mini(SessionState.RESCUE_FEE, _state.funds)
 	_state.funds -= fee
+	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_RESCUED)
+	_state.captains_log.record_voyage(record)
 	_state.voyage = null
 	_state.planned_route = null
 	_state.vessel_status = SessionState.STATUS_MOORED
@@ -614,7 +627,26 @@ func rescue() -> void:
 	route_changed.emit(null)
 	condition_changed.emit(get_condition())
 	funds_changed.emit(_state.funds)
+	voyage_logged.emit(record, false)
 	rescued.emit(info)
+
+
+# --- Captain's Log ---------------------------------------------------------------
+
+## A copy of the Captain's Log.
+func get_captains_log() -> CaptainsLog:
+	return _state.captains_log.duplicate_log() if _state else CaptainsLog.new()
+
+
+## Everything sailed so far, nm: ended voyages plus the voyage under way.
+func get_total_nm_sailed() -> float:
+	if _state == null:
+		return 0.0
+	return _state.captains_log.total_nm + (_state.voyage.sailed_nm if _state.voyage else 0.0)
+
+
+func get_voyage_sailed_nm() -> float:
+	return _state.voyage.sailed_nm if _state and _state.voyage else 0.0
 
 
 func get_rescue_count() -> int:

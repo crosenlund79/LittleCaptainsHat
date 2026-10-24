@@ -4,6 +4,7 @@ extends ModalPanel
 ## application flow performs the actions.
 
 signal save_requested
+signal log_requested
 signal load_requested
 signal settings_requested
 signal main_menu_requested
@@ -15,6 +16,7 @@ signal dev_tests_requested
 
 func _ready() -> void:
 	_resume.pressed.connect(close)
+	%LogButton.pressed.connect(log_requested.emit)
 	%SaveButton.pressed.connect(save_requested.emit)
 	%LoadButton.pressed.connect(load_requested.emit)
 	%SettingsButton.pressed.connect(settings_requested.emit)

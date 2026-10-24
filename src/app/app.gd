@@ -78,6 +78,7 @@ func _ready() -> void:
 	Simulation.weather_warning.connect(_on_weather_warning)
 	Simulation.arrived.connect(_on_arrived)
 	GameSession.rescued.connect(_on_rescued)
+	GameSession.voyage_logged.connect(_on_voyage_logged)
 	# Test weather never outlives the game it was made in.
 	GameSession.session_started.connect(DevTools.on_session_changed)
 	GameSession.state_replaced.connect(DevTools.on_session_changed)
@@ -140,6 +141,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if DevTools.is_enabled():
 			get_viewport().set_input_as_handled()
 			toggle_dev_tests()
+		return
+	if event.is_action_pressed(&"captains_log") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		toggle_captains_log()
 		return
 	if not event.is_action_pressed(&"pause") or event.is_echo():
 		return
@@ -441,6 +446,15 @@ func _on_arrived(port_id: StringName) -> void:
 	notify("Arrived in %s." % PortCatalog.get_default().get_display_name(port_id))
 
 
+## A first visit is noted in the Captain's Log (one short message).
+func _on_voyage_logged(record: Dictionary, new_harbour: bool) -> void:
+	if new_harbour:
+		var log := GameSession.get_captains_log()
+		notify("New harbour in the Captain's Log: %s (%d of %d visited)." % [
+			PortCatalog.get_default().get_display_name(StringName(record.to)), log.get_distinct_harbours(),
+			PortCatalog.get_default().ports.size()])
+
+
 func _show_current_boat_area() -> void:
 	var area := GameSession.get_boat_area()
 	# The scenes come from the active vessel (see VesselDefinition).
@@ -464,12 +478,35 @@ func open_pause_menu() -> void:
 	var menu := pause_menu_scene.instantiate() as PauseMenu
 	menu.save_requested.connect(open_save_menu)
 	menu.load_requested.connect(open_load_menu)
+	menu.log_requested.connect(open_captains_log)
 	menu.settings_requested.connect(open_settings)
 	menu.main_menu_requested.connect(request_main_menu)
 	menu.dev_tests_requested.connect(func() -> void:
 		modals.clear()
 		toggle_dev_tests())
 	modals.push(menu)
+
+
+## The Captain's Log: L opens and closes it aboard or at the chart; the pause
+## menu opens it on top of itself.
+func toggle_captains_log() -> void:
+	if not GameSession.is_active() or router.is_busy():
+		return
+	if modals.get_top() is CaptainsLogMenu:
+		modals.get_top().close()
+		return
+	if not modals.is_empty() or not (router.current_screen is BoatArea or router.current_screen is WorldMap):
+		return
+	open_captains_log()
+
+
+func open_captains_log() -> CaptainsLogMenu:
+	if not GameSession.is_active():
+		return null
+	var menu := CaptainsLogMenu.new()
+	menu.name = "CaptainsLogMenu"
+	modals.push(menu)
+	return menu
 
 
 ## The developer test panel (DevTools): F9 opens and closes it, in the boat or

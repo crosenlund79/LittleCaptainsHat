@@ -953,6 +953,43 @@ costs.
     `<art>/cabin/provisions_<level>.png`.
   - The HUD shows `Food 12.5 d · Water 12.5 d`.
 
+## Captain's Log (Iteration 006)
+
+The player's sailing history, derived only from the authoritative voyage
+events. There is no second voyage or arrival system.
+
+- **Data:** `CaptainsLog` (`src/core/captains_log.gd`), plain data in
+  `SessionState.captains_log`, saved as the `log` section:
+  - totals: `total_nm` (voyages that have ended), `voyages_completed`,
+    `arrivals`;
+  - `longest`: the record of the longest completed passage;
+  - `visited`: port id → `{first, arrivals}`;
+  - `voyages`: the latest `MAX_VOYAGES` (50) records; older ones are dropped,
+    while the totals keep counting.
+  - Rescues are not repeated here: the log shows `SessionState.rescue_count`.
+- **The voyage carries what the log needs** (`Voyage`): `departure_port_id`
+  and position (kept through changes of course), `sailed_nm` (advanced in
+  `GameSession.apply_simulation_step` from the progress the simulation makes,
+  so it is identical in one step or many), `worst_hazard` (from
+  `update_weather_exposure`) and `damage_percent` (from
+  `apply_weather_damage`).
+- **Events:** only two places write the log, both inside GameSession's own
+  transactions:
+  - `complete_voyage()`: an `arrived` record; the destination becomes visited;
+  - `rescue()`: a `rescued` record. Its miles count, but it is not a completed
+    voyage, an arrival or a visit (the tow home does not count).
+
+  Both emit `voyage_logged(record, new_harbour)`. A new game lists its start
+  harbour as visited (no arrival). Planning a course, passing a harbour,
+  waiting, sleeping, working or loading never write the log. Loading cannot
+  repeat an event, because the voyage is gone from the saved state once it
+  has been logged.
+- **Total distance shown:** `GameSession.get_total_nm_sailed()` is the log's
+  total plus the voyage under way.
+- **UI:** `CaptainsLogMenu` (L, or the pause menu's *Captain's Log*) is
+  read-only, with Log and Harbours tabs, a fixed size, and scrolling lists.
+  The application shows one short message on a first visit.
+
 ## Mid-voyage rerouting
 
 `SeaRouter.plan_route()` accepts either a port origin or an arbitrary origin
@@ -1105,6 +1142,14 @@ SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─
   `wind` (seed), `vessel` (status, position, propulsion state), `navigation`
   (location, planned route with its path, active voyage with route, progress,
   revision and warned weather ids).
+- **Version 8** (Iteration 006) adds the `log` section (`CaptainsLog`) and,
+  in an active voyage, `departure_port_id`, `departure_position`,
+  `sailed_nm`, `worst_hazard`, `damage_percent` and `fully_recorded`.
+  `_migrate_7_to_8` invents nothing: no voyages, distance or arrivals. As
+  visited (first visit unknown) it lists only Copenhagen, where every older
+  game started, and the harbour the boat lies in. A voyage under way gets its
+  course's origin, `sailed_nm` = progress and `fully_recorded = false` (its
+  earlier weather and damage are unknown).
 - **Version 7** (Iteration 005b) adds `economy.funds`, `provisions`, `rescue`
   (`count`, `last`), and in `vessel` the `conditions` by id and
   `damage_applied_until`, all required by `from_dict`. `_migrate_6_to_7` fills

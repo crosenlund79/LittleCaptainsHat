@@ -403,14 +403,16 @@ func _assess_weather(result: AdvanceResult) -> bool:
 	# WeatherDamage grid (so gust bursts between evaluation points count, and
 	# no stretch of time is counted twice).
 	var now := GameSession.get_game_time()
+	# The weather here is recorded first, so a voyage lost in it still has
+	# the storm in its log record.
+	var here := get_weather_at_vessel()
+	GameSession.update_weather_exposure(here)
 	var damage := WeatherDamage.damage_between(GameSession.get_damage_applied_until(), now,
 		GameSession.get_vessel_position(), GameSession.get_wind_seed(), GameSession.get_vessel_profile().weather_damage_factor)
 	if GameSession.apply_weather_damage(damage, now):
 		if result:
 			result.rescued = true
 		return false
-	var here := get_weather_at_vessel()
-	GameSession.update_weather_exposure(here)
 	var warning := _local_warning(here)
 	if warning.is_empty():
 		warning = _nearby_storm_warning()

@@ -7,7 +7,7 @@ extends RefCounted
 ## of which scene is visible. to_dict()/from_dict() define the save format;
 ## each subsystem keeps its data in its own top-level section ("boat",
 ## "player", "clock", "wind", "vessel", "navigation", "economy", "provisions",
-## "rescue") so future systems can add sections of their own.
+## "rescue", "log") so future systems can add sections of their own.
 
 const AREA_INTERIOR := &"interior"
 const AREA_EXTERIOR := &"exterior"
@@ -81,6 +81,8 @@ var damage_applied_until := 0.0
 ## Rescues so far, and the last one: {"time", "fee", "funds_after", "from"}.
 var rescue_count := 0
 var last_rescue := {}
+## The Captain's Log: sailing statistics, harbours visited, recent voyages.
+var captains_log := CaptainsLog.new()
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -93,6 +95,7 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.weather_exposure.reset(state.game_time)
 	state.damage_applied_until = state.game_time
 	state.companion = CompanionState.create(companion_kind, state.game_time)
+	state.captains_log = CaptainsLog.create(start_location, state.game_time)
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
 	return state
@@ -132,6 +135,7 @@ func duplicate_state() -> SessionState:
 	copy.damage_applied_until = damage_applied_until
 	copy.rescue_count = rescue_count
 	copy.last_rescue = last_rescue.duplicate(true)
+	copy.captains_log = captains_log.duplicate_log()
 	return copy
 
 
@@ -168,6 +172,7 @@ func to_dict() -> Dictionary:
 		"economy": {"funds": funds},
 		"provisions": provisions.to_dict(),
 		"rescue": {"count": rescue_count, "last": last_rescue.duplicate(true)},
+		"log": captains_log.to_dict(),
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -292,6 +297,9 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		return null
 	state.rescue_count = maxi(int(rescue.count), 0)
 	state.last_rescue = (rescue.get("last", {}) as Dictionary).duplicate(true)
+	state.captains_log = CaptainsLog.from_dict(data.get("log"), errors)
+	if state.captains_log == null:
+		return null
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:

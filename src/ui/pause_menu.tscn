@@ -60,6 +60,12 @@ layout_mode = 2
 theme_type_variation = &"BigButton"
 text = "Resume"
 
+[node name="LogButton" type="Button" parent="Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigButton"
+text = "Captain's Log (L)"
+
 [node name="SaveButton" type="Button" parent="Center/Panel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
