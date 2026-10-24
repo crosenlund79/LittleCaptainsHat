@@ -354,7 +354,7 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 func _process(delta: float) -> void:
 	if GameSession.is_active():
 		var shown := floorf(GameSession.get_game_time() / WEATHER_REFRESH_SECONDS) * WEATHER_REFRESH_SECONDS
-		if weather_time < 0.0 or not is_equal_approx(shown, weather_time):
+		if weather_time < 0.0 or shown != weather_time:
 			set_weather_time(shown)
 	if wind_layer.visible:
 		wind_layer.update_time(GameSession.get_game_time())
@@ -436,7 +436,7 @@ func _project_ring(ring: Array) -> PackedVector2Array:
 ## Projects the weather events existing at `time` (from the one weather
 ## model) to map space. Rebuilt only when the shown time changes.
 func set_weather_time(time: float) -> void:
-	if is_equal_approx(time, weather_time):
+	if time == weather_time:
 		return
 	weather_time = time
 	_weather_shapes.clear()

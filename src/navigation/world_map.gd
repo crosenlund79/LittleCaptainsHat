@@ -584,9 +584,11 @@ func _describe_weather() -> String:
 		lines.append("No hazardous weather expected along the next %d hours of the course." % roundi(Simulation.DISPLAY_HORIZON_HOURS))
 	for hazard in hazards:
 		var expected := Simulation.expected_strength(hazard)
-		lines.append("%s (%s): %s, %d nm ahead. Wind to %d kn, gusts %d kn." % [hazard.label,
-			WeatherModel.hazard_name(hazard.hazard).to_lower(), Simulation.describe_when(hazard.hours),
-			roundi(hazard.distance_nm), roundi(expected[0]), roundi(expected[1])])
+		var outlook := "Wind to %d kn, gusts %d kn." % [roundi(expected[0]), roundi(expected[1])]
+		if (hazard.sample as WeatherSample).classification == WeatherModel.CLASS_THUNDER_RISK:
+			outlook = "Thunderstorms may form there."
+		lines.append("%s (%s): %s, %d nm ahead. %s" % [hazard.label, WeatherModel.hazard_name(hazard.hazard).to_lower(),
+			Simulation.describe_when(hazard.hours), roundi(hazard.distance_nm), outlook])
 	return "\n".join(lines)
 
 
