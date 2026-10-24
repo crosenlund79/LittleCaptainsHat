@@ -10,3 +10,7 @@ country = "Gibraltar"
 latitude = 36.14
 longitude = -5.353
 description = "The Rock at the narrow gateway between the Atlantic and the Mediterranean."
+importance = 1
+region = "mediterranean"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

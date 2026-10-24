@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"stavanger"
+display_name = "Stavanger"
+country = "Norway"
+latitude = 58.9667
+longitude = 5.7500
+description = "Stavanger, a harbour on the Norwegian coast."
+importance = 2
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO SVG (5858N 00545E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"messina"
+display_name = "Messina"
+country = "Italy"
+latitude = 38.2000
+longitude = 15.5500
+description = "Messina, an island harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT MSN (3812N 01533E)"

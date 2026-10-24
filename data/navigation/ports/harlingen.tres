@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"harlingen"
+display_name = "Harlingen"
+country = "Netherlands"
+latitude = 53.1833
+longitude = 5.4333
+description = "Harlingen, a harbour on the North Sea."
+importance = 3
+region = "north_sea"
+island = false
+source = "UN/LOCODE NL HAR (5311N 00526E)"

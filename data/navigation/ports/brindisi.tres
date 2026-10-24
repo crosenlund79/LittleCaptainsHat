@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"brindisi"
+display_name = "Brindisi"
+country = "Italy"
+latitude = 40.6333
+longitude = 17.9333
+description = "Brindisi, a harbour on the Adriatic Sea."
+importance = 2
+region = "adriatic"
+island = false
+source = "UN/LOCODE IT BDS (4038N 01756E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"bar"
+display_name = "Bar"
+country = "Montenegro"
+latitude = 42.0833
+longitude = 19.0833
+description = "Bar, a harbour on the Adriatic Sea."
+importance = 3
+region = "adriatic"
+island = false
+source = "UN/LOCODE ME BAR (4205N 01905E)"

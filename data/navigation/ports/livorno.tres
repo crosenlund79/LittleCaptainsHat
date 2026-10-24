@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"livorno"
+display_name = "Livorno"
+country = "Italy"
+latitude = 43.5500
+longitude = 10.3167
+description = "Livorno, a harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = false
+source = "UN/LOCODE IT LIV (4333N 01019E)"

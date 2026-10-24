@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"la_rochelle"
+display_name = "La Rochelle"
+country = "France"
+latitude = 46.1667
+longitude = -1.1500
+description = "La Rochelle, a harbour on the Bay of Biscay."
+importance = 1
+region = "biscay"
+island = false
+source = "UN/LOCODE FR LRH (4610N 00109W)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"kirkwall"
+display_name = "Kirkwall"
+country = "United Kingdom"
+latitude = 58.9833
+longitude = -2.9500
+description = "Kirkwall, an island harbour in the British Isles."
+importance = 2
+region = "british_isles"
+island = true
+source = "UN/LOCODE GB KWL (5859N 00257W)"

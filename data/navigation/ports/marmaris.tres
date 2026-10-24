@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"marmaris"
+display_name = "Marmaris"
+country = "Türkiye"
+latitude = 36.8500
+longitude = 28.2667
+description = "Marmaris, a harbour in the eastern Mediterranean."
+importance = 2
+region = "levant"
+island = false
+source = "UN/LOCODE TR MRM (3651N 02816E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"swinoujscie"
+display_name = "Świnoujście"
+country = "Poland"
+latitude = 53.9000
+longitude = 14.2500
+description = "Świnoujście, a harbour on the Baltic Sea."
+importance = 3
+region = "baltic"
+island = false
+source = "UN/LOCODE PL SWI (5354N 01415E)"

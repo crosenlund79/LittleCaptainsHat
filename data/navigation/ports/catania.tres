@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"catania"
+display_name = "Catania"
+country = "Italy"
+latitude = 37.5000
+longitude = 15.1000
+description = "Catania, an island harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT CTA (3730N 01506E)"

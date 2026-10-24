@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"saint_malo"
+display_name = "Saint-Malo"
+country = "France"
+latitude = 48.6500
+longitude = -2.0167
+description = "Saint-Malo, a harbour on the English Channel."
+importance = 2
+region = "channel"
+island = false
+source = "UN/LOCODE FR SML (4839N 00201W)"

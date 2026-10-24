@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"vlissingen"
+display_name = "Vlissingen"
+country = "Netherlands"
+latitude = 51.4500
+longitude = 3.7000
+description = "Vlissingen, a harbour on the North Sea."
+importance = 3
+region = "north_sea"
+island = false
+source = "UN/LOCODE NL VLI (5127N 00342E)"

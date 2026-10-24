@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"arendal"
+display_name = "Arendal"
+country = "Norway"
+latitude = 58.4500
+longitude = 8.7667
+description = "Arendal, a harbour on the Norwegian coast."
+importance = 3
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO ARE (5827N 00846E)"

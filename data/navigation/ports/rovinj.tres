@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"rovinj"
+display_name = "Rovinj"
+country = "Croatia"
+latitude = 45.0833
+longitude = 13.6333
+description = "Rovinj, a harbour on the Adriatic Sea."
+importance = 3
+region = "adriatic"
+island = false
+source = "UN/LOCODE HR ROV (4505N 01338E)"

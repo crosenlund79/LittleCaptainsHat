@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"malaga"
+display_name = "Málaga"
+country = "Spain"
+latitude = 36.7167
+longitude = -4.4167
+description = "Málaga, a harbour on the Mediterranean."
+importance = 1
+region = "mediterranean"
+island = false
+source = "UN/LOCODE ES AGP (3643N 00425W)"

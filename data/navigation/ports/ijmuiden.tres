@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"ijmuiden"
+display_name = "IJmuiden"
+country = "Netherlands"
+latitude = 52.4667
+longitude = 4.6000
+description = "IJmuiden, a harbour on the North Sea."
+importance = 2
+region = "north_sea"
+island = false
+source = "UN/LOCODE NL IJM (5228N 00436E)"

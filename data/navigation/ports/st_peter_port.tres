@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"st_peter_port"
+display_name = "St Peter Port"
+country = "Guernsey"
+latitude = 49.4500
+longitude = -2.5500
+description = "St Peter Port, an island harbour on the English Channel."
+importance = 2
+region = "channel"
+island = true
+source = "UN/LOCODE GG SPT (4927N 00233W)"

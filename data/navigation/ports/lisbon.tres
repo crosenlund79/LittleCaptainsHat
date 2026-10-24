@@ -10,3 +10,7 @@ country = "Portugal"
 latitude = 38.697
 longitude = -9.16
 description = "Portugal's capital on the broad estuary of the Tagus."
+importance = 1
+region = "iberia_atlantic"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

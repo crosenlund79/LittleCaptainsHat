@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"kristiansund"
+display_name = "Kristiansund"
+country = "Norway"
+latitude = 63.1000
+longitude = 7.7333
+description = "Kristiansund, a harbour on the Norwegian coast."
+importance = 3
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO KSU (6306N 00744E)"

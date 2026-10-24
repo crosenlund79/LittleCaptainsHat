@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"skiathos"
+display_name = "Skiathos"
+country = "Greece"
+latitude = 39.1667
+longitude = 23.4833
+description = "Skiathos, an island harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = true
+source = "UN/LOCODE GR JSI (3910N 02329E)"

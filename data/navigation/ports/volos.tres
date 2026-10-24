@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"volos"
+display_name = "Volos"
+country = "Greece"
+latitude = 39.3667
+longitude = 22.9500
+description = "Volos, a harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = false
+source = "UN/LOCODE GR VOL (3922N 02257E)"

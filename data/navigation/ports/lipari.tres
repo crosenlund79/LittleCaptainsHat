@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lipari"
+display_name = "Lipari"
+country = "Italy"
+latitude = 38.4500
+longitude = 14.9500
+description = "Lipari, an island harbour on the Mediterranean."
+importance = 3
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT LIP (3827N 01457E)"

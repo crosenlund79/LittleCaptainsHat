@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"torshavn"
+display_name = "Tórshavn"
+country = "Faroe Islands"
+latitude = 62.0167
+longitude = -6.7667
+description = "Tórshavn, an island harbour in the North Atlantic."
+importance = 1
+region = "north_atlantic"
+island = true
+source = "UN/LOCODE FO THO (6201N 00646W)"

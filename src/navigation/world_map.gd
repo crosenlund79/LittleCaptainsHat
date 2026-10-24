@@ -78,6 +78,11 @@ var _hazards: Array[Dictionary] = []
 
 ## Whether the wind overlay is shown (kept while the game runs).
 static var wind_shown := true
+## Results listed by the harbour search.
+const SEARCH_RESULTS := 6
+
+var _search: LineEdit
+var _search_results: VBoxContainer
 
 
 func _ready() -> void:
@@ -109,6 +114,7 @@ func _ready() -> void:
 	%ResetViewButton.pressed.connect(_map.reset_view)
 	%CenterBoatButton.pressed.connect(center_on_vessel)
 	_build_wind_legend()
+	_build_search()
 	var legend := WeatherLegend.new()
 	legend.name = "WeatherLegend"
 	_weather_label.get_parent().add_child(legend)
@@ -164,6 +170,60 @@ func select_port(port_id: StringName) -> void:
 	if is_node_ready():
 		show_tab(TAB_COURSE)  # what the player clicked is shown there
 	_refresh()
+
+
+## The harbour search on the Course tab: every harbour can be found by name or
+## country, also when its marker is hidden at the current zoom.
+func _build_search() -> void:
+	var header := %SelectionTitle.get_parent().get_node("DestinationHeader") as Label
+	_search = LineEdit.new()
+	_search.name = "HarbourSearch"
+	_search.placeholder_text = "Find a harbour…"
+	_search.clear_button_enabled = true
+	_search.text_changed.connect(search_harbours)
+	_search.text_submitted.connect(func(_text: String) -> void:
+		if _search_results.get_child_count() > 0:
+			(_search_results.get_child(0) as Button).pressed.emit())
+	header.add_sibling(_search)
+	_search_results = VBoxContainer.new()
+	_search_results.name = "SearchResults"
+	_search_results.add_theme_constant_override("separation", 2)
+	_search.add_sibling(_search_results)
+
+
+## Lists the harbours matching `text` (a button each).
+func search_harbours(text: String) -> void:
+	if _search.text != text:
+		_search.text = text
+	for child in _search_results.get_children():
+		_search_results.remove_child(child)
+		child.queue_free()
+	for port in PortCatalog.get_default().search(text, SEARCH_RESULTS):
+		var button := Button.new()
+		button.name = "Result_%s" % port.id
+		button.text = "%s, %s" % [port.display_name, port.country]
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.clip_text = true
+		button.pressed.connect(_choose_search_result.bind(port.id))
+		_search_results.add_child(button)
+
+
+func get_search_result_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for child in _search_results.get_children():
+		if not child.is_queued_for_deletion():
+			ids.append(StringName(String(child.name).trim_prefix("Result_")))
+	return ids
+
+
+## Selects a harbour found by the search and shows it on the chart, zoomed in
+## far enough for its marker.
+func _choose_search_result(port_id: StringName) -> void:
+	var port := PortCatalog.get_default().get_port(port_id)
+	search_harbours("")
+	select_port(port_id)
+	var needed := MapView.PORT_MARKER_PX_PER_DEGREE[port.importance] * 1.3 / _map.units_per_degree
+	_map.center_on_geo(port.get_geo_position(), maxf(_map.get_zoom(), needed))
 
 
 func get_selected_port_id() -> StringName:

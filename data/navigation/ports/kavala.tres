@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"kavala"
+display_name = "Kavala"
+country = "Greece"
+latitude = 40.9333
+longitude = 24.4000
+description = "Kavala, a harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = false
+source = "UN/LOCODE GR KVA (4056N 02424E)"

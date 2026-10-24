@@ -10,3 +10,7 @@ country = "France"
 latitude = 48.381
 longitude = -4.488
 description = "Breton port in a great natural roadstead near the western tip of France."
+importance = 1
+region = "biscay"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

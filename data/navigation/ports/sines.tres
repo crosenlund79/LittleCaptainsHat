@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"sines"
+display_name = "Sines"
+country = "Portugal"
+latitude = 37.9500
+longitude = -8.8667
+description = "Sines, a harbour on the Atlantic coast of Iberia."
+importance = 3
+region = "iberia_atlantic"
+island = false
+source = "UN/LOCODE PT SIE (3757N 00852W)"

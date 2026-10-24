@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"sete"
+display_name = "Sète"
+country = "France"
+latitude = 43.4000
+longitude = 3.7000
+description = "Sète, a harbour on the Mediterranean."
+importance = 3
+region = "mediterranean"
+island = false
+source = "UN/LOCODE FR SET (4324N 00342E)"

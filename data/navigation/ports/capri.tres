@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"capri"
+display_name = "Capri"
+country = "Italy"
+latitude = 40.5500
+longitude = 14.2333
+description = "Capri, an island harbour on the Mediterranean."
+importance = 3
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT PRJ (4033N 01414E)"

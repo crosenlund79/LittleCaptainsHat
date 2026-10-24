@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"a_coruna"
+display_name = "A Coruña"
+country = "Spain"
+latitude = 43.3667
+longitude = -8.3833
+description = "A Coruña, a harbour on the Atlantic coast of Iberia."
+importance = 2
+region = "iberia_atlantic"
+island = false
+source = "UN/LOCODE ES LCG (4322N 00823W)"

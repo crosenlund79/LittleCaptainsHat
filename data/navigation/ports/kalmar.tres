@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"kalmar"
+display_name = "Kalmar"
+country = "Sweden"
+latitude = 56.6667
+longitude = 16.3667
+description = "Kalmar, a harbour on the Baltic Sea."
+importance = 3
+region = "baltic"
+island = false
+source = "UN/LOCODE SE KLR (5640N 01622E)"

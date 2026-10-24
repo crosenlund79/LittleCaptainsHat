@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"kusadasi"
+display_name = "Kuşadası"
+country = "Türkiye"
+latitude = 37.8500
+longitude = 27.2500
+description = "Kuşadası, a harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = false
+source = "UN/LOCODE TR KUS (3751N 02715E)"

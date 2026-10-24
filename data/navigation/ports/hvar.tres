@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"hvar"
+display_name = "Hvar"
+country = "Croatia"
+latitude = 43.1667
+longitude = 16.4333
+description = "Hvar, an island harbour on the Adriatic Sea."
+importance = 3
+region = "adriatic"
+island = true
+source = "UN/LOCODE HR HVA (4310N 01626E)"

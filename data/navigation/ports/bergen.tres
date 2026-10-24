@@ -10,3 +10,7 @@ country = "Norway"
 latitude = 60.397
 longitude = 5.322
 description = "Hanseatic harbour town in western Norway, gateway to the fjords."
+importance = 1
+region = "scandinavia"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"toulon"
+display_name = "Toulon"
+country = "France"
+latitude = 43.1167
+longitude = 5.9333
+description = "Toulon, a harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = false
+source = "UN/LOCODE FR TLN (4307N 00556E)"

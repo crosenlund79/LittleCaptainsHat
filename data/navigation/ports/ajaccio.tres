@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"ajaccio"
+display_name = "Ajaccio"
+country = "France"
+latitude = 41.9333
+longitude = 8.7333
+description = "Ajaccio, an island harbour on the Mediterranean."
+importance = 1
+region = "mediterranean"
+island = true
+source = "UN/LOCODE FR AJA (4156N 00844E)"

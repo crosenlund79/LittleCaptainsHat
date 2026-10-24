@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"peniche"
+display_name = "Peniche"
+country = "Portugal"
+latitude = 39.3500
+longitude = -9.3833
+description = "Peniche, a harbour on the Atlantic coast of Iberia."
+importance = 3
+region = "iberia_atlantic"
+island = false
+source = "UN/LOCODE PT PEN (3921N 00923W)"

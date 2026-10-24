@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"ancona"
+display_name = "Ancona"
+country = "Italy"
+latitude = 43.6333
+longitude = 13.5000
+description = "Ancona, a harbour on the Adriatic Sea."
+importance = 2
+region = "adriatic"
+island = false
+source = "UN/LOCODE IT AOI (4338N 01330E)"

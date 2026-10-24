@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"les_sables"
+display_name = "Les Sables-d'Olonne"
+country = "France"
+latitude = 46.5000
+longitude = -1.7833
+description = "Les Sables-d'Olonne, a harbour on the Bay of Biscay."
+importance = 2
+region = "biscay"
+island = false
+source = "UN/LOCODE FR LSO (4630N 00147W)"

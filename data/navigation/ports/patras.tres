@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"patras"
+display_name = "Patras"
+country = "Greece"
+latitude = 38.2333
+longitude = 21.7167
+description = "Patras, a harbour on the Ionian Sea."
+importance = 2
+region = "ionian"
+island = false
+source = "UN/LOCODE GR GPA (3814N 02143E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"concarneau"
+display_name = "Concarneau"
+country = "France"
+latitude = 47.8833
+longitude = -3.9167
+description = "Concarneau, a harbour on the Bay of Biscay."
+importance = 3
+region = "biscay"
+island = false
+source = "UN/LOCODE FR COC (4753N 00355W)"

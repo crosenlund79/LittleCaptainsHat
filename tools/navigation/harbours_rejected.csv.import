@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://csf81vc82is2o"
+
+[deps]
+
+files=["res://tools/navigation/harbours_rejected.name.translation", "res://tools/navigation/harbours_rejected.country.translation", "res://tools/navigation/harbours_rejected.latitude.translation", "res://tools/navigation/harbours_rejected.longitude.translation", "res://tools/navigation/harbours_rejected.importance.translation", "res://tools/navigation/harbours_rejected.region.translation", "res://tools/navigation/harbours_rejected.island.translation", "res://tools/navigation/harbours_rejected.source.translation", "res://tools/navigation/harbours_rejected.description.translation", "res://tools/navigation/harbours_rejected.reason.translation"]
+
+source_file="res://tools/navigation/harbours_rejected.csv"
+dest_files=["res://tools/navigation/harbours_rejected.name.translation", "res://tools/navigation/harbours_rejected.country.translation", "res://tools/navigation/harbours_rejected.latitude.translation", "res://tools/navigation/harbours_rejected.longitude.translation", "res://tools/navigation/harbours_rejected.importance.translation", "res://tools/navigation/harbours_rejected.region.translation", "res://tools/navigation/harbours_rejected.island.translation", "res://tools/navigation/harbours_rejected.source.translation", "res://tools/navigation/harbours_rejected.description.translation", "res://tools/navigation/harbours_rejected.reason.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

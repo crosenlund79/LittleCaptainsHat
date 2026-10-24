@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lerwick"
+display_name = "Lerwick"
+country = "United Kingdom"
+latitude = 60.1500
+longitude = -1.1500
+description = "Lerwick, an island harbour in the British Isles."
+importance = 2
+region = "british_isles"
+island = true
+source = "UN/LOCODE GB LER (6009N 00109W)"

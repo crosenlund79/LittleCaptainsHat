@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"boulogne"
+display_name = "Boulogne-sur-Mer"
+country = "France"
+latitude = 50.7167
+longitude = 1.6167
+description = "Boulogne-sur-Mer, a harbour on the English Channel."
+importance = 3
+region = "channel"
+island = false
+source = "UN/LOCODE FR BOL (5043N 00137E)"

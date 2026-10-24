@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"alesund"
+display_name = "Ålesund"
+country = "Norway"
+latitude = 62.4667
+longitude = 6.1500
+description = "Ålesund, a harbour on the Norwegian coast."
+importance = 2
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO AES (6228N 00609E)"

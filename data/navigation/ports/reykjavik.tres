@@ -10,3 +10,7 @@ country = "Iceland"
 latitude = 64.152
 longitude = -21.94
 description = "Iceland's capital on Faxaflói bay, far out in the North Atlantic."
+importance = 1
+region = "north_atlantic"
+island = true
+source = "Next Harbor original harbour (Iteration 002)"

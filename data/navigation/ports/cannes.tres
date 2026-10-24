@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"cannes"
+display_name = "Cannes"
+country = "France"
+latitude = 43.5500
+longitude = 7.0167
+description = "Cannes, a harbour on the Mediterranean."
+importance = 3
+region = "mediterranean"
+island = false
+source = "UN/LOCODE FR CEQ (4333N 00701E)"

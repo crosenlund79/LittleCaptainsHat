@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"belfast"
+display_name = "Belfast"
+country = "United Kingdom"
+latitude = 54.9833
+longitude = -5.9167
+description = "Belfast, a harbour in the British Isles."
+importance = 1
+region = "british_isles"
+island = false
+source = "UN/LOCODE GB BEL (5459N 00555W)"

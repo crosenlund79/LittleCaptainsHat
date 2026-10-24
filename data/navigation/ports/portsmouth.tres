@@ -10,3 +10,7 @@ country = "United Kingdom"
 latitude = 50.795
 longitude = -1.108
 description = "Historic naval harbour on the Solent, facing the Isle of Wight."
+importance = 1
+region = "channel"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

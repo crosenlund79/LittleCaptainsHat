@@ -10,3 +10,7 @@ country = "Greece"
 latitude = 37.942
 longitude = 23.636
 description = "Port of Athens on the Saronic Gulf, gateway to the Aegean islands."
+importance = 1
+region = "aegean"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

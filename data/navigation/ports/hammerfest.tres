@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"hammerfest"
+display_name = "Hammerfest"
+country = "Norway"
+latitude = 70.6500
+longitude = 23.6667
+description = "Hammerfest, a harbour on the Norwegian coast."
+importance = 3
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO HFT (7039N 02340E)"

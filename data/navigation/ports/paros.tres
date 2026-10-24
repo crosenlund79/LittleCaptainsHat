@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"paros"
+display_name = "Paros"
+country = "Greece"
+latitude = 37.0833
+longitude = 25.1500
+description = "Paros, an island harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = true
+source = "UN/LOCODE GR PAS (3705N 02509E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"kotka"
+display_name = "Kotka"
+country = "Finland"
+latitude = 60.4667
+longitude = 26.9167
+description = "Kotka, a harbour on the Baltic Sea."
+importance = 3
+region = "baltic"
+island = false
+source = "UN/LOCODE FI KTK (6028N 02655E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"zeebrugge"
+display_name = "Zeebrugge"
+country = "Belgium"
+latitude = 51.3333
+longitude = 3.2000
+description = "Zeebrugge, a harbour on the North Sea."
+importance = 3
+region = "north_sea"
+island = false
+source = "UN/LOCODE BE ZEE (5120N 00312E)"

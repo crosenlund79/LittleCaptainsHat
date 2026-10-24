@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"bastia"
+display_name = "Bastia"
+country = "France"
+latitude = 42.7000
+longitude = 9.4500
+description = "Bastia, an island harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = true
+source = "UN/LOCODE FR BIA (4242N 00927E)"

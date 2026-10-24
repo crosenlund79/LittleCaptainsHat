@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"trapani"
+display_name = "Trapani"
+country = "Italy"
+latitude = 38.0167
+longitude = 12.4833
+description = "Trapani, an island harbour on the Mediterranean."
+importance = 3
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT TPS (3801N 01229E)"

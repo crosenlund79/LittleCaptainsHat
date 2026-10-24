@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"wick"
+display_name = "Wick"
+country = "United Kingdom"
+latitude = 58.4333
+longitude = -3.0833
+description = "Wick, a harbour on the North Sea."
+importance = 3
+region = "north_sea"
+island = false
+source = "UN/LOCODE GB WIC (5826N 00305W)"

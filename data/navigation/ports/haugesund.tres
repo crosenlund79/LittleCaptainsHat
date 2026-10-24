@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"haugesund"
+display_name = "Haugesund"
+country = "Norway"
+latitude = 59.4000
+longitude = 5.2500
+description = "Haugesund, a harbour on the Norwegian coast."
+importance = 3
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO HAU (5924N 00515E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"cuxhaven"
+display_name = "Cuxhaven"
+country = "Germany"
+latitude = 53.8833
+longitude = 8.7000
+description = "Cuxhaven, a harbour on the North Sea."
+importance = 2
+region = "north_sea"
+island = false
+source = "UN/LOCODE DE CUX (5353N 00842E)"

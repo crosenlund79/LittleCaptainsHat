@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"honningsvag"
+display_name = "Honningsvåg"
+country = "Norway"
+latitude = 70.9667
+longitude = 25.9667
+description = "Honningsvåg, an island harbour on the Norwegian coast."
+importance = 2
+region = "scandinavia"
+island = true
+source = "UN/LOCODE NO HVG (7058N 02558E)"

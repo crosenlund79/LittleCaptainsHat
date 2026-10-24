@@ -1061,6 +1061,46 @@ are no followers, platforms or sponsors.
   same online connection), so there is no new interactable on board. Remote
   work and the grocery store are unchanged.
 
+## Harbour catalogue at scale (Iteration 006)
+
+- **Records:** each `PortData` stays a small resource, with `importance`
+  (1–3), `region`, `island` and `source` (where the coordinate comes from).
+  Ids are stable and never renamed; saves refer to them.
+- **Source of truth:** `tools/navigation/harbours.csv`.
+  `tools/navigation/build_harbours.py` writes `data/navigation/ports/*.tres`
+  and `port_catalog.tres`.
+  - The 148 added harbours take their coordinates from UN/LOCODE (UNECE), to
+    the arc-minute; the entry is named in `source`.
+  - Candidates that failed validation are kept, with the reason, in
+    `harbours_rejected.csv`.
+- **Lookups:**
+  - `PortCatalog.get_port()` uses an id dictionary (previously a list scan).
+  - `ports_in_rect()` uses a 2° grid.
+  - `search(text)` matches names and countries.
+- **Routing needs no new data:** the sea graph is independent of ports. A
+  harbour joins the network at runtime through `SeaRouter.find_port_approach`.
+  `test_harbours` proves that every harbour:
+  - has an approach;
+  - lies on a coast;
+  - lies within the chart;
+  - routes to its nearest original harbour.
+
+  It also runs representative coastal, island, offshore, narrow and long
+  trips.
+- **Chart:** `MapView._update_port_layout()` is recomputed only when the view
+  changes.
+  - It considers only the harbours in view (plus a margin).
+  - It gives a marker to those whose importance the zoom shows:
+    `PORT_MARKER_PX_PER_DEGREE` = 0 / 45 / 110 px per degree for importance
+    1 / 2 / 3. The selected, destination and current harbours always get one.
+  - It places labels in priority order on the first free side (right, left,
+    above, below), so names never overlap.
+  - Hidden harbours cannot be clicked, but the Course tab's *Find a harbour…*
+    search lists every harbour. Choosing one selects it and zooms the chart
+    until it shows. Typing there does not pan the chart.
+- **Not built:** chunk loading and clustering. They are not needed at this
+  size; the measured layout cost is in the I006 report.
+
 ## Mid-voyage rerouting
 
 `SeaRouter.plan_route()` accepts either a port origin or an arbitrary origin

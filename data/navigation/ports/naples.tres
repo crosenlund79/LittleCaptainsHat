@@ -10,3 +10,7 @@ country = "Italy"
 latitude = 40.838
 longitude = 14.258
 description = "Busy harbour on the Bay of Naples beneath Vesuvius."
+importance = 1
+region = "mediterranean"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

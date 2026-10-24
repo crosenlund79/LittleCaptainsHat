@@ -10,3 +10,7 @@ country = "Sweden"
 latitude = 57.7
 longitude = 11.94
 description = "Sweden's west-coast port at the mouth of the Göta älv, sheltered by the archipelago."
+importance = 1
+region = "scandinavia"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"bremerhaven"
+display_name = "Bremerhaven"
+country = "Germany"
+latitude = 53.5333
+longitude = 8.6000
+description = "Bremerhaven, a harbour on the North Sea."
+importance = 3
+region = "north_sea"
+island = false
+source = "UN/LOCODE DE BRV (5332N 00836E)"

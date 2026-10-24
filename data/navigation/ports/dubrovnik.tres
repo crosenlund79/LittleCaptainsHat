@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"dubrovnik"
+display_name = "Dubrovnik"
+country = "Croatia"
+latitude = 42.6500
+longitude = 18.0833
+description = "Dubrovnik, a harbour on the Adriatic Sea."
+importance = 1
+region = "adriatic"
+island = false
+source = "UN/LOCODE HR DBV (4239N 01805E)"

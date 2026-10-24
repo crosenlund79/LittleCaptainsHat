@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"thessaloniki"
+display_name = "Thessaloniki"
+country = "Greece"
+latitude = 40.6333
+longitude = 22.9500
+description = "Thessaloniki, a harbour on the Aegean Sea."
+importance = 1
+region = "aegean"
+island = false
+source = "UN/LOCODE GR SKG (4038N 02257E)"

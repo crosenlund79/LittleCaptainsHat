@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"malmo"
+display_name = "Malmö"
+country = "Sweden"
+latitude = 55.6000
+longitude = 13.0000
+description = "Malmö, a harbour on the Baltic Sea."
+importance = 2
+region = "baltic"
+island = false
+source = "UN/LOCODE SE MMA (5536N 01300E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"douglas"
+display_name = "Douglas"
+country = "Isle of Man"
+latitude = 54.1667
+longitude = -4.4833
+description = "Douglas, an island harbour in the British Isles."
+importance = 2
+region = "british_isles"
+island = true
+source = "UN/LOCODE IM DGS (5410N 00429W)"

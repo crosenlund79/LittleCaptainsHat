@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"larnaca"
+display_name = "Larnaca"
+country = "Cyprus"
+latitude = 34.9167
+longitude = 33.6167
+description = "Larnaca, an island harbour in the eastern Mediterranean."
+importance = 2
+region = "levant"
+island = true
+source = "UN/LOCODE CY LCA (3455N 03337E)"

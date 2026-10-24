@@ -10,3 +10,7 @@ country = "France"
 latitude = 43.296
 longitude = 5.364
 description = "France's oldest city, its Vieux-Port open to the Gulf of Lion."
+importance = 1
+region = "mediterranean"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

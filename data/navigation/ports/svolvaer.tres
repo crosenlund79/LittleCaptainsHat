@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"svolvaer"
+display_name = "Svolvær"
+country = "Norway"
+latitude = 68.2167
+longitude = 14.5500
+description = "Svolvær, an island harbour on the Norwegian coast."
+importance = 2
+region = "scandinavia"
+island = true
+source = "UN/LOCODE NO SVJ (6813N 01433E)"

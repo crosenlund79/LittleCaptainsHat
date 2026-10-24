@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"oban"
+display_name = "Oban"
+country = "United Kingdom"
+latitude = 56.4167
+longitude = -5.4667
+description = "Oban, a harbour in the British Isles."
+importance = 2
+region = "british_isles"
+island = false
+source = "UN/LOCODE GB OBA (5625N 00528W)"

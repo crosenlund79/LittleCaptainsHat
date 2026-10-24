@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"zakynthos"
+display_name = "Zakynthos"
+country = "Greece"
+latitude = 37.7833
+longitude = 20.9000
+description = "Zakynthos, an island harbour on the Ionian Sea."
+importance = 3
+region = "ionian"
+island = true
+source = "UN/LOCODE GR ZTH (3747N 02054E)"

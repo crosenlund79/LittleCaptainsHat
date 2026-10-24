@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"milford_haven"
+display_name = "Milford Haven"
+country = "United Kingdom"
+latitude = 51.7167
+longitude = -5.0333
+description = "Milford Haven, a harbour in the British Isles."
+importance = 3
+region = "british_isles"
+island = false
+source = "UN/LOCODE GB MLF (5143N 00502W)"

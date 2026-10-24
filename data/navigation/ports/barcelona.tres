@@ -10,3 +10,7 @@ country = "Spain"
 latitude = 41.373
 longitude = 2.18
 description = "Catalonia's capital on the Balearic Sea, with a large old harbour."
+importance = 1
+region = "mediterranean"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

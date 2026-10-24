@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"almeria"
+display_name = "Almería"
+country = "Spain"
+latitude = 36.8333
+longitude = -2.4500
+description = "Almería, a harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = false
+source = "UN/LOCODE ES LEI (3650N 00227W)"

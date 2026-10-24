@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"saint_nazaire"
+display_name = "Saint-Nazaire"
+country = "France"
+latitude = 47.2833
+longitude = -2.2000
+description = "Saint-Nazaire, a harbour on the Bay of Biscay."
+importance = 3
+region = "biscay"
+island = false
+source = "UN/LOCODE FR SNR (4717N 00212W)"

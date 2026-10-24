@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"nice"
+display_name = "Nice"
+country = "France"
+latitude = 43.7000
+longitude = 7.2667
+description = "Nice, a harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = false
+source = "UN/LOCODE FR NCE (4342N 00716E)"

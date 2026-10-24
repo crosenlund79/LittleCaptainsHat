@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"arcachon"
+display_name = "Arcachon"
+country = "France"
+latitude = 44.6500
+longitude = -1.1833
+description = "Arcachon, a harbour on the Bay of Biscay."
+importance = 3
+region = "biscay"
+island = false
+source = "UN/LOCODE FR ARC (4439N 00111W)"

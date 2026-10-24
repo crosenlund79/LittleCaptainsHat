@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lagos"
+display_name = "Lagos"
+country = "Portugal"
+latitude = 37.1000
+longitude = -8.6667
+description = "Lagos, a harbour on the Atlantic coast of Iberia."
+importance = 2
+region = "iberia_atlantic"
+island = false
+source = "UN/LOCODE PT LOS (3706N 00840W)"

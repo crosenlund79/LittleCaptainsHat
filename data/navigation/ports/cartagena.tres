@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"cartagena"
+display_name = "Cartagena"
+country = "Spain"
+latitude = 37.6000
+longitude = -0.9833
+description = "Cartagena, a harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = false
+source = "UN/LOCODE ES CAR (3736N 00059W)"

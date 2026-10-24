@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"venice"
+display_name = "Venice"
+country = "Italy"
+latitude = 45.4333
+longitude = 12.3333
+description = "Venice, a harbour on the Adriatic Sea."
+importance = 1
+region = "adriatic"
+island = false
+source = "UN/LOCODE IT VCE (4526N 01220E)"

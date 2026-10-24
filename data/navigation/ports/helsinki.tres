@@ -10,3 +10,7 @@ country = "Finland"
 latitude = 60.16
 longitude = 24.95
 description = "Capital of Finland on the Gulf of Finland, surrounded by islands."
+importance = 1
+region = "baltic"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

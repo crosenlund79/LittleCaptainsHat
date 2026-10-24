@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"genoa"
+display_name = "Genoa"
+country = "Italy"
+latitude = 44.4167
+longitude = 8.9500
+description = "Genoa, a harbour on the Mediterranean."
+importance = 1
+region = "mediterranean"
+island = false
+source = "UN/LOCODE IT GOA (4425N 00857E)"

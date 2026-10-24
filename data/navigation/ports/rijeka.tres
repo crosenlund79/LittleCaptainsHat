@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"rijeka"
+display_name = "Rijeka"
+country = "Croatia"
+latitude = 45.3333
+longitude = 14.4000
+description = "Rijeka, a harbour on the Adriatic Sea."
+importance = 2
+region = "adriatic"
+island = false
+source = "UN/LOCODE HR RJK (4520N 01424E)"

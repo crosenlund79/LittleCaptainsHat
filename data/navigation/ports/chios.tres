@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"chios"
+display_name = "Chios"
+country = "Greece"
+latitude = 38.3667
+longitude = 26.1333
+description = "Chios, an island harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = true
+source = "UN/LOCODE GR JKH (3822N 02608E)"

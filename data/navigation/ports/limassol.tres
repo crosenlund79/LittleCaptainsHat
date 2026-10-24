@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"limassol"
+display_name = "Limassol"
+country = "Cyprus"
+latitude = 34.6833
+longitude = 33.0500
+description = "Limassol, an island harbour in the eastern Mediterranean."
+importance = 1
+region = "levant"
+island = true
+source = "UN/LOCODE CY LMS (3441N 03303E)"

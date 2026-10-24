@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"swansea"
+display_name = "Swansea"
+country = "United Kingdom"
+latitude = 51.6333
+longitude = -3.9667
+description = "Swansea, a harbour in the British Isles."
+importance = 3
+region = "british_isles"
+island = false
+source = "UN/LOCODE GB SWA (5138N 00358W)"

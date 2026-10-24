@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"split"
+display_name = "Split"
+country = "Croatia"
+latitude = 43.5000
+longitude = 16.4500
+description = "Split, a harbour on the Adriatic Sea."
+importance = 1
+region = "adriatic"
+island = false
+source = "UN/LOCODE HR SPU (4330N 01627E)"

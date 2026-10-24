@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"la_spezia"
+display_name = "La Spezia"
+country = "Italy"
+latitude = 44.1167
+longitude = 9.8333
+description = "La Spezia, a harbour on the Mediterranean."
+importance = 3
+region = "mediterranean"
+island = false
+source = "UN/LOCODE IT SPE (4407N 00950E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"naxos"
+display_name = "Naxos"
+country = "Greece"
+latitude = 37.1000
+longitude = 25.3833
+description = "Naxos, an island harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = true
+source = "UN/LOCODE GR JNX (3706N 02523E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"rimini"
+display_name = "Rimini"
+country = "Italy"
+latitude = 44.0667
+longitude = 12.5833
+description = "Rimini, a harbour on the Adriatic Sea."
+importance = 3
+region = "adriatic"
+island = false
+source = "UN/LOCODE IT RMI (4404N 01235E)"

@@ -42,7 +42,7 @@ func _test_graph_consistency() -> void:
 
 
 func _test_ports() -> void:
-	t.check(catalog.ports.size() >= 10 and catalog.ports.size() <= 15, "10-15 ports in the catalogue")
+	t.check(catalog.ports.size() >= 150, "about 150 harbours in the catalogue (Iteration 006)")
 	for port in catalog.ports:
 		var approach := router.find_port_approach(port)
 		t.check(approach.size() >= 1 and GeoMath.path_length_nm(approach) <= SeaRouter.MAX_APPROACH_NM,

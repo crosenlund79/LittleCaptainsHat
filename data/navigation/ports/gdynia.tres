@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"gdynia"
+display_name = "Gdynia"
+country = "Poland"
+latitude = 54.5000
+longitude = 18.5500
+description = "Gdynia, a harbour on the Baltic Sea."
+importance = 1
+region = "baltic"
+island = false
+source = "UN/LOCODE PL GDY (5430N 01833E)"

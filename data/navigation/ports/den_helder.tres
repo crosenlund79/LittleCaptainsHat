@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"den_helder"
+display_name = "Den Helder"
+country = "Netherlands"
+latitude = 52.9500
+longitude = 4.7667
+description = "Den Helder, a harbour on the North Sea."
+importance = 3
+region = "north_sea"
+island = false
+source = "UN/LOCODE NL DHR (5257N 00446E)"

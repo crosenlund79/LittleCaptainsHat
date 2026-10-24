@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"dieppe"
+display_name = "Dieppe"
+country = "France"
+latitude = 49.9167
+longitude = 1.0833
+description = "Dieppe, a harbour on the English Channel."
+importance = 3
+region = "channel"
+island = false
+source = "UN/LOCODE FR DPE (4955N 00105E)"

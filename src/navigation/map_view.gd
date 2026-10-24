@@ -60,6 +60,12 @@ const CLICK_SLOP_PX := 6.0
 ## into square tiles of this many map units, so off-screen tiles are culled.
 const COAST_RUN_POINTS := 128
 const COAST_TILE_UNITS := 400.0
+## Harbour markers by zoom: screen pixels per degree of longitude from which
+## harbours of importance 1, 2 and 3 get a marker (PortData.importance).
+const PORT_MARKER_PX_PER_DEGREE: Array[float] = [0.0, 0.0, 45.0, 110.0]
+## Harbour label font size (screen pixels) and the gap kept between labels.
+const PORT_LABEL_PX := 21.0
+const PORT_LABEL_GAP_PX := 4.0
 
 enum Press { NONE, PENDING, PAN, WAYPOINT, REMOVE }
 
@@ -92,6 +98,11 @@ var _weather_shapes: Array[Dictionary] = []
 ## Game time the weather overlay shows (follows the game clock in steps).
 var weather_time := -1.0
 var _hovered_port_id: StringName
+## Harbours with a marker in the current view, most important first, and the
+## ones whose name is written (see _update_port_layout()).
+var _shown_ports: Array[PortData] = []
+var _labelled_ports := {}
+var _port_layout_key := ""
 var _press := Press.NONE
 var _press_position := Vector2.ZERO
 var _press_waypoint := -1
@@ -202,11 +213,14 @@ func get_port_screen_position(port_id: StringName) -> Vector2:
 	return geo_to_screen(port.get_geo_position()) if port else Vector2.INF
 
 
-## Port id under a screen position, or &"" if none is within reach.
+## Port id under a screen position, or &"" if none is within reach. Only
+## harbours with a marker can be clicked; the others are found by zooming in
+## or with the chart's harbour search.
 func pick_port(screen_point: Vector2) -> StringName:
+	_update_port_layout()
 	var best: StringName = &""
 	var best_distance := PICK_RADIUS_PX
-	for port in catalog.ports:
+	for port in _shown_ports:
 		var distance := geo_to_screen(port.get_geo_position()).distance_to(screen_point)
 		if distance <= best_distance:
 			best_distance = distance
@@ -363,7 +377,8 @@ func _process(delta: float) -> void:
 			_wind_view_key = key
 			wind_layer.refresh_view()
 	var direction := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
-	if direction != Vector2.ZERO:
+	# Typing in a text field (the harbour search) must not pan the chart.
+	if direction != Vector2.ZERO and not get_viewport().gui_get_focus_owner() is LineEdit:
 		camera.position += direction * keyboard_pan_speed * delta / camera.zoom.x
 		_clamp_camera()
 		_overlay.queue_redraw()
@@ -513,6 +528,118 @@ func _clamp_camera() -> void:
 	camera.position = camera.position.clamp(_map_bounds.position, _map_bounds.end)
 
 
+# --- Harbour markers and labels -----------------------------------------------------------
+
+## The geographic area (x = longitude, y = latitude) currently in view.
+func get_visible_geo_rect() -> Rect2:
+	var free := _free_view_size()
+	var a := screen_to_geo(Vector2.ZERO)
+	var b := screen_to_geo(free)
+	return Rect2(Vector2(minf(a.x, b.x), minf(a.y, b.y)), (a - b).abs())
+
+
+## Screen pixels per degree of longitude at the current zoom.
+func get_px_per_degree() -> float:
+	return units_per_degree * camera.zoom.x
+
+
+## Ids of the harbours with a marker in the current view.
+func get_shown_port_ids() -> Array[StringName]:
+	_update_port_layout()
+	var ids: Array[StringName] = []
+	for port in _shown_ports:
+		ids.append(port.id)
+	return ids
+
+
+## Ids of the harbours whose name is written in the current view.
+func get_labelled_port_ids() -> Array[StringName]:
+	_update_port_layout()
+	var ids: Array[StringName] = []
+	for id: StringName in _labelled_ports:
+		ids.append(id)
+	return ids
+
+
+## Screen rectangles of the written harbour names (for tests).
+func get_port_label_rects() -> Array[Rect2]:
+	_update_port_layout()
+	var rects: Array[Rect2] = []
+	for id: StringName in _labelled_ports:
+		rects.append(_labelled_ports[id])
+	return rects
+
+
+## Which harbours get a marker and a label in the current view. Only the
+## harbours in view are considered (PortCatalog.ports_in_rect). A harbour
+## has a marker when the zoom shows its importance, or when it is the
+## selected, destination or current harbour. Labels are placed in order of
+## importance and skipped where they would overlap a label or marker already
+## placed, so the chart never fills with overlapping names. Recomputed only
+## when the view or the highlighted harbours change.
+func _update_port_layout() -> void:
+	var view := get_viewport_rect().size
+	var key := "%s|%s|%s|%s|%s|%s|%d" % [camera.position, camera.zoom.x, view, selected_port_id, destination_port_id,
+		boat_port_id, catalog.ports.size()]
+	if key == _port_layout_key:
+		return
+	_port_layout_key = key
+	var margin := 40.0 / get_px_per_degree()
+	var area := get_visible_geo_rect().grow(margin)
+	var px := get_px_per_degree()
+	_shown_ports.clear()
+	for port in catalog.ports_in_rect(area):
+		var special := port.id == selected_port_id or port.id == destination_port_id or port.id == boat_port_id
+		if special or px >= PORT_MARKER_PX_PER_DEGREE[clampi(port.importance, 1, 3)]:
+			_shown_ports.append(port)
+	_shown_ports.sort_custom(_port_priority_before)
+	var markers: Array[Rect2] = []
+	for port in _shown_ports:
+		markers.append(Rect2(geo_to_screen(port.get_geo_position()) - Vector2(9, 9), Vector2(18, 18)))
+	_labelled_ports.clear()
+	var placed: Array[Rect2] = []
+	var scale := PORT_LABEL_PX / 22.0
+	for i in _shown_ports.size():
+		var port := _shown_ports[i]
+		var at := geo_to_screen(port.get_geo_position())
+		var size := LABEL_FONT.get_string_size(port.display_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 22) * scale
+		# Right of the marker if there is room, otherwise left, above or below.
+		for offset: Vector2 in [Vector2(14.0, -size.y * 0.5), Vector2(-14.0 - size.x, -size.y * 0.5),
+				Vector2(-size.x * 0.5, -12.0 - size.y), Vector2(-size.x * 0.5, 12.0)]:
+			var rect := Rect2(at + offset, size).grow(PORT_LABEL_GAP_PX / 2.0)
+			if _is_label_space_free(rect, placed, markers, i):
+				placed.append(rect)
+				_labelled_ports[port.id] = rect
+				break
+
+
+func _is_label_space_free(rect: Rect2, placed: Array[Rect2], markers: Array[Rect2], own_marker: int) -> bool:
+	for other in placed:
+		if rect.intersects(other):
+			return false
+	for j in markers.size():
+		if j != own_marker and rect.intersects(markers[j]):
+			return false
+	return true
+
+
+## Highlighted harbours first, then by importance, then by name.
+func _port_priority_before(a: PortData, b: PortData) -> bool:
+	var ra := _port_rank(a)
+	var rb := _port_rank(b)
+	if ra != rb:
+		return ra < rb
+	return a.display_name < b.display_name
+
+
+func _port_rank(port: PortData) -> int:
+	if port.id == selected_port_id or port.id == destination_port_id:
+		return 0
+	if port.id == boat_port_id:
+		return 1
+	return 1 + port.importance
+
+
 # --- Drawing -----------------------------------------------------------------------------
 
 func _draw_overlay() -> void:
@@ -524,8 +651,9 @@ func _draw_overlay() -> void:
 		_draw_text(label.text, label.position, size * s, LABEL_SEA if label.sea else LABEL_COUNTRY, true)
 	_draw_weather(s)
 	_draw_courses(s)
-	for port in catalog.ports:
-		_draw_port(port, s)
+	_update_port_layout()
+	for i in range(_shown_ports.size() - 1, -1, -1):  # most important drawn last (on top)
+		_draw_port(_shown_ports[i], s, _labelled_ports.has(_shown_ports[i].id))
 	_draw_waypoints(s)
 	if vessel_geo != Vector2.INF:
 		var at := projection.geo_to_map(vessel_geo)
@@ -624,7 +752,7 @@ func _draw_arrowhead(points: PackedVector2Array, color: Color, s: float) -> void
 		tip - direction * 18.0 * s - side]), color)
 
 
-func _draw_port(port: PortData, s: float) -> void:
+func _draw_port(port: PortData, s: float, labelled := true) -> void:
 	var p := projection.geo_to_map(port.get_geo_position())
 	if port.id == selected_port_id:
 		_overlay.draw_circle(p, 15.0 * s, BRASS, false, 3.0 * s, true)
@@ -632,7 +760,11 @@ func _draw_port(port: PortData, s: float) -> void:
 		_overlay.draw_circle(p, 13.0 * s, HOVER, false, 2.0 * s, true)
 	_overlay.draw_circle(p, 8.0 * s, PORT_RIM, true, -1.0, true)
 	_overlay.draw_circle(p, 5.5 * s, BRASS if port.id == destination_port_id else PORT_FILL, true, -1.0, true)
-	_draw_text(port.display_name, p + Vector2(16, 7) * s, 21 * s, PORT_FILL, false, true)
+	if labelled:
+		# The label rectangle is in screen space (see _update_port_layout()).
+		var rect: Rect2 = _labelled_ports[port.id].grow(-PORT_LABEL_GAP_PX / 2.0)
+		var baseline := screen_to_map(rect.position + Vector2(0.0, rect.size.y * 0.78))
+		_draw_text(port.display_name, baseline, PORT_LABEL_PX * s, PORT_FILL, false, true)
 
 
 func _draw_waypoints(s: float) -> void:

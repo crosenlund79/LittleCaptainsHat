@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"corfu"
+display_name = "Corfu"
+country = "Greece"
+latitude = 39.6167
+longitude = 19.9167
+description = "Corfu, an island harbour on the Ionian Sea."
+importance = 1
+region = "ionian"
+island = true
+source = "UN/LOCODE GR CFU (3937N 01955E)"

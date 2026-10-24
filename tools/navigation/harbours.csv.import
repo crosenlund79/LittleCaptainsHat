@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://brk4qtwkev5ve"
+
+[deps]
+
+files=["res://tools/navigation/harbours.name.translation", "res://tools/navigation/harbours.country.translation", "res://tools/navigation/harbours.latitude.translation", "res://tools/navigation/harbours.longitude.translation", "res://tools/navigation/harbours.importance.translation", "res://tools/navigation/harbours.region.translation", "res://tools/navigation/harbours.island.translation", "res://tools/navigation/harbours.source.translation", "res://tools/navigation/harbours.description.translation"]
+
+source_file="res://tools/navigation/harbours.csv"
+dest_files=["res://tools/navigation/harbours.name.translation", "res://tools/navigation/harbours.country.translation", "res://tools/navigation/harbours.latitude.translation", "res://tools/navigation/harbours.longitude.translation", "res://tools/navigation/harbours.importance.translation", "res://tools/navigation/harbours.region.translation", "res://tools/navigation/harbours.island.translation", "res://tools/navigation/harbours.source.translation", "res://tools/navigation/harbours.description.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

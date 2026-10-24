@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"mariehamn"
+display_name = "Mariehamn"
+country = "Finland"
+latitude = 60.1000
+longitude = 19.9500
+description = "Mariehamn, an island harbour on the Baltic Sea."
+importance = 2
+region = "baltic"
+island = true
+source = "UN/LOCODE FI MHQ (6006N 01957E)"

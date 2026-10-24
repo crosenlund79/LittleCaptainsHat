@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"sibenik"
+display_name = "Šibenik"
+country = "Croatia"
+latitude = 43.7333
+longitude = 15.8833
+description = "Šibenik, a harbour on the Adriatic Sea."
+importance = 3
+region = "adriatic"
+island = false
+source = "UN/LOCODE HR SIB (4344N 01553E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"parnu"
+display_name = "Pärnu"
+country = "Estonia"
+latitude = 58.3833
+longitude = 24.5000
+description = "Pärnu, a harbour on the Baltic Sea."
+importance = 3
+region = "baltic"
+island = false
+source = "UN/LOCODE EE PRN (5823N 02430E)"

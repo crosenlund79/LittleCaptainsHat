@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lorient"
+display_name = "Lorient"
+country = "France"
+latitude = 47.7500
+longitude = -3.3667
+description = "Lorient, a harbour on the Bay of Biscay."
+importance = 3
+region = "biscay"
+island = false
+source = "UN/LOCODE FR LRT (4745N 00322W)"

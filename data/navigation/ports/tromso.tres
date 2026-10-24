@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"tromso"
+display_name = "Tromsø"
+country = "Norway"
+latitude = 69.6667
+longitude = 18.9667
+description = "Tromsø, a harbour on the Norwegian coast."
+importance = 1
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO TOS (6940N 01858E)"

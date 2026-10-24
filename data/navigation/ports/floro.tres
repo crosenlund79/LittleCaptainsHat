@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"floro"
+display_name = "Florø"
+country = "Norway"
+latitude = 61.6000
+longitude = 5.0167
+description = "Florø, a harbour on the Norwegian coast."
+importance = 3
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO FRO (6136N 00501E)"

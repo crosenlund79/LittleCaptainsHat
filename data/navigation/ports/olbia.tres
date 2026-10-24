@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"olbia"
+display_name = "Olbia"
+country = "Italy"
+latitude = 40.9167
+longitude = 9.5167
+description = "Olbia, an island harbour on the Mediterranean."
+importance = 2
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT OLB (4055N 00931E)"

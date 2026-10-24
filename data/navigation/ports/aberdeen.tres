@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"aberdeen"
+display_name = "Aberdeen"
+country = "United Kingdom"
+latitude = 57.1333
+longitude = -2.1000
+description = "Aberdeen, a harbour on the North Sea."
+importance = 1
+region = "north_sea"
+island = false
+source = "UN/LOCODE GB ABD (5708N 00206W)"

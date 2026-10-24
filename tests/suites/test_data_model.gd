@@ -4,8 +4,8 @@ extends RefCounted
 
 func run(t: Node) -> void:
 	var catalog := PortCatalog.get_default()
-	t.check(catalog != null and catalog.ports.size() >= 10 and catalog.ports.size() <= 15,
-		"port catalog loads 10-15 European ports (got %d)" % catalog.ports.size())
+	t.check(catalog != null and catalog.ports.size() >= 150,
+		"port catalog loads about 150 European harbours (Iteration 006; got %d)" % catalog.ports.size())
 	t.check(catalog.has_port(&"copenhagen") and catalog.has_port(&"kiel"), "Copenhagen and Kiel use stable ids")
 
 	# Geographic maths and projection.

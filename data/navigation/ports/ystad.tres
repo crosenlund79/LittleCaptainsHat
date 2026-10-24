@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"ystad"
+display_name = "Ystad"
+country = "Sweden"
+latitude = 55.4167
+longitude = 13.8167
+description = "Ystad, a harbour on the Baltic Sea."
+importance = 3
+region = "baltic"
+island = false
+source = "UN/LOCODE SE YST (5525N 01349E)"

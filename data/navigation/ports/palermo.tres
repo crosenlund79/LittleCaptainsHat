@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"palermo"
+display_name = "Palermo"
+country = "Italy"
+latitude = 38.1167
+longitude = 13.3667
+description = "Palermo, an island harbour on the Mediterranean."
+importance = 1
+region = "mediterranean"
+island = true
+source = "UN/LOCODE IT PMO (3807N 01322E)"

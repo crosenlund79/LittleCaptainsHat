@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"visby"
+display_name = "Visby"
+country = "Sweden"
+latitude = 57.6333
+longitude = 18.3000
+description = "Visby, an island harbour on the Baltic Sea."
+importance = 2
+region = "baltic"
+island = true
+source = "UN/LOCODE SE VBY (5738N 01818E)"

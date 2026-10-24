@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"zadar"
+display_name = "Zadar"
+country = "Croatia"
+latitude = 44.1167
+longitude = 15.2333
+description = "Zadar, a harbour on the Adriatic Sea."
+importance = 2
+region = "adriatic"
+island = false
+source = "UN/LOCODE HR ZAD (4407N 01514E)"

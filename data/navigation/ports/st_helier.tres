@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"st_helier"
+display_name = "St Helier"
+country = "Jersey"
+latitude = 49.1833
+longitude = -2.1000
+description = "St Helier, an island harbour on the English Channel."
+importance = 3
+region = "channel"
+island = true
+source = "UN/LOCODE JE STH (4911N 00206W)"

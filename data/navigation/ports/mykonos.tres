@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"mykonos"
+display_name = "Mykonos"
+country = "Greece"
+latitude = 37.4500
+longitude = 25.3333
+description = "Mykonos, an island harbour on the Aegean Sea."
+importance = 2
+region = "aegean"
+island = true
+source = "UN/LOCODE GR JMK (3727N 02520E)"

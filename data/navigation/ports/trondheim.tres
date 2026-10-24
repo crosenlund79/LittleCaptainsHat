@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"trondheim"
+display_name = "Trondheim"
+country = "Norway"
+latitude = 63.4333
+longitude = 10.4000
+description = "Trondheim, a harbour on the Norwegian coast."
+importance = 1
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO TRD (6326N 01024E)"

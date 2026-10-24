@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"narvik"
+display_name = "Narvik"
+country = "Norway"
+latitude = 68.4167
+longitude = 17.4167
+description = "Narvik, a harbour on the Norwegian coast."
+importance = 3
+region = "scandinavia"
+island = false
+source = "UN/LOCODE NO NVK (6825N 01725E)"

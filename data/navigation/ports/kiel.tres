@@ -10,3 +10,7 @@ country = "Germany"
 latitude = 54.33
 longitude = 10.152
 description = "German sailing hub at the head of the Kiel Fjord, at the Baltic end of the Kiel Canal."
+importance = 1
+region = "baltic"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"

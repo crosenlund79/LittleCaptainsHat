@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"tallinn"
+display_name = "Tallinn"
+country = "Estonia"
+latitude = 59.4333
+longitude = 24.7333
+description = "Tallinn, a harbour on the Baltic Sea."
+importance = 1
+region = "baltic"
+island = false
+source = "UN/LOCODE EE TLL (5926N 02444E)"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"nafplio"
+display_name = "Nafplio"
+country = "Greece"
+latitude = 37.5667
+longitude = 22.8000
+description = "Nafplio, a harbour on the Aegean Sea."
+importance = 3
+region = "aegean"
+island = false
+source = "UN/LOCODE GR NAF (3734N 02248E)"

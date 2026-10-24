@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lulea"
+display_name = "Luleå"
+country = "Sweden"
+latitude = 65.5833
+longitude = 22.1500
+description = "Luleå, a harbour on the Baltic Sea."
+importance = 2
+region = "baltic"
+island = false
+source = "UN/LOCODE SE LLA (6535N 02209E)"

@@ -10,3 +10,7 @@ country = "Ireland"
 latitude = 53.346
 longitude = -6.195
 description = "Capital of Ireland at the mouth of the Liffey on the Irish Sea."
+importance = 1
+region = "british_isles"
+island = false
+source = "Next Harbor original harbour (Iteration 002)"
