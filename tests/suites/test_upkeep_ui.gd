@@ -134,7 +134,7 @@ func _test_provisions_station() -> void:
 	var before := menu.get_values()
 	t.check(before.food == "14.0 days" and before.water == "14.0 days" and before.endurance == "14.0 days" and before.food_level == "Full",
 		"[provisions] it shows food, water and endurance in days (%s)" % [before])
-	t.check((menu.find_child("RestockButton", true, false) as Button).disabled, "[provisions] full stores: nothing to restock")
+	t.check((menu.find_child("GroceryButton", true, false) as Button).disabled, "[provisions] full stores: nothing to buy")
 	t.check(t.get_tree().paused, "[provisions] the game is paused while it is open")
 	await t.screenshot("89_provisions_before_sleep")
 	menu.close()
@@ -148,13 +148,20 @@ func _test_provisions_station() -> void:
 	t.check(after.get("food") == "13.5 days" and after.get("water") == "13.5 days",
 		"[provisions] 12 hours of sleep used half a day (%s)" % [after])
 	await t.screenshot("90_provisions_after_sleep")
-	# Restock in harbour, from the panel.
-	var restock := menu.find_child("RestockButton", true, false) as Button
-	t.check(not restock.disabled, "[restock] used stores can be restocked here in harbour")
-	await t.click(restock)
+	# Buy in harbour: the panel leads to the grocery store (Iteration 005c).
+	var grocery_button := menu.find_child("GroceryButton", true, false) as Button
+	t.check(not grocery_button.disabled and grocery_button.text.contains("€10"), "[buy] used stores: the grocery store is offered (%s)" % grocery_button.text)
+	await t.click(grocery_button)
 	await t.frames(2)
-	t.check(menu.get_values().food == "14.0 days" and is_equal_approx(GameSession.get_food_days(), 14.0), "[restock] restocked to 14 days at once")
-	t.check_eq(GameSession.get_funds(), 10000, "[restock] for free")
+	var store := app.modals.get_top() as GroceryMenu
+	if t.check(store != null, "[buy] it opens the grocery store on top"):
+		await t.click(store.get_buy_button())
+		await t.frames(2)
+		store.close()
+		await t.frames(2)
+	t.check(app.modals.get_top() == menu and menu.get_values().food == "14.0 days" and is_equal_approx(GameSession.get_food_days(), 14.0),
+		"[buy] back in the provisions panel: full again (14 days)")
+	t.check_eq(GameSession.get_funds(), 9990, "[buy] one missing day of food and water in all cost €10")
 	menu.close()
 	await t.frames(2)
 
@@ -182,9 +189,9 @@ func _test_supply_graphics() -> void:
 	Simulation.advance(0.2 * Provisions.DAY_SECONDS)
 	await t.frames(2)
 	t.check(filled_before == Vector2i(3, 3) and display.get_filled() == Vector2i(2, 2), "[supplies] a crate and a can empty as time passes")
-	GameSession.restock_provisions()
+	GameSession.buy_provisions()
 	await t.frames(2)
-	t.check_eq(display.get_filled(), Vector2i(4, 4), "[supplies] restocking fills the store graphics at once")
+	t.check_eq(display.get_filled(), Vector2i(4, 4), "[supplies] buying fills the store graphics at once")
 
 
 func _test_all_cabins() -> void:
@@ -279,7 +286,7 @@ func _test_boatyard() -> void:
 		t.check(same, "[boatyard] at %d%% the panel keeps its size and place for all three boats (%s)" % [roundi(scale * 100), first])
 		var screen := Rect2(Vector2.ZERO, yard.get_viewport_rect().size)
 		var buttons_ok := true
-		for name in ["ChooseButton", "CloseButton", "RepairButton", "RestockButton"]:
+		for name in ["ChooseButton", "CloseButton", "RepairButton", "GroceryButton"]:
 			var b := yard.find_child(name, true, false) as Control
 			buttons_ok = buttons_ok and b.is_visible_in_tree() and screen.encloses(b.get_global_rect()) and first.encloses(b.get_global_rect())
 		t.check(buttons_ok, "[boatyard] at %d%% all buttons are inside the panel and on screen" % roundi(scale * 100))
@@ -290,15 +297,23 @@ func _test_boatyard() -> void:
 	var condition := yard.find_child("ConditionLabel", true, false) as Label
 	t.check(condition.text.contains("40 % · Damaged"), "[boatyard] it shows the selected boat's condition (%s)" % condition.text)
 	var repair := yard.find_child("RepairButton", true, false) as Button
-	var restock := yard.find_child("RestockButton", true, false) as Button
-	t.check(not repair.disabled and not restock.disabled, "[boatyard] repair and restock are offered for a worn boat with used stores")
+	var grocery := yard.find_child("GroceryButton", true, false) as Button
+	t.check(not repair.disabled and not grocery.disabled, "[boatyard] repair and the grocery store are offered for a worn boat with used stores")
 	await t.screenshot("94_boatyard_repair")
+	var funds := GameSession.get_funds()
+	var price := GameSession.get_provisions_price()
 	await t.click(repair)
-	await t.click(restock)
+	await t.click(grocery)
 	await t.frames(2)
+	var store := app.modals.get_top() as GroceryMenu
+	if store:
+		await t.click(store.get_buy_button())
+		store.close()
+		await t.frames(2)
 	t.check(is_equal_approx(GameSession.get_condition(), 100.0) and is_equal_approx(GameSession.get_food_days(), 14.0)
-		and GameSession.get_funds() == 10000, "[boatyard] repaired to 100 % and restocked, free")
-	t.check(repair.disabled and restock.disabled and condition.text.contains("100 %"), "[boatyard] the buttons and condition update at once")
+		and GameSession.get_funds() == funds - price and price == 180, "[boatyard] repaired free; provisions bought for €180 (9 + 9 days)")
+	t.check(app.modals.get_top() == yard and repair.disabled and grocery.disabled and condition.text.contains("100 %"),
+		"[boatyard] back in the boatyard, the buttons and condition update at once")
 	await t.screenshot("93_boatyard_after_repair_restock")
 	yard.close()
 	await t.frames(2)
@@ -317,6 +332,7 @@ func _test_rescue_flow() -> void:
 	var here := Simulation.get_weather_at_vessel()
 	t.check(here.event_id == &"dev_storm" and here.hazard >= WeatherModel.HAZARD_DANGEROUS,
 		"[rescue] the test storm is the real weather at the boat (%s)" % here.get_label())
+	var funds_before := GameSession.get_funds()
 	Simulation.advance(600.0)
 	await t.frames(3)
 	await _settle()
@@ -324,8 +340,9 @@ func _test_rescue_flow() -> void:
 	if not t.check(dialog != null, "[rescue] the rescue report appears"):
 		return
 	var text := dialog.get_text()
-	t.check(text.contains("Rescued at Sea") and text.contains("Copenhagen") and text.contains("€1,000") and text.contains("€9,000"),
-		"[rescue] it names Copenhagen, the €1,000 fee and the €9,000 left")
+	t.check(text.contains("Rescued at Sea") and text.contains("Copenhagen") and text.contains("€1,000")
+		and text.contains(GameSession.format_money(funds_before - 1000)) and GameSession.get_funds() == funds_before - 1000,
+		"[rescue] it names Copenhagen, the €1,000 fee and the %s left" % GameSession.format_money(funds_before - 1000))
 	t.check(t.get_tree().paused, "[rescue] the game is paused under the report")
 	var time := GameSession.get_game_time()
 	await t.frames(10)
@@ -347,10 +364,11 @@ func _test_rescue_flow() -> void:
 	GameSession.depart()
 	Simulation.advance(1800.0)
 	DevTools.prepare_rescue()
+	var funds_second := GameSession.get_funds()
 	app.sleep_for(8.0)
 	await _settle()
-	t.check(app.modals.get_top() is RescueDialog and not GameSession.is_underway() and GameSession.get_funds() == 8000,
-		"[rescue] during sleep: woken by the rescue, €8,000 left")
+	t.check(app.modals.get_top() is RescueDialog and not GameSession.is_underway() and GameSession.get_funds() == funds_second - 1000,
+		"[rescue] during sleep: woken by the rescue, another €1,000 paid")
 	t.check(not _toast_contains("You slept"), "[rescue] no ordinary wake-up message")
 	app.modals.get_top().close()
 	await _settle()

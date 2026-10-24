@@ -195,7 +195,7 @@ class Builder:
 
 # ---------------------------------------------------------------- shared parts
 
-def surroundings(b, pontoon_y, port_name, lines_from, cleats, sign_x):
+def surroundings(b, pontoon_y, port_name, lines_from, cleats, sign_x, grocery_x):
     """Water, ripples and the pontoon (Mooring is shown only in port)."""
     b.node("Surroundings", "Node2D", ".")
     b.poly("Water", "Surroundings", [(-1700, -1000), (1700, -1000), (1700, 1000), (-1700, 1000)], "#1D4652")
@@ -215,6 +215,7 @@ def surroundings(b, pontoon_y, port_name, lines_from, cleats, sign_x):
     muted = b.label_settings(15, "#A6C4C9", 0.6)
     b.label("PontoonLabel", "Surroundings/Mooring", port_name, (0, top + 55), muted)
     b.label("BoatyardSign", "Surroundings/Mooring", "BOATYARD", (sign_x, top + 21), muted, width=280)
+    b.label("GrocerySign", "Surroundings/Mooring", "GROCERY STORE", (grocery_x, top + 21), muted, width=280)
 
 
 def deck_root(b, vessel_id, bounds):
@@ -390,7 +391,7 @@ def build_cat_deck(c):
     deck_root(b, c["id"], (-520, -290, 1040, 580))
     hy = c["hull_y"]
     surroundings(b, c["pontoon_y"], "GUEST PONTOON · COPENHAGEN",
-                 {"SternLine": ((-480, hy + 40), -440), "BowLine": ((430, hy + 30), 380)}, (-440, 380), 220)
+                 {"SternLine": ((-480, hy + 40), -440), "BowLine": ((430, hy + 30), 380)}, (-440, 380), -20, 220)
     b.node("Visual", None, ".", [], instance=b.res("PackedScene", f"res://src/vessels/{c['id']}/deck_visual.tscn"))
     b.node("Layout", "Node2D", ".")
     b.node("Collision", "Node2D", "Layout")
@@ -406,6 +407,7 @@ def build_cat_deck(c):
     b.station("Companionway", (s0 - 18, 0), "companionway", "Go below", ("rect", (36, 110)))
     b.station("Helm", (-226, 132), "helm", "Take the helm", ("circle", 30))
     b.station("Boatyard", (-20, hy + 32), "boatyard", "Visit the boatyard", ("rect", (200, 40)))
+    b.station("Grocery", (220, hy + 32), "grocery", "Visit the grocery store", ("rect", (140, 40)))
     b.markers("SpawnPoints", {"start": (-330, -90), "from_cabin": (s0 - 45, 0), "from_boatyard": (-20, hy + 8)})
     b.markers("SailMarkers", {"Mast": c["mast"], "Tack": c["tack"], "BoomEnd": c["boom_end"], "Traveller": c["traveller"],
                               "JibSheetLead": c["jib_lead"], "SpinnakerSheetLead": c["kite_lead"]})
@@ -594,6 +596,7 @@ def build_cat_cabin(c):
     b.station("Chart", (58, -110), "nav_table", "Open chart", ("rect", (30, 80)))
     b.station("Berth", (-293, -hy), "bed", "Sleep", ("rect", (24, 120)))
     b.station("Provisions", (-110, -100), "provisions", "Check provisions", ("rect", (96, 24)))
+    b.station("Work", (-150, -hy - 16), "work", "Work remotely", ("rect", (70, 24)))
     b.markers("SpawnPoints", {"start": (-40, -20), "from_deck": (-160, 0), "v_berth": (-278, -hy)})
     b.markers("CompanionSpots", {"settee": (-80, 134), "nav_station": (96, -140), "v_berth": (-322, -hy + 54),
                                  "cabin_floor": (0, 10), "companionway": (-140, -40), "seating": (30, 100)})
@@ -737,7 +740,7 @@ def build_tri_deck(t):
     deck_root(b, t["id"], (-520, -290, 1040, 580))
     ay = t["ama_y"]
     surroundings(b, t["pontoon_y"], "GUEST PONTOON · COPENHAGEN",
-                 {"SternLine": ((-300, ay + 20), -380), "BowLine": ((340, ay + 20), 380)}, (-380, 380), 200)
+                 {"SternLine": ((-300, ay + 20), -380), "BowLine": ((340, ay + 20), 380)}, (-380, 380), 0, 210)
     b.node("Visual", None, ".", [], instance=b.res("PackedScene", f"res://src/vessels/{t['id']}/deck_visual.tscn"))
     b.node("Layout", "Node2D", ".")
     b.node("Collision", "Node2D", "Layout")
@@ -754,6 +757,7 @@ def build_tri_deck(t):
     b.station("Companionway", (r0 - 18, 0), "companionway", "Go below", ("rect", (36, 100)))
     b.station("Helm", (-440, 0), "helm", "Take the helm", ("circle", 30))
     b.station("Boatyard", (0, ay + 6), "boatyard", "Visit the boatyard", ("rect", (200, 40)))
+    b.station("Grocery", (210, ay + 6), "grocery", "Visit the grocery store", ("rect", (120, 40)))
     b.markers("SpawnPoints", {"start": (-300, 0), "from_cabin": (r0 - 45, 0), "from_boatyard": (0, ay - 4)})
     b.markers("SailMarkers", {"Mast": t["mast"], "Tack": t["tack"], "BoomEnd": t["boom_end"], "Traveller": t["traveller"],
                               "JibSheetLead": t["jib_lead"], "SpinnakerSheetLead": t["kite_lead"]})
@@ -832,6 +836,7 @@ def build_tri_cabin(t):
     b.station("Companionway", (-345, 0), "companionway", "Go on deck", ("rect", (30, 80)))
     b.station("Chart", (-290, 52), "nav_table", "Open chart", ("rect", (80, 26)))
     b.station("Provisions", (-290, -54), "provisions", "Check provisions", ("rect", (90, 20)))
+    b.station("Work", (0, 26), "work", "Work remotely", ("rect", (100, 20)))
     b.station("Berth", (282, 0), "bed", "Sleep", ("rect", (30, 120)))
     b.markers("SpawnPoints", {"start": (-120, 40), "from_deck": (-322, 0), "v_berth": (258, 0)})
     b.markers("CompanionSpots", {"settee": (-40, -90), "nav_station": (-232, 86), "v_berth": (318, 48),

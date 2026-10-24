@@ -1,9 +1,12 @@
 class_name ProvisionsMenu
 extends ModalPanel
-## The provisions locker: how much food and fresh water is aboard, how long it
-## lasts, and (moored in harbour) restocking. Opened from the provisions
-## station in every cabin. Reads GameSession; restocking itself is
-## GameSession.restock_provisions().
+## The provisions locker: how much food and fresh water is aboard and how
+## long it lasts. Opened from the provisions station in every cabin. Reads
+## GameSession. In harbour it leads to the grocery store (GroceryMenu), where
+## provisions are bought.
+
+## The player wants the grocery store (App opens it on top of this panel).
+signal grocery_requested
 
 @onready var _intro: Label = %Intro
 @onready var _food: Label = %FoodValue
@@ -12,11 +15,11 @@ extends ModalPanel
 @onready var _water_level: Label = %WaterLevel
 @onready var _endurance: Label = %EnduranceValue
 @onready var _note: Label = %Note
-@onready var _restock: Button = %RestockButton
+@onready var _grocery: Button = %GroceryButton
 
 
 func _ready() -> void:
-	_restock.pressed.connect(_on_restock)
+	_grocery.pressed.connect(grocery_requested.emit)
 	%CloseButton.pressed.connect(close)
 	refresh()
 
@@ -36,15 +39,18 @@ func refresh() -> void:
 	_water_level.text = String(Provisions.level_of(provisions.water_days)).capitalize()
 	_endurance.text = Provisions.format_days(provisions.endurance_days())
 	var harbour := GameSession.is_moored_in_harbour()
-	_restock.disabled = not harbour or provisions.is_full()
+	_grocery.disabled = not harbour or provisions.is_full()
+	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
+		if not provisions.is_full() else "Grocery store…"
 	if not harbour:
-		_note.text = "Underway: you can restock in the next harbour."
+		_note.text = "Underway: buy food and water at the grocery store in the next harbour."
 	elif provisions.is_full():
-		_note.text = "Food and water are full. Restocking in harbour is free."
+		_note.text = "Food and water are full."
 	else:
-		_note.text = "Moored in %s: restocking here is free." % GameSession.get_location().display_name
+		_note.text = "Moored in %s: the grocery store fills both for %s." % [GameSession.get_location().display_name,
+			GameSession.format_money(GameSession.get_provisions_price())]
 	if provisions.is_empty():
-		_note.text += " You are out of supplies: you cannot set sail until you restock."
+		_note.text += " You are out of supplies: you cannot set sail until you buy more."
 
 
 func get_values() -> Dictionary:
@@ -52,14 +58,8 @@ func get_values() -> Dictionary:
 		"food_level": _food_level.text, "water_level": _water_level.text}
 
 
-func _on_restock() -> void:
-	var error := GameSession.restock_provisions()
-	notify(error if not error.is_empty() else "Provisions restocked: %s of food and water." % Provisions.format_days(Provisions.CAPACITY_DAYS))
-	refresh()
-
-
 func focus_default() -> void:
-	if _restock.disabled:
+	if _grocery.disabled:
 		%CloseButton.grab_focus()
 	else:
-		_restock.grab_focus()
+		_grocery.grab_focus()

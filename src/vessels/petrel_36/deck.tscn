@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://src/boat/boat_area.gd" id="1_r"]
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_deck.wav" id="2_r"]
@@ -23,6 +23,9 @@ radius = 30.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Boatyard"]
 size = Vector2(200, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Grocery"]
+size = Vector2(120, 40)
 
 [node name="Exterior" type="Node2D" node_paths=PackedStringArray("mooring", "mooring_label")]
 script = ExtResource("1_r")
@@ -481,12 +484,23 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="BoatyardSign" type="Label" parent="Surroundings/Mooring"]
-offset_left = 60
+offset_left = -140
 offset_top = 317
-offset_right = 340
+offset_right = 140
 offset_bottom = 345
 mouse_filter = 2
 text = "BOATYARD"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GrocerySign" type="Label" parent="Surroundings/Mooring"]
+offset_left = 70
+offset_top = 317
+offset_right = 350
+offset_bottom = 345
+mouse_filter = 2
+text = "GROCERY STORE"
 label_settings = SubResource("LabelSettings_1")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -566,6 +580,16 @@ highlight_target = NodePath("")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Boatyard"]
 shape = SubResource("RectangleShape2D_Boatyard")
+
+[node name="Grocery" type="Area2D" parent="Layout/Stations"]
+position = Vector2(210, 246)
+script = ExtResource("7_r")
+interaction_id = &"grocery"
+prompt = "Visit the grocery store"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Grocery"]
+shape = SubResource("RectangleShape2D_Grocery")
 
 [node name="SpawnPoints" type="Node2D" parent="Layout"]
 

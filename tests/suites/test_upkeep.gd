@@ -135,17 +135,19 @@ func _test_provisions_warnings_and_depletion() -> void:
 	t.check(GameSession.get_food_days() == 0.0 and GameSession.get_water_days() == 0.0 and warnings.size() == 3,
 		"[provisions] never below zero, no more warnings")
 	t.check(is_equal_approx(GameSession.get_condition(), 100.0), "[provisions] running out does not damage the boat")
-	# No departure without stores; restocking in harbour fills them again.
+	# No departure without stores; buying in harbour fills them again
+	# (Iteration 005c: at the grocery store, EUR 10 per missing day).
 	GameSession.plan_route_to(&"kiel")
 	t.check(GameSession.depart().contains("out of food or water"), "[provisions] no departure with empty stores")
 	t.check(not GameSession.is_underway(), "[provisions] the boat stays in harbour")
-	t.check_eq(GameSession.restock_provisions(), "", "[restock] restocking in harbour works")
+	t.check_eq(GameSession.get_provisions_price(), 280, "[buy] 28 missing days (14 food + 14 water) cost €280")
+	t.check_eq(GameSession.buy_provisions(), "", "[buy] buying provisions in harbour works")
 	t.check(is_equal_approx(GameSession.get_food_days(), 14.0) and is_equal_approx(GameSession.get_water_days(), 14.0),
-		"[restock] food and water are full again (14 days)")
-	t.check(GameSession.restock_provisions().contains("already full"), "[restock] restocking full stores is refused")
-	t.check_eq(GameSession.get_funds(), 10000, "[restock] restocking is free")
+		"[buy] food and water are full again (14 days)")
+	t.check(GameSession.buy_provisions().contains("already full"), "[buy] buying when full is refused")
+	t.check_eq(GameSession.get_funds(), 9720, "[buy] paid €280: €9,720 left")
 	t.check_eq(GameSession.depart(), "", "[provisions] then the boat can sail")
-	t.check(GameSession.restock_provisions().contains("harbour"), "[restock] not possible underway")
+	t.check(GameSession.buy_provisions().contains("harbour"), "[buy] not possible underway")
 	# Running out at sea: the voyage goes on to the harbour.
 	GameSession.set_provisions_for_testing(0.0)
 	var progress := GameSession.get_voyage_progress_nm()
@@ -451,9 +453,8 @@ func _test_money_limits() -> void:
 		if GameSession.is_underway():
 			Simulation.sleep(12.0)
 	GameSession.repair_vessel()
-	GameSession.restock_provisions()
 	GameSession.switch_vessel(&"petrel_36")
-	t.check_eq(GameSession.get_funds(), 10000, "[money] voyages, repairs, restocking and changing boats cost nothing")
+	t.check_eq(GameSession.get_funds(), 10000, "[money] voyages, repairs and changing boats cost nothing")
 
 
 # --- Persistence ------------------------------------------------------------------------

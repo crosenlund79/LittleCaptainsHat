@@ -407,7 +407,7 @@ func depart() -> String:
 	if route == null or not route.has_path():
 		return "Plot a course at the chart table first."
 	if _state.provisions.is_empty():
-		return "You are out of food or water. Restock your provisions before setting sail."
+		return "You are out of food or water. Buy provisions at the grocery store before setting sail."
 	var location := get_location()
 	if location == null or route.origin_port_id != location.id:
 		return "The planned course does not start here."
@@ -667,17 +667,63 @@ func get_water_days() -> float:
 	return _state.provisions.water_days if _state else 0.0
 
 
-## Fills food and water to capacity (free in this version). Harbour only.
-## Returns "" on success, otherwise the reason.
-func restock_provisions() -> String:
+## Price of provisions at the grocery store: euros per missing day of food or
+## of water (combined), the same in every harbour.
+const PROVISIONS_PRICE_PER_DAY := 10
+## Remote work: euros per completed hour, and the hours one session may last.
+const REMOTE_WORK_PAY_PER_HOUR := 25
+const REMOTE_WORK_MIN_HOURS := 1
+const REMOTE_WORK_MAX_HOURS := 8
+
+
+## Days missing to fill food and water to capacity, both counted (0-28).
+func get_missing_provision_days() -> float:
+	if _state == null:
+		return 0.0
+	return (Provisions.CAPACITY_DAYS - _state.provisions.food_days) + (Provisions.CAPACITY_DAYS - _state.provisions.water_days)
+
+
+## What filling food and water to capacity costs now (whole euros, rounded up,
+## so a fraction of a day is never free).
+func get_provisions_price() -> int:
+	return ceili(get_missing_provision_days() * PROVISIONS_PRICE_PER_DAY - 1e-6)
+
+
+## Buys food and water up to capacity at the grocery store: one transaction
+## that pays get_provisions_price() and fills both stores. Harbour only, and
+## refused (nothing changes) when the money is not enough. Returns "" on
+## success, otherwise the reason.
+func buy_provisions() -> String:
 	if not is_moored_in_harbour():
-		return "Provisions can only be restocked while moored in harbour."
+		return "The grocery store is only reachable while moored in harbour."
 	if _state.provisions.is_full():
 		return "Food and water are already full."
+	var price := get_provisions_price()
+	if price > _state.funds:
+		return "Not enough money: %s needed, you have %s." % [format_money(price), format_money(_state.funds)]
+	_state.funds -= price
 	_state.provisions.restock()
 	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
 	provisions_changed.emit()
 	return ""
+
+
+## Remote work is possible while moored in harbour (a reliable connection).
+func can_work_remotely() -> bool:
+	return is_moored_in_harbour()
+
+
+## Pays for `hours` completed hours of remote work (Simulation.work only,
+## after it has advanced the time).
+func pay_remote_work(hours: int) -> int:
+	if _state == null or hours <= 0:
+		return 0
+	var earned := hours * REMOTE_WORK_PAY_PER_HOUR
+	_state.funds += earned
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	return earned
 
 
 ## Development tools only (DevTools): sets food and water to `days`.
@@ -692,7 +738,7 @@ func set_provisions_for_testing(days: float) -> void:
 	provisions_changed.emit()
 
 
-## Gives each low-stores warning once (until the next restock).
+## Gives each low-stores warning once (until the stores are refilled).
 func _check_provisions() -> void:
 	var needed := _state.provisions.needed_warning()
 	if needed <= _state.provisions.warning_level:
@@ -705,7 +751,7 @@ func _check_provisions() -> void:
 		Provisions.WARN_CRITICAL:
 			text = "Provisions are critically low: less than a day of food or water left."
 		_:
-			text = "You have run out of food or water. Head for a harbour and restock before the next passage."
+			text = "You have run out of food or water. Head for a harbour and buy provisions before the next passage."
 	provisions_changed.emit()
 	provisions_warning.emit(needed, text)
 

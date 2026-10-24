@@ -1,4 +1,4 @@
-# Windows acceptance: Iteration 005 (005a weather, 005b condition, rescue, money, provisions)
+# Windows acceptance: Iteration 005 (005a weather, 005b condition, rescue, money, provisions, 005c work and grocery store)
 
 A step-by-step checklist for testing on Windows. You never need to edit a script.
 
@@ -36,9 +36,9 @@ Default controls: WASD or the arrow keys to walk, **E** to use what the prompt n
 | B3 | Open Provisions again | Food and Water both `13.5 days` (12 h = 0.5 day) | Reduced by exactly 0.5 |
 | B4 | Press F9 → Provisions: **3 days (low)**. Close the panel. | A message says provisions are running low. On the counter one crate and one can are left, in amber. HUD: `Food 3.0 d`. | The graphics changed |
 | B5 | F9 → **Empty** | Message: you have run out. The crates and cans are outlines, red. | — |
-| B6 | Chart table → plot a course to Kiel → helm (on deck) → Set sail | Refused: "You are out of food or water. Restock…" | You cannot depart |
-| B7 | Open Provisions → **Restock provisions (free)** | `14.0 days` at once; the crates and cans are full again | Full, and €10,000 unchanged |
-| B8 | At sea: set sail, then open Provisions | The Restock button is greyed out: "Underway: you can restock in the next harbour" | No restocking at sea |
+| B6 | Chart table → plot a course to Kiel → helm (on deck) → Set sail | Refused: "You are out of food or water. Buy provisions at the grocery store…" | You cannot depart |
+| B7 | Open Provisions → **Grocery store (€280)…** → **Buy for €280** (I005c) | `14.0 days` at once; the crates and cans are full again | Full, and €280 paid |
+| B8 | At sea: set sail, then open Provisions | The grocery button is greyed out: "Underway: buy food and water at the grocery store in the next harbour" | No buying at sea |
 
 📸 Screenshots of B1, B3 and B5.
 
@@ -102,7 +102,7 @@ The rule: stations win when you stand at them; the cat wins when you face it.
 |---|---|---|---|
 | G1 | In harbour, on deck, use **Visit the boatyard** | Panel with three boats, preview, details, comparison, services | — |
 | G2 | Click Starling 33, Halcyon 40, Petrel 36 in turn (or Up/Down) | The outer panel does **not** change size or position; only its content changes. Each boat shows its own condition. | The size stays the same |
-| G3 | With a damaged boat (C8) and used stores (B4): **Repair vessel (free)** and **Restock provisions (free)** | Hull 100 %, stores 14 days, money unchanged; the buttons grey out | — |
+| G3 | With a damaged boat (C8) and used stores (B4): **Repair vessel (free)**, then **Grocery store…** → Buy | Hull 100 % for free; stores 14 days for the price shown | — |
 | G4 | Move aboard another boat, damage it (C8), move back | Each boat keeps its own condition. Money and stores are not reset by changing boats. | — |
 | G5 | Settings → Interface scale 130 %, then G2 again | Still a stable size; all buttons visible | — |
 
@@ -131,6 +131,21 @@ Save in each state below, then quit to the main menu and load the save (also aft
 | Test weather active when saving | **The storm is gone** after loading (test weather is never saved); everything else is kept |
 
 Older saves (Iteration 005a and earlier) load with €10,000, 14 days of stores and every boat at 100 %.
+
+## J. A sailor's living (Iteration 005c)
+
+| Step | Do | Expected | Pass if |
+|---|---|---|---|
+| J1 | New game. In the cabin, find the **work station**: the Starling's and Petrel's saloon table, or the Halcyon's desk in the owner's hull. Prompt **Work remotely**. Press E. | The **Remote work** dialog: 4 hours suggested, "Work 4 h for €100", the finish time, funds now and afterwards | — |
+| J2 | Use **<** / **>** (or Left/Right) | 1 to 8 hours; the pay follows (€25 per hour) | Never below 1 or above 8 |
+| J3 | Work 8 hours | 8 game hours pass; message "You worked 8 h and earned €200…"; HUD funds +€200; Food and Water each −0.3 days | All three |
+| J4 | Set sail, then use the work station at sea | Refused: "Remote work needs a steady connection: moor in a harbour first." | No work at sea |
+| J5 | In harbour, on deck: walk to the pontoon sign **GROCERY STORE**; prompt **Visit the grocery store** | The store shows food and water aboard, the missing days, the price at €10 per missing day, and funds before and after | — |
+| J6 | After some days in harbour (or F9 → Provisions 3 days), **Buy** | Pays the shown price; food and water 14 days; the crates and cans full | Exact price paid |
+| J7 | With little money (spend it, or load a save with less than the price) | **Buy** greyed out; "Not enough money … Remote work … €25 an hour" | No purchase without the money |
+| J8 | Provisions panel and boatyard | Both offer **Grocery store (€…)…**, which opens the same store; there is no free restock anywhere | No free restocking |
+| J9 | Damage the boat (F9 → 40 %), boatyard → **Repair vessel (free)** | 100 %, money unchanged | Repairs are still free |
+| J10 | Save after working and shopping, load | Same money and stores | — |
 
 ---
 

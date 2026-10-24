@@ -108,11 +108,11 @@ layout_mode = 2
 theme_override_constants/separation = 14
 alignment = 2
 
-[node name="RestockButton" type="Button" parent="Center/Panel/VBox/Buttons"]
+[node name="GroceryButton" type="Button" parent="Center/Panel/VBox/Buttons"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
-text = "Restock provisions (free)"
+text = "Grocery store…"
 
 [node name="CloseButton" type="Button" parent="Center/Panel/VBox/Buttons"]
 unique_name_in_owner = true

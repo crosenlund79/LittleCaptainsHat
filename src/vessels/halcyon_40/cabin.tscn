@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://src/boat/boat_area.gd" id="1_r"]
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_cabin.wav" id="2_r"]
@@ -21,6 +21,9 @@ size = Vector2(24, 120)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Provisions"]
 size = Vector2(96, 24)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Work"]
+size = Vector2(70, 24)
 
 [node name="Interior" type="Node2D"]
 script = ExtResource("1_r")
@@ -202,6 +205,16 @@ highlight_target = NodePath("")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Provisions"]
 shape = SubResource("RectangleShape2D_Provisions")
+
+[node name="Work" type="Area2D" parent="Layout/Stations"]
+position = Vector2(-150, -250)
+script = ExtResource("7_r")
+interaction_id = &"work"
+prompt = "Work remotely"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Work"]
+shape = SubResource("RectangleShape2D_Work")
 
 [node name="SpawnPoints" type="Node2D" parent="Layout"]
 

@@ -23,6 +23,10 @@ signal helm_requested
 signal boatyard_requested
 ## The provisions station (cabin) was used.
 signal provisions_requested
+## The work station (cabin) was used.
+signal work_requested
+## The grocery store on the pontoon (deck, in harbour) was used.
+signal grocery_requested
 signal message_requested(text: String)
 ## Prompt text for the focused interactable, or "" when nothing is in range.
 signal interaction_prompt_changed(prompt: String)
@@ -146,6 +150,10 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			boatyard_requested.emit()
 		&"provisions":
 			provisions_requested.emit()
+		&"work":
+			work_requested.emit()
+		&"grocery":
+			grocery_requested.emit()
 		&"pet":
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
@@ -168,8 +176,8 @@ func _update_mooring() -> void:
 		var interactable := node as Interactable
 		if interactable.interaction_id == &"helm":
 			interactable.prompt = HELM_PROMPT_UNDERWAY if GameSession.is_underway() else HELM_PROMPT_IN_PORT
-		elif interactable.interaction_id == &"boatyard":
-			# The boatyard is only reachable in harbour.
+		elif interactable.interaction_id in [&"boatyard", &"grocery"]:
+			# The boatyard and the grocery store are only reachable in harbour.
 			interactable.enabled = GameSession.can_change_vessel()
 			interactable.visible = interactable.enabled
 			interactable.monitorable = interactable.enabled

@@ -384,11 +384,51 @@ func _on_rescued(info: Dictionary) -> void:
 	_on_modal_stack_changed(modals.depth())
 
 
-## The provisions locker in the cabin: the numbers, and restocking in harbour.
+## The provisions locker in the cabin: the numbers, and the way to the
+## grocery store in harbour.
 func open_provisions() -> void:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return
-	modals.push(provisions_menu_scene.instantiate() as ModalPanel)
+	var menu := provisions_menu_scene.instantiate() as ProvisionsMenu
+	menu.grocery_requested.connect(open_grocery)
+	modals.push(menu)
+
+
+## The harbour grocery store (on top of whatever menu asked for it). In
+## harbour only.
+func open_grocery() -> void:
+	if not is_in_gameplay() or router.is_busy():
+		return
+	if not GameSession.is_moored_in_harbour():
+		notify("The grocery store is in harbour; you are at sea.")
+		return
+	modals.push(GroceryMenu.new())
+
+
+## The cabin's work station: remote work, in harbour only.
+func open_work_menu() -> void:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return
+	if not GameSession.can_work_remotely():
+		notify("Remote work needs a steady connection: moor in a harbour first.")
+		return
+	var menu := WorkMenu.new()
+	menu.work_requested.connect(work_for)
+	modals.push(menu)
+
+
+## Works for `hours` through the normal simulation (Simulation.work), then
+## reports the pay. Like sleeping, it also works while paused and leaves the
+## pause as it was; the player stays at the desk.
+func work_for(hours: int) -> void:
+	modals.clear()
+	var result := Simulation.work(hours)
+	if not String(result.error).is_empty():
+		notify(result.error)
+		return
+	notify("You worked %d h and earned %s. It is %s. Funds: %s.%s" % [result.hours, GameSession.format_money(result.earned),
+		Simulation.format_game_time(GameSession.get_game_time()), GameSession.format_money(GameSession.get_funds()),
+		"  Time is still paused." if GameSession.is_paused() else ""])
 
 
 func _on_weather_warning(warning: Dictionary) -> void:
@@ -454,6 +494,7 @@ func open_boatyard() -> void:
 		return
 	var menu := boatyard_menu_scene.instantiate() as BoatyardMenu
 	menu.vessel_chosen.connect(switch_vessel)
+	menu.grocery_requested.connect(open_grocery)
 	modals.push(menu)
 
 
@@ -516,6 +557,8 @@ func _connect_boat_area(area: BoatArea) -> void:
 	area.interaction_prompt_changed.connect(hud.set_prompt)
 	area.boatyard_requested.connect(open_boatyard)
 	area.provisions_requested.connect(open_provisions)
+	area.work_requested.connect(open_work_menu)
+	area.grocery_requested.connect(open_grocery)
 
 
 func _connect_world_map(map: WorldMap) -> void:

@@ -303,6 +303,20 @@ func invalidate_estimates() -> void:
 	_eta_key = ""
 
 
+## Remote work in harbour for `hours` (1-8): the normal simulation advanced
+## in one go (food and water are used as always), then GameSession pays for
+## every completed hour. Works while paused, which it leaves as it was.
+## Returns {"error", "hours", "earned", "elapsed"}.
+func work(hours: int) -> Dictionary:
+	if not GameSession.can_work_remotely():
+		return {"error": "Remote work needs a steady connection: moor in a harbour first.", "hours": 0, "earned": 0, "elapsed": 0.0}
+	hours = clampi(hours, GameSession.REMOTE_WORK_MIN_HOURS, GameSession.REMOTE_WORK_MAX_HOURS)
+	var result := advance(hours * 3600.0, true)
+	var completed := floori(result.elapsed_seconds / 3600.0 + 1e-6)
+	var earned := GameSession.pay_remote_work(completed)
+	return {"error": "", "hours": completed, "earned": earned, "elapsed": result.elapsed_seconds}
+
+
 ## Sleeps for `hours`: the normal simulation advanced in one go, stopping
 ## early on arrival or when a weather warning becomes due.
 func sleep(hours: float) -> AdvanceResult:

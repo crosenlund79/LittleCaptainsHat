@@ -12,11 +12,12 @@ dream of sailing around the world. The game is about living aboard, planning
 voyages and preparing for the next destination, not about steering the boat
 across every mile of ocean.
 
-Current state: **Iteration 005b: The Price of the Passage**. Heavy weather now
-wears the boat down. If its condition reaches zero, a rescue brings you back to
-Copenhagen for a €1,000 fee. Food and water run down with time and must be
-restocked in harbour. This iteration also includes the corrections from the
-owner's October 24 Windows playtest. Earlier iterations built:
+Current state: **Iteration 005c: A Sailor's Living**. You can now earn money by
+working remotely from the boat while moored (€25 an hour). Food and water are
+bought at the grocery store in every harbour (€10 per missing day); free
+restocking is gone. Earlier iterations built:
+- 005b: boat condition and weather damage, rescue at sea (€1,000), money, food
+  and water, and the October 24 playtest corrections;
 - 005a: one deterministic weather model with moving gales, thunderstorms and
   seasonal tropical cyclones;
 - 004b: the owner's cat artwork, the refined catamaran cabin, developer guides;
@@ -43,8 +44,8 @@ Iteration 005b adds:
   too). A **provisions station** at every galley shows the days left. The food
   crates and water cans drawn there empty as they are used. There are warnings
   when low, and no departure with empty stores.
-- **harbour services**: free **Repair vessel** and **Restock provisions** in the
-  boatyard (restocking also at the provisions station).
+- **harbour services**: free **Repair vessel** in the boatyard. Restocking became
+  the paid grocery store in Iteration 005c.
 - **playtest corrections**: a better-proportioned Halcyon 40 cabin with a
   clearly marked exit; the cat no longer blocks stations (face the cat to pet
   it); a fixed-size boatyard panel.
@@ -207,7 +208,12 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    hours you choose) and the game stays paused afterwards.
 5. **Look after the boat and the crew.** The HUD shows the hull condition,
    money, food and water. Check the stores at the galley's provisions station.
-   In harbour, the boatyard repairs the boat and restocks for free. Heavy weather
+   In harbour, the boatyard repairs the boat for free. Food and water are
+   bought at the **grocery store** on the pontoon (€10 per missing day, food and
+   water counted together, up to 14 days each), also reachable from the
+   provisions panel and the boatyard. Earn money with **remote work** at the
+   cabin's work station while moored: 1–8 hours at €25 per hour; time passes
+   and the stores are used as usual. Heavy weather
    at sea costs condition. If it reaches zero you are rescued back to
    Copenhagen for €1,000.
 6. **Sleep.** Use the berth in the cabin, or the **Sleep** button on the chart. Choose
@@ -368,7 +374,7 @@ templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
-[ITERATION_005B_REPORT.md](ITERATION_005B_REPORT.md), the Windows checklist
+[ITERATION_005C_REPORT.md](ITERATION_005C_REPORT.md), [005b](ITERATION_005B_REPORT.md), the Windows checklist
 [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md) (and the reports for
 [005a](ITERATION_005A_REPORT.md), [004b](ITERATION_004B_REPORT.md), [004](ITERATION_004_REPORT.md),
 [003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
@@ -384,7 +390,7 @@ built and verified.
   - there are no currents, waves, depth or tides;
   - weather damage is one general condition value (no separate hull, engine,
     sail or rigging damage), and there are no waves, rain or visibility
-    effects. Repairs and restocking are free, and there is no income;
+    effects. Repairs are free; remote work is the only income;
   - the chart shows the weather now; it does not animate a forecast;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.

@@ -15,10 +15,12 @@ extends ModalPanel
 ## changes the text inside it. Long details scroll in their own area, and the
 ## services and buttons stay where they are.
 ##
-## Harbour services for the boat you are aboard: Repair vessel (back to 100 %)
-## and Restock provisions, both free in this version (GameSession).
+## Harbour services for the boat you are aboard: Repair vessel (back to 100 %,
+## free in this version) and the grocery store (provisions are bought there).
 
 signal vessel_chosen(vessel_id: StringName)
+## The player wants the grocery store (App opens it on top of the boatyard).
+signal grocery_requested
 
 ## Conditions used for the comparison table.
 const COMPARE_WIND_KN := 12.0
@@ -45,7 +47,7 @@ var _compare_cells := {}
 @onready var _condition: Label = %ConditionLabel
 @onready var _service_status: Label = %ServiceStatus
 @onready var _repair: Button = %RepairButton
-@onready var _restock: Button = %RestockButton
+@onready var _grocery: Button = %GroceryButton
 
 
 func _ready() -> void:
@@ -67,7 +69,7 @@ func _ready() -> void:
 	_choose.pressed.connect(func() -> void: vessel_chosen.emit(selected.id))
 	%CloseButton.pressed.connect(close)
 	_repair.pressed.connect(_on_repair)
-	_restock.pressed.connect(_on_restock)
+	_grocery.pressed.connect(grocery_requested.emit)
 	resized.connect(_fit_panel)
 	_fit_panel()
 	select(GameSession.get_vessel_id())
@@ -99,7 +101,9 @@ func _update_services() -> void:
 		Provisions.format_days(provisions.food_days), Provisions.format_days(provisions.water_days)]
 	var harbour := GameSession.is_moored_in_harbour()
 	_repair.disabled = not harbour or GameSession.get_condition() >= VesselCondition.FULL
-	_restock.disabled = not harbour or provisions.is_full()
+	_grocery.disabled = not harbour or provisions.is_full()
+	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
+		if not provisions.is_full() else "Grocery store…"
 
 
 func _on_repair() -> void:
@@ -109,11 +113,6 @@ func _on_repair() -> void:
 	if selected:
 		select(selected.id)
 
-
-func _on_restock() -> void:
-	var error := GameSession.restock_provisions()
-	notify(error if not error.is_empty() else "Provisions restocked: %s of food and water." % Provisions.format_days(Provisions.CAPACITY_DAYS))
-	_update_services()
 
 
 func _input(event: InputEvent) -> void:

@@ -327,7 +327,8 @@ chart is open and no boat scene exists.
     boat changes text, never the panel's size or the button positions (tested
     for all three boats, at 100 % and 130 %).
   - Each boat's own condition is shown. The services row offers **Repair
-    vessel** and **Restock provisions** (free) for the boat you are aboard.
+    vessel** (free) for the boat you are aboard, and a **Grocery store…** button
+    that opens the grocery store on top (Iteration 005c).
 
 | Vessel | Hull | Top speed | 12 kn at 45° / 90° / 150° | Engine | Spinnaker from |
 |---|---|---|---|---|---|
@@ -901,6 +902,17 @@ every change goes through `GameSession`, time and weather come from
 
 ### Money
 
+Since Iteration 005c, **remote work** is the income:
+- `Simulation.work(hours)` (1–8) works only when `GameSession.can_work_remotely()`
+  (moored in harbour). It advances the normal simulation like sleeping: stores
+  are used, it also works while paused and leaves the pause as it was.
+- It then calls `GameSession.pay_remote_work(completed_hours)`:
+  `REMOTE_WORK_PAY_PER_HOUR` = €25 for each completed hour.
+- `WorkMenu` (`src/ui/work_menu.gd`) is opened from each cabin's `work` station:
+  the Starling's saloon table, the Halcyon's desk in the owner's hull, the
+  Petrel's saloon table.
+- Nothing new is saved: funds and stores already are.
+
 `SessionState.funds` holds whole euros: 10,000 for a new game, and the rescue
 fee is the only transaction. `GameSession.get_funds()` reads it and
 `format_money()` gives "€9,000". There is no income, no shop and no other
@@ -918,12 +930,23 @@ costs.
 - **Warnings** come at ≤ 3 days (low), ≤ 1 day (critical) and 0 (empty), each
   once until the stores change. `provisions_warning` → App shows a notification.
 - **Empty stores** never hurt the player or the boat, and do not trigger a
-  rescue. A voyage underway continues, but `depart()` refuses until restocked.
-- **Restock:** `GameSession.restock_provisions()`, harbour only, free, back to 14
-  days. It is offered in the provisions panel and in the boatyard.
+  rescue. A voyage underway continues, but `depart()` refuses until the player
+  buys provisions.
+- **Buying provisions (Iteration 005c; free restocking was removed):**
+  - `GameSession.buy_provisions()` is one transaction: it checks the harbour,
+    checks that the stores are not full and that funds ≥ the price, then takes
+    the price and fills food and water to 14 days. If any check fails, nothing
+    changes and the reason is returned.
+  - Price: `get_provisions_price()` = ⌈(14 − food + 14 − water) × €10⌉, with
+    `PROVISIONS_PRICE_PER_DAY` = 10. It is the same in every harbour.
+  - `GroceryMenu` (`src/ui/grocery_menu.gd`) is opened from:
+    - the pontoon's `grocery` station on every deck (enabled only in harbour,
+      like the boatyard);
+    - the provisions panel;
+    - the boatyard.
 - **Presentation:**
   - Every cabin has a `provisions` station at the galley (`ProvisionsMenu`: Food
-    / Water / Endurance in days, the level, the restock button).
+    / Water / Endurance in days, the level, the way to the grocery store).
   - A `ProvisionDisplay` node next to it draws four food crates and four water
     cans, each standing for 3.5 days. Empty ones are outlines; low stores are
     amber, empty ones red. It can be replaced by
@@ -1192,7 +1215,7 @@ embedded in the editor.
 | Real weather, forecasts, currents, tacking, manual sail/engine control | See "Wind, sailing performance and propulsion → Extending it". |
 | More weather (fog, rain, waves, real forecasts) | Extend `WeatherModel.sample()` and `WeatherSample`, with data in `weather_events.json`; bump `model_version` if old saves would see different weather. |
 | Separate damage (hull, engine, sails), repair costs, insurance | Extend the condition model behind `GameSession.apply_weather_damage()` / `repair_vessel()`; charge through `funds`. |
-| Shops, prices, income | Transactions on `SessionState.funds` through new `GameSession` methods; restocking and repair already have one place each. |
+| Shops, prices, more income | Transactions on `SessionState.funds` through `GameSession` methods (`buy_provisions`, `pay_remote_work` show the pattern); regional prices would change `get_provisions_price()` only. |
 | Depth / draft limits | Another `NavGrid` cell class or a per-vessel mask; `SeaRouter` callers do not change. |
 | Money, provisions, equipment, vessel condition | Each its own section in `SessionState` and small owner API on `GameSession` (or a dedicated service if it grows); UI panels subscribe to signals. |
 | New interactions | Add an `Interactable` to a scene. Messages need no code; new behaviours add an id branch in `BoatArea` or, once there are many, a small handler resource. |
