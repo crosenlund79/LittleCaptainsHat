@@ -234,3 +234,129 @@ def sour_note(dur, amp):
 
 write("achievement_chime.wav", chime(1.1, 0.22))
 write("hat_sour_note.wav", sour_note(0.9, 0.24))
+
+
+# --- Iteration 13: fishing, the galley and the anchor ------------------------------
+# Small, quiet cues. Every one of them has a visible counterpart in the game
+# (a toast, a badge or a panel), so nothing depends on hearing it.
+
+def filtered_noise(n, smooth, seed):
+    random.seed(seed)
+    out, v = [], 0.0
+    for _ in range(n):
+        v += (random.uniform(-1, 1) - v) * smooth
+        out.append(v)
+    peak = max(abs(s) for s in out) or 1.0
+    return [s / peak for s in out]
+
+
+def cast(dur, amp):
+    """A rod's swish, then the line running out with a faint reel buzz."""
+    n = int(dur * RATE)
+    air = filtered_noise(n, 0.3, 41)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        swish = math.exp(-((t - 0.12) / 0.07) ** 2)
+        buzz = 0.25 * math.sin(2 * math.pi * 38 * t) ** 8 * math.exp(-max(t - 0.2, 0) * 3.0) if t > 0.2 else 0.0
+        out.append(amp * (air[i] * swish + buzz * air[i]))
+    return out
+
+
+def bite(dur, amp):
+    """A little bell on the rod tip: two quick taps."""
+    n = int(dur * RATE)
+    out = [0.0] * n
+    for start in (0.0, 0.18):
+        s0 = int(start * RATE)
+        for i in range(s0, n):
+            t = (i - s0) / RATE
+            out[i] += amp * min(1.0, t / 0.003) * math.exp(-t * 9.0) * (math.sin(2 * math.pi * 1760 * t) + 0.4 * math.sin(2 * math.pi * 2640 * t))
+    return out
+
+
+def reel(dur, amp):
+    """A reel's soft ratchet clicks."""
+    n = int(dur * RATE)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        phase = (t * 22.0) % 1.0
+        click = math.exp(-phase * 60.0) * math.sin(2 * math.pi * 2200 * t)
+        out.append(amp * click * envelope(i, n, 0.02, 0.1))
+    return out
+
+
+def splash(dur, amp):
+    """The fish coming aboard: a short wet splash and a flap on the deck."""
+    n = int(dur * RATE)
+    water = filtered_noise(n, 0.5, 43)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        s = water[i] * math.exp(-t * 7.0)
+        if 0.35 < t < 0.42:
+            s += 0.6 * water[i] * math.sin(math.pi * (t - 0.35) / 0.07)
+        out.append(amp * s * envelope(i, n, 0.004, 0.1))
+    return out
+
+
+def snap(dur, amp):
+    """The line parting: a light twang falling away."""
+    n = int(dur * RATE)
+    out, phase = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        phase += 2 * math.pi * (520 - 260 * t / dur) / RATE
+        out.append(amp * min(1.0, t / 0.002) * math.exp(-t * 6.0) * math.sin(phase))
+    return out
+
+
+def sizzle(dur, amp):
+    """A pan sizzling softly, with a little bubble of a pot now and then."""
+    n = int(dur * RATE)
+    hiss = filtered_noise(n, 0.85, 47)
+    random.seed(53)
+    out = []
+    for i in range(n):
+        t = i / RATE
+        crackle = 1.0 if random.random() < 0.004 else 0.0
+        level = 0.5 + 0.2 * math.sin(2 * math.pi * 0.8 * t)
+        out.append(amp * (hiss[i] * level * 0.6 + crackle * 0.5) * envelope(i, n, 0.15, 0.4))
+    return out
+
+
+def chain(dur, amp):
+    """Anchor chain running out over the bow roller: a rattle that slows."""
+    n = int(dur * RATE)
+    out = [0.0] * n
+    t, rate = 0.0, 18.0
+    random.seed(59)
+    while t < dur - 0.05:
+        s0 = int(t * RATE)
+        freq = random.uniform(900, 1500)
+        for i in range(s0, min(n, s0 + int(0.04 * RATE))):
+            u = (i - s0) / RATE
+            out[i] += amp * math.exp(-u * 90.0) * math.sin(2 * math.pi * freq * u) * random.uniform(0.6, 1.0)
+        t += 1.0 / rate
+        rate = max(rate * 0.985, 7.0)
+    out[-int(0.2 * RATE):] = [s * (1 - k / int(0.2 * RATE)) for k, s in enumerate(out[-int(0.2 * RATE):])]
+    return out
+
+
+def warning(dur, amp):
+    """A soft, unmistakable double beep (anchor alarm, fishing warnings)."""
+    out = []
+    for _ in range(2):
+        out += tone(988.0, 0.14, amp, 0.005, 0.04) + [0.0] * int(0.08 * RATE)
+    return out + tone(784.0, 0.22, amp, 0.005, 0.08)
+
+
+write("fishing_cast.wav", cast(0.9, 0.3))
+write("fishing_bite.wav", bite(0.6, 0.18))
+write("fishing_reel.wav", reel(0.7, 0.18))
+write("fishing_splash.wav", splash(0.7, 0.32))
+write("fishing_snap.wav", snap(0.5, 0.25))
+write("galley_sizzle.wav", sizzle(2.0, 0.25))
+write("anchor_chain.wav", chain(1.6, 0.25))
+write("warning_beep.wav", warning(0.8, 0.2))

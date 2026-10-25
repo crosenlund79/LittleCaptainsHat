@@ -15,3 +15,11 @@ routing and the volume settings. Replace them with real audio in a later iterati
 | `engine_hum_muffled.wav` | SFX | Engine loop below deck and at the chart (low-passed) |
 | `companion_purr.wav` | SFX | The ship's cat purring when petted |
 | `companion_dog_pant.wav` | SFX | The ship's dog panting and sighing when petted |
+| `fishing_cast.wav` | SFX | Letting the fishing line out (Iteration 13) |
+| `fishing_bite.wav` | SFX | A fish bites (always with a toast and the "Fish on!" badge) |
+| `fishing_reel.wav` | SFX | Reeling the line in |
+| `fishing_splash.wav` | SFX | A fish landed |
+| `fishing_snap.wav` | SFX | The line parted, or the fish got away |
+| `galley_sizzle.wav` | SFX | Cooking in the galley |
+| `anchor_chain.wav` | SFX | Dropping, letting out or raising the anchor |
+| `warning_beep.wav` | SFX | Anchor alarm (always with a red badge and a toast) |

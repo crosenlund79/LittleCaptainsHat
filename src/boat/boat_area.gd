@@ -29,6 +29,14 @@ signal work_requested
 signal grocery_requested
 ## The Go Ashore sign on the pontoon (Iteration 12) was used.
 signal go_ashore_requested
+## The fishing rod on the stern rail (Iteration 13) was used.
+signal fishing_requested
+## The windlass on the foredeck (Iteration 13) was used.
+signal anchor_requested
+## The galley stove in the cabin (Iteration 13) was used.
+signal cooking_requested
+## The trophy board in the cabin (Iteration 13) was used.
+signal trophies_requested
 signal message_requested(text: String)
 ## Prompt text for the focused interactable, or "" when nothing is in range.
 signal interaction_prompt_changed(prompt: String)
@@ -96,6 +104,7 @@ func _ready() -> void:
 	apply_visual_profile(_vessel.get_active_visual_profile())
 	SettingsManager.art_style_changed.connect(_on_art_style_changed)
 	_setup_shore()
+	_setup_aboard_gear()
 	_place_player()
 	player.focus_changed.connect(_on_player_focus_changed)
 	for node in find_children("*", "Interactable", true, false):
@@ -176,7 +185,7 @@ func _setup_camera() -> void:
 	camera.rotation = get_target_rotation()
 	camera.set_meta(&"course_view", is_course_view())
 	if is_course_view():
-		camera.position = _boat_view_bounds().get_center()
+		camera.position = get_course_camera_target(camera.zoom, camera.rotation)
 	# Water wide enough to fill a turned view.
 	var water := get_node_or_null(^"Surroundings/Water") as Polygon2D
 	if water:
@@ -212,9 +221,38 @@ func is_course_view() -> bool:
 
 
 ## The camera rotation for the course view (0 otherwise): the bow (+x) drawn
-## towards the heading, with north up.
+## towards the heading's octant (Iteration 13), with north up.
 func get_target_rotation() -> float:
-	return deg_to_rad(90.0 - get_view_heading()) if is_course_view() else 0.0
+	return deg_to_rad(90.0 - get_view_octant() * OCTANT_DEG) if is_course_view() else 0.0
+
+
+## The eight directions the boat is drawn in (Iteration 13): N, NE, E, … NW.
+const OCTANT_DEG := 45.0
+## A new octant is taken only this far past the halfway line between two, so
+## a course wavering around 22.5° does not flip the view back and forth.
+const OCTANT_HYSTERESIS_DEG := 8.0
+const OCTANT_NAMES := ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+var _octant := -1
+var _logged_octant := -1
+
+
+## The octant the deck is drawn in (0 = north … 7 = north-west), from the
+## heading with hysteresis. Presentation only: the simulation keeps the full
+## heading.
+func get_view_octant() -> int:
+	_octant = octant_for(get_view_heading(), _octant)
+	return _octant
+
+
+## The octant for `heading` (degrees), keeping `previous` (or -1) while the
+## heading is within OCTANT_HYSTERESIS_DEG past its edge.
+static func octant_for(heading: float, previous := -1, hysteresis := OCTANT_HYSTERESIS_DEG) -> int:
+	var h := fposmod(heading, 360.0)
+	var nearest := posmod(roundi(h / OCTANT_DEG), 8)
+	if previous < 0 or previous == nearest:
+		return nearest
+	var off := absf(wrapf(h - previous * OCTANT_DEG, -180.0, 180.0))
+	return previous if off <= OCTANT_DEG / 2.0 + hysteresis else nearest
 
 
 ## The heading the deck is drawn for: the course of the voyage leg (a test can
@@ -248,17 +286,21 @@ func _update_camera() -> void:
 	var center := _boat_view_bounds().get_center() if course else _base_camera_position
 	if _zoom_tween:
 		_zoom_tween.kill()
-	if camera.zoom.is_equal_approx(zoom) and is_equal_approx(camera.rotation, rotation_target) and camera.position.is_equal_approx(center):
+	if camera.zoom.is_equal_approx(zoom) and is_equal_approx(camera.rotation, rotation_target) and (course or camera.position.is_equal_approx(center)):
 		return
 	_zoom_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
 	_zoom_tween.tween_property(camera, "zoom", zoom, ZOOM_TRANSITION_S)
 	_zoom_tween.tween_property(camera, "rotation", rotation_target, ZOOM_TRANSITION_S)
-	_zoom_tween.tween_property(camera, "position", center, ZOOM_TRANSITION_S)
+	if not course:
+		_zoom_tween.tween_property(camera, "position", center, ZOOM_TRANSITION_S)
 	_zoom_tween.chain().tween_callback(func() -> void: camera.rotation = wrapf(camera.rotation, -PI, PI))
 	if course and not _logged_course_view:
 		_logged_course_view = true
-		SessionLog.write("course_view", {"heading": roundi(get_view_heading()), "zoom": snappedf(zoom.x, 0.01),
-			"min_zoom_reached": zoom.x <= COURSE_MIN_ZOOM + 0.001})
+		SessionLog.write("course_view", {"heading": roundi(get_view_heading()), "octant": OCTANT_NAMES[get_view_octant()],
+			"zoom": snappedf(zoom.x, 0.01), "min_zoom_reached": zoom.x <= COURSE_MIN_ZOOM + 0.001})
+	if course and get_view_octant() != _logged_octant:
+		_logged_octant = get_view_octant()
+		SessionLog.write("view_octant", {"heading": snappedf(get_view_heading(), 0.1), "octant": OCTANT_NAMES[_logged_octant]})
 
 
 func get_harbour_dressing() -> HarbourDressing:
@@ -358,6 +400,14 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			grocery_requested.emit()
 		&"go_ashore":
 			go_ashore_requested.emit()
+		&"fishing":
+			fishing_requested.emit()
+		&"anchor":
+			anchor_requested.emit()
+		&"cook":
+			cooking_requested.emit()
+		&"trophies":
+			trophies_requested.emit()
 		&"hat":
 			message_requested.emit(GameSession.use_hat_hook())
 		&"pet":
@@ -515,6 +565,7 @@ func get_shore_station(facility: StringName) -> Interactable:
 
 
 func _process(delta: float) -> void:
+	_follow_in_course_view(delta)
 	if _shore == null or not _shore.is_active() or _leaving:
 		return
 	_shore.update_player(player.position)
@@ -522,6 +573,40 @@ func _process(delta: float) -> void:
 	if camera == null:
 		return
 	camera.offset.y = lerpf(camera.offset.y, get_shore_camera_target(), 1.0 - exp(-SHORE_CAMERA_RATE * delta))
+
+
+## In the course view the camera follows the captain along the turned boat
+## (Iteration 13), so on a north or south course, when the whole boat does not
+## fit at a readable zoom, the part of the deck they stand on is always in
+## view. It never shows more water past the boat's ends than needed.
+func _follow_in_course_view(delta: float) -> void:
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera == null or not camera.get_meta(&"course_view", false) or _leaving:
+		return
+	var target := get_course_camera_target(camera.zoom, camera.rotation)
+	camera.position = camera.position.lerp(target, 1.0 - exp(-COURSE_FOLLOW_RATE * delta))
+
+
+## How fast the course view follows the captain (per second).
+const COURSE_FOLLOW_RATE := 3.0
+
+
+## Where the course-view camera aims for `zoom` and `rotation`: the captain,
+## kept as far inside the boat as the view allows (the boat's centre along an
+## axis where the whole boat fits).
+func get_course_camera_target(zoom: Vector2, rotation_rad: float) -> Vector2:
+	var bounds := _boat_view_bounds()
+	var view := (get_viewport_rect().size - Vector2(0.0, COURSE_SCREEN_MARGIN.y * 0.5)) / zoom / 2.0
+	var c := absf(cos(rotation_rad))
+	var s_ := absf(sin(rotation_rad))
+	# The visible half-extent along the boat's own axes.
+	var half := Vector2(c * view.x + s_ * view.y, s_ * view.x + c * view.y)
+	var target := Vector2.ZERO
+	for axis in 2:
+		var lo := bounds.position[axis] + half[axis]
+		var hi := bounds.end[axis] - half[axis]
+		target[axis] = bounds.get_center()[axis] if lo >= hi else clampf(player.position[axis], lo, hi)
+	return target
 
 
 ## Walking ashore, the view glides down so the pontoon and its signs show
@@ -539,6 +624,179 @@ func get_shore_camera_target() -> float:
 const SIGN_LABELS := {&"grocery": "GrocerySign", &"boatyard": "BoatyardSign", &"go_ashore": "GoAshoreSign"}
 ## Screen pixels at the bottom taken by the HUD's prompt and shortcuts.
 const SHORE_HUD_MARGIN := 150.0
+
+
+# --- Aboard gear (Iteration 13) -----------------------------------------------------
+
+## Stations for the fishing rod (stern rail, port quarter) and the windlass
+## (foredeck) on decks, and the galley stove and the trophy board in cabins.
+## Placed from each boat's own outline and fixtures, so no per-boat offsets;
+## each draws its object and highlights it (HighlightProvider).
+func _setup_aboard_gear() -> void:
+	var stations := get_node_or_null(^"Layout/Stations")
+	if stations == null:
+		return
+	if area_id == SessionState.AREA_EXTERIOR:
+		var hull := _lifeline_polygon()
+		if hull.size() < 3:
+			return
+		var helm := stations.get_node_or_null(^"Helm") as Node2D
+		var rod_at := rod_holder_position(hull, helm.position if helm else Vector2.INF)
+		if rod_at != Vector2.INF:
+			var rod := RodHolder.new()
+			rod.name = "RodHolder"
+			rod.position = rod_at
+			_add_gear(rod, RodHolder.outline())
+			_add_station(stations, "Fishing", &"fishing", "Fishing rod", rod_at + ROD_STATION_OFFSET, 40.0)
+		var windlass_at := windlass_position(hull)
+		if windlass_at != Vector2.INF:
+			var windlass := Windlass.new()
+			windlass.name = "Windlass"
+			windlass.position = windlass_at
+			windlass.bow = Vector2(_bow_x(hull) - windlass_at.x - 8.0, 0.0)
+			_add_gear(windlass, Windlass.outline())
+			_add_station(stations, "Anchor", &"anchor", "Anchor", windlass_at + Vector2(-26, 0), 40.0)
+	elif area_id == SessionState.AREA_INTERIOR:
+		var provisions := stations.get_node_or_null(^"Provisions") as Node2D
+		var galley := _nearest_fixture(provisions.position if provisions else Vector2.ZERO, HighlightResolver.FIXTURES[&"provisions"])
+		if provisions and galley:
+			var cook_at := provisions.position + Vector2(64, 0)
+			var stove := GalleyStove.new()
+			stove.name = "GalleyStove"
+			stove.position = Vector2(cook_at.x, lerpf(provisions.position.y, galley.position.y, 0.85))
+			_add_gear(stove, GalleyStove.outline())
+			_add_station(stations, "Cook", &"cook", "Cook a meal", cook_at, 30.0)
+		var hat_spot := get_node_or_null(^"Layout/HatSpot") as Node2D
+		var hat := stations.get_node_or_null(^"Hat") as Node2D
+		if hat_spot and hat:
+			var board := TrophyBoard.new()
+			board.name = "TrophyBoard"
+			board.position = hat_spot.position + TROPHY_OFFSET
+			_add_gear(board, TrophyBoard.outline())
+			_add_station(stations, "Trophies", &"trophies", "Look at the trophy board", hat.position + TROPHY_OFFSET, 32.0)
+
+
+## The trophy board hangs on the hat's wall, this far from the hook.
+const TROPHY_OFFSET := Vector2(-140, 0)
+
+
+func _add_gear(gear: Node2D, outline: PackedVector2Array) -> void:
+	var layout := get_node(^"Layout")
+	add_child(gear)
+	move_child(gear, layout.get_index())
+	var interaction := {&"RodHolder": &"fishing", &"Windlass": &"anchor", &"GalleyStove": &"cook", &"TrophyBoard": &"trophies"}
+	gear.add_child(HighlightProvider.create(interaction[gear.name], outline))
+
+
+func _add_station(stations: Node, node_name: String, id: StringName, prompt_text: String, at: Vector2, radius: float) -> Interactable:
+	var station := Interactable.new()
+	station.name = node_name
+	station.interaction_id = id
+	station.prompt = prompt_text
+	station.highlight_target = ^""
+	station.position = at
+	var shape := CollisionShape2D.new()
+	shape.name = "CollisionShape2D"
+	var circle := CircleShape2D.new()
+	circle.radius = radius
+	shape.shape = circle
+	station.add_child(shape)
+	stations.add_child(station)
+	return station
+
+
+func _lifeline_polygon() -> PackedVector2Array:
+	var shape := get_node_or_null(^"Layout/Collision/Lifeline/CollisionPolygon2D") as CollisionPolygon2D
+	return shape.polygon if shape else PackedVector2Array()
+
+
+static func _bow_x(hull: PackedVector2Array) -> float:
+	var x := -INF
+	for p in hull:
+		x = maxf(x, p.x)
+	return x
+
+
+static func _stern_x(hull: PackedVector2Array) -> float:
+	var x := INF
+	for p in hull:
+		x = minf(x, p.x)
+	return x
+
+
+## How far the deck reaches to port (negative y) or starboard at `x`.
+static func deck_half_width(hull: PackedVector2Array, x: float, side := -1.0) -> float:
+	var y := 0.0
+	if not Geometry2D.is_point_in_polygon(Vector2(x, 0.0), hull):
+		return 0.0
+	while y < 400.0 and Geometry2D.is_point_in_polygon(Vector2(x, side * (y + 2.0)), hull):
+		y += 2.0
+	return y
+
+
+## The rod holder: on the port rail near the stern (the gangplank is to
+## starboard), a little inside the lifeline, with its station clear of the
+## helm: the first such spot going forward from the stern.
+static func rod_holder_position(hull: PackedVector2Array, helm := Vector2.INF) -> Vector2:
+	var stern := _stern_x(hull)
+	var x := stern + 30.0
+	while x < stern + 260.0:
+		var edge := port_edge(hull, x)
+		if edge < -40.0:
+			var rod := Vector2(x, edge + 22.0)
+			var station := rod + ROD_STATION_OFFSET
+			if Geometry2D.is_point_in_polygon(station, hull) and (helm == Vector2.INF or station.distance_to(helm) >= ROD_HELM_CLEARANCE):
+				return rod
+		x += 6.0
+	return Vector2.INF
+
+
+## The rod's station, from the rod holder (inboard of it), and how far it
+## keeps from the helm's station.
+const ROD_STATION_OFFSET := Vector2(10, 26)
+const ROD_HELM_CLEARANCE := 75.0
+
+
+## The deck's port edge at `x`: the most negative y inside the outline (0
+## when the outline does not reach `x`).
+static func port_edge(hull: PackedVector2Array, x: float) -> float:
+	var y := -420.0
+	while y < 0.0:
+		if Geometry2D.is_point_in_polygon(Vector2(x, y), hull):
+			return y
+		y += 2.0
+	return 0.0
+
+
+## The windlass: on the centreline of the foredeck, far enough aft of the
+## stem for the deck to be wide enough to stand beside it.
+static func windlass_position(hull: PackedVector2Array) -> Vector2:
+	var bow := _bow_x(hull)
+	var x := bow - 50.0
+	while x > bow - 260.0:
+		if deck_half_width(hull, x) >= 46.0 and deck_half_width(hull, x, 1.0) >= 46.0:
+			return Vector2(x, 0.0)
+		x -= 6.0
+	return Vector2.INF
+
+
+func _nearest_fixture(at: Vector2, names: Array) -> Node2D:
+	var collision := get_node_or_null(^"Layout/Collision")
+	var best: Node2D = null
+	var best_distance := INF
+	if collision == null:
+		return null
+	for child in collision.get_children():
+		if String(child.name) in names and child is Node2D and (child as Node2D).position.distance_to(at) < best_distance:
+			best = child
+			best_distance = (child as Node2D).position.distance_to(at)
+	return best
+
+
+## The Iteration 13 gear in this area by name (tests): RodHolder, Windlass,
+## GalleyStove or TrophyBoard; null when this area has none.
+func get_gear(gear_name: String) -> Node2D:
+	return get_node_or_null(NodePath(gear_name)) as Node2D
 
 
 # --- Captain's hat ------------------------------------------------------------------

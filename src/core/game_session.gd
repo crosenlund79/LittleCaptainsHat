@@ -817,6 +817,8 @@ const BITE_WAIT_SECONDS := 45.0
 
 ## A bite waiting for the captain (not saved: after loading the line is just out).
 var _pending_bite := {}
+## "Too fast to troll" was said for this stretch (said once, not every check).
+var _warned_too_fast := false
 
 
 func get_fishing() -> FishingState:
@@ -888,8 +890,12 @@ func apply_fish_check(tick: float) -> bool:
 	fishing.line_mode = mode
 	var speed := get_vessel_speed_kn()
 	if mode == FishingState.MODE_TROLLING and speed > catalog.max_trolling_kn:
+		if _warned_too_fast:
+			return false
+		_warned_too_fast = true
 		fishing_warning.emit({"kind": "too_fast", "text": "The line is skipping on the surface at %.1f kn: too fast to troll. Bring it in, or wait for a gentler stretch." % speed})
 		return false
+	_warned_too_fast = false
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash("%d|fish|%d" % [_state.wind_seed, int(tick)])
 	var wind := Simulation.get_weather_at_vessel()
@@ -951,7 +957,7 @@ func finish_fight(landed: bool, line_broke := false) -> Dictionary:
 	result.exceptional = catalog.is_exceptional(species, kg)
 	# The trophy board: the five most notable catches.
 	var trophy := fish.duplicate()
-	trophy["score"] = catalog.score(species, kg) + (10.0 if result.personal_best or result.new_species else 0.0)
+	trophy["score"] = snappedf(catalog.score(species, kg) + (10.0 if result.personal_best or result.new_species else 0.0), 0.01)
 	fishing.trophies.append(trophy)
 	fishing.trophies.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return float(a.score) > float(b.score) or (is_equal_approx(float(a.score), float(b.score)) and int(a.uid) < int(b.uid)))
@@ -967,11 +973,11 @@ func finish_fight(landed: bool, line_broke := false) -> Dictionary:
 	var awards: Array[Dictionary] = []
 	var name := catalog.get_species_name(species)
 	if result.first:
-		awards.append(_award_once("fish:first", "Your first fish: a %s" % name.to_lower(), 3))
+		awards.append(_award_once("fish:first", "Your first fish: %s" % name, 3))
 	if result.new_species:
 		awards.append(_award_once("fish:species:%s" % species, "A new species: %s" % name, 2))
 	if result.exceptional:
-		awards.append(_award_once("fish:exceptional:%s" % species, "An exceptional %s (%.1f kg)" % [name.to_lower(), kg], 4))
+		awards.append(_award_once("fish:exceptional:%s" % species, "An exceptional fish: %s, %.1f kg" % [name, kg], 4))
 	if result.personal_best:
 		_state.progress.mark(StringName("fish:best:%s" % species), _state.game_time)
 	awards = awards.filter(func(a: Dictionary) -> bool: return not a.is_empty())

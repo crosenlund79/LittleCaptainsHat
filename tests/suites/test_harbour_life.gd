@@ -285,8 +285,8 @@ func _test_course_view() -> void:
 	deck = await _show(DECK, &"start")
 	camera = deck.get_node("Camera2D") as Camera2D
 	var heading := Simulation.get_current_heading()
-	t.check(deck.is_course_view() and absf(angle_difference(camera.rotation, deg_to_rad(90.0 - heading))) < 0.01,
-		"[course] underway the bow points along the course on screen (heading %d°, north up)" % roundi(heading))
+	t.check(deck.is_course_view() and absf(angle_difference(camera.rotation, deg_to_rad(90.0 - BoatArea.octant_for(heading) * 45.0))) < 0.01,
+		"[course] underway the bow points along the course's octant on screen (heading %d°, north up)" % roundi(heading))
 	t.check(is_zero_approx(app.hud.get_global_transform().get_rotation()), "[course] the HUD stays upright")
 	var life := deck.get_water_life()
 	life.refresh()

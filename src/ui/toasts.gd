@@ -42,3 +42,10 @@ func get_messages() -> PackedStringArray:
 		if not panel.is_queued_for_deletion():
 			result.append((panel.get_child(0) as Label).text)
 	return result
+
+
+## Removes every notification at once (screenshots, tests).
+func clear() -> void:
+	for panel in get_children():
+		remove_child(panel)
+		panel.queue_free()

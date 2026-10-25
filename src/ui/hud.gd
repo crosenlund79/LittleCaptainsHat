@@ -39,6 +39,8 @@ const SHORTCUT_BACKING := Color(0.04, 0.11, 0.15, 0.78)
 const SHORTCUT_TEXT := Color(0.93, 0.92, 0.86)
 
 var hat_badge: HatBadge
+## Fishing, anchor and galley indicators (Iteration 13), under the hat badge.
+var aboard_badge: AboardBadge
 var _planned_key := ""
 var _planned_estimated_at := -INF
 var _planned_seconds := 0.0
@@ -58,6 +60,9 @@ func _ready() -> void:
 	hat_badge.name = "HatBadge"
 	hat_badge.position = Vector2(24, 106)
 	add_child(hat_badge)
+	aboard_badge = AboardBadge.new()
+	aboard_badge.name = "AboardBadge"
+	add_child(aboard_badge)
 
 
 func _build_controls() -> void:
@@ -116,14 +121,16 @@ var _warning_pending := false
 ## warning that arrives meanwhile is shown again on returning to the boat.
 func set_chart_mode(enabled: bool) -> void:
 	_chart_mode = enabled
-	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge"]:
+	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge", "AboardBadge"]:
 		var node := get_node_or_null(node_name) as Control
 		if node == null:
 			continue
-		if node_name == "HatBadge":
+		if node_name in ["HatBadge", "AboardBadge"]:
 			node.process_mode = Node.PROCESS_MODE_DISABLED if enabled else Node.PROCESS_MODE_INHERIT
 			if enabled:
 				node.hide()
+			elif node_name == "AboardBadge":
+				node.show()
 			continue
 		node.visible = not enabled if node_name != "PromptPanel" else (not enabled and not _prompt.text.is_empty())
 	_warning_panel.visible = _warning_pending and not enabled
@@ -185,6 +192,7 @@ func refresh() -> void:
 	# The hat badge sits just below the area panel, whose height follows its text.
 	var area_panel := $AreaPanel as Control
 	hat_badge.position = Vector2(area_panel.position.x, area_panel.position.y + area_panel.size.y + 10.0)
+	aboard_badge.position = hat_badge.position + Vector2(0.0, (hat_badge.size.y + 8.0) if hat_badge.visible else 0.0)
 	_status.text = describe_status()
 	var alarm := GameSession.get_condition() <= 40.0 or GameSession.get_provisions().endurance_days() <= Provisions.LOW_DAYS
 	_status.modulate = Color(1.0, 0.72, 0.55) if alarm else Color.WHITE
@@ -195,8 +203,9 @@ func refresh() -> void:
 		var remaining := GameSession.get_voyage_remaining_nm()
 		var total := GameSession.get_voyage_total_nm()
 		var propulsion := GameSession.get_propulsion()
-		_location.text = "Underway to %s" % destination
-		_route_caption.text = "Underway  ·  %.1f kn" % GameSession.get_vessel_speed_kn()
+		_location.text = ("At anchor  ·  bound for %s" if GameSession.is_anchored() else "Underway to %s") % destination
+		_route_caption.text = "At anchor  ·  voyage paused" if GameSession.is_anchored() else \
+			"Underway  ·  %.1f kn" % GameSession.get_vessel_speed_kn()
 		_route.text = "To %s  ·  %d nm to go" % [destination, roundi(remaining)]
 		_route_detail.text = "ETA about %s (estimate)" % Simulation.format_game_time(Simulation.get_eta())
 		_propulsion.text = propulsion.describe()

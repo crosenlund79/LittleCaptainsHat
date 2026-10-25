@@ -16,6 +16,11 @@ var _note: Label
 var _buy: Button
 var _hat_info: Label
 var _buy_hat: Button
+## Fishing tackle and the catch (Iteration 13).
+var _tackle: OptionButton
+var _buy_lure: Button
+var _catch_info: Label
+var _sell_catch: Button
 
 
 func _ready() -> void:
@@ -42,9 +47,49 @@ func _ready() -> void:
 	_buy_hat.custom_minimum_size = Vector2(240, 0)
 	_buy_hat.pressed.connect(_on_buy_hat)
 	hat_row.add_child(_buy_hat)
+	_build_tackle()
 	_button("CloseButton", "Close", close)
 	_buy = _button("BuyButton", "Buy", _on_buy, 240.0)
 	refresh()
+
+
+## Lures for the rod, and buying the catch in the cool box (Iteration 13).
+func _build_tackle() -> void:
+	var row := HBoxContainer.new()
+	row.name = "TackleRow"
+	row.add_theme_constant_override("separation", 14)
+	_box.add_child(row)
+	var label := Label.new()
+	label.text = "Fishing lures"
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(label)
+	_tackle = OptionButton.new()
+	_tackle.name = "Tackle"
+	_tackle.custom_minimum_size = Vector2(240, 0)
+	for lure in FishingCatalog.get_default().lures:
+		_tackle.add_item("%s (%s)" % [lure.name, GameSession.format_money(int(lure.price))])
+	row.add_child(_tackle)
+	_buy_lure = Button.new()
+	_buy_lure.name = "BuyLureButton"
+	_buy_lure.text = "Buy lure"
+	_buy_lure.custom_minimum_size = Vector2(150, 0)
+	_buy_lure.pressed.connect(_on_buy_lure)
+	row.add_child(_buy_lure)
+	var catch_row := HBoxContainer.new()
+	catch_row.name = "CatchRow"
+	catch_row.add_theme_constant_override("separation", 14)
+	_box.add_child(catch_row)
+	_catch_info = Label.new()
+	_catch_info.name = "CatchInfo"
+	_catch_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_catch_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_catch_info.custom_minimum_size = Vector2(300, 0)
+	catch_row.add_child(_catch_info)
+	_sell_catch = Button.new()
+	_sell_catch.name = "SellCatchButton"
+	_sell_catch.custom_minimum_size = Vector2(240, 0)
+	_sell_catch.pressed.connect(_on_sell_catch)
+	catch_row.add_child(_sell_catch)
 
 
 func refresh() -> void:
@@ -69,6 +114,42 @@ func refresh() -> void:
 	else:
 		_note.text = "Food and water will be full (%d days each)." % roundi(Provisions.CAPACITY_DAYS)
 	_refresh_hat(harbour, funds)
+	_refresh_tackle(harbour)
+
+
+func _refresh_tackle(harbour: bool) -> void:
+	var catalog := FishingCatalog.get_default()
+	var fishing := GameSession.get_fishing()
+	_buy_lure.disabled = not harbour
+	var total := 0
+	for fish in fishing.hold:
+		total += catalog.price(fish.species, float(fish.kg))
+	_catch_info.text = "Your catch: %d fish in the cool box." % fishing.hold.size() if not fishing.hold.is_empty() \
+		else "Your catch: the cool box is empty."
+	_sell_catch.text = "Sell the catch (%s)" % GameSession.format_money(total)
+	_sell_catch.disabled = not harbour or fishing.hold.is_empty()
+
+
+func _on_buy_lure() -> void:
+	var lure: Dictionary = FishingCatalog.get_default().lures[maxi(_tackle.selected, 0)]
+	var error := GameSession.buy_lure(lure.id)
+	notify(error if not error.is_empty() else "Bought a %s. You have %d." % [String(lure.name).to_lower(), GameSession.get_fishing().get_lure_count(lure.id)])
+	refresh()
+
+
+## Sells every fish in the cool box.
+func _on_sell_catch() -> void:
+	var total := 0
+	var count := 0
+	for fish in GameSession.get_fishing().hold:
+		var result := GameSession.sell_fish(int(fish.uid))
+		if result.error == "":
+			total += int(result.price)
+			count += 1
+	if count > 0:
+		SessionLog.write("fishing_sold", {"count": count, "price": total, "port": String(GameSession.get_location_id())})
+		notify("Sold %d fish for %s." % [count, GameSession.format_money(total)])
+	refresh()
 
 
 func _refresh_hat(harbour: bool, funds: int) -> void:

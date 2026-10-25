@@ -392,10 +392,11 @@ func spend_time_ashore(minutes: float) -> AdvanceResult:
 	return result
 
 
-## Time spent at the galley or the rod (Iteration 13): the hat is out of the
-## wind, events stop it early like sleep.
-func spend_time_aboard(minutes: float) -> AdvanceResult:
-	_hat_sheltered = true
+## Time spent aboard at a task (Iteration 13): cooking below deck
+## (`sheltered`: the hat is out of the wind), or waiting at the rod or the
+## anchor on deck. Events stop it early like sleep.
+func spend_time_aboard(minutes: float, sheltered := true) -> AdvanceResult:
+	_hat_sheltered = sheltered
 	var result := advance(maxf(minutes, 0.0) * 60.0, true)
 	_hat_sheltered = false
 	return result

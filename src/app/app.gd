@@ -67,6 +67,9 @@ var _thunder_rng := RandomNumberGenerator.new()  # cosmetic only (sound timing)
 ## True from a rescue until its dialog is closed: gameplay stays paused (also
 ## while the screen changes to the harbour underneath).
 var _rescue_open := false
+## Real seconds left for the captain to reach the rod after a bite (counts
+## only while playing, not while a menu is open), Iteration 13.
+var _bite_wait := 0.0
 
 
 func _ready() -> void:
@@ -89,6 +92,9 @@ func _ready() -> void:
 	GameSession.renown_awarded.connect(_on_renown_awarded)
 	GameSession.hat_warning.connect(_on_hat_warning)
 	GameSession.hat_lost.connect(_on_hat_lost)
+	GameSession.fish_bite.connect(_on_fish_bite)
+	GameSession.anchor_alarm.connect(_on_anchor_alarm)
+	GameSession.fishing_warning.connect(func(warning: Dictionary) -> void: notify(String(warning.text)))
 	# Test weather never outlives the game it was made in.
 	GameSession.session_started.connect(DevTools.on_session_changed)
 	GameSession.state_replaced.connect(DevTools.on_session_changed)
@@ -106,6 +112,7 @@ func _process(delta: float) -> void:
 	if _weather_audio_timer <= 0.0:
 		_weather_audio_timer = WEATHER_AUDIO_INTERVAL
 		update_weather_audio()
+	_update_bite_wait(delta)
 	if _thunder_timer > 0.0 and not get_tree().paused:
 		_thunder_timer -= delta
 		if _thunder_timer <= 0.0:
@@ -331,7 +338,9 @@ func request_departure() -> void:
 ## fresh assessment through the propulsion controller (never a manual engine
 ## switch; the controller's minimum times still apply).
 func _on_helm_requested() -> void:
-	if GameSession.is_underway():
+	if GameSession.is_anchored():
+		notify("At anchor. Raise the anchor at the windlass on the foredeck before sailing on.")
+	elif GameSession.is_underway():
 		notify(describe_reassessment(Simulation.reassess_propulsion()))
 	else:
 		request_departure()
@@ -393,6 +402,11 @@ func sleep_for(hours: float) -> void:
 	match result.stopped_by:
 		Simulation.STOP_WARNING:
 			notify("You were woken after %s by a weather warning. It is %s.%s" % [slept, now, still_paused])
+		Simulation.STOP_BITE:
+			notify("You were woken after %s by the bell on the rod: a fish is on! Go up to the rod. It is %s.%s" % [slept, now, still_paused])
+		Simulation.STOP_ANCHOR:
+			notify("You were woken after %s by the anchor alarm: %s. Go up to the windlass. It is %s.%s" % [slept,
+				AnchorSite.holding_text(GameSession.get_anchor().holding).to_lower(), now, still_paused])
 		Simulation.STOP_ARRIVAL:
 			notify("You were woken after %s: the boat has arrived. It is %s.%s" % [slept, now, still_paused])
 		_:
@@ -477,6 +491,110 @@ func _on_shore_choice(event_id: String, choice_index: int, menu: GoAshoreMenu) -
 	menu.show_outcome(result)
 	SessionLog.write("shore_choice", {"port": String(GameSession.get_location_id()), "event": event_id, "choice": choice_index,
 		"error": result.error, "cost": result.cost, "minutes": result.minutes, "renown": result.renown})
+
+
+# --- Fishing (Iteration 13) ---------------------------------------------------------
+
+## The rod on the stern rail.
+func open_fishing() -> FishingMenu:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	var menu := FishingMenu.new()
+	menu.wait_requested.connect(_on_fishing_wait.bind(menu))
+	modals.push(menu)
+	_bite_wait = 0.0
+	SessionLog.write("fishing_open", {"line_out": GameSession.is_line_out(), "mode": String(GameSession.get_fishing_mode()),
+		"bite": not GameSession.get_pending_bite().is_empty()})
+	return menu
+
+
+## Waiting at the rod: time passes on deck (the hat is in the wind) until a
+## bite or another event, at most `minutes`.
+func _on_fishing_wait(minutes: float, menu: FishingMenu) -> void:
+	if not GameSession.is_line_out():
+		return
+	var result := Simulation.spend_time_aboard(minutes, false)
+	SessionLog.write("fishing_wait", {"minutes": result.elapsed_seconds / 60.0, "stopped_by": String(result.stopped_by)})
+	if result.stopped_by == Simulation.STOP_RESCUE:
+		return
+	menu.show_wait_result(result)
+
+
+## A fish bit: the bell on the rod, a notice and the HUD's "Fish on!" (the
+## fight starts at once when the rod's panel is open).
+func _on_fish_bite(_bite: Dictionary) -> void:
+	AudioManager.play_sfx(FishingSounds.bite(), FishingSounds.DB)
+	SessionLog.write("fishing_bite", {"species": _bite.species, "kg": _bite.kg, "mode": _bite.mode})
+	if modals.get_top() is FishingMenu:
+		return
+	_bite_wait = GameSession.BITE_WAIT_SECONDS
+	notify("Fish on! Go to the rod on the stern and press E.")
+
+
+## The fish waits a while (real time, while playing) before it gets away.
+func _update_bite_wait(delta: float) -> void:
+	if _bite_wait <= 0.0 or get_tree().paused:
+		return
+	_bite_wait -= delta
+	if _bite_wait > 0.0 or GameSession.get_pending_bite().is_empty():
+		return
+	GameSession.expire_bite()
+	AudioManager.play_sfx(FishingSounds.snap(), FishingSounds.DB)
+	notify("The fish got away before you reached the rod. The line is still out.")
+	SessionLog.write("fishing_result", {"result": "escaped_unattended"})
+
+
+func get_bite_wait() -> float:
+	return _bite_wait
+
+
+## The galley stove (Iteration 13).
+func open_cooking() -> CookingMenu:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	var menu := CookingMenu.new()
+	menu.cooked.connect(_on_meal_cooked)
+	modals.push(menu)
+	SessionLog.write("galley_open", {"refusal": GameSession.cooking_refusal(), "fish": GameSession.get_fishing().hold.size()})
+	return menu
+
+
+## A dish is done: its cooking time passes below deck.
+func _on_meal_cooked(result: Dictionary) -> void:
+	var passed := Simulation.spend_time_aboard(float(result.minutes), true)
+	if passed.stopped_by != Simulation.STOP_NONE and passed.stopped_by != Simulation.STOP_RESCUE:
+		notify("While cooking: %s" % ("a fish is on the line!" if passed.stopped_by == Simulation.STOP_BITE else
+			("the anchor alarm went." if passed.stopped_by == Simulation.STOP_ANCHOR else "a weather warning came in.")))
+
+
+# --- The anchor (Iteration 13) --------------------------------------------------------
+
+## The windlass on the foredeck.
+func open_anchor() -> AnchorMenu:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	var menu := AnchorMenu.new()
+	menu.time_requested.connect(func(minutes: float) -> void: Simulation.spend_time_aboard(minutes, false))
+	modals.push(menu)
+	var site := GameSession.evaluate_anchorage() if GameSession.is_underway() and not GameSession.is_anchored() else {}
+	SessionLog.write("anchor_open", {"anchored": GameSession.is_anchored(), "class": String(site.get("class", "")),
+		"refusal": GameSession.anchoring_refusal() if not GameSession.is_anchored() else ""})
+	return menu
+
+
+## The anchor alarm: a soft double beep, always with a notice and the HUD's
+## red "Anchor dragging!" (or amber poor holding).
+func _on_anchor_alarm(alarm: Dictionary) -> void:
+	AudioManager.play_sfx(FishingSounds.warning(), FishingSounds.DB)
+	notify(String(alarm.text))
+	SessionLog.write("anchor_alarm", {"level": alarm.level, "dragged_nm": snappedf(GameSession.get_anchor().dragged_nm, 0.001)})
+
+
+## The trophy board in the cabin.
+func open_trophies() -> void:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return
+	modals.push(TrophyMenu.new())
 
 
 ## A harbour service that is not offered here (Iteration 12): say so, log it.
@@ -755,6 +873,10 @@ func _connect_boat_area(area: BoatArea) -> void:
 	area.work_requested.connect(open_work_menu)
 	area.grocery_requested.connect(open_grocery)
 	area.go_ashore_requested.connect(open_go_ashore)
+	area.fishing_requested.connect(open_fishing)
+	area.trophies_requested.connect(open_trophies)
+	area.cooking_requested.connect(open_cooking)
+	area.anchor_requested.connect(open_anchor)
 
 
 func _connect_world_map(map: WorldMap) -> void:
