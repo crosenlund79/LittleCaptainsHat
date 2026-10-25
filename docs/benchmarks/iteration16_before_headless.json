@@ -1,0 +1,48 @@
+{
+  "app_startup_ms": 329.8,
+  "chart_open_ms": 6.9,
+  "frame_deck_ms": 6.9,
+  "graph_nodes": 32755,
+  "load_apply_ms": 2.1,
+  "load_parse_ms": 1.0,
+  "memory_after_navigation_mb": 104.0,
+  "memory_after_session_mb": 134.7,
+  "memory_before_session_mb": 63.7,
+  "memory_end_mb": 134.7,
+  "memory_session_growth_mb": 71.0,
+  "memory_start_mb": 56.9,
+  "navigation_load_ms": 592.3,
+  "renderer": "headless",
+  "routes_cold": {
+    "copenhagen>kiel": {
+      "ms": 8.2,
+      "nm": 152.0,
+      "ok": true
+    },
+    "copenhagen>lisbon": {
+      "ms": 27.2,
+      "nm": 1620.0,
+      "ok": true
+    },
+    "copenhagen>piraeus": {
+      "ms": 45.2,
+      "nm": 3393.0,
+      "ok": true
+    },
+    "copenhagen>svendborg": {
+      "ms": 12.9,
+      "nm": 145.0,
+      "ok": true
+    },
+    "reykjavik>piraeus": {
+      "ms": 63.7,
+      "nm": 3421.0,
+      "ok": true
+    }
+  },
+  "save_ms": 1.1,
+  "session_chart_cycles": 10,
+  "session_days": 10,
+  "session_sim_ms_per_day": 475.3,
+  "version": "0.102b"
+}
