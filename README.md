@@ -20,7 +20,17 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.102a, Iteration 14: A Bigger World, a Better Boat**
+Current version: **0.102b, revision build "Life at Anchor"** (see
+[REVISION_0_102B_REPORT.md](REVISION_0_102B_REPORT.md) and the quick check
+[WINDOWS_SMOKE_0_102B.md](WINDOWS_SMOKE_0_102B.md)): a small cozy pass. Drop
+anchor somewhere sheltered and the boat settles: the evening light goes warm,
+the cabin lamp glows, the cat or dog curls up for long naps, and a few quiet
+lines come now and then (never repeated). Waking at anchor has its own
+morning, and the galley can now **make coffee**: a few minutes and a warm
+moment, and the first morning coffee at anchor goes into the Captain's Log.
+Saves are unchanged (format 12).
+
+Version 0.102a, Iteration 14: A Bigger World, a Better Boat
 (see [ITERATION_14_REPORT.md](ITERATION_14_REPORT.md), the sea-trial checklist
 [WINDOWS_ACCEPTANCE_14.md](WINDOWS_ACCEPTANCE_14.md), the developer guides
 [DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) and

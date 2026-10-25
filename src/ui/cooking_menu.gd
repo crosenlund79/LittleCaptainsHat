@@ -114,6 +114,14 @@ func select_recipe(id: String) -> void:
 
 
 func _refresh_detail() -> void:
+	if _pot:
+		# Coffee: no recipe to read, just the pot.
+		_detail.text = "A pot of coffee on the little stove.\n\nNeeds nothing special.\nTakes %d minutes.\nJust for the pleasure of it." % int(GameSession.COFFEE_MINUTES)
+		_cook_button.disabled = _cooking > 0.0 or _brewing > 0.0 or GameSession.recipe_refusal(get_selected_recipe().id) != "" \
+			or GameSession.cooking_refusal() != ""
+		_cook_button.text = "Cook %s" % String(get_selected_recipe().name).to_lower()
+		_coffee_button.disabled = _brewing > 0.0 or GameSession.coffee_refusal() != ""
+		return
 	var recipe := get_selected_recipe()
 	var needs := PackedStringArray()
 	if int(recipe.fish) > 0:

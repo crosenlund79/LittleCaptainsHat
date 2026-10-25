@@ -138,3 +138,51 @@ or the panel itself.
 loaded). A bite waiting for the captain is not saved: after loading the line
 is simply out. A save with the anchor down in harbour, or with a fish twice in
 the cool box, is rejected as invalid.
+
+## 8. Life at anchor and morning coffee (revision 0.102b)
+
+**Settled at anchor.** The boat counts as settled while the anchor holds well
+or fair, no alarm is sounding and the wind where she lies is under 18 kn
+(`AnchorLife.SETTLED_WIND_KN`). `GameSession.is_settled_at_anchor()` says so;
+`anchor_life_changed` reports the change.
+
+**Time of day.** There is no day/night simulation: the mood uses the local
+solar hour at the boat (game time is UTC; 15° of longitude make an hour):
+morning 05–09, day 09–18, evening 18–22:30, night otherwise
+(`src/aboard/anchor_life.gd`).
+
+**What changes aboard while settled** (`src/aboard/anchor_ambience.gd`, added
+to every boat scene):
+
+| Phase | Tint (`AnchorLife.TINTS`) | Cabin lamp (`AnchorLife.LAMP`) |
+|---|---|---|
+| Morning | pale warm | off |
+| Day | none (white) | off |
+| Evening | warm | soft glow |
+| Night | soft blue | brighter glow |
+
+The lamp glows over the saloon and the galley stove (below deck only). The
+HUD badge adds "a quiet evening", "a calm night" or "a still morning". Not
+settled: the scene looks exactly as before.
+
+**The companion** (`src/companion/ship_companion.gd`): when the boat settles it
+stretches and curls up; while settled, rest turns into naps that last 2.5 times
+longer, with only a stretch between them. Its resting spot still follows its
+normal schedule. When the boat stops being settled it wakes.
+
+**Quiet lines** (texts in `AnchorLife`): one when the boat has settled (20
+minutes after the anchor holds), one each evening, one when petting the
+companion on a settled evening or night, and one on waking at anchor after at
+least three hours of sleep in the morning or day. Each is kept in the anchor
+state's `moments` list, so it never repeats on the same stay or day, even after
+loading; none appears while the captain sleeps. To change a line, edit the
+lists in `src/aboard/anchor_life.gd`.
+
+**Morning coffee** (`GameSession.make_coffee()`, the galley's **Make coffee**
+button): ten minutes pass and a line fits the moment (at anchor in the
+morning, at anchor, underway, in harbour). The stove's rule applies (always in
+harbour and at a holding anchor; underway in moderate conditions), and there
+must be some water aboard. The first morning coffee while settled at anchor is
+a Captain's Log moment (+2 renown, once). There is no coffee stat or
+inventory.
+

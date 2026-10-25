@@ -24,7 +24,7 @@ const WAKE_MIN_SLEEP_S := 3.0 * 3600.0
 ## How the boat scenes are tinted when settled at anchor (white: unchanged).
 ## Deliberately gentle: a warm evening, a soft blue night, a pale morning.
 const TINTS := {
-	PHASE_MORNING: Color(1.0, 0.96, 0.9),
+	PHASE_MORNING: Color(1.0, 0.94, 0.85),
 	PHASE_DAY: Color(1.0, 1.0, 1.0),
 	PHASE_EVENING: Color(1.0, 0.86, 0.72),
 	PHASE_NIGHT: Color(0.7, 0.74, 0.9),

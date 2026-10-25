@@ -140,6 +140,22 @@ The Captain has authorized:
 - **Saves migrate from format 11**; a saved position that the new chart
   places on land is recovered safely: the vessel is never stranded or erased.
 
+### Revision 0.102b, Life at Anchor
+
+The Captain has approved:
+
+- **A small revision build after Iteration 14** (version 0.102b), not a new
+  numbered iteration: a compact cozy ambience pass.
+- **Life at Anchor** as a cozy ambience feature: a safely anchored boat feels
+  quiet, safe and lived-in (a gentle evening atmosphere, companions that
+  visibly settle, a few short, sparing atmospheric lines, a slightly special
+  wake-up at anchor), built on the existing systems.
+- **Morning Coffee** as a lightweight galley ritual: no beverage system,
+  stat, inventory, economy or farmable reward.
+- **No major new mechanics** in this revision.
+- **No change to the roadmap's next major iteration: Iteration 15 remains
+  reserved for the planned performance and stability pass.**
+
 ### Iterations and versions
 
 - Iteration numbers are sequential integers: no letter suffixes and no
@@ -207,3 +223,7 @@ worldwide exploration or other future systems.
   service tiers, boat care, boatyard services and haul-outs, equipment and
   Passage Readiness; see `ITERATION_14_REPORT.md` and
   `WINDOWS_ACCEPTANCE_14.md`.
+- **Revision 0.102b, Life at Anchor**: a cozy revision after Iteration 14
+  (life at anchor, morning coffee; save format unchanged); see
+  `REVISION_0_102B_REPORT.md` and `WINDOWS_SMOKE_0_102B.md`. Iteration 15 is
+  reserved for the performance and stability pass.

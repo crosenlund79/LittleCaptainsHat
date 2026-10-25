@@ -11,6 +11,8 @@ extends Node2D
 
 const EASE_SECONDS := 2.5
 const LAMP_COLOUR := Color(1.0, 0.78, 0.45)
+## Rings of the soft glow (more rings: smoother falloff).
+const RINGS := 18
 
 ## Set by BoatArea: the cabin lamps (local positions and radii), empty on deck.
 var lamps: Array[Vector3] = []
@@ -77,7 +79,7 @@ func _draw() -> void:
 	for lamp in lamps:
 		var centre := Vector2(lamp.x, lamp.y)
 		# A soft radial glow: rings fading outwards.
-		for i in 10:
-			var f := 1.0 - float(i) / 10.0
-			draw_circle(centre, lamp.z * (0.25 + 0.75 * float(i + 1) / 10.0),
-				Color(LAMP_COLOUR, _lamp * 0.16 * f))
+		for i in RINGS:
+			var f := 1.0 - float(i) / RINGS
+			draw_circle(centre, lamp.z * (0.2 + 0.8 * float(i + 1) / RINGS),
+				Color(LAMP_COLOUR, _lamp * 0.1 * f))

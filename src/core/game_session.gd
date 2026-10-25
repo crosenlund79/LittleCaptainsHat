@@ -1436,7 +1436,7 @@ func make_coffee() -> Dictionary:
 	var morning := phase == AnchorLife.PHASE_MORNING
 	if is_anchored() and _settled and morning:
 		result.context = "anchor_morning"
-		result.text = "Coffee in the cockpit, the anchor chain quiet in the water. The day can wait a little."
+		result.text = "Coffee by the open hatch, the anchor chain quiet in the water. The day can wait a little."
 		result.award = _award_once("coffee:morning_at_anchor", "Morning coffee at anchor", 2)
 		if not result.award.is_empty():
 			renown_awarded.emit([result.award])
