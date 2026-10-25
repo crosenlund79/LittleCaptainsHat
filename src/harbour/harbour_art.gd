@@ -15,6 +15,10 @@ const MAX_LANDMARKS := 3
 ## The harbour this art belongs to (must match the file name).
 @export var port_id: StringName
 @export var landmarks: Array[HarbourLandmark] = []
+## The harbour's broad water atmosphere for the animated water (0.100b):
+## "marina", "coastal" or "urban"; "auto" derives it from the catalogue (see
+## WaterLife.atmosphere_for()).
+@export_enum("auto", "marina", "coastal", "urban") var atmosphere := "auto"
 
 
 ## The art for `port_id`, or null when that harbour has none.

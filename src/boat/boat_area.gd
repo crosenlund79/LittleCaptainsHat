@@ -80,6 +80,7 @@ func _ready() -> void:
 	GameSession.voyage_started.connect(_update_mooring)
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
 	_setup_harbour_dressing()
+	_setup_water_life()
 	_setup_hat_hook()
 	_update_hat_station()
 	GameSession.hat_changed.connect(func(_status: StringName) -> void: _update_hat_station())
@@ -112,12 +113,32 @@ func _setup_harbour_dressing() -> void:
 	dressing.setup(self, mooring)
 
 
+## The animated water (art only) on decks, over the water, under everything else.
+func _setup_water_life() -> void:
+	var surroundings := get_node_or_null(^"Surroundings")
+	var water := surroundings.get_node_or_null(^"Water") if surroundings else null
+	if water == null:
+		return
+	var life := WaterLife.new()
+	life.name = "WaterLife"
+	surroundings.add_child(life)
+	surroundings.move_child(life, water.get_index() + 1)
+	life.setup(self)
+
+
+func get_water_life() -> WaterLife:
+	return get_node_or_null(^"Surroundings/WaterLife") as WaterLife
+
+
 func get_harbour_dressing() -> HarbourDressing:
 	return mooring.get_node_or_null(^"HarbourDressing") as HarbourDressing if mooring else null
 
 
 ## The Artwork setting changed: show the other art (and harbour) at once.
 func _on_art_style_changed(_style: StringName) -> void:
+	var life := get_water_life()
+	if life:
+		life.refresh()
 	var dressing := get_harbour_dressing()
 	if dressing:
 		dressing.refresh()
@@ -216,6 +237,9 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 
 func _on_voyage_arrived(_port: StringName) -> void:
 	_update_mooring()
+	var life := get_water_life()
+	if life:
+		life.refresh()
 	var dressing := get_harbour_dressing()
 	if dressing:
 		dressing.refresh()
