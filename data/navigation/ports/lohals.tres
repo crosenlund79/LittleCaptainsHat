@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lohals"
+display_name = "Lohals"
+country = "Denmark"
+latitude = 55.1325
+longitude = 10.9014
+description = "Lohals, a small harbour at the north end of the island of Langeland."
+importance = 3
+region = "baltic"
+island = true
+source = "UN/LOCODE DK LOH; harbour position 55.1325N 10.9014E (MarineLink port entry, consistent with the town at 55°08′N 10°55′E)"

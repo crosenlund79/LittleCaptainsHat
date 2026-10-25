@@ -27,6 +27,8 @@ signal provisions_requested
 signal work_requested
 ## The grocery store on the pontoon (deck, in harbour) was used.
 signal grocery_requested
+## The Go Ashore sign on the pontoon (Iteration 12) was used.
+signal go_ashore_requested
 signal message_requested(text: String)
 ## Prompt text for the focused interactable, or "" when nothing is in range.
 signal interaction_prompt_changed(prompt: String)
@@ -66,6 +68,12 @@ var _leaving := false
 ## The deck camera's zoom as framed in the scene (the harbour view).
 var _base_zoom := Vector2.ONE
 var _zoom_tween: Tween
+## Walking ashore over the gangplank (decks in harbour, Iteration 12).
+var _shore: ShoreAccess
+## Shore stations, by facility id (grocery, boatyard, go_ashore).
+var _shore_stations := {}
+## How fast the camera follows the player ashore and back (per second).
+const SHORE_CAMERA_RATE := 3.5
 ## The boat this area belongs to (its art follows the Artwork setting).
 var _vessel: VesselDefinition
 
@@ -77,6 +85,7 @@ func _ready() -> void:
 	_vessel = GameSession.get_vessel_definition()
 	apply_visual_profile(_vessel.get_active_visual_profile())
 	SettingsManager.art_style_changed.connect(_on_art_style_changed)
+	_setup_shore()
 	_place_player()
 	player.focus_changed.connect(_on_player_focus_changed)
 	for node in find_children("*", "Interactable", true, false):
@@ -92,6 +101,7 @@ func _ready() -> void:
 	_setup_camera()
 	_setup_hat_hook()
 	_update_hat_station()
+	_resolve_highlights.call_deferred()
 	GameSession.hat_changed.connect(func(_status: StringName) -> void: _update_hat_station())
 	GameSession.state_replaced.connect(_update_hat_station)
 	GameSession.hat_lost.connect(_on_hat_lost)
@@ -265,6 +275,8 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			work_requested.emit()
 		&"grocery":
 			grocery_requested.emit()
+		&"go_ashore":
+			go_ashore_requested.emit()
 		&"hat":
 			message_requested.emit(GameSession.use_hat_hook())
 		&"pet":
@@ -295,11 +307,11 @@ func _update_mooring() -> void:
 		var interactable := node as Interactable
 		if interactable.interaction_id == &"helm":
 			interactable.prompt = HELM_PROMPT_UNDERWAY if GameSession.is_underway() else HELM_PROMPT_IN_PORT
-		elif interactable.interaction_id in [&"boatyard", &"grocery"]:
-			# The boatyard and the grocery store are only reachable in harbour.
-			interactable.enabled = GameSession.can_change_vessel()
-			interactable.visible = interactable.enabled
-			interactable.monitorable = interactable.enabled
+		elif interactable.interaction_id in HarbourFacilities.ALL and _shore == null:
+			# Without a shore (no pontoon in the scene) the services stay where
+			# the scene put them, offered only where the harbour has them.
+			_set_station_available(interactable, GameSession.has_facility(interactable.interaction_id))
+	_update_shore()
 	if player and player.get_focused_interactable():
 		interaction_prompt_changed.emit(player.get_focused_interactable().prompt)
 	if mooring:
@@ -308,7 +320,158 @@ func _update_mooring() -> void:
 		mooring_label.text = "GUEST PONTOON · %s" % GameSession.get_location().display_name.to_upper()
 
 
+# --- Ashore (Iteration 12) ----------------------------------------------------------
+
+## Decks with a pontoon get the gangplank and the shore strip. Runs before the
+## player is placed, so a position saved ashore is restored.
+func _setup_shore() -> void:
+	if mooring == null or area_id != SessionState.AREA_EXTERIOR:
+		return
+	var shore := ShoreAccess.new()
+	shore.name = "ShoreAccess"
+	add_child(shore)
+	var visual := get_node_or_null(^"Visual")
+	if visual:
+		move_child(shore, visual.get_index() + 1)
+	if not shore.setup(self):
+		shore.queue_free()
+		return
+	_shore = shore
+	var stations := get_node(^"Layout/Stations")
+	for child in stations.get_children():
+		var station := child as Interactable
+		if station and station.interaction_id in HarbourFacilities.ALL:
+			_shore_stations[station.interaction_id] = station
+	if not _shore_stations.has(HarbourFacilities.GO_ASHORE):
+		var go := Interactable.new()
+		go.name = "GoAshore"
+		go.interaction_id = HarbourFacilities.GO_ASHORE
+		go.prompt = "Go ashore"
+		go.highlight_target = ^""
+		var shape := CollisionShape2D.new()
+		shape.name = "CollisionShape2D"
+		shape.shape = RectangleShape2D.new()
+		go.add_child(shape)
+		stations.add_child(go)
+		_shore_stations[HarbourFacilities.GO_ASHORE] = go
+	# A classic sign label for Go Ashore, like the scenes' grocery and boatyard ones.
+	var yard_label := mooring.get_node_or_null(^"BoatyardSign") as Label
+	if yard_label and mooring.get_node_or_null(^"GoAshoreSign") == null:
+		var go_label := yard_label.duplicate() as Label
+		go_label.name = "GoAshoreSign"
+		go_label.text = "GO ASHORE"
+		mooring.add_child(go_label)
+	# The harbour's name is painted on the front of the pontoon, beside the
+	# gangplank, out of the way of the signs at the back.
+	if mooring_label:
+		var pontoon := shore.get_pontoon_rect()
+		mooring_label.position = Vector2(shore.get_plank_x() + ShoreAccess.SLOT_OFFSETS[0], pontoon.position.y + 24.0) \
+			- mooring_label.size / 2.0
+	_update_shore()
+
+
+## In harbour: the gangplank is out and the services the harbour offers stand
+## on the pontoon; otherwise the rail is closed and the services are gone.
+func _update_shore() -> void:
+	if _shore == null:
+		return
+	var in_port := GameSession.is_moored_in_harbour()
+	var was_ashore := _shore.is_off_the_boat(player.position) if player else false
+	_shore.set_active(in_port)
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera and not in_port:
+		camera.offset.y = 0.0
+	if was_ashore and not in_port:
+		# Never leave the player on a pontoon that is no longer there.
+		place_player_at_spawn(&"from_boatyard")
+	var available := GameSession.get_harbour_facilities().get_ids() if in_port else ([] as Array[StringName])
+	var slots := _shore.get_service_slots(available.size())
+	var index := 0
+	for id: StringName in HarbourFacilities.ALL:
+		var station := _shore_stations.get(id) as Interactable
+		if station == null:
+			continue
+		var offered := id in available and index < slots.size()
+		if offered:
+			var slot: Dictionary = slots[index]
+			index += 1
+			station.position = slot.station
+			station.set_meta(&"sign_at", slot.sign)
+			var shape := station.get_node(^"CollisionShape2D") as CollisionShape2D
+			if not shape.has_meta(&"own_shape"):
+				shape.shape = shape.shape.duplicate()
+				shape.set_meta(&"own_shape", true)
+			(shape.shape as RectangleShape2D).size = Vector2(180, 64)
+			shape.position = Vector2.ZERO
+		_set_station_available(station, offered)
+		var label := mooring.get_node_or_null(NodePath(String(SIGN_LABELS[id]))) as Label
+		if label:
+			label.visible = offered
+			if offered:
+				label.position = Vector2(station.get_meta(&"sign_at")) - label.size / 2.0
+	var dressing := get_harbour_dressing()
+	if dressing:
+		dressing.refresh()
+	if is_inside_tree():
+		_resolve_highlights.call_deferred()
+
+
+func _set_station_available(station: Interactable, available: bool) -> void:
+	station.enabled = available
+	station.visible = available
+	station.monitorable = available
+	if not available:
+		station.set_focused(false)
+
+
+func get_shore_access() -> ShoreAccess:
+	return _shore
+
+
+## The shore station for a facility (tests), or null.
+func get_shore_station(facility: StringName) -> Interactable:
+	return _shore_stations.get(facility) as Interactable
+
+
+func _process(delta: float) -> void:
+	if _shore == null or not _shore.is_active() or _leaving:
+		return
+	_shore.update_player(player.position)
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera == null:
+		return
+	camera.offset.y = lerpf(camera.offset.y, get_shore_camera_target(), 1.0 - exp(-SHORE_CAMERA_RATE * delta))
+
+
+## Walking ashore, the view glides down so the pontoon and its signs show
+## (0 aboard, or when the pontoon is already in view).
+func get_shore_camera_target() -> float:
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera == null or _shore == null or not _shore.is_off_the_boat(player.position):
+		return 0.0
+	var half_height := get_viewport_rect().size.y / 2.0
+	var visible_bottom := camera.position.y + (half_height - SHORE_HUD_MARGIN) / camera.zoom.y
+	return maxf(_shore.get_pontoon_rect().end.y + 24.0 - visible_bottom, 0.0)
+
+
+## The mooring's sign label for each shore facility (classic art and text).
+const SIGN_LABELS := {&"grocery": "GrocerySign", &"boatyard": "BoatyardSign", &"go_ashore": "GoAshoreSign"}
+## Screen pixels at the bottom taken by the HUD's prompt and shortcuts.
+const SHORE_HUD_MARGIN := 150.0
+
+
 # --- Captain's hat ------------------------------------------------------------------
+
+## Gives every station the outline of the object it belongs to (Iteration 12;
+## see HighlightResolver). Deferred, so harbour and shore art exist first.
+func _resolve_highlights() -> void:
+	if not is_inside_tree():
+		return
+	for node in find_children("*", "Interactable", true, false):
+		var station := node as Interactable
+		if station.highlight_target.is_empty():
+			station.set_highlight_outline_global(HighlightResolver.resolve(self, station))
+
 
 ## The cabin's hat hook (art) at Layout/HatSpot, drawn under the player.
 func _setup_hat_hook() -> void:

@@ -173,8 +173,11 @@ func _test_harbour_copenhagen() -> void:
 		return
 	t.check(dressing.get_landmarks().size() == 1 and dressing.get_landmarks()[0].title == "Nyhavn", "[harbour] with Copenhagen's landmark")
 	var ids := dressing.get_sign_ids()
-	t.check(ids.size() == 2 and ids.has(&"boatyard") and ids.has(&"grocery"), "[harbour] signs for the services there are: the grocery store and the boatyard (with repairs)")
-	t.check(dressing.get_sign_ids().size() == 2, "[harbour] and nothing else (no fuel or future services)")
+	t.check(ids.size() == 3 and ids.has(&"boatyard") and ids.has(&"grocery") and ids.has(&"go_ashore"),
+		"[harbour] signs for the services there are: the grocery store, the boatyard (with repairs) and Go Ashore (Iteration 12)")
+	var offered := HarbourFacilities.for_port(&"copenhagen").get_ids()
+	t.check(ids.size() == offered.size() and ids.all(func(id: StringName) -> bool: return id in offered),
+		"[harbour] and nothing else (no fuel or future services)")
 	var mooring := deck.mooring
 	t.check(not (mooring.get_node("Plank0") as CanvasItem).visible and (mooring.get_node("GrocerySign") as Label).text == "Groceries",
 		"[harbour] the old pontoon drawing gives way to the illustration; the sign reads Groceries")
@@ -184,8 +187,9 @@ func _test_harbour_copenhagen() -> void:
 		"[harbour] the harbour name sign is hand-lettered (Patrick Hand)")
 	t.check(dressing.get_parent() == mooring and dressing.get_index() > mooring.get_node("Pontoon").get_index()
 		and mooring.get_parent().get_index() < deck.get_node("Visual").get_index(), "[harbour] it is drawn over the water and under the boat")
-	t.check(dressing.find_children("*", "CollisionObject2D", true, false).is_empty() and dressing.get_child_count() == 0,
-		"[harbour] it has no collision of its own")
+	t.check(dressing.find_children("*", "CollisionObject2D", true, false).is_empty()
+		and dressing.get_children().all(func(child: Node) -> bool: return child is HighlightProvider),
+		"[harbour] it has no collision of its own (only the signs' highlight outlines)")
 	await t.screenshot("145_copenhagen_harbour_illustrated")
 	# The services still work: walk to them and press E.
 	t.check(await _use(deck, &"grocery") and app.modals.get_top() is GroceryMenu, "[harbour] the grocery store opens from the pontoon as before")
@@ -234,7 +238,7 @@ func _test_generic_harbour_and_sea() -> void:
 	GameSession.replace_state(state)
 	var deck := await _show(DECK, &"from_boatyard")
 	var dressing := deck.get_harbour_dressing()
-	t.check(dressing.is_visible_in_tree() and dressing.get_landmarks().is_empty() and dressing.get_sign_ids().size() == 2,
+	t.check(dressing.is_visible_in_tree() and dressing.get_landmarks().is_empty() and dressing.get_sign_ids().size() == 3,
 		"[harbour] a harbour without art (Kiel) gets the generic illustrated harbour, no landmark")
 	t.check(deck.mooring_label.text.contains("KIEL"), "[harbour] with its own name on the sign")
 	await t.screenshot("148_kiel_generic_harbour")
@@ -262,7 +266,7 @@ func _test_other_boats() -> void:
 		SettingsManager.set_art_style(SettingsManager.ART_ILLUSTRATED)
 		await t.frames(2)
 		var dressing := deck.get_harbour_dressing()
-		t.check(dressing != null and dressing.is_visible_in_tree() and dressing.get_sign_ids().size() == 2,
+		t.check(dressing != null and dressing.is_visible_in_tree() and dressing.get_sign_ids().size() == 3,
 			"[harbour] the %s's pontoon gets the illustrated harbour and its signs too" % id)
 		await t.screenshot("149_harbour_%s" % id)
 	GameSession.switch_vessel(&"starling_33")

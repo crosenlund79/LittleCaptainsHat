@@ -28,9 +28,21 @@ const COLLISION_LAYER := 1 << 2
 @export var highlight_target: NodePath = ^".."
 
 const HIGHLIGHT := Color(1.25, 1.18, 1.0)
-const RING := Color(0.78, 0.62, 0.43, 0.8)
+## The focus highlight drawn around the object itself (Iteration 12): a warm
+## glow and a fine cream outline that breathes gently.
+const GLOW := Color(1.0, 0.86, 0.55, 0.28)
+const OUTLINE := Color(1.0, 0.95, 0.82, 0.95)
+const DEBUG_AREA := Color(0.4, 0.9, 1.0, 0.55)
+
+## Developer view (F8 with the developer tools): every interaction area drawn.
+static var debug_show_areas := false
+
+## The visible object's outline in this node's coordinates, set by the owning
+## scene (see HighlightResolver); empty: a small soft outline of the area.
+var highlight_outline := PackedVector2Array()
 
 var _focused := false
+var _time := 0.0
 
 
 func _ready() -> void:
@@ -52,22 +64,59 @@ func set_focused(focused: bool) -> void:
 	var target := get_node_or_null(highlight_target) as CanvasItem if not highlight_target.is_empty() else null
 	if target:
 		target.modulate = HIGHLIGHT if focused else Color.WHITE
+	_time = 0.0
+	set_process(focused or debug_show_areas)
 	queue_redraw()
 
 
-## Stations without a highlight target (gameplay markers, independent of the
-## art) show a soft brass ring around their area while focused.
+## Sets the object outline from global points (empty to use the area).
+func set_highlight_outline_global(points: PackedVector2Array) -> void:
+	highlight_outline = PackedVector2Array()
+	for p in points:
+		highlight_outline.append(to_local(p))
+	queue_redraw()
+
+
+## The outline drawn while focused, in this node's coordinates.
+func get_highlight_points() -> PackedVector2Array:
+	if highlight_outline.size() >= 3:
+		return highlight_outline
+	return HighlightResolver.rounded_rect(_area_rect().grow(-4.0), 10.0)
+
+
+func _process(delta: float) -> void:
+	_time += delta
+	queue_redraw()
+	if not _focused and not debug_show_areas:
+		set_process(false)
+
+
+## Focused stations without a highlight target glow around their object.
+## The interaction area itself is never drawn in normal play.
 func _draw() -> void:
+	if debug_show_areas:
+		var area := _area_rect()
+		draw_rect(area, DEBUG_AREA, false, 1.5)
 	if not _focused or not highlight_target.is_empty():
 		return
-	var radius := 24.0
+	var points := get_highlight_points()
+	if points.size() < 3:
+		return
+	var closed := points.duplicate()
+	closed.append(points[0])
+	var breathe := 0.5 + 0.5 * sin(_time * 3.2)
+	draw_polyline(closed, Color(GLOW, GLOW.a * (0.7 + 0.5 * breathe)), 9.0, true)
+	draw_polyline(closed, Color(OUTLINE, OUTLINE.a * (0.75 + 0.25 * breathe)), 2.2, true)
+
+
+## The interaction area's bounds in this node's coordinates.
+func _area_rect() -> Rect2:
 	for child in get_children():
 		var shape := child as CollisionShape2D
 		if shape and shape.shape:
-			var bounds := shape.shape.get_rect()
-			radius = maxf(bounds.size.x, bounds.size.y) / 2.0 + 6.0
-			break
-	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 40, RING, 3.0, true)
+			var rect := shape.shape.get_rect()
+			return Rect2(rect.position + shape.position, rect.size)
+	return Rect2(-24, -24, 48, 48)
 
 
 func is_focused() -> bool:

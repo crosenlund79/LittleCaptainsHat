@@ -147,6 +147,12 @@ func _is_on_deck() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F8:
+		# Developer view: show every interaction area (never in normal play).
+		if DevTools.is_enabled():
+			get_viewport().set_input_as_handled()
+			set_interaction_debug(not Interactable.debug_show_areas)
+		return
 	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F9:
 		if DevTools.is_enabled():
 			get_viewport().set_input_as_handled()
@@ -440,7 +446,43 @@ func open_grocery() -> void:
 	if not GameSession.is_moored_in_harbour():
 		notify("The grocery store is in harbour; you are at sea.")
 		return
+	if not GameSession.has_facility(HarbourFacilities.GROCERY):
+		_refuse_facility(HarbourFacilities.GROCERY)
+		return
+	SessionLog.write("facility", {"facility": "grocery", "outcome": "opened", "port": String(GameSession.get_location_id())})
 	modals.push(GroceryMenu.new())
+
+
+## Go Ashore (Iteration 12): a small harbour event, in harbours that offer it.
+func open_go_ashore() -> void:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return
+	if not GameSession.has_facility(HarbourFacilities.GO_ASHORE):
+		_refuse_facility(HarbourFacilities.GO_ASHORE)
+		return
+	SessionLog.write("facility", {"facility": "go_ashore", "outcome": "opened", "port": String(GameSession.get_location_id())})
+	var menu := GoAshoreMenu.new()
+	menu.choice_made.connect(_on_shore_choice.bind(menu))
+	modals.push(menu)
+	var offer := GameSession.get_shore_event()
+	SessionLog.write("shore_event", {"port": String(GameSession.get_location_id()), "event": menu.get_event_id(),
+		"resting": offer.get("resting", false), "seen": offer.get("seen", false)})
+
+
+## A Go Ashore choice: GameSession settles it, then the time passes ashore.
+func _on_shore_choice(event_id: String, choice_index: int, menu: GoAshoreMenu) -> void:
+	var result := GameSession.apply_shore_choice(event_id, choice_index)
+	if String(result.error).is_empty() and int(result.minutes) > 0:
+		Simulation.spend_time_ashore(float(result.minutes))
+	menu.show_outcome(result)
+	SessionLog.write("shore_choice", {"port": String(GameSession.get_location_id()), "event": event_id, "choice": choice_index,
+		"error": result.error, "cost": result.cost, "minutes": result.minutes, "renown": result.renown})
+
+
+## A harbour service that is not offered here (Iteration 12): say so, log it.
+func _refuse_facility(facility: StringName) -> void:
+	notify(GameSession.facility_refusal(facility))
+	SessionLog.write("facility", {"facility": String(facility), "outcome": "unavailable", "port": String(GameSession.get_location_id())})
 
 
 ## The cabin's work station: remote work, in harbour only.
@@ -610,6 +652,16 @@ func publish_travel_update() -> void:
 		GameSession.format_money(result.euros), GameSession.format_money(result.funds_after)])
 
 
+## Developer view of the interaction areas (F8 with the developer tools).
+func set_interaction_debug(enabled: bool) -> void:
+	Interactable.debug_show_areas = enabled
+	for node in get_tree().root.find_children("*", "Interactable", true, false):
+		var interactable := node as Interactable
+		interactable.set_process(true)
+		interactable.queue_redraw()
+	notify("Interaction areas: %s" % ("shown" if enabled else "hidden"))
+
+
 ## The developer test panel (DevTools): F9 opens and closes it, in the boat or
 ## on the chart. Development builds only; it does not exist for players.
 func toggle_dev_tests() -> void:
@@ -627,9 +679,13 @@ func toggle_dev_tests() -> void:
 func open_boatyard() -> void:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return
-	if not GameSession.can_change_vessel():
+	if not GameSession.is_moored_in_harbour():
 		notify("The boatyard is only open while you are moored in harbour.")
 		return
+	if not GameSession.can_change_vessel():
+		_refuse_facility(HarbourFacilities.BOATYARD)
+		return
+	SessionLog.write("facility", {"facility": "boatyard", "outcome": "opened", "port": String(GameSession.get_location_id())})
 	var menu := boatyard_menu_scene.instantiate() as BoatyardMenu
 	menu.vessel_chosen.connect(switch_vessel)
 	menu.grocery_requested.connect(open_grocery)
@@ -698,6 +754,7 @@ func _connect_boat_area(area: BoatArea) -> void:
 	area.provisions_requested.connect(open_provisions)
 	area.work_requested.connect(open_work_menu)
 	area.grocery_requested.connect(open_grocery)
+	area.go_ashore_requested.connect(open_go_ashore)
 
 
 func _connect_world_map(map: WorldMap) -> void:

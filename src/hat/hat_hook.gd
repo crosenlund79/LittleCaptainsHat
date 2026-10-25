@@ -12,6 +12,9 @@ var _stored := false
 
 
 func _ready() -> void:
+	# The hook (with or without the hat) is what the `hat` station highlights.
+	add_to_group(HighlightResolver.GROUP)
+	set_meta(HighlightResolver.META_FOR, &"hat")
 	GameSession.hat_changed.connect(func(_status: StringName) -> void: refresh())
 	GameSession.state_replaced.connect(refresh)
 	refresh()
@@ -20,6 +23,14 @@ func _ready() -> void:
 func refresh() -> void:
 	_stored = GameSession.is_active() and GameSession.get_hat_status() == HatState.STORED
 	queue_redraw()
+
+
+## Global outline of the hook and its hat, for the focus highlight.
+func get_highlight_outline() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for p in HighlightResolver.circle(Vector2(0, 4), 26.0):
+		points.append(to_global(p))
+	return points
 
 
 ## True while the hat hangs here.

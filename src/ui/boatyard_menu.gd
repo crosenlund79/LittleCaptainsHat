@@ -101,7 +101,9 @@ func _update_services() -> void:
 		Provisions.format_days(provisions.food_days), Provisions.format_days(provisions.water_days)]
 	var harbour := GameSession.is_moored_in_harbour()
 	_repair.disabled = not harbour or GameSession.get_condition() >= VesselCondition.FULL
-	_grocery.disabled = not harbour or provisions.is_full()
+	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
+	_grocery.disabled = not store or provisions.is_full()
+	_grocery.visible = store
 	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
 		if not provisions.is_full() else "Grocery store…"
 

@@ -32,7 +32,8 @@ const QUAY_DEPTH := 130.0
 ## Facilities shown as signs: station id -> [sign text, icon, the label node
 ## of the classic pontoon drawing whose place the sign takes].
 const FACILITIES := {&"grocery": ["Groceries", &"basket", "GrocerySign"],
-	&"boatyard": ["Boatyard · Repairs", &"wrench", "BoatyardSign"]}
+	&"boatyard": ["Boatyard · Repairs", &"wrench", "BoatyardSign"],
+	&"go_ashore": ["Go Ashore", &"compass", "GoAshoreSign"]}
 ## Original mooring nodes the illustration replaces while it is shown (the
 ## sign labels stay: they get the sign's text and the display font).
 const REPLACED_PREFIXES := ["Plank", "Cleat"]
@@ -120,9 +121,33 @@ func refresh() -> void:
 			if FACILITIES.has(station.interaction_id) and station.enabled:
 				var facility: Array = FACILITIES[station.interaction_id]
 				var label := _mooring.get_node_or_null(NodePath(String(facility[2]))) as Control
-				var at := label.position + label.size / 2.0 if label else Vector2(station.position.x, _pontoon.position.y + 30.0)
+				var at: Vector2
+				if station.has_meta(&"sign_at"):  # the shore slot (Iteration 12)
+					at = station.get_meta(&"sign_at")
+				elif label:
+					at = label.position + label.size / 2.0
+				else:
+					at = Vector2(station.position.x, _pontoon.position.y + 30.0)
 				_signs.append({"id": station.interaction_id, "at": at, "text": facility[0], "icon": facility[1], "label": label != null})
+	_update_sign_highlights()
 	queue_redraw()
+
+
+## Each sign board is what its station highlights (Iteration 12).
+func _update_sign_highlights() -> void:
+	for child in get_children():
+		if child is HighlightProvider:
+			remove_child(child)
+			child.queue_free()
+	for sign in _signs:
+		add_child(HighlightProvider.create(sign.id, HighlightResolver.rounded_rect(sign_board(sign).grow(5.0), 9.0)))
+
+
+## The sign's board rectangle (this node's coordinates).
+func sign_board(sign: Dictionary) -> Rect2:
+	var text_width := _font.get_string_size(String(sign.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
+	var center: Vector2 = sign.at
+	return Rect2(center - Vector2(text_width / 2.0 + 36.0, 18), Vector2(text_width + 50.0, 36))
 
 
 func _sign_text_settings() -> LabelSettings:
@@ -287,7 +312,7 @@ func _draw_sign(sign: Dictionary) -> void:
 	var text: String = sign.text
 	var text_width := _font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x
 	var center: Vector2 = sign.at
-	var board := Rect2(center - Vector2(text_width / 2.0 + 36.0, 18), Vector2(text_width + 50.0, 36))
+	var board := sign_board(sign)
 	draw_rect(Rect2(board.position + Vector2(4, 5), board.size), Color(0, 0, 0, 0.3))
 	draw_rect(board, SIGN_BOARD)
 	draw_rect(board.grow(-3), Color(SIGN_BOARD.lightened(0.12), 0.6), false, 1.0)
@@ -306,6 +331,11 @@ func _draw_icon(icon: StringName, at: Vector2) -> void:
 			draw_arc(at + Vector2(0, -2), 7.0, PI, TAU, 12, INK, 1.6, true)
 			draw_circle(at + Vector2(-3, -4), 2.6, Color("#c8553d"))
 			draw_circle(at + Vector2(3, -5), 2.4, Color("#7ba05b"))
+		&"compass":
+			draw_circle(at, 8.0, Color("#efe5cc"))
+			draw_arc(at, 8.0, 0, TAU, 18, INK, 1.4, true)
+			draw_colored_polygon(PackedVector2Array([at + Vector2(0, -7), at + Vector2(2.5, 0), at + Vector2(-2.5, 0)]), Color("#c8553d"))
+			draw_colored_polygon(PackedVector2Array([at + Vector2(0, 7), at + Vector2(2.5, 0), at + Vector2(-2.5, 0)]), Color("#3e4347"))
 		&"wrench":
 			draw_line(at + Vector2(-7, 7), at + Vector2(5, -5), Color("#d8dde0"), 3.0, true)
 			draw_arc(at + Vector2(6, -6), 4.5, -PI * 0.25, PI * 1.25, 10, Color("#d8dde0"), 3.0, true)

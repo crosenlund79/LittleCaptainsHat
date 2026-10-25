@@ -326,6 +326,16 @@ func work(hours: int) -> Dictionary:
 	return {"error": "", "hours": completed, "earned": earned, "elapsed": result.elapsed_seconds}
 
 
+## A Go Ashore outing (Iteration 12): `minutes` of ordinary harbour time
+## pass while the captain is ashore (the hat is out of the wind, like below
+## deck). Stops early for the same events as sleep.
+func spend_time_ashore(minutes: float) -> AdvanceResult:
+	_hat_sheltered = true
+	var result := advance(maxf(minutes, 0.0) * 60.0, true)
+	_hat_sheltered = false
+	return result
+
+
 ## Sleeps for `hours`: the normal simulation advanced in one go, stopping
 ## early on arrival or when a weather warning becomes due.
 func sleep(hours: float) -> AdvanceResult:

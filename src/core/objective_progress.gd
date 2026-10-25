@@ -71,6 +71,16 @@ func award(id: StringName, title: String, reward: int, event_time: float) -> voi
 		recent.remove_at(0)
 
 
+## Records that `id` happened at `event_time` without paying renown (a Go
+## Ashore outing repeated, Iteration 12). Same record as award().
+func mark(id: StringName, event_time: float) -> void:
+	var key := String(id)
+	if not completed.has(key):
+		completed[key] = {"count": 0, "first": event_time, "last_event": event_time}
+	completed[key].count = int(completed[key].count) + 1
+	completed[key].last_event = event_time
+
+
 func to_dict() -> Dictionary:
 	return {
 		"lifetime_renown": lifetime_renown,

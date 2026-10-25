@@ -120,7 +120,11 @@ func _build_log_tab() -> Control:
 		_add_text(passages, "Passage%d" % (log.voyages.size() - 1 - i), describe_passage(log.voyages[i]))
 	# Short narrative notes (the captain's hat so far): separate from the
 	# voyage records above, which they never change.
-	var history := GameSession.get_hat().history
+	# The hat's story and (Iteration 12) Go Ashore outings, newest first.
+	var history: Array[Dictionary] = []
+	history.append_array(GameSession.get_hat().history)
+	history.append_array(GameSession.get_shore_moments())
+	history.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a.time) < float(b.time))
 	if not history.is_empty():
 		_add_text(list, "MomentsTitle", "Notable moments", HEADING)
 		var moments := VBoxContainer.new()

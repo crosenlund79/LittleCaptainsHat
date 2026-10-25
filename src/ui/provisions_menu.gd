@@ -39,11 +39,15 @@ func refresh() -> void:
 	_water_level.text = String(Provisions.level_of(provisions.water_days)).capitalize()
 	_endurance.text = Provisions.format_days(provisions.endurance_days())
 	var harbour := GameSession.is_moored_in_harbour()
-	_grocery.disabled = not harbour or provisions.is_full()
+	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
+	_grocery.disabled = not store or provisions.is_full()
+	_grocery.visible = not harbour or store
 	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
 		if not provisions.is_full() else "Grocery store…"
 	if not harbour:
 		_note.text = "Underway: buy food and water at the grocery store in the next harbour."
+	elif not store:
+		_note.text = "There is no grocery store in %s." % GameSession.get_location().display_name
 	elif provisions.is_full():
 		_note.text = "Food and water are full."
 	else:

@@ -261,9 +261,29 @@ func get_vessel_id() -> StringName:
 	return _state.vessel_id if _state else VesselCatalog.STARTER_ID
 
 
-## True when the boatyard may be used: in harbour, not on a passage.
+## True when the boatyard may be used: in harbour, not on a passage, and the
+## harbour has a boatyard (Iteration 12).
 func can_change_vessel() -> bool:
-	return _state != null and not is_underway() and get_location() != null
+	return has_facility(HarbourFacilities.BOATYARD)
+
+
+## True when moored in a harbour that offers `facility` (HarbourFacilities).
+func has_facility(facility: StringName) -> bool:
+	return is_moored_in_harbour() and get_harbour_facilities().has(facility)
+
+
+## The facilities of the harbour the boat lies in (defaults at sea).
+func get_harbour_facilities() -> HarbourFacilities:
+	return HarbourFacilities.for_port(_state.location_id if _state and not is_underway() else &"")
+
+
+## Why `facility` cannot be used here, or "" when it can.
+func facility_refusal(facility: StringName) -> String:
+	if not is_moored_in_harbour():
+		return "The %s is only reachable while moored in harbour." % HarbourFacilities.describe(facility)
+	if not get_harbour_facilities().has(facility):
+		return "There is no %s in %s." % [HarbourFacilities.describe(facility), get_location().display_name]
+	return ""
 
 
 ## Switches to another boat at the boatyard. Only in harbour; refused (with a
@@ -279,6 +299,8 @@ func switch_vessel(vessel_id: StringName) -> String:
 		return "You can only change boats in harbour, not during a passage."
 	if get_location() == null:
 		return "The boatyard is only available in harbour."
+	if not can_change_vessel():
+		return facility_refusal(HarbourFacilities.BOATYARD)
 	var vessel := VesselCatalog.get_default().get_vessel(vessel_id)
 	if vessel == null:
 		return "Unknown boat '%s'." % vessel_id
@@ -609,6 +631,8 @@ func is_moored_in_harbour() -> bool:
 func repair_vessel() -> String:
 	if not is_moored_in_harbour():
 		return "Repairs can only be made while moored in harbour."
+	if not has_facility(HarbourFacilities.BOATYARD):
+		return facility_refusal(HarbourFacilities.BOATYARD)
 	if get_condition() >= VesselCondition.FULL:
 		return "The %s is already in perfect condition." % get_vessel_definition().display_name
 	_state.set_condition(_state.vessel_id, VesselCondition.FULL)
@@ -756,6 +780,115 @@ func _award_hat_objectives(event: Dictionary) -> Array[Dictionary]:
 	return awards
 
 
+# --- Go Ashore (Iteration 12) -------------------------------------------------------
+
+## What Go Ashore offers now: {} where it is not available; {"resting": true,
+## "until": game time} shortly after an outing in this harbour; otherwise
+## {"event": the ShoreEvents event, "seen": true when every event here has
+## been enjoyed before (no more rewards)}. Events not yet enjoyed in this
+## harbour come first, in an order that is stable for the game (no
+## re-rolling by reopening).
+func get_shore_event() -> Dictionary:
+	if not has_facility(HarbourFacilities.GO_ASHORE):
+		return {}
+	var port := _state.location_id
+	var last := _last_shore_time(port)
+	if last > -INF and _state.game_time - last < ShoreEvents.REST_HOURS * 3600.0:
+		return {"resting": true, "until": last + ShoreEvents.REST_HOURS * 3600.0}
+	var events := ShoreEvents.for_port(port)
+	var fresh: Array[Dictionary] = []
+	var outings := 0
+	for event in events:
+		var key := ShoreEvents.record_id(port, event.id)
+		if _state.progress.is_completed(StringName(key)):
+			outings += _state.progress.get_count(StringName(key))
+		else:
+			fresh.append(event)
+	var pool := fresh if not fresh.is_empty() else events
+	var index := absi(hash("%d|%s|%d" % [_state.wind_seed, port, outings])) % pool.size()
+	return {"event": pool[index], "seen": fresh.is_empty()}
+
+
+## Makes choice `choice_index` of event `event_id` here: one transaction that
+## pays its small cost, records the outing and, the first time in this
+## harbour, pays its renown (a notable moment in the Captain's Log). Refused,
+## with nothing changed, when Go Ashore is not offered here, the harbour is
+## resting, the event is not the one on offer, or the money is not enough.
+## Returns {"error", "cost", "minutes", "renown", "outcome", "title"}. The
+## time itself is spent by Simulation.spend_time_ashore().
+func apply_shore_choice(event_id: String, choice_index: int) -> Dictionary:
+	var result := {"error": "", "cost": 0, "minutes": 0, "renown": 0, "outcome": "", "title": ""}
+	if _state == null or not has_facility(HarbourFacilities.GO_ASHORE):
+		result.error = facility_refusal(HarbourFacilities.GO_ASHORE) if _state else "No game is running."
+		return result
+	var offer := get_shore_event()
+	if offer.get("resting", false):
+		result.error = "You have just been ashore. Come back a little later."
+		return result
+	var event: Dictionary = offer.get("event", {})
+	if event.is_empty() or event.id != event_id or choice_index < 0 or choice_index >= event.choices.size():
+		result.error = "That outing is not on offer here."
+		return result
+	var choice: Dictionary = event.choices[choice_index]
+	var cost := int(choice.cost)
+	if cost > _state.funds:
+		result.error = "Not enough money: %s needed, you have %s." % [format_money(cost), format_money(_state.funds)]
+		return result
+	var port := _state.location_id
+	var harbour_name := get_location().display_name
+	var key := StringName(ShoreEvents.record_id(port, event_id))
+	var first := not _state.progress.is_completed(key)
+	var title := "Ashore in %s: %s" % [harbour_name, event.title]
+	var renown := int(choice.renown) if first else 0
+	if cost > 0:
+		_state.funds -= cost
+	if renown > 0:
+		_state.progress.award(key, title, renown, _state.game_time)
+	else:
+		_state.progress.mark(key, _state.game_time)
+	_has_unsaved_changes = true
+	result.cost = cost
+	result.minutes = int(choice.minutes)
+	result.renown = renown
+	result.title = title
+	result.outcome = ShoreEvents.fill(String(choice.outcome), harbour_name)
+	if cost > 0:
+		funds_changed.emit(_state.funds)
+	if renown > 0:
+		renown_awarded.emit([{"id": String(key), "reward": renown, "title": title, "text": result.outcome, "secret": false, "tone": ""}])
+	return result
+
+
+## The most recent outing in `port_id` (game time), or -INF.
+func _last_shore_time(port_id: StringName) -> float:
+	var prefix := "%s%s:" % [ShoreEvents.RECORD_PREFIX, port_id]
+	var last := -INF
+	for key: String in _state.progress.completed:
+		if key.begins_with(prefix):
+			last = maxf(last, float(_state.progress.completed[key].last_event))
+	return last
+
+
+## Go Ashore outings as notable moments: [{"time", "text"}], oldest first
+## (the first time each was enjoyed).
+func get_shore_moments() -> Array[Dictionary]:
+	var moments: Array[Dictionary] = []
+	if _state == null:
+		return moments
+	for key: String in _state.progress.completed:
+		if not key.begins_with(ShoreEvents.RECORD_PREFIX):
+			continue
+		var parts := key.split(":")
+		if parts.size() != 3:
+			continue
+		var event := ShoreEvents.find(StringName(parts[1]), parts[2])
+		var harbour := PortCatalog.get_default().get_display_name(StringName(parts[1]))
+		if not event.is_empty():
+			moments.append({"time": float(_state.progress.completed[key].first), "text": "Ashore in %s: %s" % [harbour, event.title]})
+	moments.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.time < b.time)
+	return moments
+
+
 func get_rescue_count() -> int:
 	return _state.rescue_count if _state else 0
 
@@ -835,6 +968,8 @@ func get_provisions_price() -> int:
 func buy_provisions() -> String:
 	if not is_moored_in_harbour():
 		return "The grocery store is only reachable while moored in harbour."
+	if not has_facility(HarbourFacilities.GROCERY):
+		return facility_refusal(HarbourFacilities.GROCERY)
 	if _state.provisions.is_full():
 		return "Food and water are already full."
 	var price := get_provisions_price()
@@ -1048,6 +1183,8 @@ func _lose_hat(time: float, sample: WeatherSample, position: Vector2) -> void:
 func buy_hat() -> String:
 	if not is_moored_in_harbour():
 		return "Captain's hats are sold at the harbour grocery store, while moored in harbour."
+	if not has_facility(HarbourFacilities.GROCERY):
+		return facility_refusal(HarbourFacilities.GROCERY)
 	if _state.hat.is_owned():
 		return "You already have your captain's hat."
 	var price := get_hat_price()
