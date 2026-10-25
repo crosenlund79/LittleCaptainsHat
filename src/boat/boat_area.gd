@@ -578,6 +578,9 @@ func _update_hat_station() -> void:
 	station.prompt = HAT_PROMPTS.get(GameSession.get_hat_status(), "Captain's hat")
 	if player and player.get_focused_interactable() == station:
 		interaction_prompt_changed.emit(station.prompt)
+	# Its outline follows the hook (the hat, or the empty plate); deferred so
+	# the hook has seen the change first.
+	_resolve_highlights.call_deferred()
 
 
 ## The hat blew away: on deck it is seen tumbling downwind.

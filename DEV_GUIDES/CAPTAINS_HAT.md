@@ -109,6 +109,21 @@ secret achievement *The Last Straw* depends on it).
 In harbour it lasts twice as long. Losing a hat costs nothing else: no damage,
 no money.
 
+### Seeing it without sound (Iteration 12)
+
+The hat's fate never depends on hearing it:
+
+- **At risk:** after the wind warning, while the hat is worn on deck, the HUD
+  shows a small fluttering hat: "Hold onto your hat! [H]" (`HatBadge`, under
+  the area panel).
+- **The warning** stays up 7 s.
+- **The loss** reads "Hat overboard! …" and stays up 9 s, above any open panel.
+  The tumble on deck is larger and longer, with wind streaks.
+- **Afterwards** a quiet "Hat missing" badge stays until a new hat is bought.
+
+The durations are `HatBadge.WARNING_SECONDS` and `LOST_SECONDS`. None of this
+changes when or how often a hat is lost.
+
 ## Replacement hats
 
 The harbour **grocery store** sells a replacement for `price_eur` (15) in its

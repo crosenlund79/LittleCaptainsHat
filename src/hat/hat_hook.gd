@@ -27,8 +27,11 @@ func refresh() -> void:
 
 ## Global outline of the hook and its hat, for the focus highlight.
 func get_highlight_outline() -> PackedVector2Array:
+	# The hat when it hangs here, otherwise just the little brass plate.
+	var local := HighlightResolver.circle(Vector2(0, 4), 22.0) if _stored \
+		else HighlightResolver.rounded_rect(Rect2(-13, -8, 26, 16), 5.0)
 	var points := PackedVector2Array()
-	for p in HighlightResolver.circle(Vector2(0, 4), 26.0):
+	for p in local:
 		points.append(to_global(p))
 	return points
 

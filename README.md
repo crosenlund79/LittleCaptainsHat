@@ -20,8 +20,30 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.100b, A Living Little World**
-(see [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md), which ends with a short Windows visual-testing guide):
+Current version: **0.100c, Iteration 12: A Little Harbour Life**, a revision build
+(see [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_12.md](WINDOWS_ACCEPTANCE_12.md) and the Captain's standing
+decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)):
+- **walk ashore**: in harbour a gangplank leads from your boat down to the
+  pontoon, where the harbour's services stand: the grocery store, the boatyard
+  (where there is one) and **Go Ashore**;
+- **Go Ashore**: small, cozy harbour moments (a café, a bench, a friendly
+  sailor…) with one or two choices, a little time and the odd euro; the first
+  time pays a little renown and becomes a notable moment in the Captain's Log;
+- **harbours differ**: services come from data; Copenhagen has all three,
+  Lohals (new, on Langeland) has no boatyard;
+- the hat's fate is **visible without sound**: a fluttering hat in the HUD when it
+  is at risk, "Hat overboard!" when it goes, and a small "Hat missing" badge
+  until you buy a new one;
+- the object you can use **glows** (the chart table, the berth, the hat hook, a
+  sign) instead of a ring around an invisible area;
+- underway the **boat faces its course** on screen, north up (Settings →
+  *Sailing view* turns it off);
+- the shortcut help sits on a dark strip with key caps, readable on any
+  background.
+
+Version 0.100b, A Living Little World
+(see [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md), which ends with a short Windows visual-testing guide), brought:
 - a new starter boat, the **Arctic Wanderer 26**: a small tiller-steered sloop
   with a snug one-room cabin. New games start aboard it; the other three boats
   stay one boatyard visit away. Existing saves keep the boat they had;
@@ -473,7 +495,8 @@ templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, the release
-reports [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md) (0.100b) and
+reports [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md) (0.100c),
+[VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md) (0.100b) and
 [VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) (0.100a), and
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) with its Windows checklist
 [WINDOWS_ACCEPTANCE_I006.md](WINDOWS_ACCEPTANCE_I006.md), [005c](ITERATION_005C_REPORT.md),

@@ -21,6 +21,7 @@ version of each guide.
 | [AUDIO.md](AUDIO.md) | replace a sound (purr, engine, storm wind, thunder, ambience, clicks); understand the audio buses | `assets/audio/` |
 | [WEATHER.md](WEATHER.md) | tune where gales, thunderstorms and cyclones form, hazard levels, warnings and weather damage; restyle the chart's weather; use the F9 developer test tools and weather fixtures | `data/weather/`, `src/weather/`, `src/dev/` |
 | [CAPTAINS_HAT.md](CAPTAINS_HAT.md) | replace the captain's hat drawings, move its hook aboard, tune how wind takes it and what a replacement costs | `assets/hat/`, `data/hat/`, `src/hat/` |
+| [HARBOURS.md](HARBOURS.md) | give a harbour or take away a service (grocery, boatyard, Go Ashore), understand the gangplank and shore on every boat, add a Go Ashore event | `data/harbours/facilities/`, `src/harbour/` |
 | [MODDING_FUTURE.md](MODDING_FUTURE.md) | keep the project open for user content later (no mod support exists) | design principles |
 
 ## Where things belong
@@ -36,8 +37,9 @@ version of each guide.
 | Weather data (zones, seasons, cyclone basins) | `data/weather/weather_events.json` |
 | Captain's hat drawings and balancing | `assets/hat/`, `data/hat/hat_art.tres`, `data/hat/hat_config.json` |
 
-`<vessel_id>` is `starling_33` (monohull), `halcyon_40` (catamaran) or
-`petrel_36` (trimaran).
+`<vessel_id>` is `arctic_wanderer_26` (the starter monohull), `starling_33`
+(Wing 33, monohull), `halcyon_40` (Clam 40, catamaran) or `petrel_36`
+(Frogleap 36, trimaran).
 
 ## Finding the latest implementation documentation
 

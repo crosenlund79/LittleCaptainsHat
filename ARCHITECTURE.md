@@ -100,7 +100,7 @@ their own `LabelSettings` (see *Harbour presentation*).
 
 **Name, version and folder.** The window title and saves' `game_version`
 come from `project.godot` (`application/config/name` "Little Captain's Hat",
-`application/config/version` "0.100b"). `GameVersion`
+`application/config/version` "0.100c"). `GameVersion`
 (`src/app/game_version.gd`) holds the version in one place (a test keeps
 `project.godot` equal to it), a numbers-only form for tools, and the commit
 (from an optional `build_info.json` written by `tools/write_build_info.py`, or
@@ -1171,6 +1171,97 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
 - **Determinism:** it only reads; a test plays the same hat scenario with and
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
+
+## A little harbour life (Iteration 12, 0.100c)
+
+- **Hat feedback.** `HatBadge` (`src/ui/hat_badge.gd`, in the HUD under the
+  area panel) reads `GameSession.is_hat_at_risk()` (worn, warned, on deck) and
+  the hat status: a fluttering hat with "Hold onto your hat! [H]", or "Hat
+  missing" until a hat is bought. The hat's warning and loss toasts stay up 7 s
+  and 9 s (`HatBadge.WARNING_SECONDS`, `LOST_SECONDS`); the loss reads "Hat
+  overboard! …" and pulses the badge. Toasts sit above every panel
+  (ToastLayer 30). `HatBlowAway` is larger and longer (2.8 s). No loss rule
+  changed.
+- **Shortcut strip.** The HUD's `Controls` is a dark translucent panel with key
+  caps (`Hud.SHORTCUTS`); `get_controls_text()` gives it as text.
+- **Highlights.** `Interactable` no longer draws a ring. While focused it draws
+  a soft glow around `highlight_outline`, set by `BoatArea._resolve_highlights()`
+  from `HighlightResolver`: a provider node in the `interaction_highlight` group
+  (the hat hook, each harbour sign, both via `HighlightProvider`), else the
+  nearest furniture fixture named for the interaction (`FIXTURES`: the chart
+  table for `nav_table`, the berth for `bed`, …), else a small outline of the
+  area itself. Interaction areas and focus priority are unchanged. F8 (with the
+  developer tools) toggles `Interactable.debug_show_areas`.
+- **Shore access.** `ShoreAccess` (`src/harbour/shore_access.gd`) is added by
+  `BoatArea._setup_shore()` to decks with a pontoon, before the player is
+  placed:
+  - the gangplank lands at the boat's own `from_boatyard` spawn x;
+  - in harbour the closed `Lifeline` polygon is disabled and replaced by the
+    same outline with a gap where the plank crosses it, the plank's sides, and
+    a shore strip on the pontoon (the back of the pontoon is kept for the
+    signs);
+  - `walkable_bounds` widens to include the shore;
+  - underway the rail closes again, and a captain ashore is put at
+    `from_boatyard`.
+
+  The shore stations (`grocery`, `boatyard`, and `go_ashore`, created at
+  runtime) are placed in `ShoreAccess.get_service_slots()`.
+  `HarbourDressing` draws their signs there (Go Ashore with a compass icon),
+  and the classic labels follow. When the captain is ashore the camera's
+  `offset.y` glides down so the pontoon shows (`get_shore_camera_target()`).
+- **Facilities.** `HarbourFacilities` (`src/harbour/harbour_facilities.gd`):
+  `grocery`, `boatyard`, `go_ashore`, all true by default. Per-harbour files
+  live in `data/harbours/facilities/<port_id>.tres`: Copenhagen (all) and
+  Lohals (no boatyard). The harbour builder never touches them.
+  `GameSession.has_facility()` / `facility_refusal()` guard:
+  - `can_change_vessel()` (the boatyard), `switch_vessel()` and
+    `repair_vessel()`;
+  - `buy_provisions()` and `buy_hat()` (the grocery store);
+  - the App's `open_boatyard()`, `open_grocery()` and `open_go_ashore()`.
+
+  Unavailable stations are disabled, hidden and not monitorable; their signs
+  and labels are hidden.
+- **Lohals** (`lohals`, UN/LOCODE DK LOH) was added through
+  `tools/navigation/harbours.csv` and `build_harbours.py`. It passes the
+  harbour suite's checks: approach from open water, coast and route. The
+  catalogue now has 164 harbours.
+- **Go Ashore.** `ShoreEvents` (`src/harbour/shore_events.gd`) holds 8 generic
+  events, plus one each for Copenhagen and Lohals.
+  - `GameSession.get_shore_event()` offers events not yet enjoyed in this
+    harbour first, in an order fixed per game (a hash of the wind seed, the
+    port and the outings there), so reopening never re-rolls. After an outing
+    the harbour "rests" for `REST_HOURS` (6 h).
+  - `apply_shore_choice()` is one transaction. It pays the cost, records the
+    outing in `ObjectiveProgress.completed` under `shore:<port>:<event>`
+    (`ObjectiveProgress.mark()`, or `award()` with renown the first time), and
+    emits `renown_awarded`. Using the existing, already-saved records means
+    **the save format did not change**, and a reward can never be paid twice,
+    even after loading.
+  - `Simulation.spend_time_ashore()` passes the time, with the hat sheltered.
+  - `GameSession.get_shore_moments()` feeds the Captain's Log's *Notable
+    moments*, merged with the hat's story.
+  - `GoAshoreMenu` (`src/ui/go_ashore_menu.gd`) is the panel.
+- **Course view.** With `SettingsManager.get_course_view()` (default on,
+  Settings → *Sailing view*), `BoatArea._update_camera()` turns the deck camera
+  while underway so the bow points along the course, north up. The rotation is
+  `deg_to_rad(90 − heading)`, from `get_view_heading()`: the voyage leg's
+  course, or a test's `view_heading_override`, which is presentation only.
+  - **Zoom** fits the turned boat in the screen minus `COURSE_SCREEN_MARGIN`,
+    never below `COURSE_MIN_ZOOM` (0.78), so the deck stays readable at
+    north/south headings. The camera centres on the boat. Rotation, zoom and
+    position tween together (1.8 s) at departure, at each new leg
+    (`voyage_course_changed`) and on arrival, so there is no per-frame motion.
+  - **The rest follows the view.** The HUD is on its own layer and stays
+    upright. `Player.view_rotation` makes the movement keys screen-relative.
+    `WaterLife` reads the same view heading, so the waves keep their world
+    direction, and computes its view rectangle from all four corners. The
+    deck's water polygon is enlarged to fill a turned view. `SailRig` leaves
+    the camera offset alone in the course view.
+  - Moored, the deck is upright as before.
+- **Diagnostics** (SessionLog): `hat_warning_shown`, `hat_lost_shown`,
+  `gangplank` (to shore / boat), `facility` (opened / unavailable),
+  `shore_event`, `shore_choice` and `course_view` (heading and zoom, once per
+  deck).
 
 ## A living little world (0.100b)
 
