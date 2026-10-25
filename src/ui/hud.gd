@@ -210,8 +210,13 @@ func refresh() -> void:
 		_route_detail.text = "ETA about %s (estimate)" % Simulation.format_game_time(Simulation.get_eta())
 		_propulsion.text = propulsion.describe()
 		_propulsion.visible = true
+		if GameSession.is_anchored():
+			_route_detail.text = "Raise the anchor at the windlass to sail on"
+			_propulsion.text = "%s  ·  %d × the depth of chain" % [AnchorSite.holding_text(GameSession.get_anchor().holding),
+				GameSession.get_anchor().scope]
 		var side := PropulsionState.wind_side(propulsion.true_wind_angle)
-		_wind.text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else "off the bow"]
+		if not GameSession.is_anchored():
+			_wind.text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else "off the bow"]
 		_progress.visible = true
 		_progress.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 	else:

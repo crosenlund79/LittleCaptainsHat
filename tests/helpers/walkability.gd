@@ -11,8 +11,9 @@ const USE_DISTANCE := 40.0
 const GRID := 10.0
 
 
-## Reachable player positions (local to the area) from `from`.
-static func walkable_cells(area: BoatArea, from: Vector2) -> Array[Vector2]:
+## Reachable player positions (local to the area) from `from`, on a grid of
+## `grid` units (a finer grid finds narrow side decks the player fits through).
+static func walkable_cells(area: BoatArea, from: Vector2, grid := GRID) -> Array[Vector2]:
 	var space := area.get_world_2d().direct_space_state
 	var query := PhysicsShapeQueryParameters2D.new()
 	var circle := CircleShape2D.new()
@@ -32,7 +33,7 @@ static func walkable_cells(area: BoatArea, from: Vector2) -> Array[Vector2]:
 	while not queue.is_empty():
 		var p: Vector2 = queue.pop_back()
 		cells.append(p)
-		for step in [Vector2(GRID, 0), Vector2(-GRID, 0), Vector2(0, GRID), Vector2(0, -GRID)]:
+		for step in [Vector2(grid, 0), Vector2(-grid, 0), Vector2(0, grid), Vector2(0, -grid)]:
 			var q: Vector2 = p + step
 			if seen.has(q) or not bounds.has_point(q):
 				continue

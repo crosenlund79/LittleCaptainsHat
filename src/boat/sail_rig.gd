@@ -187,8 +187,8 @@ func is_spinnaker_visible() -> bool:
 ## Target pose for the current propulsion state.
 func _target() -> Dictionary:
 	var target := {"main": 0.0, "jib": 0.0, "set": 0.0, "spinnaker": 0.0, "twa": 0.0}
-	if not GameSession.is_active() or not GameSession.is_underway():
-		return target
+	if not GameSession.is_active() or not GameSession.is_underway() or GameSession.is_anchored():
+		return target  # in harbour and at anchor (Iteration 13) the sails are furled
 	var state := GameSession.get_propulsion()
 	if not state.initialised or not state.sails_set():
 		return target

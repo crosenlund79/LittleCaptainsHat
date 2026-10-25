@@ -655,7 +655,7 @@ func _setup_aboard_gear() -> void:
 			windlass.position = windlass_at
 			windlass.bow = Vector2(_bow_x(hull) - windlass_at.x - 8.0, 0.0)
 			_add_gear(windlass, Windlass.outline())
-			_add_station(stations, "Anchor", &"anchor", "Anchor", windlass_at + Vector2(-26, 0), 40.0)
+			_add_station(stations, "Anchor", &"anchor", "Anchor", windlass_at + Vector2(-30, 0), 40.0)
 	elif area_id == SessionState.AREA_INTERIOR:
 		var provisions := stations.get_node_or_null(^"Provisions") as Node2D
 		var galley := _nearest_fixture(provisions.position if provisions else Vector2.ZERO, HighlightResolver.FIXTURES[&"provisions"])
@@ -774,7 +774,7 @@ static func windlass_position(hull: PackedVector2Array) -> Vector2:
 	var bow := _bow_x(hull)
 	var x := bow - 50.0
 	while x > bow - 260.0:
-		if deck_half_width(hull, x) >= 46.0 and deck_half_width(hull, x, 1.0) >= 46.0:
+		if deck_half_width(hull, x) >= 56.0 and deck_half_width(hull, x, 1.0) >= 56.0:
 			return Vector2(x, 0.0)
 		x -= 6.0
 	return Vector2.INF
