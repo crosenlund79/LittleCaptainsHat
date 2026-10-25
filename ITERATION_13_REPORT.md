@@ -359,13 +359,30 @@ the game.
 
 ## 19. Tests run and results
 
-New suites: `test_fishing` (96 checks), `test_galley_and_anchor` (87),
-`test_eight_directions` (38), `test_catch_and_cove_journey` (31). Updated:
-`test_companion_art` (new art, dog set, highlight; 90), `test_harbour_life`
-(octant course view; 96), `test_branding` and `test_diagnostics` (0.101a,
-format 11), `test_dev_guides` (the new guide).
+All on Linux with Godot 4.7.2.
 
-FULL_RUN_RESULTS
+| Suite | Checks | What |
+|---|---|---|
+| `test_fishing` (new) | 96 | data and regions, lures, the fight's fairness for every species, bites on the grid and chop-independence, landing, records, no duplication, milestones once, cool box, selling, tackle, save/load, the rod and trophy stations on all four boats, the panel, an unattended bite, trolling underway, the trophy board and its persistence |
+| `test_galley_and_anchor` (new) | 91 | the holding model (chain, set, shelter, rising wind always passes poor before dragging), too deep / on land, the stove and windlass on all four boats and clear of the companions' spots, cooking (refusals, ingredients, time, food, well fed, the panel), the stove rule underway, anchoring through the panel, the HUD, guards, the evening moment, dragging and its alarm, sleeping at anchor and the wake-up, raising, save/load at anchor, invalid saves |
+| `test_eight_directions` (new) | 38 | the octant rule and its boundaries, hysteresis, all eight octants rendered, full-precision heading, keys at diagonals, framing on the Frogleap 36, all four boats, the fixed-view setting |
+| `test_catch_and_cove_journey` (new) | 31 | the whole loop through the stations and panels: depart, troll, bite, land, save/load, anchor, cook, sleep, wake, raise, sail on, save/load; then a rough evening: gale refusals and the alarm waking the captain without sudden loss |
+| `test_companion_art` (updated) | 90 | the new cat and dog art and sets, the owner's originals unchanged, placement, behaviour, petting, the silhouette highlight, fallbacks |
+| `test_harbour_life`, `test_vessels`, `test_hat`, `test_branding`, `test_diagnostics`, `test_dev_guides` (updated) | | octant course view; a finer walk grid for the Wing 33's windlass; the current save format; 0.101a; the new guide |
+
+**Full regression** (all 38 suites, headless): **3,147 checks passed, 0
+failed**, no script errors. The first full run, before the fixes, had 19
+failures: the new stove and trophy board competing with the companions'
+resting spots for the E key (12 checks in `test_life_aboard`, 2 in
+`test_upkeep_ui`), the Wing 33 windlass and the coarse walk grid
+(`test_vessels`), the hat suite's hard-coded save format, and documentation
+links (`test_dev_guides`). All were fixed in the code or the tests'
+assumptions, not by weakening checks.
+
+**Restart check** (two processes, write then read): **PASS**.
+
+**Rendered runs** (Xvfb, software OpenGL) of the four Iteration 13 suites with
+screenshots: all passed (96, 91, 90, 38).
 
 ## 20. Rendered screenshot review
 
@@ -456,4 +473,15 @@ automated results and what the screenshots show.
 
 ## 23. Final version, commit, tag and push status
 
-FINAL_STATUS
+- **Version:** 0.101a. **Save format:** 11.
+- **Branch:** `claude/friendly-fermat-dey23f`, pushed after every checkpoint;
+  the remote was checked to hold each commit.
+- **Final commit:** the commit that adds this section (Checkpoint H, part 2);
+  its hash is in the delivery message, since a commit cannot contain its own
+  hash. Checkpoint H part 1 is `213b15e`.
+- **Tag:** `v0.101a` is created on the final commit. Earlier tag pushes
+  (`v0.100a`–`v0.100c`) were rejected by this environment's Git proxy; the
+  delivery message says whether this one was accepted.
+- **No pull request** was opened and no Windows executable was built.
+- **Windows acceptance:** not claimed. It is the Captain's sea trial with
+  `WINDOWS_ACCEPTANCE_13.md`.
