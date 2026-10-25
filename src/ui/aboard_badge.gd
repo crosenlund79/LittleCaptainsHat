@@ -58,7 +58,12 @@ static func lines_for_game() -> Dictionary:
 		if anchor.holding == AnchorState.HOLDING_DRAGGING:
 			lines.anchor = ["Anchor dragging! Go to the windlass", RED, false]
 		else:
-			lines.anchor = ["At anchor  ·  %s" % AnchorSite.holding_text(anchor.holding),
+			var settled := ""
+			if GameSession.is_settled_at_anchor():
+				# Life at anchor (0.102b): the badge says how the stay feels.
+				settled = {AnchorLife.PHASE_EVENING: "  ·  a quiet evening", AnchorLife.PHASE_NIGHT: "  ·  a calm night",
+					AnchorLife.PHASE_MORNING: "  ·  a still morning"}.get(GameSession.get_day_phase(), "")
+			lines.anchor = ["At anchor  ·  %s%s" % [AnchorSite.holding_text(anchor.holding), settled],
 				AMBER if anchor.holding == AnchorState.HOLDING_POOR else CALM, false]
 	if GameSession.is_line_out():
 		if GameSession.get_fishing_mode() == FishingState.MODE_TROLLING:

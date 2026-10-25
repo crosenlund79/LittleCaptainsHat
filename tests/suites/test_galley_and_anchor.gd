@@ -174,7 +174,7 @@ func _test_cooking_in_harbour() -> void:
 	var cabin := await _show(CABIN, &"from_deck")
 	var station := cabin.get_node("Layout/Stations/Cook") as Interactable
 	await _walk_to(cabin, station)
-	t.check(cabin.player.get_focused_interactable() == station and app.hud.get_prompt() == "Cook a meal", "[galley] at the stove: \"Cook a meal\"")
+	t.check(cabin.player.get_focused_interactable() == station and app.hud.get_prompt() == "Cook a meal or make coffee", "[galley] at the stove: \"Cook a meal or make coffee\"")
 	await _shot("13_galley_highlight")
 	station.interact(cabin.player)
 	await t.frames(2)

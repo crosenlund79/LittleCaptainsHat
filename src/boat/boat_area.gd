@@ -117,6 +117,7 @@ func _ready() -> void:
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
 	_setup_harbour_dressing()
 	_setup_water_life()
+	_setup_anchor_ambience()
 	_setup_camera()
 	_setup_hat_hook()
 	_update_hat_station()
@@ -162,6 +163,29 @@ func _setup_water_life() -> void:
 	surroundings.add_child(life)
 	surroundings.move_child(life, water.get_index() + 1)
 	life.setup(self)
+
+
+## Life at anchor (0.102b): the time-of-day tint while settled at anchor,
+## and below deck the cabin lamp's glow (over the saloon and the galley).
+func _setup_anchor_ambience() -> void:
+	var ambience := AnchorAmbience.new()
+	ambience.name = "AnchorAmbience"
+	if area_id == SessionState.AREA_INTERIOR:
+		var cabin := _cabin_polygon()
+		if cabin.size() >= 3:
+			var bounds := Rect2(cabin[0], Vector2.ZERO)
+			for p in cabin:
+				bounds = bounds.expand(p)
+			var centre := bounds.get_center()
+			ambience.lamps.append(Vector3(centre.x, centre.y, minf(bounds.size.x, bounds.size.y) * 0.55))
+		var stove := get_gear("GalleyStove")
+		if stove:
+			ambience.lamps.append(Vector3(stove.position.x, stove.position.y, 46.0))
+	add_child(ambience)
+
+
+func get_anchor_ambience() -> AnchorAmbience:
+	return get_node_or_null(^"AnchorAmbience") as AnchorAmbience
 
 
 func get_water_life() -> WaterLife:
@@ -668,7 +692,7 @@ func _setup_aboard_gear() -> void:
 			_add_gear(stove, GalleyStove.outline())
 			# The station sits at the counter, so the stove is used from in front
 			# of it, not from across the cabin (or from beside the cat).
-			_add_station(stations, "Cook", &"cook", "Cook a meal", Vector2(cook_at.x, lerpf(provisions.position.y, galley.position.y, 0.5)), 24.0)
+			_add_station(stations, "Cook", &"cook", "Cook a meal or make coffee", Vector2(cook_at.x, lerpf(provisions.position.y, galley.position.y, 0.5)), 24.0)
 		var hat_spot := get_node_or_null(^"Layout/HatSpot") as Node2D
 		var hat := stations.get_node_or_null(^"Hat") as Node2D
 		if hat_spot and hat:

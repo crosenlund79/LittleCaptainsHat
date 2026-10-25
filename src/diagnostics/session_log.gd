@@ -179,6 +179,10 @@ func _connect_game() -> void:
 			"set": snappedf(anchor.set_quality, 0.01), "alarm": anchor.alarm, "dragged_nm": snappedf(anchor.dragged_nm, 0.001)}))
 	# Iteration 14: chart recovery on load, boat care, the boatyard.
 	GameSession.location_recovered.connect(func(info: Dictionary) -> void: write("location_recovered", info))
+	# Revision 0.102b: life at anchor (one line per change or moment, never per frame).
+	GameSession.anchor_life_changed.connect(func(settled: bool) -> void: write("anchor_ambience",
+		{"active": settled, "phase": String(GameSession.get_day_phase()), "hour": snappedf(GameSession.get_local_hour(), 0.1)}))
+	GameSession.anchor_moment.connect(func(kind: String, _text: String) -> void: write("anchor_moment", {"kind": kind}))
 	GameSession.hat_bought.connect(func(info: Dictionary) -> void: write("hat_bought", {"price": info.price, "funds_after": info.funds_after,
 		"serial": info.serial}))
 

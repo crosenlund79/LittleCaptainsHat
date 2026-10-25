@@ -25,6 +25,9 @@ extends Node2D
 
 signal petted(kind: StringName)
 signal pose_changed(pose: StringName)
+## Life at anchor (0.102b): the companion settled down for a quiet stay at
+## anchor (curls up and dozes much more), or stopped being settled.
+signal settled_changed(settled: bool)
 
 const REACTION_SECONDS := 1.6
 const INTERACT_RADIUS := 34.0
@@ -65,6 +68,10 @@ var _was_focused := false
 var _rng := RandomNumberGenerator.new()
 var _time := 0.0
 var _reaction := 0.0
+## Settled at anchor: rest turns into long naps (see advance_behaviour()).
+var settled := false
+## How much longer the naps are while settled.
+const SETTLED_SLEEP_FACTOR := 2.5
 
 
 func _ready() -> void:
@@ -90,6 +97,12 @@ func _ready() -> void:
 	_sync()
 	GameSession.companion_moved.connect(_on_companion_moved)
 	GameSession.state_replaced.connect(_sync)
+	GameSession.anchor_life_changed.connect(_on_anchor_life_changed)
+	# Coming below at a quiet anchorage: already curled up.
+	if GameSession.is_settled_at_anchor():
+		settled = true
+		if is_sprite_mode():
+			set_pose(CompanionVisualSet.POSE_SLEEPING)
 
 
 func _process(delta: float) -> void:
@@ -106,7 +119,25 @@ func pet() -> void:
 	AudioManager.play_sfx(purr_sound if kind == CompanionState.KIND_CAT else dog_sound)
 	if is_sprite_mode():
 		set_pose(CompanionVisualSet.POSE_ALERT, maxf(visual_set.alert_seconds, REACTION_SECONDS))
+	GameSession.note_companion_petted(kind)
 	petted.emit(kind)
+
+
+## The boat became settled at anchor (or stopped being so). Settling shows:
+## a stretch, then down for a long nap.
+func _on_anchor_life_changed(on: bool) -> void:
+	if on == settled:
+		return
+	settled = on
+	settled_changed.emit(on)
+	SessionLog.write("companion_settled", {"kind": String(kind), "settled": on, "spot": String(spot)})
+	if not is_sprite_mode():
+		return
+	if on and pose != CompanionVisualSet.POSE_SLEEPING:
+		set_pose(CompanionVisualSet.POSE_STRETCHING if _textures.has(CompanionVisualSet.POSE_STRETCHING) else CompanionVisualSet.POSE_SLEEPING)
+	elif not on and pose == CompanionVisualSet.POSE_SLEEPING:
+		# Something changed (the anchor came up, the wind rose): it wakes.
+		set_pose(CompanionVisualSet.POSE_ALERT, visual_set.alert_seconds)
 
 
 ## Preview only: shows the given kind.
@@ -168,6 +199,10 @@ func advance_behaviour(delta: float) -> void:
 	_pose_left -= delta
 	if _pose_left > 0.0:
 		return
+	if settled and _textures.has(CompanionVisualSet.POSE_SLEEPING) and pose != CompanionVisualSet.POSE_SLEEPING:
+		# Settled at anchor: whatever it was doing, back to its nap.
+		set_pose(CompanionVisualSet.POSE_SLEEPING)
+		return
 	match pose:
 		CompanionVisualSet.POSE_RESTING:
 			if _rng.randf() < visual_set.sleep_chance and _textures.has(CompanionVisualSet.POSE_SLEEPING):
@@ -191,7 +226,7 @@ func _idle_duration(pose_name: StringName) -> float:
 		return 1.0
 	match pose_name:
 		CompanionVisualSet.POSE_SLEEPING:
-			return _rng.randf_range(visual_set.sleep_seconds.x, visual_set.sleep_seconds.y)
+			return _rng.randf_range(visual_set.sleep_seconds.x, visual_set.sleep_seconds.y) * (SETTLED_SLEEP_FACTOR if settled else 1.0)
 		CompanionVisualSet.POSE_STRETCHING:
 			return visual_set.stretch_seconds
 		CompanionVisualSet.POSE_ALERT:

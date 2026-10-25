@@ -94,6 +94,7 @@ func _ready() -> void:
 	GameSession.hat_lost.connect(_on_hat_lost)
 	GameSession.fish_bite.connect(_on_fish_bite)
 	GameSession.anchor_alarm.connect(_on_anchor_alarm)
+	GameSession.anchor_moment.connect(_on_anchor_moment)
 	GameSession.fishing_warning.connect(func(warning: Dictionary) -> void: notify(String(warning.text)))
 	# Test weather never outlives the game it was made in.
 	GameSession.session_started.connect(DevTools.on_session_changed)
@@ -189,6 +190,15 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func notify(text: String) -> void:
 	toasts.show_message(text)
+
+
+## Life at anchor (0.102b): a quiet line, shown a little longer than a notice.
+## The wake-up line is shown by sleep_for() after the waking notice.
+func _on_anchor_moment(kind: String, text: String) -> void:
+	if kind != "wake" and not text.is_empty():
+		toasts.show_message(text, ANCHOR_MOMENT_SECONDS)
+
+const ANCHOR_MOMENT_SECONDS := 5.5
 
 
 func is_in_gameplay() -> bool:
@@ -396,7 +406,9 @@ func open_sleep_menu() -> void:
 ## running continuously on waking).
 func sleep_for(hours: float) -> void:
 	modals.clear()
+	GameSession.begin_sleep()
 	var result := Simulation.sleep(hours)
+	var wake_line := GameSession.end_sleep(result.elapsed_seconds)
 	SessionLog.write("sleep", {"hours": hours, "slept_h": snappedf(result.elapsed_seconds / 3600.0, 0.01), "stopped_by": String(result.stopped_by),
 		"anchored": GameSession.is_anchored()})
 	if result.stopped_by == Simulation.STOP_RESCUE:
@@ -417,6 +429,8 @@ func sleep_for(hours: float) -> void:
 			notify("You were woken after %s: the boat has arrived. It is %s.%s" % [slept, now, still_paused])
 		_:
 			notify("You slept %s. It is %s.%s" % [slept, now, still_paused])
+	if not wake_line.is_empty():
+		toasts.show_message(wake_line, ANCHOR_MOMENT_SECONDS)
 
 
 ## After any sleep (full or cut short, in port or underway, started in the
@@ -560,6 +574,7 @@ func open_cooking() -> CookingMenu:
 		return null
 	var menu := CookingMenu.new()
 	menu.cooked.connect(_on_meal_cooked)
+	menu.coffee_made.connect(func(result: Dictionary) -> void: Simulation.spend_time_aboard(float(result.minutes), true))
 	modals.push(menu)
 	SessionLog.write("galley_open", {"refusal": GameSession.cooking_refusal(), "fish": GameSession.get_fishing().hold.size()})
 	return menu

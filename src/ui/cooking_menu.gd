@@ -8,9 +8,15 @@ extends SimplePanel
 ##
 ## The rule for the stove is simple: in harbour and at a holding anchor
 ## always; underway only in moderate conditions (GameSession.cooking_refusal).
+##
+## Revision 0.102b: **Make coffee**, a small ritual beside the dishes. The pot
+## steams for a moment, a few minutes pass (App) and a warm line says how it
+## was; GameSession.make_coffee() is the transaction.
 
 ## The App spends the cooking time (game minutes) when a dish is done.
 signal cooked(result: Dictionary)
+## Coffee is made: the App spends its few minutes.
+signal coffee_made(result: Dictionary)
 
 ## Real seconds the little cooking animation runs before the meal is served.
 const COOK_SECONDS := 1.6
@@ -19,6 +25,10 @@ var _recipes: ItemList
 var _detail: Label
 var _rule: Label
 var _cook_button: Button
+var _coffee_button: Button
+## Brewing (real seconds left), and whether the stove shows the pot.
+var _brewing := 0.0
+var _pot := false
 var _outcome: Label
 var _pan: Control
 var _cooking := 0.0
@@ -37,7 +47,7 @@ func _ready() -> void:
 	_recipes = ItemList.new()
 	_recipes.name = "Recipes"
 	_recipes.custom_minimum_size = Vector2(300, 210)
-	_recipes.item_selected.connect(func(_index: int) -> void: _refresh_detail())
+	_recipes.item_selected.connect(_on_recipe_selected)
 	row.add_child(_recipes)
 	var right := VBoxContainer.new()
 	right.add_theme_constant_override(&"separation", 10)
@@ -56,6 +66,7 @@ func _ready() -> void:
 	_outcome = _label("Outcome", "", &"HeaderLabel")
 	_outcome.visible = false
 	_button("CloseButton", "Close", close)
+	_coffee_button = _button("CoffeeButton", "Make coffee", _on_coffee, 170.0)
 	_cook_button = _button("CookButton", "Cook", _on_cook, 200.0)
 	for recipe in Recipes.LIST:
 		_recipes.add_item(String(recipe.name))
@@ -70,6 +81,12 @@ func _best_index() -> int:
 		if GameSession.recipe_refusal(Recipes.LIST[i].id) == "":
 			return i
 	return 0
+
+
+func _on_recipe_selected(_index: int) -> void:
+	if _brewing <= 0.0:
+		_pot = false  # back to the pan for a dish
+	_refresh_detail()
 
 
 func refresh() -> void:
@@ -109,7 +126,9 @@ func _refresh_detail() -> void:
 	var refusal := GameSession.recipe_refusal(recipe.id)
 	_detail.text = "%s\n\nNeeds: %s.\nTakes %d minutes.\n%s%s" % [recipe.text, ", ".join(needs) if not needs.is_empty() else "nothing special",
 		int(recipe.minutes), gives, ("\n\n" + refusal) if refusal != "" else ""]
-	_cook_button.disabled = _cooking > 0.0 or refusal != "" or GameSession.cooking_refusal() != ""
+	_cook_button.disabled = _cooking > 0.0 or _brewing > 0.0 or refusal != "" or GameSession.cooking_refusal() != ""
+	_coffee_button.disabled = _cooking > 0.0 or _brewing > 0.0 or GameSession.coffee_refusal() != ""
+	_coffee_button.tooltip_text = GameSession.coffee_refusal()
 	_cook_button.text = "Cook %s" % String(recipe.name).to_lower()
 
 
@@ -127,6 +146,7 @@ func _on_cook() -> void:
 		notify(refusal)
 		return
 	SessionLog.write("cooking_started", {"recipe": recipe.id})
+	_pot = false
 	_cooking = COOK_SECONDS
 	_cook_button.disabled = true
 	_outcome.visible = false
@@ -139,7 +159,52 @@ func _process(delta: float) -> void:
 		_cooking = maxf(_cooking - delta, 0.0)
 		if _cooking <= 0.0:
 			serve()
+	if _brewing > 0.0:
+		_brewing = maxf(_brewing - delta, 0.0)
+		if _brewing <= 0.0:
+			pour_coffee()
 	_pan.queue_redraw()
+
+
+func _on_coffee() -> void:
+	var refusal := GameSession.coffee_refusal()
+	if refusal != "":
+		SessionLog.write("coffee", {"error": refusal})
+		notify(refusal)
+		return
+	_pot = true
+	_brewing = BREW_SECONDS
+	_outcome.visible = false
+	refresh()
+
+## Real seconds the pot steams before the coffee is poured.
+const BREW_SECONDS := 1.4
+
+
+func is_brewing() -> bool:
+	return _brewing > 0.0
+
+
+## Pours the coffee now (the animation's end; tests call it directly).
+func pour_coffee() -> Dictionary:
+	_brewing = 0.0
+	_pot = true
+	var result := GameSession.make_coffee()
+	_last_result = result
+	SessionLog.write("coffee", {"error": result.error, "context": result.context, "award": not (result.award as Dictionary).is_empty()})
+	if result.error != "":
+		notify(result.error)
+		refresh()
+		return result
+	coffee_made.emit(result)
+	var lines := ["Coffee is ready.", String(result.text)]
+	if not (result.award as Dictionary).is_empty():
+		lines.append("Written in the Captain's Log: %s." % String(result.award.title))
+	_outcome.text = "\n".join(lines)
+	_outcome.visible = true
+	_steam_until = _time + 8.0
+	refresh()
+	return result
 
 
 func is_cooking() -> bool:
@@ -182,6 +247,9 @@ func get_outcome_text() -> String:
 
 ## The pan on the stove: it sizzles while cooking and steams afterwards.
 func _draw_pan() -> void:
+	if _pot:
+		_draw_pot()
+		return
 	var c := Vector2(_pan.size.x / 2.0, _pan.size.y - 26.0)
 	_pan.draw_rect(Rect2(c + Vector2(-90, 14), Vector2(180, 10)), Color("#2c3436"))
 	var flame := _cooking > 0.0
@@ -202,3 +270,38 @@ func _draw_pan() -> void:
 			var phase := fmod(_time * 0.7 + k / 5.0, 1.0)
 			var p := c + Vector2(-30 + k * 15 + 6.0 * sin(_time * 2.0 + k), -12 - phase * 46.0)
 			_pan.draw_circle(p, 4.0 + phase * 7.0, Color(1, 1, 1, 0.3 * (1.0 - phase) * steam))
+
+
+## The coffee pot on the stove (and a mug beside it once poured), steaming.
+func _draw_pot() -> void:
+	var c := Vector2(_pan.size.x / 2.0, _pan.size.y - 26.0)
+	_pan.draw_rect(Rect2(c + Vector2(-90, 14), Vector2(180, 10)), Color("#2c3436"))
+	var brewing := _brewing > 0.0
+	if brewing:
+		for k in 4:
+			var x := -46.0 + k * 14.0
+			var h := 5.0 + 3.0 * sin(_time * 18.0 + k)
+			_pan.draw_colored_polygon(PackedVector2Array([c + Vector2(x - 4, 14), c + Vector2(x, 14 - h), c + Vector2(x + 4, 14)]),
+				Color("#e0a84e"))
+	# The pot: a tapered body, a lid knob, a spout and a handle.
+	var pot := c + Vector2(-28, 0)
+	_pan.draw_colored_polygon(PackedVector2Array([pot + Vector2(-22, 12), pot + Vector2(22, 12), pot + Vector2(16, -30),
+		pot + Vector2(-16, -30)]), Color("#3a4a4f"))
+	_pan.draw_rect(Rect2(pot + Vector2(-18, -36), Vector2(36, 7)), Color("#2a3639"))
+	_pan.draw_circle(pot + Vector2(0, -40), 4.0, Color("#2a3639"))
+	_pan.draw_line(pot + Vector2(18, -18), pot + Vector2(34, -30), Color("#3a4a4f"), 5.0, true)
+	_pan.draw_arc(pot + Vector2(-24, -10), 11.0, PI * 0.5, PI * 1.5, 10, Color("#2a3639"), 4.0, true)
+	var poured := not brewing and _outcome.visible
+	if poured:
+		# A warm mug beside the pot.
+		var mug := c + Vector2(44, 2)
+		_pan.draw_rect(Rect2(mug + Vector2(-14, -16), Vector2(28, 28)), Color("#d9cfb8"))
+		_pan.draw_rect(Rect2(mug + Vector2(-11, -13), Vector2(22, 5)), Color("#5a3a24"))
+		_pan.draw_arc(mug + Vector2(16, -2), 7.0, -PI * 0.5, PI * 0.5, 8, Color("#d9cfb8"), 4.0, true)
+	var steam := 1.0 if brewing else clampf((_steam_until - _time) / 2.0, 0.0, 1.0)
+	if steam > 0.0:
+		var from := (c + Vector2(44, -18)) if poured else (pot + Vector2(34, -32))
+		for k in 4:
+			var phase := fmod(_time * 0.6 + k / 4.0, 1.0)
+			var p := from + Vector2(5.0 * sin(_time * 2.0 + k * 1.7), -phase * 40.0)
+			_pan.draw_circle(p, 3.0 + phase * 6.0, Color(1, 1, 1, 0.32 * (1.0 - phase) * steam))

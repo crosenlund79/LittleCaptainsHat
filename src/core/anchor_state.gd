@@ -32,6 +32,11 @@ var anchored_at := 0.0
 var checked_until := 0.0
 ## Dragging was seen on this stay (for "first answered dragging").
 var dragged_this_stay := false
+## Life at anchor (0.102b): the quiet moments this stay has already had
+## ("settled", "evening:<day>", "wake:<day>", "pet"), so none repeats after a
+## reload. Optional in saves (older saves have none); bounded.
+var moments: Array[String] = []
+const MAX_MOMENTS := 16
 
 
 func duplicate_state() -> AnchorState:
@@ -46,13 +51,14 @@ func duplicate_state() -> AnchorState:
 	copy.anchored_at = anchored_at
 	copy.checked_until = checked_until
 	copy.dragged_this_stay = dragged_this_stay
+	copy.moments = moments.duplicate()
 	return copy
 
 
 func to_dict() -> Dictionary:
 	return {"active": active, "position": {"lon": position.x, "lat": position.y}, "scope": scope, "set_quality": set_quality,
 		"holding": String(holding), "dragged_nm": dragged_nm, "alarm": alarm, "anchored_at": anchored_at,
-		"checked_until": checked_until, "dragged_this_stay": dragged_this_stay}
+		"checked_until": checked_until, "dragged_this_stay": dragged_this_stay, "moments": moments.duplicate()}
 
 
 static func from_dict(data: Variant, errors: Array[String]) -> AnchorState:
@@ -80,6 +86,11 @@ static func from_dict(data: Variant, errors: Array[String]) -> AnchorState:
 	state.anchored_at = float(data.anchored_at)
 	state.checked_until = float(data.checked_until)
 	state.dragged_this_stay = data.dragged_this_stay
+	var moments: Variant = data.get("moments", [])
+	if moments is Array:
+		for moment: Variant in moments:
+			if moment is String and not moment in state.moments and state.moments.size() < MAX_MOMENTS:
+				state.moments.append(moment)
 	return state
 
 

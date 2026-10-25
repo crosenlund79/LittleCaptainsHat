@@ -82,6 +82,12 @@ signal boat_care_changed
 ## A loaded position or course was invalid under the current chart and was
 ## moved or re-planned (Iteration 14): {kind, from, to, moved_nm, replanned}.
 signal location_recovered(info: Dictionary)
+## Life at anchor (0.102b): the boat became settled at anchor, or stopped
+## being so (anchor raised, dragging, the wind rose).
+signal anchor_life_changed(settled: bool)
+## A quiet moment aboard at anchor: kind "settled", "evening", "wake" or
+## "pet", and its line. Each happens at most once per stay (or per day).
+signal anchor_moment(kind: String, text: String)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -123,6 +129,10 @@ func _exit_tree() -> void:
 func start_new_session(companion_kind: StringName = CompanionState.DEFAULT_KIND) -> void:
 	_state = SessionState.create_new(START_LOCATION, START_AREA, START_SPAWN, companion_kind)
 	_has_unsaved_changes = false
+	_asleep = false
+	if _settled:
+		_settled = false
+		anchor_life_changed.emit(false)
 	session_started.emit()
 
 
@@ -131,7 +141,15 @@ func end_session() -> void:
 		return
 	_state = null
 	_has_unsaved_changes = false
+	_settled = false
+	_asleep = false
 	session_ended.emit()
+
+
+func _ready() -> void:
+	# Life at anchor follows every change to the anchor (dropped, adjusted,
+	# alarm, raised) without waiting for the next simulation step.
+	anchor_changed.connect(_update_anchor_life.bind(false))
 
 
 ## Replaces the whole state at once (used by loading). The caller must pass an
@@ -144,6 +162,8 @@ func replace_state(new_state: SessionState) -> void:
 	_complete_legacy_route()
 	_recover_location()
 	_check_vessel()
+	_asleep = false
+	_update_anchor_life(false)
 	if not was_active:
 		session_started.emit()
 	state_replaced.emit()
@@ -580,6 +600,8 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 		_state.voyage.progress_nm = progress
 		_state.vessel_position = _state.anchor.position if _state.anchor.active else _state.voyage.get_position()
 	_has_unsaved_changes = true
+	if _state.anchor.active or _settled:
+		_update_anchor_life()
 
 
 ## Ends the voyage at its destination.
@@ -1385,6 +1407,55 @@ func cooking_refusal() -> String:
 const CALM_COOKING_WIND_KN := 18.0
 
 
+# --- Morning coffee (revision 0.102b) ----------------------------------------------
+# A tiny galley ritual, not a mechanic: a few minutes pass, a warm line, and
+# the first morning coffee at a quiet anchorage is a Captain's Log moment
+# (once). No stat, no inventory, nothing to farm.
+
+const COFFEE_MINUTES := 10.0
+
+
+## Why coffee cannot be made now, or "". The stove's own rule applies (always
+## in harbour and at a holding anchor; underway only in moderate conditions).
+func coffee_refusal() -> String:
+	var refusal := cooking_refusal()
+	if refusal != "":
+		return refusal
+	if _state.provisions.water_days <= 0.0:
+		return "There is no fresh water left aboard for coffee."
+	return ""
+
+
+## Makes a pot of coffee. Returns {"error", "minutes", "text", "context",
+## "award"}; the caller spends the minutes (below deck).
+func make_coffee() -> Dictionary:
+	var result := {"error": coffee_refusal(), "minutes": 0.0, "text": "", "context": "", "award": {}}
+	if result.error != "":
+		return result
+	var phase := get_day_phase()
+	var morning := phase == AnchorLife.PHASE_MORNING
+	if is_anchored() and _settled and morning:
+		result.context = "anchor_morning"
+		result.text = "Coffee in the cockpit, the anchor chain quiet in the water. The day can wait a little."
+		result.award = _award_once("coffee:morning_at_anchor", "Morning coffee at anchor", 2)
+		if not result.award.is_empty():
+			renown_awarded.emit([result.award])
+	elif is_anchored():
+		result.context = "anchor"
+		result.text = "A hot mug at anchor. The boat swings gently around it." if phase != AnchorLife.PHASE_NIGHT \
+			else "A late coffee by the lamp. The anchorage is dark and still."
+	elif is_underway():
+		result.context = "underway"
+		result.text = "A mug of coffee at the helm, held carefully. The miles go by a little easier."
+	else:
+		result.context = "harbour"
+		result.text = "Coffee aboard while the harbour wakes around you." if morning \
+			else "Coffee aboard. Halyards tap along the pontoon."
+	result.minutes = COFFEE_MINUTES
+	_has_unsaved_changes = true
+	return result
+
+
 ## Why `recipe_id` cannot be cooked (ingredients), or "".
 func recipe_refusal(recipe_id: String) -> String:
 	var recipe := Recipes.get_recipe(recipe_id)
@@ -1504,6 +1575,7 @@ func drop_anchor(scope: int, set_quality: float) -> Dictionary:
 	anchor.dragged_nm = 0.0
 	anchor.alarm = false
 	anchor.dragged_this_stay = false
+	anchor.moments.clear()
 	anchor.anchored_at = _state.game_time
 	anchor.checked_until = _state.game_time
 	var site := evaluate_anchorage()
@@ -1650,6 +1722,8 @@ func get_aboard_moments() -> Array[Dictionary]:
 			text = "A night at anchor"
 		elif key == "anchor:drag_handled":
 			text = "Stopped the anchor dragging"
+		elif key == "coffee:morning_at_anchor":
+			text = "Morning coffee at anchor. The day could wait a little."
 		elif key == "care:first_haul_out":
 			text = "First haul-out: the bottom scrubbed clean"
 		if text != "":
@@ -2214,3 +2288,92 @@ func get_last_location_recovery() -> Dictionary:
 
 
 var _last_recovery := {}
+
+
+# --- Life at anchor (revision 0.102b) ----------------------------------------------
+
+var _settled := false
+var _asleep := false
+
+
+## True while the boat lies safely and quietly at anchor: holding well or
+## fair, no alarm, and a moderate wind where she lies (AnchorLife).
+func is_settled_at_anchor() -> bool:
+	return _settled
+
+
+## The local solar hour at the boat (0..24) and the time of day it makes.
+func get_local_hour() -> float:
+	return AnchorLife.local_hour(get_game_time(), get_vessel_position().x) if _state else 12.0
+
+
+func get_day_phase() -> StringName:
+	return AnchorLife.phase_at(get_local_hour())
+
+
+## Works out whether the boat is settled and, when it is, whether a quiet
+## moment is due (never while the captain sleeps; one at a time).
+func _update_anchor_life(moments := true) -> void:
+	if _state == null:
+		return
+	var anchor := _state.anchor
+	var settled := anchor.active and not anchor.alarm \
+		and anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR] \
+		and Simulation.get_weather_at_vessel().speed_kn < AnchorLife.SETTLED_WIND_KN
+	if settled != _settled:
+		_settled = settled
+		anchor_life_changed.emit(settled)
+	if not settled or not moments or _asleep:
+		return
+	var day := AnchorLife.local_day(_state.game_time, _state.vessel_position.x)
+	if not "settled" in anchor.moments:
+		if _state.game_time >= anchor.anchored_at + AnchorLife.SETTLE_DELAY_S:
+			_record_moment("settled", "settled", AnchorLife.pick(AnchorLife.SETTLED_LINES, day))
+		return
+	var phase := get_day_phase()
+	var evening_key := "evening:%d" % day
+	if phase == AnchorLife.PHASE_EVENING and not evening_key in anchor.moments:
+		_record_moment(evening_key, "evening", AnchorLife.pick(AnchorLife.EVENING_LINES, day))
+
+
+func _record_moment(key: String, kind: String, text: String) -> void:
+	var anchor := _state.anchor
+	if key in anchor.moments:
+		return
+	anchor.moments.append(key)
+	while anchor.moments.size() > AnchorState.MAX_MOMENTS:
+		anchor.moments.pop_front()
+	_has_unsaved_changes = true
+	anchor_moment.emit(kind, text)
+
+
+## The App calls these around a sleep. Waking after a real sleep safely at
+## anchor in the morning or day brings the wake-up moment (once a day);
+## returns its line, or "".
+func begin_sleep() -> void:
+	_asleep = true
+
+
+func end_sleep(slept_seconds: float) -> String:
+	_asleep = false
+	if _state == null:
+		return ""
+	_update_anchor_life(false)
+	if not _settled or slept_seconds < AnchorLife.WAKE_MIN_SLEEP_S \
+			or not get_day_phase() in [AnchorLife.PHASE_MORNING, AnchorLife.PHASE_DAY]:
+		return ""
+	var day := AnchorLife.local_day(_state.game_time, _state.vessel_position.x)
+	var key := "wake:%d" % day
+	if key in _state.anchor.moments:
+		return ""
+	var text := AnchorLife.pick(AnchorLife.WAKE_LINES, day)
+	_record_moment(key, "wake", text)
+	return text
+
+
+## Petting a companion on a settled evening or night: one soft line a stay.
+func note_companion_petted(kind: StringName) -> void:
+	if _state == null or not _settled or not get_day_phase() in [AnchorLife.PHASE_EVENING, AnchorLife.PHASE_NIGHT]:
+		return
+	if not "pet" in _state.anchor.moments:
+		_record_moment("pet", "pet", String(AnchorLife.PET_LINES.get(kind, "")))
