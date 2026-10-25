@@ -31,6 +31,7 @@ func run(runner: Node) -> void:
 	await _test_go_ashore()
 	await _test_departure_closes_the_shore()
 	await _test_save_load_ashore()
+	await _test_course_view()
 	Simulation.auto_advance = true
 	app.queue_free()
 	await t.frames(2)
@@ -265,6 +266,71 @@ func _test_go_ashore() -> void:
 	SaveManager.delete_slot(3)
 	t.check(ShoreEvents.for_port(&"lohals").size() == ShoreEvents.GENERIC.size() + 1 and ShoreEvents.for_port(&"kiel").size() == ShoreEvents.GENERIC.size(),
 		"[ashore] %d generic events, plus a few harbour variants (Copenhagen, Lohals)" % ShoreEvents.GENERIC.size())
+
+
+# --- Course view ----------------------------------------------------------------------
+
+func _test_course_view() -> void:
+	SettingsManager.set_course_view(true)
+	GameSession.end_session()
+	app.start_new_game()
+	await _settle()
+	var deck := await _show(DECK, &"start")
+	var camera := deck.get_node("Camera2D") as Camera2D
+	t.check(is_zero_approx(camera.rotation) and not deck.is_course_view(), "[course] moored, the boat lies bow-right as always")
+	t.set_wind(270.0, 14.0)
+	GameSession.plan_route_to(&"kiel")
+	GameSession.depart()
+	Simulation.advance(600.0)
+	deck = await _show(DECK, &"start")
+	camera = deck.get_node("Camera2D") as Camera2D
+	var heading := Simulation.get_current_heading()
+	t.check(deck.is_course_view() and absf(angle_difference(camera.rotation, deg_to_rad(90.0 - heading))) < 0.01,
+		"[course] underway the bow points along the course on screen (heading %d°, north up)" % roundi(heading))
+	t.check(is_zero_approx(app.hud.get_global_transform().get_rotation()), "[course] the HUD stays upright")
+	var life := deck.get_water_life()
+	life.refresh()
+	t.check(life.get_wind_direction().dot(deck.wind_direction_on_deck()) > 0.999, "[course] the waves keep their world direction")
+	var names := {0.0: "north", 90.0: "east", 180.0: "south", 270.0: "west"}
+	for h: float in names:
+		deck.view_heading_override = h
+		deck._update_camera()
+		life.refresh()
+		await t.get_tree().create_timer(BoatArea.ZOOM_TRANSITION_S + 0.2).timeout
+		var bow := (deck.get_viewport().get_canvas_transform() * deck.to_global(Vector2(400, 0))) \
+			- (deck.get_viewport().get_canvas_transform() * deck.to_global(Vector2.ZERO))
+		var expected := Vector2.from_angle(deg_to_rad(h - 90.0))
+		t.check(bow.normalized().dot(expected) > 0.99 and camera.zoom.x >= BoatArea.COURSE_MIN_ZOOM - 0.001,
+			"[course] heading %s: the bow points %s on screen, zoom %.2f (never below %.2f)" % [names[h], names[h], camera.zoom.x, BoatArea.COURSE_MIN_ZOOM])
+		await t.screenshot("179_course_%s" % names[h])
+	# Walking stays screen-relative: with the bow up, "up" walks forward.
+	deck.view_heading_override = 0.0
+	deck._update_camera()
+	await t.get_tree().create_timer(BoatArea.ZOOM_TRANSITION_S + 0.2).timeout
+	var start := deck.player.position
+	await t.hold_actions([&"move_up"], 0.3)
+	t.check(deck.player.position.x > start.x + 20.0 and absf(deck.player.position.y - start.y) < 10.0,
+		"[course] the movement keys follow the screen: with the bow up, W walks towards the bow")
+	deck.view_heading_override = NAN
+	# Arriving, the boat turns back to its harbour orientation.
+	t.use_calm_wind()
+	Simulation.advance(60.0 * 3600.0)
+	if GameSession.is_underway():
+		Simulation.advance(60.0 * 3600.0)
+	await t.get_tree().create_timer(BoatArea.ZOOM_TRANSITION_S + 0.3).timeout
+	deck = app.router.current_screen as BoatArea
+	camera = deck.get_node("Camera2D") as Camera2D
+	t.check(not GameSession.is_underway() and is_zero_approx(snappedf(camera.rotation, 0.001)), "[course] in harbour the deck is upright again")
+	# Switched off, the boat stays bow-right underway.
+	SettingsManager.set_course_view(false)
+	GameSession.plan_route_to(&"copenhagen")
+	GameSession.depart()
+	await t.get_tree().create_timer(BoatArea.ZOOM_TRANSITION_S + 0.3).timeout
+	t.check(not deck.is_course_view() and is_zero_approx(snappedf(camera.rotation, 0.001)), "[course] with the setting off the boat keeps pointing right")
+	SettingsManager.set_course_view(SettingsManager.DEFAULT_COURSE_VIEW)
+	GameSession.end_session()
+	app.start_new_game()
+	await _settle()
 
 
 # --- Departure, saving ----------------------------------------------------------------

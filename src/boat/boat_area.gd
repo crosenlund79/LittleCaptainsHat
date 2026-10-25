@@ -67,7 +67,17 @@ const HAT_PROMPTS := {
 var _leaving := false
 ## The deck camera's zoom as framed in the scene (the harbour view).
 var _base_zoom := Vector2.ONE
+var _base_camera_position := Vector2.ZERO
+var _base_walkable_bounds := Rect2()
+var _camera_ready := false
+var _logged_course_view := false
 var _zoom_tween: Tween
+## Presentation only (tests): draw the deck as if sailing this heading.
+var view_heading_override := NAN
+## The course view's smallest zoom (keeps the deck readable at N/S headings)
+## and the screen room kept free for the HUD (pixels, both sides together).
+const COURSE_MIN_ZOOM := 0.78
+const COURSE_SCREEN_MARGIN := Vector2(120.0, 300.0)
 ## Walking ashore over the gangplank (decks in harbour, Iteration 12).
 var _shore: ShoreAccess
 ## Shore stations, by facility id (grocery, boatyard, go_ashore).
@@ -158,29 +168,97 @@ func _setup_camera() -> void:
 	if camera == null or mooring == null:
 		return
 	_base_zoom = camera.zoom
+	_base_camera_position = camera.position
+	_base_walkable_bounds = _shore.get_boat_bounds() if _shore else walkable_bounds
+	_camera_ready = true
+	camera.ignore_rotation = false
 	camera.zoom = get_target_zoom()
+	camera.rotation = get_target_rotation()
+	camera.set_meta(&"course_view", is_course_view())
+	if is_course_view():
+		camera.position = _boat_view_bounds().get_center()
+	# Water wide enough to fill a turned view.
+	var water := get_node_or_null(^"Surroundings/Water") as Polygon2D
+	if water:
+		water.polygon = PackedVector2Array([Vector2(-2600, -2600), Vector2(2600, -2600), Vector2(2600, 2600), Vector2(-2600, 2600)])
+	GameSession.voyage_course_changed.connect(_update_camera)
+	SettingsManager.course_view_changed.connect(func(_enabled: bool) -> void: _update_camera())
 	GameSession.voyage_started.connect(_update_camera)
 	GameSession.voyage_arrived.connect(func(_port: StringName) -> void: _update_camera())
 	GameSession.state_replaced.connect(_update_camera)
 	GameSession.rescued.connect(func(_info: Dictionary) -> void: _update_camera())
 
 
-## The zoom the deck camera settles on: wider while underway.
+## The zoom the deck camera settles on: wider while underway; in the course
+## view also small enough for the turned boat to fit, but never below
+## COURSE_MIN_ZOOM, so the deck stays readable when sailing north or south.
 func get_target_zoom() -> Vector2:
-	return _base_zoom * (UNDERWAY_ZOOM_FACTOR if GameSession.is_underway() else 1.0)
+	var zoom := _base_zoom * (UNDERWAY_ZOOM_FACTOR if GameSession.is_underway() else 1.0)
+	if not is_course_view():
+		return zoom
+	var bounds := _boat_view_bounds()
+	var turned := Rect2(bounds.position.rotated(-get_target_rotation()), Vector2.ZERO)
+	for corner in [Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)]:
+		turned = turned.expand(corner.rotated(-get_target_rotation()))
+	var room := get_viewport_rect().size - COURSE_SCREEN_MARGIN
+	var fit := minf(room.x / turned.size.x, room.y / turned.size.y)
+	return Vector2.ONE * clampf(minf(zoom.x, fit), minf(COURSE_MIN_ZOOM, zoom.x), zoom.x)
+
+
+## The course view (Iteration 12): underway, with the setting on, the deck
+## turns so the bow points along the course on screen, north up.
+func is_course_view() -> bool:
+	return _camera_ready and SettingsManager.get_course_view() and GameSession.is_underway()
+
+
+## The camera rotation for the course view (0 otherwise): the bow (+x) drawn
+## towards the heading, with north up.
+func get_target_rotation() -> float:
+	return deg_to_rad(90.0 - get_view_heading()) if is_course_view() else 0.0
+
+
+## The heading the deck is drawn for: the course of the voyage leg (a test can
+## set view_heading_override to see the deck on any heading; presentation
+## only, the simulation never reads it).
+func get_view_heading() -> float:
+	return view_heading_override if not is_nan(view_heading_override) else Simulation.get_current_heading()
+
+
+## The boat's own extent (the deck without the shore), with room ahead for
+## the spinnaker while it flies.
+func _boat_view_bounds() -> Rect2:
+	var bounds := _base_walkable_bounds.grow(30.0)
+	var rig := get_node_or_null(^"SailRig") as SailRig
+	if rig and rig.spinnaker_amount > 0.5:
+		bounds.end.x += 140.0
+	return bounds
 
 
 func _update_camera() -> void:
 	var camera := get_node_or_null(^"Camera2D") as Camera2D
 	if camera == null or not is_inside_tree():
 		return
-	var target := get_target_zoom()
+	var course := is_course_view()
+	camera.set_meta(&"course_view", course)
+	if course:
+		camera.offset.x = 0.0
+	var zoom := get_target_zoom()
+	camera.rotation = wrapf(camera.rotation, -PI, PI)
+	var rotation_target := camera.rotation + wrapf(get_target_rotation() - camera.rotation, -PI, PI)
+	var center := _boat_view_bounds().get_center() if course else _base_camera_position
 	if _zoom_tween:
 		_zoom_tween.kill()
-	if camera.zoom.is_equal_approx(target):
+	if camera.zoom.is_equal_approx(zoom) and is_equal_approx(camera.rotation, rotation_target) and camera.position.is_equal_approx(center):
 		return
-	_zoom_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_zoom_tween.tween_property(camera, "zoom", target, ZOOM_TRANSITION_S)
+	_zoom_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT).set_parallel()
+	_zoom_tween.tween_property(camera, "zoom", zoom, ZOOM_TRANSITION_S)
+	_zoom_tween.tween_property(camera, "rotation", rotation_target, ZOOM_TRANSITION_S)
+	_zoom_tween.tween_property(camera, "position", center, ZOOM_TRANSITION_S)
+	_zoom_tween.chain().tween_callback(func() -> void: camera.rotation = wrapf(camera.rotation, -PI, PI))
+	if course and not _logged_course_view:
+		_logged_course_view = true
+		SessionLog.write("course_view", {"heading": roundi(get_view_heading()), "zoom": snappedf(zoom.x, 0.01),
+			"min_zoom_reached": zoom.x <= COURSE_MIN_ZOOM + 0.001})
 
 
 func get_harbour_dressing() -> HarbourDressing:
@@ -218,6 +296,9 @@ func get_spawn_position(spawn_point: StringName) -> Vector2:
 func _physics_process(_delta: float) -> void:
 	if not _leaving:
 		GameSession.set_player_position(player.position)
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera:
+		player.view_rotation = camera.rotation
 
 
 ## Stops gameplay in this area while a transition away from it runs.
@@ -514,7 +595,7 @@ func _on_hat_lost(_info: Dictionary) -> void:
 ## (north while moored).
 func wind_direction_on_deck() -> Vector2:
 	var wind := Simulation.get_weather_at_vessel()
-	var heading := Simulation.get_current_heading() if GameSession.is_underway() else 0.0
+	var heading := get_view_heading() if GameSession.is_underway() else 0.0
 	return Vector2.from_angle(deg_to_rad(wind.from_deg + 180.0 - heading))
 
 

@@ -165,7 +165,8 @@ func snap() -> void:
 func _frame_view() -> void:
 	var camera := get_viewport().get_camera_2d() if is_inside_tree() else null
 	if camera:
-		camera.offset.x = SPINNAKER_VIEW_SHIFT * spinnaker_amount
+		# In the course view the camera frames the whole boat itself.
+		camera.offset.x = 0.0 if camera.get_meta(&"course_view", false) else SPINNAKER_VIEW_SHIFT * spinnaker_amount
 
 
 ## Side the sails are on: "port", "starboard" or "" when furled/centred.

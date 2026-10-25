@@ -13,6 +13,10 @@ signal focus_changed(interactable: Interactable)
 const RADIUS := 21.0
 
 var input_enabled := true
+## The view's rotation (the deck camera's, Iteration 12): the movement keys
+## move the sailor up, down, left and right on screen whatever way the deck
+## is turned.
+var view_rotation := 0.0
 var _facing := Vector2.RIGHT
 ## Walking cycle (radians), advanced by the distance actually walked, so the
 ## arms swing with the steps and rest when the player stands still.
@@ -39,7 +43,7 @@ func _physics_process(_delta: float) -> void:
 	var direction := Vector2.ZERO
 	if input_enabled:
 		# get_vector() limits the length to 1, so diagonals are not faster.
-		direction = Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
+		direction = Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down").rotated(view_rotation)
 	velocity = direction * speed
 	var before := position
 	move_and_slide()

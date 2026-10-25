@@ -10,6 +10,8 @@ extends Node
 signal settings_applied
 signal ui_scale_changed(scale: float)
 signal art_style_changed(style: StringName)
+## The "boat faces its course" sailing view was switched (Iteration 12).
+signal course_view_changed(enabled: bool)
 
 const DEFAULT_PATH := "user://settings.cfg"
 
@@ -34,6 +36,9 @@ const ART_ILLUSTRATED := &"illustrated"
 const ART_CLASSIC := &"classic"
 const ART_STYLES: Array[StringName] = [ART_ILLUSTRATED, ART_CLASSIC]
 const DEFAULT_ART_STYLE := ART_ILLUSTRATED
+## Sailing view (Iteration 12): underway the deck turns so the bow points along
+## the course on screen (north up). Off: the boat stays bow-right as before.
+const DEFAULT_COURSE_VIEW := true
 
 ## Window size used when (re)entering windowed mode. Clamped to the screen.
 const WINDOWED_SIZE := Vector2i(1600, 900)
@@ -46,6 +51,7 @@ var _window_mode: StringName = DEFAULT_WINDOW_MODE
 var _vsync := DEFAULT_VSYNC
 var _ui_scale := DEFAULT_UI_SCALE
 var _art_style: StringName = DEFAULT_ART_STYLE
+var _course_view := DEFAULT_COURSE_VIEW
 
 
 func _ready() -> void:
@@ -113,6 +119,17 @@ func get_art_style() -> StringName:
 	return _art_style
 
 
+func get_course_view() -> bool:
+	return _course_view
+
+
+func set_course_view(enabled: bool) -> void:
+	if enabled == _course_view:
+		return
+	_course_view = enabled
+	course_view_changed.emit(enabled)
+
+
 func set_art_style(style: StringName) -> void:
 	if style not in ART_STYLES:
 		push_warning("Unknown art style: %s" % style)
@@ -134,6 +151,7 @@ func snapshot() -> Dictionary:
 		"vsync": _vsync,
 		"ui_scale": _ui_scale,
 		"art_style": _art_style,
+		"course_view": _course_view,
 	}
 
 
@@ -145,9 +163,14 @@ func restore_snapshot(data: Dictionary) -> void:
 	var style: StringName = data.get("art_style", DEFAULT_ART_STYLE)
 	var style_changed := style != _art_style
 	_art_style = style
+	var course: bool = data.get("course_view", DEFAULT_COURSE_VIEW)
+	var course_changed := course != _course_view
+	_course_view = course
 	apply_all()
 	if style_changed:
 		art_style_changed.emit(_art_style)
+	if course_changed:
+		course_view_changed.emit(_course_view)
 
 
 ## Resets every preference to its default and applies it (not saved yet).
@@ -163,6 +186,7 @@ func save() -> Error:
 	config.set_value("display", "vsync", _vsync)
 	config.set_value("interface", "ui_scale", _ui_scale)
 	config.set_value("display", "art_style", String(_art_style))
+	config.set_value("display", "course_view", _course_view)
 	var err := config.save(settings_path)
 	if err != OK:
 		push_error("Could not save settings to %s (error %d)" % [settings_path, err])
@@ -190,6 +214,8 @@ func load_settings() -> void:
 	loaded["ui_scale"] = _sanitize_ui_scale(float(scale)) if _is_number(scale) else DEFAULT_UI_SCALE
 	var style := StringName(str(config.get_value("display", "art_style", DEFAULT_ART_STYLE)))
 	loaded["art_style"] = style if style in ART_STYLES else DEFAULT_ART_STYLE
+	var course: Variant = config.get_value("display", "course_view", DEFAULT_COURSE_VIEW)
+	loaded["course_view"] = course if course is bool else DEFAULT_COURSE_VIEW
 	restore_snapshot(loaded)
 
 

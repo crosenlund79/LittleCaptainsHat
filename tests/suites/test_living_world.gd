@@ -17,6 +17,9 @@ func run(runner: Node) -> void:
 	Simulation.auto_advance = false
 	t.use_calm_wind()
 	SettingsManager.set_art_style(SettingsManager.ART_ILLUSTRATED)
+	# The 0.100b framing (bow right, 0.86x underway); the course view of
+	# Iteration 12 is tested in test_harbour_life.
+	SettingsManager.set_course_view(false)
 	_test_atmospheres()
 	app = APP_SCENE.instantiate()
 	t.add_child(app)
@@ -28,6 +31,7 @@ func run(runner: Node) -> void:
 	await _test_moored_water()
 	await _test_all_boats()
 	await _test_underway()
+	SettingsManager.set_course_view(SettingsManager.DEFAULT_COURSE_VIEW)
 	Simulation.auto_advance = true
 	app.queue_free()
 	await t.frames(2)

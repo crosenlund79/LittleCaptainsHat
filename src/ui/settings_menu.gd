@@ -28,6 +28,7 @@ var _saved: Dictionary
 var _volume_sliders := {}
 var _volume_labels := {}
 var _art_style: OptionButton
+var _course_view: CheckBox
 
 @onready var _audio_grid: GridContainer = %AudioGrid
 @onready var _window_mode: OptionButton = %WindowMode
@@ -53,6 +54,7 @@ func _ready() -> void:
 	_ui_scale.drag_ended.connect(func(_changed: bool) -> void: _apply_ui_scale())
 	_ui_scale.value_changed.connect(_on_ui_scale_value_changed)
 	_build_art_style_row()
+	_build_course_view_row()
 	var logs := Button.new()
 	logs.name = "LogsButton"
 	logs.text = "Diagnostic logs…"
@@ -127,6 +129,23 @@ func _build_art_style_row() -> void:
 	grid.add_child(_art_style)
 
 
+## "Sailing view": the boat faces its course underway (Iteration 12).
+func _build_course_view_row() -> void:
+	var grid := _ui_scale.get_parent().get_parent() as GridContainer
+	var label := Label.new()
+	label.name = "CourseViewLabel"
+	label.text = "Sailing view"
+	grid.add_child(label)
+	_course_view = CheckBox.new()
+	_course_view.name = "CourseView"
+	_course_view.text = "Boat faces its course"
+	_course_view.tooltip_text = "Underway the deck turns so the bow points along the course, north up. Off: the boat always points right."
+	_course_view.toggled.connect(func(pressed: bool) -> void:
+		SettingsManager.set_course_view(pressed)
+		_refresh_status())
+	grid.add_child(_course_view)
+
+
 func _sync_controls() -> void:
 	for bus: StringName in SettingsManager.AUDIO_BUSES:
 		var percent := SettingsManager.get_volume(bus)
@@ -137,6 +156,7 @@ func _sync_controls() -> void:
 	_ui_scale.set_value_no_signal(roundf(SettingsManager.get_ui_scale() * 100.0))
 	_ui_scale_value.text = "%d%%" % roundi(_ui_scale.value)
 	_art_style.select(SettingsManager.ART_STYLES.find(SettingsManager.get_art_style()))
+	_course_view.set_pressed_no_signal(SettingsManager.get_course_view())
 	_refresh_status()
 
 

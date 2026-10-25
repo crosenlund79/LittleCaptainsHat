@@ -207,7 +207,7 @@ func _read_wind() -> void:
 	if not GameSession.is_active():
 		return
 	var wind := Simulation.get_weather_at_vessel()
-	var heading := Simulation.get_current_heading() if GameSession.is_underway() else 0.0
+	var heading := _area.get_view_heading() if GameSession.is_underway() else 0.0
 	_wind_dir = Vector2.from_angle(deg_to_rad(wind.from_deg + 180.0 - heading))
 	_wind_kn = wind.speed_kn
 	_boat_kn = GameSession.get_vessel_speed_kn()
@@ -235,11 +235,13 @@ func _process(delta: float) -> void:
 
 ## The part of the world on screen (plus a margin), so elements wrap there.
 func _update_view() -> void:
-	var screen_to_world := get_viewport().get_canvas_transform().affine_inverse()
-	var to_local := get_global_transform().affine_inverse()
-	var a := to_local * (screen_to_world * Vector2.ZERO)
-	var b := to_local * (screen_to_world * get_viewport_rect().size)
-	_view = Rect2(a, b - a).abs().grow(60.0)
+	# All four corners: the view may be turned (the course view).
+	var to_local := get_global_transform().affine_inverse() * get_viewport().get_canvas_transform().affine_inverse()
+	var size := get_viewport_rect().size
+	var rect := Rect2(to_local * Vector2.ZERO, Vector2.ZERO)
+	for corner in [Vector2(size.x, 0), size, Vector2(0, size.y)]:
+		rect = rect.expand(to_local * corner)
+	_view = rect.grow(60.0)
 
 
 func _wrap(p: Vector2) -> Vector2:

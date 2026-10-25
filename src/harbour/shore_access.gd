@@ -95,6 +95,11 @@ func set_active(active: bool) -> void:
 	queue_redraw()
 
 
+## The boat's own walkable area (without the shore).
+func get_boat_bounds() -> Rect2:
+	return _base_bounds
+
+
 func is_active() -> bool:
 	return _active
 
