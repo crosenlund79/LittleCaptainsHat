@@ -85,7 +85,13 @@ func _test_data() -> void:
 	for slot in DECK_SLOTS + CABIN_SLOTS:
 		t.check_eq(starling.illustrated_visual_profile.get_source(slot), "file", "[art] illustrated %s is a replaceable PNG slot" % slot)
 	for id in [&"halcyon_40", &"petrel_36"]:
-		t.check(VesselCatalog.get_default().get_vessel(id).illustrated_visual_profile == null, "[art] %s is not redesigned (awaiting approval of the Starling)" % id)
+		var vessel := VesselCatalog.get_default().get_vessel(id)
+		t.check(vessel.illustrated_visual_profile != null and vessel.illustrated_visual_profile.art_folder == "res://assets/vessels/%s/illustrated" % id,
+			"[art] %s has its own illustrated profile in its own folder" % id)
+		t.check(vessel.visual_profile != vessel.illustrated_visual_profile and vessel.visual_profile.art_folder == "res://assets/vessels/%s" % id,
+			"[art] %s keeps its classic profile" % id)
+		for slot in DECK_SLOTS + CABIN_SLOTS:
+			t.check_eq(vessel.illustrated_visual_profile.get_source(slot), "file", "[art] %s illustrated %s is a replaceable PNG slot" % [id, slot])
 	# The hat's art slots are replaceable without code.
 	var art := HatArt.new()
 	art.art_folder = "res://assets/no_such_folder"
@@ -247,7 +253,12 @@ func _test_other_boats() -> void:
 		GameSession.switch_vessel(id)
 		var deck := await _show(DECK, &"from_boatyard")
 		var visual := deck.get_node("Visual") as VesselVisual
-		t.check(not visual.get_slot(&"DeckBase").is_sprite(), "[art] the %s keeps its own art" % id)
+		t.check(visual.get_slot(&"DeckBase").is_sprite() and visual.get_slot(&"HullBase").is_sprite(), "[art] the %s deck is illustrated in Illustrated mode" % id)
+		SettingsManager.set_art_style(SettingsManager.ART_CLASSIC)
+		await t.frames(2)
+		t.check(not visual.get_slot(&"DeckBase").is_sprite(), "[art] the %s returns to its own classic art in Classic mode" % id)
+		SettingsManager.set_art_style(SettingsManager.ART_ILLUSTRATED)
+		await t.frames(2)
 		var dressing := deck.get_harbour_dressing()
 		t.check(dressing != null and dressing.is_visible_in_tree() and dressing.get_sign_ids().size() == 2,
 			"[harbour] the %s's pontoon gets the illustrated harbour and its signs too" % id)

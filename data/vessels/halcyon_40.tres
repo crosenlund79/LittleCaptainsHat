@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="VesselDefinition" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="VesselDefinition" load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/vessels/vessel_definition.gd" id="1_def"]
 [ext_resource type="Resource" path="res://data/vessel/halcyon_40.tres" id="2_perf"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://src/vessels/halcyon_40/cabin.tscn" id="4_cabin"]
 [ext_resource type="PackedScene" path="res://src/vessels/halcyon_40/deck_visual.tscn" id="5_visual"]
 [ext_resource type="Resource" path="res://data/vessels/halcyon_40_visuals.tres" id="6_profile"]
+[ext_resource type="Resource" path="res://data/vessels/halcyon_40_visuals_illustrated.tres" id="7_illustrated"]
 
 [resource]
 script = ExtResource("1_def")
@@ -19,3 +20,4 @@ deck_scene = ExtResource("3_deck")
 cabin_scene = ExtResource("4_cabin")
 deck_visual_scene = ExtResource("5_visual")
 visual_profile = ExtResource("6_profile")
+illustrated_visual_profile = ExtResource("7_illustrated")

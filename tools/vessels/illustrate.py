@@ -149,6 +149,14 @@ class Layer:
         span = (x1 - x0) + (y1 - y0)
         c = math.cos(math.radians(angle))
         s = math.sin(math.radians(angle))
+        if angle % 90 == 0:  # axis-aligned (a grid): one line per step across
+            horizontal = angle % 180 == 0
+            v = (y0 if horizontal else x0) + spacing / 2
+            while v < (y1 if horizontal else x1):
+                a, b = ((x0, v), (x1, v)) if horizontal else ((v, y0), (v, y1))
+                d.line([self.px(a), self.px(b)], fill=color + (alpha,), width=max(1, int(width * SS)))
+                v += spacing
+            span = 0
         k = -span
         while k < span:
             a = (x0 + k, y0)
