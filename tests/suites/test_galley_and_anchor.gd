@@ -303,8 +303,16 @@ func _test_dragging() -> void:
 	GameSession.anchor_alarm.connect(on_alarm)
 	var anchor := GameSession.get_anchor()
 	var start := anchor.position
-	# The wind rises step by step from where it blows now.
-	var from := Simulation.get_weather_at_vessel().from_deg
+	# The wind backs to the anchorage's most open side and rises step by step
+	# (Iteration 14: the detailed Øresund coast shelters the first site from
+	# the wind it was chosen in).
+	var from := 0.0
+	var longest := -1.0
+	for deg in range(0, 360, 15):
+		var fetch := AnchorSite.fetch_nm(start, float(deg))
+		if fetch > longest:
+			longest = fetch
+			from = float(deg)
 	app.toasts.clear()
 	var steps := []
 	for kn in range(10, 46, 2):

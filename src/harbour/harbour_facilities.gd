@@ -7,13 +7,28 @@ extends Resource
 ## every harbour worked before). To change one harbour, add
 ## `data/harbours/facilities/<port_id>.tres` with the facilities it lacks
 ## switched off; nothing else is needed.
+##
+## Iteration 14 adds haul-outs: a boatyard that can lift a boat out of the
+## water (cleaning the bottom, fitting a hard coating). Without a file, a
+## harbour can haul out when it is one of the catalogue's major harbours
+## (importance 1); a file decides it explicitly. Harbours fall into three
+## gameplay tiers from their services: small (no boatyard), larger (a
+## boatyard) and major service harbours (haul-outs). Gameplay abstractions,
+## not claims about real yards.
 
 const DIRECTORY := "res://data/harbours/facilities"
 ## Facility ids are the shore stations' interaction ids.
 const GROCERY := &"grocery"
 const BOATYARD := &"boatyard"
 const GO_ASHORE := &"go_ashore"
+## Shore stations, in shore order (haul-outs are a service of the boatyard).
 const ALL: Array[StringName] = [GROCERY, BOATYARD, GO_ASHORE]
+const HAUL_OUT := &"haul_out"
+
+const TIER_SMALL := &"small"
+const TIER_LARGER := &"larger"
+const TIER_MAJOR := &"major"
+const TIER_NAMES := {TIER_SMALL: "Small harbour", TIER_LARGER: "Larger harbour", TIER_MAJOR: "Major service harbour"}
 
 ## The grocery store (food, water, a replacement hat).
 @export var grocery := true
@@ -21,6 +36,9 @@ const ALL: Array[StringName] = [GROCERY, BOATYARD, GO_ASHORE]
 @export var boatyard := true
 ## Go Ashore: small harbour events.
 @export var go_ashore := true
+## The boatyard can haul boats out (only with a boatyard). Ignored in the
+## shared default; see for_port().
+@export var haul_out := false
 
 static var _cache := {}
 static var _default: HarbourFacilities
@@ -34,7 +52,17 @@ static func for_port(port_id: StringName) -> HarbourFacilities:
 		var path := "%s/%s.tres" % [DIRECTORY, port_id]
 		_cache[port_id] = load(path) as HarbourFacilities if ResourceLoader.exists(path) else null
 	var found: HarbourFacilities = _cache[port_id]
-	return found if found else get_default()
+	if found:
+		return found
+	# No file: every service, and a haul-out yard in the major harbours.
+	var port := PortCatalog.get_default().get_port(port_id)
+	if port and port.importance == 1:
+		if not _cache.has(&"@major"):
+			var major := HarbourFacilities.new()
+			major.haul_out = true
+			_cache[&"@major"] = major
+		return _cache[&"@major"]
+	return get_default()
 
 
 static func get_default() -> HarbourFacilities:
@@ -55,7 +83,16 @@ func has(facility: StringName) -> bool:
 			return boatyard
 		GO_ASHORE:
 			return go_ashore
+		HAUL_OUT:
+			return boatyard and haul_out
 	return false
+
+
+## The harbour's gameplay tier (TIER_*), from its services.
+func get_tier() -> StringName:
+	if has(HAUL_OUT):
+		return TIER_MAJOR
+	return TIER_LARGER if boatyard else TIER_SMALL
 
 
 ## The available facilities, in shore order.
@@ -69,4 +106,5 @@ func get_ids() -> Array[StringName]:
 
 ## A player-facing name for refusals: "the boatyard".
 static func describe(facility: StringName) -> String:
-	return {GROCERY: "grocery store", BOATYARD: "boatyard", GO_ASHORE: "place to go ashore"}.get(facility, String(facility))
+	return {GROCERY: "grocery store", BOATYARD: "boatyard", GO_ASHORE: "place to go ashore",
+		HAUL_OUT: "yard that can haul boats out"}.get(facility, String(facility))

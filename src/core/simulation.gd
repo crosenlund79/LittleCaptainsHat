@@ -611,7 +611,7 @@ func _nearby_storm_warning() -> Dictionary:
 
 
 func _route_warning() -> Dictionary:
-	for hazard in get_hazards_ahead(WARNING_HORIZON_HOURS):
+	for hazard in get_hazards_ahead(GameSession.get_warning_horizon_hours()):
 		var sample: WeatherSample = hazard.sample
 		if _is_warned(hazard.key, hazard.hazard):
 			continue

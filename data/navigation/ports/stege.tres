@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"stege"
+display_name = "Stege"
+country = "Denmark"
+latitude = 54.9731
+longitude = 12.2736
+description = "Stege, the little town of the island of Møn."
+importance = 3
+region = "baltic"
+island = true
+source = "GeoNames town position 54.9870N 12.2846E (cities.json, CC BY 4.0); harbour placed 0.15 nm off the nearest OpenStreetMap coastline (ODbL), Iteration 14"

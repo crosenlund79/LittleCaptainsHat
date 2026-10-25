@@ -72,11 +72,31 @@ func _test_facility_data() -> void:
 	t.check(not lohals.boatyard and lohals.go_ashore and lohals.grocery, "[facilities] Lohals: no boatyard; Go Ashore and groceries")
 	var kiel := HarbourFacilities.for_port(&"kiel")
 	t.check(kiel.get_ids() == HarbourFacilities.ALL, "[facilities] a harbour without its own entry keeps every service (Kiel)")
-	var defaults := 0
+	# Iteration 14: the small Danish harbours have no boatyard either; every
+	# other harbour keeps one, and only some can haul out.
+	var without: Array[StringName] = []
+	var haul_outs := 0
 	for port in PortCatalog.get_default().ports:
-		defaults += 1 if HarbourFacilities.for_port(port.id).boatyard else 0
-	t.check(defaults == PortCatalog.get_default().ports.size() - 1, "[facilities] only Lohals lacks a boatyard (%d of %d have one)" % [
-		defaults, PortCatalog.get_default().ports.size()])
+		var facilities := HarbourFacilities.for_port(port.id)
+		if not facilities.boatyard:
+			without.append(port.id)
+		haul_outs += 1 if facilities.has(HarbourFacilities.HAUL_OUT) else 0
+	var small: Array[StringName] = [&"lohals", &"gilleleje", &"dragor", &"rodvig", &"stege", &"nysted", &"kerteminde",
+		&"aeroskobing", &"juelsminde", &"ebeltoft"]
+	without.sort()
+	small.sort()
+	t.check(without == small, "[facilities] only Lohals and the small Danish harbours lack a boatyard (%s)" % [without])
+	t.check(haul_outs > 0 and haul_outs < PortCatalog.get_default().ports.size() / 2,
+		"[facilities] only some harbours can haul out (%d of %d)" % [haul_outs, PortCatalog.get_default().ports.size()])
+	t.check(copenhagen.has(HarbourFacilities.HAUL_OUT) and copenhagen.get_tier() == HarbourFacilities.TIER_MAJOR,
+		"[facilities] Copenhagen's boatyard hauls out (major service harbour)")
+	t.check(lohals.get_tier() == HarbourFacilities.TIER_SMALL and not lohals.has(HarbourFacilities.HAUL_OUT),
+		"[facilities] Lohals is a small harbour without a haul-out")
+	var svendborg := HarbourFacilities.for_port(&"svendborg")
+	var korsor := HarbourFacilities.for_port(&"korsor")
+	var stege := HarbourFacilities.for_port(&"stege")
+	t.check(svendborg.get_tier() == HarbourFacilities.TIER_MAJOR and korsor.get_tier() == HarbourFacilities.TIER_LARGER
+		and stege.get_tier() == HarbourFacilities.TIER_SMALL, "[facilities] tiers: Svendborg major, Korsør larger, Stege small")
 
 
 # --- Shore access ---------------------------------------------------------------------

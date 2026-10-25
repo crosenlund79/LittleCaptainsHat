@@ -314,8 +314,13 @@ func _test_vessels_and_repair() -> void:
 	t.check(GameSession.get_funds() == funds and GameSession.get_food_days() == food, "[boats] money and stores are not reset by changing boats")
 	GameSession.switch_vessel(&"starling_33")
 	t.check(is_equal_approx(GameSession.get_condition(), damaged), "[boats] back aboard the Starling, its damage is still there")
+	# Iteration 14: repairs cost money and a little time, scaled by the damage
+	# and the boat's size (BoatCare).
+	var quote := GameSession.service_quote(BoatCare.SERVICE_REPAIR)
+	t.check(int(quote.cost) > 0 and float(quote.minutes) > 0.0, "[repair] the boatyard quotes a fee and a time (%s)" % [quote])
 	t.check_eq(GameSession.repair_vessel(), "", "[repair] repairing in harbour works")
-	t.check(is_equal_approx(GameSession.get_condition(), 100.0) and GameSession.get_funds() == funds, "[repair] back to 100 %, free")
+	t.check(is_equal_approx(GameSession.get_condition(), 100.0) and GameSession.get_funds() == funds - int(quote.cost),
+		"[repair] back to 100 % for the quoted fee")
 	t.check(GameSession.repair_vessel().contains("already"), "[repair] a sound boat needs no repair")
 	# Bounds.
 	GameSession.set_condition_for_testing(150.0)
@@ -449,7 +454,7 @@ func _test_money_limits() -> void:
 	Simulation.advance(HOUR)
 	t.check(rescues.size() == 2 and GameSession.get_funds() == 0 and int(rescues[1].fee) == 0,
 		"[money] with nothing left: rescued for free, funds stay at €0 (never negative)")
-	# Nothing else costs money in this version.
+	# Voyages and changing boats cost nothing; repairs are paid (Iteration 14).
 	_new_game()
 	_depart()
 	_weather_at_boat(46.0)
@@ -458,9 +463,10 @@ func _test_money_limits() -> void:
 	for i in 10:
 		if GameSession.is_underway():
 			Simulation.sleep(12.0)
+	var repair_cost := int(GameSession.service_quote(BoatCare.SERVICE_REPAIR).cost)
 	GameSession.repair_vessel()
 	GameSession.switch_vessel(&"petrel_36")
-	t.check_eq(GameSession.get_funds(), 10000, "[money] voyages, repairs and changing boats cost nothing")
+	t.check_eq(GameSession.get_funds(), 10000 - repair_cost, "[money] voyages and changing boats cost nothing; repairs cost their quote")
 
 
 # --- Persistence ------------------------------------------------------------------------

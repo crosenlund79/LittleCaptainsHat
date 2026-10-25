@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"faaborg"
+display_name = "Faaborg"
+country = "Denmark"
+latitude = 55.1032
+longitude = 10.2255
+description = "Faaborg, on south Funen, looking out over the archipelago."
+importance = 3
+region = "baltic"
+island = true
+source = "GeoNames town position 55.0951N 10.2423E (cities.json, CC BY 4.0); harbour placed 0.15 nm off the nearest OpenStreetMap coastline (ODbL), Iteration 14"

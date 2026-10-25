@@ -149,8 +149,9 @@ func _test_no_free_restock() -> void:
 	t.check(not GameSession.has_method("restock_provisions"), "[grocery] the free restock action no longer exists")
 	GameSession.start_new_session()
 	GameSession.set_condition_for_testing(30.0)
-	t.check(GameSession.repair_vessel() == "" and GameSession.get_funds() == 10000 and is_equal_approx(GameSession.get_condition(), 100.0),
-		"[repair] repairs are still free")
+	var cost := int(GameSession.service_quote(BoatCare.SERVICE_REPAIR).cost)
+	t.check(GameSession.repair_vessel() == "" and cost > 0 and GameSession.get_funds() == 10000 - cost
+		and is_equal_approx(GameSession.get_condition(), 100.0), "[repair] repairs cost their quote (€%d for 70 %% damage)" % cost)
 
 
 func _test_persistence() -> void:

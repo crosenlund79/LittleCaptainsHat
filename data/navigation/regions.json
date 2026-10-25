@@ -1,0 +1,6 @@
+{
+	"note": "High-detail chart regions (Iteration 14). Each folder holds region.json, navmask.png, land.json and graph.json, built by tools/navigation/build_region.py. The base chart (europe_*) is used wherever no region covers. See DEV_GUIDES/CHART_REGIONS.md.",
+	"regions": [
+		{"id": "denmark", "folder": "res://data/navigation/regions/denmark"}
+	]
+}

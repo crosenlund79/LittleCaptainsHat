@@ -103,9 +103,10 @@ static func offset(geo: Vector2, bearing: float, nm: float) -> Vector2:
 
 
 ## Holding level for an anchor on `scope`:1 chain, set with `set_quality`
-## (0..1), in `shelter`, against `sample`'s wind.
-static func holding(scope: int, set_quality: float, shelter: StringName, sample: WindField.Sample) -> StringName:
-	var margin := holding_margin(scope, set_quality, shelter, sample)
+## (0..1), in `shelter`, against `sample`'s wind. `bonus_kn`: extra holding
+## from heavier ground tackle (Iteration 14 equipment).
+static func holding(scope: int, set_quality: float, shelter: StringName, sample: WindField.Sample, bonus_kn := 0.0) -> StringName:
+	var margin := holding_margin(scope, set_quality, shelter, sample) + bonus_kn
 	if margin >= WELL_MARGIN:
 		return AnchorState.HOLDING_WELL
 	if margin >= FAIR_MARGIN:

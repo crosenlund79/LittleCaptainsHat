@@ -401,12 +401,17 @@ func _build_land() -> void:
 		_map_bounds.end, Vector2(_map_bounds.position.x, _map_bounds.end.y)])
 	_land.add_child(water)
 
+	# Detail regions (Iteration 14): inside them the base land is cut away and
+	# the region draws its own (see _build_regions()).
+	_load_region_rects()
+
 	# Land fill: polygons pre-clipped into tiles by the data builder.
 	for ring: Array in data.get("fill_tiles", data.get("polygons", [])):
-		var polygon := Polygon2D.new()
-		polygon.color = LAND
-		polygon.polygon = _project_ring(ring)
-		_land.add_child(polygon)
+		for piece in _outside_regions(_project_ring(ring)):
+			var polygon := Polygon2D.new()
+			polygon.color = LAND
+			polygon.polygon = piece
+			_land.add_child(polygon)
 
 	# Coastlines: drawn once as hairlines (constant 1 px at any zoom), split
 	# into spatial tiles so the renderer can skip tiles outside the view.
@@ -414,30 +419,164 @@ func _build_land() -> void:
 	for ring: Array in data.get("polygons", []):
 		var points := _project_ring(ring)
 		points.append(points[0])
-		var start := 0
-		while start < points.size() - 1:
-			var end := mini(start + COAST_RUN_POINTS, points.size() - 1)
-			var run := points.slice(start, end + 1)
-			var key := Vector2i((run[0] / COAST_TILE_UNITS).floor())
-			if not tiles.has(key):
-				tiles[key] = [] as Array[PackedVector2Array]
-			tiles[key].append(run)
-			start = end
-	for key: Vector2i in tiles:
-		var tile := Node2D.new()
-		tile.name = "Coast_%d_%d" % [key.x, key.y]
-		var runs: Array[PackedVector2Array] = tiles[key]
-		tile.draw.connect(func() -> void:
-			for run in runs:
-				tile.draw_polyline(run, COAST, -1.0))
-		_land.add_child(tile)
+		for line in _lines_outside_regions(points):
+			_add_coast_runs(tiles, line)
+	_add_coast_tiles(_land, tiles, "Coast")
 
 	for label: Dictionary in data.get("labels", []):
 		_labels.append({
 			"text": label.get("text", ""),
 			"position": projection.geo_to_map(Vector2(label.get("lon", 0.0), label.get("lat", 0.0))),
 			"sea": label.get("kind", "") == "sea",
+			"size": 22 if label.get("kind", "") != "sea" else 19,
+			"min_px": 0.0,
 		})
+	_build_regions()
+
+
+func _add_coast_runs(tiles: Dictionary, points: PackedVector2Array) -> void:
+	var start := 0
+	while start < points.size() - 1:
+		var end := mini(start + COAST_RUN_POINTS, points.size() - 1)
+		var run := points.slice(start, end + 1)
+		var key := Vector2i((run[0] / COAST_TILE_UNITS).floor())
+		if not tiles.has(key):
+			tiles[key] = [] as Array[PackedVector2Array]
+		tiles[key].append(run)
+		start = end
+
+
+func _add_coast_tiles(parent: Node, tiles: Dictionary, prefix: String) -> void:
+	for key: Vector2i in tiles:
+		var tile := Node2D.new()
+		tile.name = "%s_%d_%d" % [prefix, key.x, key.y]
+		var runs: Array[PackedVector2Array] = tiles[key]
+		tile.draw.connect(func() -> void:
+			for run in runs:
+				tile.draw_polyline(run, COAST, -1.0))
+		parent.add_child(tile)
+
+
+# --- Detail regions (Iteration 14) ------------------------------------------------------
+
+## Regions with their own chart data: {"id", "rect" (map), "folder", "detail_px"}.
+var _regions: Array[Dictionary] = []
+## Each region's two layers (overview, detail), shown by zoom.
+var _region_layers: Array[Dictionary] = []
+
+
+func _load_region_rects() -> void:
+	_regions.clear()
+	if not FileAccess.file_exists(NavGrid.REGIONS_INDEX):
+		return
+	var index: Variant = JSON.parse_string(FileAccess.get_file_as_string(NavGrid.REGIONS_INDEX))
+	if not index is Dictionary:
+		return
+	for entry: Dictionary in index.get("regions", []):
+		var meta: Variant = JSON.parse_string(FileAccess.get_file_as_string(String(entry.folder).path_join("region.json")))
+		if not meta is Dictionary:
+			continue
+		var top_left := projection.geo_to_map(Vector2(meta.bounds.west, meta.bounds.north))
+		var bottom_right := projection.geo_to_map(Vector2(meta.bounds.east, meta.bounds.south))
+		_regions.append({"id": String(meta.id), "name": String(meta.get("name", meta.id)), "folder": String(entry.folder),
+			"rect": Rect2(top_left, bottom_right - top_left), "detail_px": float(meta.get("detail_from_px_per_degree", 140.0))})
+
+
+## The parts of a base land polygon outside every region.
+func _outside_regions(points: PackedVector2Array) -> Array[PackedVector2Array]:
+	var pieces: Array[PackedVector2Array] = [points]
+	for region in _regions:
+		var rect: Rect2 = region.rect
+		var next: Array[PackedVector2Array] = []
+		for piece in pieces:
+			if not MapView._bounds_of(piece).intersects(rect):
+				next.append(piece)
+				continue
+			var cut := PackedVector2Array([rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)])
+			for clipped in Geometry2D.clip_polygons(piece, cut):
+				if not Geometry2D.is_polygon_clockwise(clipped) and clipped.size() >= 3:
+					next.append(clipped)
+		pieces = next
+	return pieces
+
+
+## The parts of a base coastline outside every region.
+func _lines_outside_regions(points: PackedVector2Array) -> Array[PackedVector2Array]:
+	var lines: Array[PackedVector2Array] = []
+	var current := PackedVector2Array()
+	for p in points:
+		var inside := false
+		for region in _regions:
+			if (region.rect as Rect2).has_point(p):
+				inside = true
+		if inside:
+			if current.size() >= 2:
+				lines.append(current)
+			current = PackedVector2Array()
+		else:
+			current.append(p)
+	if current.size() >= 2:
+		lines.append(current)
+	return lines
+
+
+func _build_regions() -> void:
+	_region_layers.clear()
+	for region in _regions:
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(String(region.folder).path_join("land.json")))
+		if not data is Dictionary:
+			continue
+		var layers := {"detail_px": region.detail_px}
+		for level in ["overview", "detail"]:
+			var layer := Node2D.new()
+			layer.name = "Region_%s_%s" % [region.id, level]
+			_land.add_child(layer)
+			for ring: Array in data.get(level, {}).get("fill_tiles", []):
+				var polygon := Polygon2D.new()
+				polygon.color = LAND
+				polygon.polygon = _project_ring(ring)
+				layer.add_child(polygon)
+			var tiles := {}
+			for line: Array in data.get(level, {}).get("coast", []):
+				_add_coast_runs(tiles, _project_ring(line))
+			_add_coast_tiles(layer, tiles, "Coast")
+			layers[level] = layer
+		_region_layers.append(layers)
+		for label: Dictionary in data.get("labels", []):
+			var kind: String = label.get("kind", "")
+			_labels.append({
+				"text": label.get("text", ""),
+				"position": projection.geo_to_map(Vector2(label.get("lon", 0.0), label.get("lat", 0.0))),
+				"sea": kind == "sea",
+				"size": {"land": 19, "island": 15, "sea": 16}.get(kind, 16),
+				"min_px": float(label.get("min_px_per_degree", 90.0)),
+			})
+	_update_region_detail()
+
+
+## Shows each region's detailed layer once the chart is zoomed in far enough,
+## its overview layer otherwise.
+func _update_region_detail() -> void:
+	var px := get_px_per_degree() if camera else 0.0
+	for layers in _region_layers:
+		var detail: bool = px >= float(layers.detail_px)
+		(layers.detail as Node2D).visible = detail
+		(layers.overview as Node2D).visible = not detail
+
+
+## True when the detailed layer of region `id` is shown (tests).
+func is_region_detail_shown(id: String) -> bool:
+	for i in _region_layers.size():
+		if _regions[i].id == id:
+			return (_region_layers[i].detail as Node2D).visible
+	return false
+
+
+func get_region_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for region in _regions:
+		ids.append(String(region.id))
+	return ids
 
 
 func _project_ring(ring: Array) -> PackedVector2Array:
@@ -510,6 +649,7 @@ func _set_zoom(value: float) -> void:
 	var whole_region := minf(free.x / _map_bounds.size.x, free.y / _map_bounds.size.y) * 0.8
 	var zoom := clampf(value, maxf(min_zoom, whole_region), max_zoom)
 	camera.zoom = Vector2(zoom, zoom)
+	_update_region_detail()
 	# Shift the camera so camera.position appears at the centre of the free area.
 	camera.offset = Vector2(occluded_right_px / 2.0, 0.0) / zoom
 	_overlay.queue_redraw()
@@ -646,9 +786,11 @@ func _draw_overlay() -> void:
 	var s := 1.0 / camera.zoom.x  # map units per screen pixel
 	_draw_graticule(s)
 	_overlay.draw_rect(_map_bounds, WATER_EDGE, false, 3.0 * s)
+	var px := get_px_per_degree()
 	for label in _labels:
-		var size := 22 if not label.sea else 19
-		_draw_text(label.text, label.position, size * s, LABEL_SEA if label.sea else LABEL_COUNTRY, true)
+		if px < float(label.min_px):
+			continue
+		_draw_text(label.text, label.position, float(label.size) * s, LABEL_SEA if label.sea else LABEL_COUNTRY, true)
 	_draw_weather(s)
 	_draw_courses(s)
 	_update_port_layout()

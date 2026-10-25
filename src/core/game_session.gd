@@ -76,6 +76,12 @@ signal meal_cooked(result: Dictionary)
 signal anchor_changed
 ## The anchor needs the captain: {"level": "poor" | "dragging", "text"}.
 signal anchor_alarm(info: Dictionary)
+## A boat's care record changed: a service, an upgrade, or wear crossing a
+## level (Iteration 14). Not emitted for every bit of wear.
+signal boat_care_changed
+## A loaded position or course was invalid under the current chart and was
+## moved or re-planned (Iteration 14): {kind, from, to, moved_nm, replanned}.
+signal location_recovered(info: Dictionary)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -136,6 +142,7 @@ func replace_state(new_state: SessionState) -> void:
 	_state = new_state.duplicate_state()
 	_has_unsaved_changes = false
 	_complete_legacy_route()
+	_recover_location()
 	_check_vessel()
 	if not was_active:
 		session_started.emit()
@@ -261,8 +268,34 @@ func get_vessel_speed_kn() -> float:
 ## The boat's performance profile (one starter boat for now).
 ## Sailing performance of the active vessel.
 func get_vessel_profile() -> VesselProfile:
+	var base := get_base_vessel_profile()
+	if _state == null:
+		return base
+	# Wear (Iteration 14) costs a little speed and makes a worn rig take
+	# weather a little worse: a copy of the boat's profile with those applied,
+	# cached while the effect stays the same (to the half percent).
+	var effects := BoatCare.effects(_state.get_boat_care(_state.vessel_id), _state.game_time)
+	var key := "%s|%.3f|%.3f|%.3f" % [_state.vessel_id, snappedf(effects.sail, 0.005), snappedf(effects.engine, 0.005),
+		snappedf(effects.damage, 0.005)]
+	if key == "%s|1.000|1.000|1.000" % _state.vessel_id:
+		return base
+	if key != _profile_key:
+		_profile_key = key
+		_profile = base.duplicate() as VesselProfile
+		_profile.max_sail_speed_kn = base.max_sail_speed_kn * snappedf(effects.sail, 0.005)
+		_profile.engine_speed_kn = base.engine_speed_kn * snappedf(effects.engine, 0.005)
+		_profile.weather_damage_factor = base.weather_damage_factor * snappedf(effects.damage, 0.005)
+	return _profile
+
+
+## The boat's own performance, without wear.
+func get_base_vessel_profile() -> VesselProfile:
 	var vessel := get_vessel_definition()
 	return vessel.performance if vessel and vessel.performance else VesselProfile.get_default()
+
+
+var _profile: VesselProfile
+var _profile_key := ""
 
 
 ## The boat the player owns (the starter boat when no game is running).
@@ -324,6 +357,7 @@ func switch_vessel(vessel_id: StringName) -> String:
 	if vessel_id == _state.vessel_id:
 		return ""
 	_state.vessel_id = vessel_id
+	_state.get_boat_care(vessel_id)
 	_state.propulsion = PropulsionState.new()
 	_state.fishing.line_out = false
 	_pending_bite = {}
@@ -540,6 +574,8 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 		companion_moved.emit(_state.companion.spot)
 	if _state.voyage:
 		var progress := clampf(progress_nm, 0.0, _state.voyage.get_total_nm())
+		if elapsed > 0.0 and not _state.anchor.active:
+			_wear(elapsed, maxf(progress - _state.voyage.progress_nm, 0.0))
 		_state.voyage.sailed_nm += maxf(progress - _state.voyage.progress_nm, 0.0)
 		_state.voyage.progress_nm = progress
 		_state.vessel_position = _state.anchor.position if _state.anchor.active else _state.voyage.get_position()
@@ -636,6 +672,9 @@ func apply_weather_damage(percent: float, until: float) -> bool:
 	var before := get_condition()
 	_state.set_condition(_state.vessel_id, before - percent)
 	_state.voyage.damage_percent += before - get_condition()
+	# Heavy weather also wears the rig (Iteration 14).
+	var care := _state.get_boat_care(_state.vessel_id)
+	care.rig_wear = minf(care.rig_wear + (before - get_condition()) * BoatCare.RIG_WEAR_PER_DAMAGE, 100.0)
 	condition_changed.emit(get_condition())
 	if get_condition() <= 0.0:
 		rescue()
@@ -648,19 +687,11 @@ func is_moored_in_harbour() -> bool:
 	return _state != null and not is_underway() and get_location() != null
 
 
-## Repairs the active boat to 100 % (free in this version). Harbour only.
-## Returns "" on success, otherwise the reason.
+## Repairs the active boat's hull and structure to 100 % at the boatyard
+## (Iteration 14: for a fee and a little time, see BoatCare). Returns "" on
+## success, otherwise the reason.
 func repair_vessel() -> String:
-	if not is_moored_in_harbour():
-		return "Repairs can only be made while moored in harbour."
-	if not has_facility(HarbourFacilities.BOATYARD):
-		return facility_refusal(HarbourFacilities.BOATYARD)
-	if get_condition() >= VesselCondition.FULL:
-		return "The %s is already in perfect condition." % get_vessel_definition().display_name
-	_state.set_condition(_state.vessel_id, VesselCondition.FULL)
-	_has_unsaved_changes = true
-	condition_changed.emit(get_condition())
-	return ""
+	return perform_service(BoatCare.SERVICE_REPAIR).error
 
 
 ## Rescue at sea: the boat's condition reached zero. One complete transaction,
@@ -712,6 +743,189 @@ func rescue() -> void:
 	if not awards.is_empty():
 		renown_awarded.emit(awards)
 	rescued.emit(info)
+
+
+# --- Boat care (Iteration 14) ----------------------------------------------------------
+
+## A copy of a boat's care record (the active boat by default).
+func get_boat_care(vessel_id: StringName = &"") -> BoatCareState:
+	if _state == null:
+		return BoatCareState.create(0.0)
+	return _state.get_boat_care(vessel_id if vessel_id != &"" else _state.vessel_id).duplicate_state()
+
+
+func has_upgrade(id: String) -> bool:
+	return _state != null and _state.get_boat_care(_state.vessel_id).has_upgrade(id)
+
+
+## The level of a care area of the active boat (BoatCare.LEVEL_*).
+func get_care_level(area: StringName) -> StringName:
+	if _state == null:
+		return BoatCare.LEVEL_GOOD
+	return BoatCare.area_level(area, _state.get_boat_care(_state.vessel_id), get_condition(), _state.game_time)
+
+
+## Everyday wear for `elapsed` seconds underway and `nm` sailed: engine hours
+## while motoring, rig wear under sail (more in a strong breeze).
+func _wear(elapsed: float, nm: float) -> void:
+	var care := _state.get_boat_care(_state.vessel_id)
+	var before := [BoatCare.area_level(BoatCare.AREA_RIG, care, get_condition(), _state.game_time),
+		BoatCare.area_level(BoatCare.AREA_ENGINE, care, get_condition(), _state.game_time)]
+	if _state.propulsion.is_motoring():
+		care.engine_hours += elapsed / 3600.0
+	else:
+		care.rig_wear = minf(care.rig_wear + BoatCare.rig_wear_for(nm, _state.propulsion.wind_speed_kn, care), 100.0)
+	var after := [BoatCare.area_level(BoatCare.AREA_RIG, care, get_condition(), _state.game_time),
+		BoatCare.area_level(BoatCare.AREA_ENGINE, care, get_condition(), _state.game_time)]
+	if after != before:
+		boat_care_changed.emit()
+		for i in 2:
+			if after[i] == BoatCare.LEVEL_RECOMMENDED and before[i] != after[i]:
+				notice.emit.call_deferred("Boat care: %s could do with a service at the next boatyard. (Captain's Log, Boat tab)" % \
+					BoatCare.AREA_NAMES[[BoatCare.AREA_RIG, BoatCare.AREA_ENGINE][i]].to_lower())
+
+
+## Which yard a service or upgrade needs: the boatyard, or a yard that can
+## haul boats out.
+static func service_facility(service: StringName) -> StringName:
+	return HarbourFacilities.HAUL_OUT if service == BoatCare.SERVICE_HAUL_OUT else HarbourFacilities.BOATYARD
+
+
+## Why a service cannot be had here now, or "".
+func service_refusal(service: StringName) -> String:
+	if _state == null:
+		return "No game is running."
+	if not is_moored_in_harbour():
+		return "Boatyard work is done while moored in harbour."
+	var facility := service_facility(service)
+	if not has_facility(facility):
+		return facility_refusal(facility)
+	var care := _state.get_boat_care(_state.vessel_id)
+	match service:
+		BoatCare.SERVICE_REPAIR:
+			if get_condition() >= VesselCondition.FULL:
+				return "The %s is already in perfect condition." % get_vessel_definition().display_name
+		BoatCare.SERVICE_ENGINE:
+			if care.engine_hours < 1.0:
+				return "The engine was serviced recently."
+		BoatCare.SERVICE_RIG:
+			if care.rig_wear < 1.0:
+				return "The rigging and sails are in fine order."
+	var quote := service_quote(service)
+	if int(quote.cost) > _state.funds:
+		return "Not enough money: %s needed." % format_money(int(quote.cost))
+	return ""
+
+
+## {"cost", "minutes"} for a service on the active boat.
+func service_quote(service: StringName) -> Dictionary:
+	if _state == null:
+		return {"cost": 0, "minutes": 0.0}
+	return BoatCare.quote(service, _state.get_boat_care(_state.vessel_id), get_condition(), get_base_vessel_profile().length_ft)
+
+
+## Has a service done: one transaction that pays, restores and records it.
+## The time it takes is spent by the caller (Simulation.spend_time_ashore).
+## Returns {"error", "cost", "minutes", "first"}.
+func perform_service(service: StringName) -> Dictionary:
+	var result := {"error": service_refusal(service), "cost": 0, "minutes": 0.0, "first": false}
+	if result.error != "":
+		return result
+	var quote := service_quote(service)
+	var care := _state.get_boat_care(_state.vessel_id)
+	match service:
+		BoatCare.SERVICE_REPAIR:
+			_state.set_condition(_state.vessel_id, VesselCondition.FULL)
+			condition_changed.emit(get_condition())
+		BoatCare.SERVICE_ENGINE:
+			care.engine_hours = 0.0
+		BoatCare.SERVICE_RIG:
+			care.rig_wear = 0.0
+		BoatCare.SERVICE_HAUL_OUT:
+			# Out of the water: the bottom is cleaned and the hull and structure
+			# are seen to, all in one.
+			care.hull_cleaned_at = _state.game_time
+			_state.set_condition(_state.vessel_id, VesselCondition.FULL)
+			condition_changed.emit(get_condition())
+	_state.funds -= int(quote.cost)
+	care.add_history(_state.game_time, String(service), String(get_location_id()), int(quote.cost))
+	result.cost = int(quote.cost)
+	result.minutes = float(quote.minutes)
+	if service == BoatCare.SERVICE_HAUL_OUT:
+		var award := _award_once("care:first_haul_out", "First haul-out: %s" % get_location().display_name, 2)
+		result.first = not award.is_empty()
+		if result.first:
+			renown_awarded.emit([award])
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	boat_care_changed.emit()
+	return result
+
+
+## Why an upgrade cannot be fitted here now, or "".
+func upgrade_refusal(id: String) -> String:
+	if _state == null:
+		return "No game is running."
+	var upgrade := BoatCare.get_upgrade(id)
+	if upgrade.is_empty():
+		return "Unknown equipment."
+	if has_upgrade(id):
+		return "The %s already has it." % get_vessel_definition().display_name
+	if not is_moored_in_harbour():
+		return "Equipment is fitted while moored in harbour."
+	var facility := HarbourFacilities.HAUL_OUT if upgrade.get("yard", "boatyard") == "haul_out" else HarbourFacilities.BOATYARD
+	if not has_facility(facility):
+		return facility_refusal(facility)
+	var price := upgrade_price(id)
+	if price > _state.funds:
+		return "Not enough money: %s needed." % format_money(price)
+	return ""
+
+
+func upgrade_price(id: String) -> int:
+	return BoatCare.upgrade_price(id, get_base_vessel_profile().length_ft)
+
+
+## Fits an upgrade to the active boat: pays once, fitted once. Returns
+## {"error", "cost", "minutes"}; the fitting time is spent by the caller.
+func install_upgrade(id: String) -> Dictionary:
+	var result := {"error": upgrade_refusal(id), "cost": 0, "minutes": 0.0}
+	if result.error != "":
+		return result
+	var care := _state.get_boat_care(_state.vessel_id)
+	var price := upgrade_price(id)
+	care.upgrades.append(id)
+	_state.funds -= price
+	care.add_history(_state.game_time, "upgrade:" + id, String(get_location_id()), price)
+	result.cost = price
+	result.minutes = BoatCare.UPGRADE_MINUTES
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	boat_care_changed.emit()
+	fishing_changed.emit()
+	return result
+
+
+## Equipment effects (Iteration 14) used by other systems.
+func get_cool_box_capacity() -> int:
+	return FishingState.LARGE_HOLD_CAPACITY if has_upgrade("large_cool_box") else FishingState.HOLD_CAPACITY
+
+
+func get_calm_cooking_wind_kn() -> float:
+	return GIMBALLED_COOKING_WIND_KN if has_upgrade("gimballed_stove") else CALM_COOKING_WIND_KN
+
+
+func get_anchor_holding_bonus_kn() -> float:
+	return HEAVY_ANCHOR_BONUS_KN if has_upgrade("heavy_anchor") else 0.0
+
+
+func get_warning_horizon_hours() -> float:
+	return RECEIVER_WARNING_HOURS if has_upgrade("weather_receiver") else Simulation.WARNING_HORIZON_HOURS
+
+
+const GIMBALLED_COOKING_WIND_KN := 26.0
+const HEAVY_ANCHOR_BONUS_KN := 5.0
+const RECEIVER_WARNING_HOURS := 10.0
 
 
 # --- Captain's Log ---------------------------------------------------------------
@@ -962,7 +1176,7 @@ func finish_fight(landed: bool, line_broke := false) -> Dictionary:
 	fishing.trophies.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return float(a.score) > float(b.score) or (is_equal_approx(float(a.score), float(b.score)) and int(a.uid) < int(b.uid)))
 	fishing.trophies = fishing.trophies.slice(0, FishingState.TROPHY_COUNT)
-	if fishing.hold.size() < FishingState.HOLD_CAPACITY:
+	if fishing.hold.size() < get_cool_box_capacity():
 		fishing.hold.append(fish)
 		result.kept = true
 	else:
@@ -1088,7 +1302,7 @@ func cooking_refusal() -> String:
 	if is_anchored():
 		return "The anchor is dragging: see to it first." if _state.anchor.holding == AnchorState.HOLDING_DRAGGING else ""
 	var here := Simulation.get_weather_at_vessel()
-	if here.speed_kn >= CALM_COOKING_WIND_KN or here.hazard >= WeatherModel.HAZARD_CAUTION:
+	if here.speed_kn >= get_calm_cooking_wind_kn() or here.hazard >= WeatherModel.HAZARD_CAUTION:
 		return "Too lively for the stove (wind %d kn). Wait for calmer water, or anchor somewhere sheltered." % roundi(here.speed_kn)
 	return ""
 
@@ -1218,7 +1432,7 @@ func drop_anchor(scope: int, set_quality: float) -> Dictionary:
 	anchor.anchored_at = _state.game_time
 	anchor.checked_until = _state.game_time
 	var site := evaluate_anchorage()
-	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel())
+	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), get_anchor_holding_bonus_kn())
 	_has_unsaved_changes = true
 	if anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
 		var award := _award_once("anchor:first", "Your first anchorage", 3)
@@ -1240,7 +1454,7 @@ func adjust_anchor(scope: int, set_quality := -1.0) -> StringName:
 		anchor.set_quality = clampf(set_quality, 0.0, 1.0)
 		anchor.position = _state.vessel_position
 	var site := evaluate_anchorage()
-	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel())
+	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), get_anchor_holding_bonus_kn())
 	anchor.alarm = anchor.holding in [AnchorState.HOLDING_POOR, AnchorState.HOLDING_DRAGGING] and anchor.alarm
 	if was_dragging and anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
 		anchor.dragged_this_stay = false
@@ -1285,7 +1499,7 @@ func apply_anchor_check(tick: float) -> String:
 	var sample := Simulation.get_weather_at_vessel()
 	var site := AnchorSite.evaluate(anchor.position, sample)
 	var before := anchor.holding
-	anchor.holding = AnchorSite.holding(anchor.scope, anchor.set_quality, site.shelter, sample)
+	anchor.holding = AnchorSite.holding(anchor.scope, anchor.set_quality, site.shelter, sample, get_anchor_holding_bonus_kn())
 	var event := ""
 	if anchor.holding == AnchorState.HOLDING_DRAGGING:
 		anchor.dragged_this_stay = true
@@ -1824,3 +2038,102 @@ func _complete_legacy_route() -> void:
 		_state.planned_route = null
 		notice.emit.call_deferred("The saved course to %s could not be recalculated and was removed." %
 			PortCatalog.get_default().get_display_name(route.destination_port_id))
+
+
+## Iteration 14: a more detailed chart can place a position saved under the
+## old chart on land, or make a saved course cross a new island. The vessel is
+## never stranded or erased: it is moved to the nearest open water and the
+## remaining course is re-planned from there. Changes are reported through
+## location_recovered and get_last_location_recovery().
+func _recover_location() -> void:
+	_last_recovery = {}
+	var router := SeaRouter.get_default()
+	if is_underway():
+		_recover_voyage(router)
+	elif _state.planned_route != null and _state.planned_route.has_path() \
+			and not router.validate_route(_state.planned_route).is_empty():
+		var route := _state.planned_route
+		var location := get_location()
+		var result := router.plan_route(location.id, location.get_geo_position(), _navigable(router, route.waypoints),
+			route.destination_port_id)
+		_state.planned_route = result.route if result.is_ok() else null
+		_report_recovery({"kind": "planned_route", "replanned": result.is_ok()})
+
+
+func _recover_voyage(router: SeaRouter) -> void:
+	var voyage := _state.voyage
+	var anchor := _state.anchor
+	var position := anchor.position if anchor.active else voyage.get_position()
+	var remaining := voyage.get_remaining_path()
+	var check := PlannedRoute.new()
+	check.origin_port_id = voyage.route.origin_port_id
+	check.destination_port_id = voyage.route.destination_port_id
+	check.waypoints = voyage.get_remaining_waypoints()
+	check.path = remaining
+	check.origin_position = remaining[0] if not remaining.is_empty() else position
+	var path_ok := remaining.size() >= 2 and router.validate_route(check).is_empty()
+	var position_ok := _near_route_port(router, position, voyage.route) or router.is_point_navigable(position)
+	if path_ok and position_ok:
+		return
+	var start := position
+	if not position_ok:
+		start = router.nearest_navigable(position)
+		if start == Vector2.INF:
+			start = router.nearest_navigable(position, 60.0)
+	if start == Vector2.INF:
+		_report_recovery({"kind": "voyage", "from": _geo_dict(position), "replanned": false, "failed": true})
+		return
+	var waypoints := _navigable(router, check.waypoints)
+	var result := router.plan_route(&"", start, waypoints, check.destination_port_id)
+	if not result.is_ok() and not waypoints.is_empty():
+		result = router.plan_route(&"", start, [] as Array[Vector2], check.destination_port_id)
+	if result.is_ok():
+		voyage.route = result.route
+		voyage.progress_nm = 0.0
+		voyage.revision += 1
+		voyage.warned_conditions.clear()
+	if anchor.active:
+		anchor.position = start
+	_state.vessel_position = start if anchor.active or not result.is_ok() else voyage.get_position()
+	_report_recovery({"kind": "voyage", "from": _geo_dict(position), "to": _geo_dict(start),
+		"moved_nm": snappedf(GeoMath.rhumb_distance_nm(position, start), 0.01), "replanned": result.is_ok(),
+		"anchored": anchor.active})
+
+
+func _near_route_port(router: SeaRouter, position: Vector2, route: PlannedRoute) -> bool:
+	for id: StringName in [route.origin_port_id, route.destination_port_id]:
+		var port := PortCatalog.get_default().get_port(id)
+		if port and GeoMath.rhumb_distance_nm(port.get_geo_position(), position) <= SeaRouter.MAX_APPROACH_NM \
+				and router.grid.cell_class_at_geo(position) >= NavGrid.APPROACH:
+			return true
+	return false
+
+
+func _navigable(router: SeaRouter, points: Array[Vector2]) -> Array[Vector2]:
+	var result: Array[Vector2] = []
+	for point in points:
+		if router.is_point_navigable(point):
+			result.append(point)
+	return result
+
+
+static func _geo_dict(geo: Vector2) -> Dictionary:
+	return {"lon": snappedf(geo.x, 0.0001), "lat": snappedf(geo.y, 0.0001)}
+
+
+func _report_recovery(info: Dictionary) -> void:
+	_last_recovery = info
+	location_recovered.emit.call_deferred(info)
+	var text := "The chart has been updated. Your course was re-planned." if info.get("replanned", false) \
+		else "The chart has been updated. Please plot your course again."
+	if info.get("kind") == "voyage" and float(info.get("moved_nm", 0.0)) > 0.0:
+		text = "The chart has been updated. The boat has been moved %.1f nm to nearby open water." % float(info.moved_nm)
+	notice.emit.call_deferred(text)
+
+
+## The last load's location recovery ({} when nothing needed changing).
+func get_last_location_recovery() -> Dictionary:
+	return _last_recovery
+
+
+var _last_recovery := {}

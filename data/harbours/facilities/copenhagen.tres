@@ -7,3 +7,4 @@ script = ExtResource("1_fac")
 grocery = true
 boatyard = true
 go_ashore = true
+haul_out = true

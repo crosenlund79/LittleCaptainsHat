@@ -10,6 +10,16 @@ extends RefCounted
 ##   LAND      (0):   everything else, including the area outside the chart.
 ## The raster is generated from the same coastline polygons the chart draws
 ## (tools/navigation/build_navigation_data.py).
+##
+## Regional detail (Iteration 14): a base grid may carry finer regional grids
+## (data/navigation/regions.json, built by tools/navigation/build_region.py),
+## each covering a rectangle of whole base cells with `factor` x the
+## resolution, in the same geographic coordinates and Mercator layout. The
+## geographic queries (cell_class_at_geo, is_navigable, is_geo_line_clear,
+## grid_at) consult the region wherever it covers and the base elsewhere; a
+## line crossing a region's edge is split there and each part is checked in
+## its own grid. Cell-index queries (get_class_at, is_line_clear) work on one
+## grid; use grid_at() to pick the right one.
 
 const NAVIGABLE := 255
 const APPROACH := 128
@@ -17,6 +27,10 @@ const LAND := 0
 
 const DEFAULT_MASK := "res://data/navigation/europe_navmask.png"
 const DEFAULT_META := "res://data/navigation/europe_navmask.json"
+const REGIONS_INDEX := "res://data/navigation/regions.json"
+## How far (cells) a line's part is nudged off a region edge, so each part
+## is checked only in its own grid.
+const SEAM_NUDGE := 0.01
 
 var columns := 0
 var rows := 0
@@ -24,6 +38,16 @@ var cells_per_degree := 60.0
 var west := 0.0
 var mercator_north := 0.0
 var _cells := PackedByteArray()
+
+## Regional detail grids of this base grid (empty for a region itself).
+var regions: Array[NavGrid] = []
+## For a region grid: its id and name, its first base cell and size in base
+## cells, and its resolution factor over the base.
+var region_id := ""
+var region_name := ""
+var base_cell := Vector2i.ZERO
+var base_size := Vector2i.ZERO
+var factor := 1
 
 
 static func load_from(mask_path: String, meta_path: String) -> NavGrid:
@@ -48,6 +72,71 @@ static func load_from(mask_path: String, meta_path: String) -> NavGrid:
 		push_error("Navigation mask size does not match its metadata.")
 		return null
 	return grid
+
+
+## Loads the regional grids listed in `index_path` (missing index: none).
+func load_regions(index_path := REGIONS_INDEX) -> void:
+	regions.clear()
+	if not FileAccess.file_exists(index_path):
+		return
+	var index: Variant = JSON.parse_string(FileAccess.get_file_as_string(index_path))
+	if not index is Dictionary:
+		return
+	for entry: Dictionary in index.get("regions", []):
+		var folder: String = entry.get("folder", "")
+		var region := NavGrid.load_region(folder.path_join("navmask.png"), folder.path_join("region.json"))
+		if region:
+			regions.append(region)
+
+
+static func load_region(mask_path: String, meta_path: String) -> NavGrid:
+	var meta: Variant = JSON.parse_string(FileAccess.get_file_as_string(meta_path))
+	var bytes := FileAccess.get_file_as_bytes(mask_path)
+	if not meta is Dictionary or bytes.is_empty():
+		push_error("Region data missing: %s / %s" % [mask_path, meta_path])
+		return null
+	var image := Image.new()
+	if image.load_png_from_buffer(bytes) != OK:
+		push_error("Region mask unreadable: %s" % mask_path)
+		return null
+	image.convert(Image.FORMAT_L8)
+	var grid := NavGrid.new()
+	grid.columns = image.get_width()
+	grid.rows = image.get_height()
+	grid.cells_per_degree = float(meta.cells_per_mercator_degree)
+	grid.west = float(meta.base_west)
+	grid.mercator_north = float(meta.mercator_north)
+	grid.region_id = String(meta.id)
+	grid.region_name = String(meta.get("name", meta.id))
+	grid.factor = int(meta.factor)
+	grid.base_cell = Vector2i(int(meta.base_cells.column), int(meta.base_cells.row))
+	grid.base_size = Vector2i(int(meta.base_cells.columns), int(meta.base_cells.rows))
+	grid._cells = image.get_data()
+	if grid.columns != int(meta.columns) or grid.rows != int(meta.rows) or grid.columns != grid.base_size.x * grid.factor:
+		push_error("Region mask size does not match its metadata: %s" % meta_path)
+		return null
+	return grid
+
+
+## The region rectangle in base cell coordinates.
+func get_base_rect() -> Rect2:
+	return Rect2(Vector2(base_cell), Vector2(base_size))
+
+
+## The grid that holds the detail at `geo`: a region covering it, or this one.
+func grid_at(geo: Vector2) -> NavGrid:
+	if regions.is_empty():
+		return self
+	var cell := geo_to_cell(geo)
+	for region in regions:
+		if region.get_base_rect().has_point(cell):
+			return region
+	return self
+
+
+## The region (id) covering `geo`, or "" in the base chart.
+func region_id_at(geo: Vector2) -> String:
+	return grid_at(geo).region_id
 
 
 # --- Coordinates -----------------------------------------------------------------------
@@ -78,8 +167,9 @@ func get_class_at(column: int, row: int) -> int:
 
 
 func cell_class_at_geo(geo: Vector2) -> int:
-	var cell := geo_to_cell(geo)
-	return get_class_at(floori(cell.x), floori(cell.y))
+	var grid := grid_at(geo)
+	var cell := grid.geo_to_cell(geo)
+	return grid.get_class_at(floori(cell.x), floori(cell.y))
 
 
 func is_navigable(geo: Vector2) -> bool:
@@ -131,4 +221,49 @@ func is_line_clear(from: Vector2, to: Vector2, min_class := NAVIGABLE) -> bool:
 
 
 func is_geo_line_clear(from: Vector2, to: Vector2, min_class := NAVIGABLE) -> bool:
-	return is_line_clear(geo_to_cell(from), geo_to_cell(to), min_class)
+	var a := geo_to_cell(from)
+	var b := geo_to_cell(to)
+	for region in regions:
+		var clip := _clip(a, b, region.get_base_rect())
+		if clip.is_empty() or clip[1] - clip[0] <= 1e-12:
+			continue
+		# The parts before and after the region are checked here, the part
+		# inside in the region's own grid (mirrors build_region.composite_clear).
+		var direction := (b - a).normalized()
+		var p0 := a.lerp(b, clip[0])
+		var p1 := a.lerp(b, clip[1])
+		if clip[0] > 0.0 and not is_line_clear(a, p0 - direction * SEAM_NUDGE, min_class):
+			return false
+		if clip[1] < 1.0 and not is_line_clear(p1 + direction * SEAM_NUDGE, b, min_class):
+			return false
+		var f0 := region.from_base_cell(p0 + direction * SEAM_NUDGE / region.factor)
+		var f1 := region.from_base_cell(p1 - direction * SEAM_NUDGE / region.factor)
+		return region.is_line_clear(f0, f1, min_class)
+	return is_line_clear(a, b, min_class)
+
+
+## A base cell-space point in this region's cells, kept inside the region.
+func from_base_cell(point: Vector2) -> Vector2:
+	var local := (point - Vector2(base_cell)) * factor
+	return Vector2(clampf(local.x, 0.0, columns - 0.001), clampf(local.y, 0.0, rows - 0.001))
+
+
+## Parametric [t0, t1] of the segment a-b inside `rect` (Liang-Barsky), or [].
+static func _clip(a: Vector2, b: Vector2, rect: Rect2) -> Array:
+	var t0 := 0.0
+	var t1 := 1.0
+	var d := b - a
+	for pq: Vector2 in [Vector2(-d.x, a.x - rect.position.x), Vector2(d.x, rect.end.x - a.x),
+			Vector2(-d.y, a.y - rect.position.y), Vector2(d.y, rect.end.y - a.y)]:
+		if pq.x == 0.0:
+			if pq.y < 0.0:
+				return []
+			continue
+		var r := pq.y / pq.x
+		if pq.x < 0.0:
+			t0 = maxf(t0, r)
+		else:
+			t1 = minf(t1, r)
+		if t0 > t1:
+			return []
+	return [t0, t1]

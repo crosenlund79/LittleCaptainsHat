@@ -1,0 +1,17 @@
+{
+	"note": "Iteration 14 equipment upgrades: a small catalogue, each with a real gameplay effect (see src/boat_care/boat_care.gd and DEV_GUIDES/BOAT_CARE.md). Prices are euros per foot of boat length (a bigger boat needs bigger gear), rounded. 'yard' is the harbour service needed to fit it: 'boatyard' or 'haul_out'. Gameplay numbers, not product data.",
+	"upgrades": [
+		{"id": "heavy_anchor", "name": "Heavier anchor and chain", "price_per_ft": 16, "yard": "boatyard",
+			"text": "A bigger anchor on heavier chain. Holds about 5 knots more wind before dragging."},
+		{"id": "weather_receiver", "name": "Weather receiver", "price_per_ft": 12, "yard": "boatyard",
+			"text": "A small receiver for marine weather broadcasts. Warnings about weather on your route come up to 10 hours ahead instead of 6."},
+		{"id": "gimballed_stove", "name": "Gimballed stove", "price_per_ft": 9, "yard": "boatyard",
+			"text": "A stove that swings level with the boat. Underway you can cook in winds up to 26 knots instead of 18."},
+		{"id": "large_cool_box", "name": "Large cool box", "price_per_ft": 6, "yard": "boatyard",
+			"text": "Room for 10 fish instead of 6."},
+		{"id": "stainless_rigging", "name": "New stainless rigging", "price_per_ft": 30, "yard": "boatyard",
+			"text": "Fresh wire and fittings. The rig wears half as fast and the boat takes a little less weather damage."},
+		{"id": "hard_antifouling", "name": "Hard antifouling coating", "price_per_ft": 20, "yard": "haul_out",
+			"text": "A long-lasting bottom coating, applied with the boat out of the water. Weed and barnacles grow at less than half the speed."}
+	]
+}

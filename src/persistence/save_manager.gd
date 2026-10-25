@@ -15,7 +15,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 11
+const SAVE_VERSION := 12
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -311,6 +311,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_9_to_10(data)
 	if from_version < 11:
 		data = _migrate_10_to_11(data)
+	if from_version < 12:
+		data = _migrate_11_to_12(data)
 	return data
 
 
@@ -501,6 +503,37 @@ func _migrate_10_to_11(data: Dictionary) -> Dictionary:
 	session["anchor"] = anchor.to_dict()
 	data["version"] = 11
 	return data
+
+
+## Iteration 14: boat care. The active boat gets a care record derived from
+## what the save already knows: its bottom was last cleaned 20 days ago, and
+## its rigging and engine have worn in proportion to the miles in the
+## Captain's Log (modestly, so no old save needs work at once). Other boats
+## get a fresh record when first sailed. No upgrades are fitted. The saved
+## position is checked against the detailed chart after loading
+## (GameSession.recover_location).
+func _migrate_11_to_12(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("clock") is Dictionary:
+		return data
+	var time := float(session.clock.get("game_time", 0.0))
+	var log: Variant = session.get("log")
+	var miles := float(log.get("total_nm", 0.0)) if log is Dictionary else 0.0
+	var vessel: Variant = session.get("vessel")
+	var vessel_id := String(vessel.get("id", VesselCatalog.STARTER_ID)) if vessel is Dictionary else String(VesselCatalog.STARTER_ID)
+	var care := BoatCareState.create(time - MIGRATED_HULL_AGE_DAYS * 86400.0)
+	care.rig_wear = clampf(miles * MIGRATED_RIG_WEAR_PER_NM, 0.0, MIGRATED_MAX_RIG_WEAR)
+	care.engine_hours = clampf(miles * MIGRATED_ENGINE_HOURS_PER_NM, 0.0, MIGRATED_MAX_ENGINE_HOURS)
+	session["boat_care"] = {vessel_id: care.to_dict()}
+	data["version"] = 12
+	return data
+
+
+const MIGRATED_HULL_AGE_DAYS := 20.0
+const MIGRATED_RIG_WEAR_PER_NM := 0.02
+const MIGRATED_MAX_RIG_WEAR := 30.0
+const MIGRATED_ENGINE_HOURS_PER_NM := 0.03
+const MIGRATED_MAX_ENGINE_HOURS := 60.0
 
 
 ## The slot file, or its backup if a previous write was interrupted between

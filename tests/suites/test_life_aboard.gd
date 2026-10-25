@@ -514,7 +514,11 @@ func _test_companion_persistence() -> void:
 	app.load_slot(2)
 	await _settle()
 	t.check_eq(GameSession.get_companion().to_dict(), saved_companion, "[persistence] the companion's kind, spot and schedule are restored")
-	t.check_eq(GameSession.get_propulsion().to_dict(), saved_propulsion, "[persistence] the propulsion state is restored")
+	# Floats may come back one unit in the last place off through JSON.
+	var restored := GameSession.get_propulsion().to_dict()
+	var same := restored.keys() == saved_propulsion.keys() and restored.keys().all(func(k: String) -> bool:
+		return is_equal_approx(restored[k], saved_propulsion[k]) if restored[k] is float else restored[k] == saved_propulsion[k])
+	t.check(same, "[persistence] the propulsion state is restored (%s)" % [restored])
 	t.check(_companion() != null and _companion().spot == &"nav_station" and _companion_count() == 1, "[persistence] it rests where it was")
 
 	# An Iteration 003 save (v3) gets the default companion.

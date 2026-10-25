@@ -14,6 +14,8 @@ const MODE_TROLLING := &"trolling"
 const MODES: Array[StringName] = [MODE_STATIONARY, MODE_TROLLING]
 ## Fish kept aboard at most (a small cool box).
 const HOLD_CAPACITY := 6
+## With the large cool box fitted (Iteration 14 equipment).
+const LARGE_HOLD_CAPACITY := 10
 ## The trophy board shows this many catches.
 const TROPHY_COUNT := 5
 
@@ -117,7 +119,7 @@ static func from_dict(data: Variant, errors: Array[String]) -> FishingState:
 			return null
 		seen[int(fish.uid)] = true
 		state.hold.append(_fish(fish))
-	if state.hold.size() > HOLD_CAPACITY:
+	if state.hold.size() > LARGE_HOLD_CAPACITY:
 		errors.append("too many fish in the cool box")
 		return null
 	for species: Variant in data.records:

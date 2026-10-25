@@ -91,6 +91,9 @@ var hat := HatState.new()
 var fishing := FishingState.new()
 var galley := GalleyState.new()
 var anchor := AnchorState.new()
+## Each boat's care record (Iteration 14): wear, fitted equipment, service
+## history; by vessel id. A boat without one gets a fresh record on first use.
+var boat_care := {}
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -107,6 +110,7 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.hat = HatState.create(state.game_time)
 	state.fishing.checked_until = state.game_time
 	state.anchor.checked_until = state.game_time
+	state.get_boat_care(state.vessel_id)
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
 	return state
@@ -152,7 +156,24 @@ func duplicate_state() -> SessionState:
 	copy.fishing = fishing.duplicate_state()
 	copy.galley = galley.duplicate_state()
 	copy.anchor = anchor.duplicate_state()
+	for id: String in boat_care:
+		copy.boat_care[id] = (boat_care[id] as BoatCareState).duplicate_state()
 	return copy
+
+
+## The care record of boat `id`, created fresh (bottom just cleaned, nothing
+## worn) when the boat has none yet.
+func get_boat_care(id: StringName) -> BoatCareState:
+	if not boat_care.has(String(id)):
+		boat_care[String(id)] = BoatCareState.create(game_time)
+	return boat_care[String(id)]
+
+
+func _boat_care_dict() -> Dictionary:
+	var result := {}
+	for id: String in boat_care:
+		result[id] = (boat_care[id] as BoatCareState).to_dict()
+	return result
 
 
 ## The condition (0-100 %) of boat `id`.
@@ -194,6 +215,7 @@ func to_dict() -> Dictionary:
 		"fishing": fishing.to_dict(),
 		"galley": galley.to_dict(),
 		"anchor": anchor.to_dict(),
+		"boat_care": _boat_care_dict(),
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -336,6 +358,15 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 	state.anchor = AnchorState.from_dict(data.get("anchor"), errors)
 	if state.anchor == null:
 		return null
+	var care: Variant = data.get("boat_care")
+	if not care is Dictionary:
+		errors.append("missing boat care data")
+		return null
+	for id: Variant in care:
+		var record := BoatCareState.from_dict(care[id], errors)
+		if record == null:
+			return null
+		state.boat_care[String(id)] = record
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:

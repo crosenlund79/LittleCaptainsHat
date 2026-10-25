@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"vordingborg"
+display_name = "Vordingborg"
+country = "Denmark"
+latitude = 54.9949
+longitude = 11.9070
+description = "Vordingborg, by the bridges to Falster and Møn."
+importance = 3
+region = "baltic"
+island = false
+source = "GeoNames town position 55.0080N 11.9106E (cities.json, CC BY 4.0); harbour placed 0.15 nm off the nearest OpenStreetMap coastline (ODbL), Iteration 14"

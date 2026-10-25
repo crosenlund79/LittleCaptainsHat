@@ -187,16 +187,47 @@ func _check_crossing(route: PlannedRoute, axis: String, value: float, low: float
 
 
 func _load_land() -> void:
+	# The land as the chart draws it (Iteration 14): the base coastline outside
+	# the detail regions, each region's detailed land inside it.
 	var data: Dictionary = load("res://data/navigation/europe_land.json").data
+	var rects: Array[PackedVector2Array] = []
+	var index: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(NavGrid.REGIONS_INDEX))
+	for entry: Dictionary in index.regions:
+		var meta: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(String(entry.folder).path_join("region.json")))
+		var a := _projection.geo_to_map(Vector2(meta.bounds.west, meta.bounds.north))
+		var b := _projection.geo_to_map(Vector2(meta.bounds.east, meta.bounds.south))
+		rects.append(PackedVector2Array([a, Vector2(b.x, a.y), b, Vector2(a.x, b.y)]))
+		var land: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(String(entry.folder).path_join("land.json")))
+		for ring: Array in land.detail.fill_tiles:
+			_add_land(_project(ring))
 	for ring: Array in data.polygons:
-		var points := PackedVector2Array()
-		for p: Array in ring:
-			points.append(_projection.geo_to_map(Vector2(p[0], p[1])))
-		_land_polygons.append(points)
-		var box := Rect2(points[0], Vector2.ZERO)
-		for p in points:
-			box = box.expand(p)
-		_land_boxes.append(box)
+		var pieces: Array[PackedVector2Array] = [_project(ring)]
+		for rect in rects:
+			var next: Array[PackedVector2Array] = []
+			for piece in pieces:
+				for clipped in Geometry2D.clip_polygons(piece, rect):
+					if not Geometry2D.is_polygon_clockwise(clipped):
+						next.append(clipped)
+			pieces = next
+		for piece in pieces:
+			_add_land(piece)
+
+
+func _project(ring: Array) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for p: Array in ring:
+		points.append(_projection.geo_to_map(Vector2(p[0], p[1])))
+	return points
+
+
+func _add_land(points: PackedVector2Array) -> void:
+	if points.size() < 3:
+		return
+	_land_polygons.append(points)
+	var box := Rect2(points[0], Vector2.ZERO)
+	for p in points:
+		box = box.expand(p)
+	_land_boxes.append(box)
 
 
 func _polygon_containing(geo: Vector2) -> int:

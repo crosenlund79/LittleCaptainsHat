@@ -177,6 +177,8 @@ func _connect_game() -> void:
 		var anchor := GameSession.get_anchor()
 		write("anchor_state", {"active": anchor.active, "holding": String(anchor.holding), "scope": anchor.scope,
 			"set": snappedf(anchor.set_quality, 0.01), "alarm": anchor.alarm, "dragged_nm": snappedf(anchor.dragged_nm, 0.001)}))
+	# Iteration 14: chart recovery on load, boat care, the boatyard.
+	GameSession.location_recovered.connect(func(info: Dictionary) -> void: write("location_recovered", info))
 	GameSession.hat_bought.connect(func(info: Dictionary) -> void: write("hat_bought", {"price": info.price, "funds_after": info.funds_after,
 		"serial": info.serial}))
 

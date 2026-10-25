@@ -223,7 +223,7 @@ func _test_waypoint_editing(map: WorldMap) -> void:
 	var path := committed.path
 	view.center_on_geo(Vector2(12.3, 55.1), 1.2)
 	await t.frames(2)
-	await _drag(view.geo_to_screen(GeoMath.rhumb_interpolate(path[3], path[4], 0.3)), view.geo_to_screen(Vector2(12.9, 54.9)))
+	await _drag(_course_press_point(view, path), view.geo_to_screen(Vector2(12.9, 54.9)))
 	t.check_eq(map.get_draft_waypoints().size(), 1, "dragging the course adds a waypoint")
 	t.check(map.get_draft_route() != null, "the course is recalculated through the new waypoint")
 	await t.screenshot("06b_chart_waypoint_drag")
@@ -252,6 +252,23 @@ func _test_waypoint_editing(map: WorldMap) -> void:
 	await t.click(map.find_child("DiscardButton", true, false))
 	t.check(not map.has_unapplied_changes(), "Discard returns to the committed course")
 	t.check(GameSession.get_planned_route().path == committed.path, "the committed course is unchanged after discarding")
+
+
+## A point on the course to press for a drag: the middle of its longest leg
+## on screen. (Iteration 14: the detailed Danish chart gives the course more,
+## shorter legs, so fixed leg numbers no longer mean the same place.)
+func _course_press_point(view: MapView, path: PackedVector2Array) -> Vector2:
+	var screen := Rect2(Vector2.ZERO, view.get_viewport_rect().size).grow(-40.0)
+	var best := Vector2.ZERO
+	var best_px := -1.0
+	for i in range(1, path.size()):
+		var a := view.geo_to_screen(path[i - 1])
+		var b := view.geo_to_screen(path[i])
+		var middle := view.geo_to_screen(GeoMath.rhumb_interpolate(path[i - 1], path[i], 0.5))
+		if screen.has_point(middle) and a.distance_to(b) > best_px:
+			best_px = a.distance_to(b)
+			best = middle
+	return best
 
 
 func _test_companionway_transitions() -> void:
@@ -523,9 +540,8 @@ func _test_first_voyage_acceptance() -> void:
 	var distance_before := draft.get_distance_nm() if draft else 0.0
 
 	# 8-9. Drag the course line to add a waypoint; the distance updates.
-	var press_geo := GeoMath.rhumb_interpolate(draft.path[2], draft.path[3], 0.5)
 	var target_geo := Vector2(12.78, 55.30)
-	await _drag(view.geo_to_screen(press_geo), view.geo_to_screen(target_geo))
+	await _drag(_course_press_point(view, draft.path), view.geo_to_screen(target_geo))
 	await t.frames(2)
 	t.check_eq(map.get_draft_waypoints().size(), 1, "[voyage] dragging the course line adds a waypoint")
 	draft = map.get_draft_route()

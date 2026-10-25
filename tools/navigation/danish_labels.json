@@ -1,0 +1,25 @@
+{
+	"note": "Chart labels for the Danish waters region (Iteration 14). Positions come from GeoNames town coordinates (cities.json, CC BY 4.0): a land label sits at a town on that land; a water label halfway between towns on either side of it, with an optional small shift [lon, lat] in degrees to keep it on the water. Approximate, for the chart's look only.",
+	"countries": ["DK", "SE", "DE"],
+	"labels": [
+		{"text": "JUTLAND", "kind": "land", "towns": ["Viborg"]},
+		{"text": "ZEALAND", "kind": "land", "towns": ["Ringsted"]},
+		{"text": "FUNEN", "kind": "land", "towns": ["Odense"]},
+		{"text": "Lolland", "kind": "island", "towns": ["Maribo"]},
+		{"text": "Falster", "kind": "island", "towns": ["Nykøbing Falster"]},
+		{"text": "Møn", "kind": "island", "towns": ["Stege"], "shift": [0.12, 0.0]},
+		{"text": "Langeland", "kind": "island", "towns": ["Rudkøbing"], "shift": [0.04, 0.0]},
+		{"text": "Ærø", "kind": "island", "towns": ["Ærøskøbing"], "shift": [0.03, -0.02]},
+		{"text": "Als", "kind": "island", "towns": ["Nordborg"]},
+		{"text": "Bornholm", "kind": "island", "towns": ["Åkirkeby"]},
+		{"text": "Samsø", "kind": "island", "towns": ["Tranebjerg"]},
+		{"text": "Læsø", "kind": "island", "towns": ["Byrum"]},
+		{"text": "Kattegat", "kind": "sea", "towns": ["Grenaa", "Halmstad"], "min_px_per_degree": 40.0},
+		{"text": "Øresund", "kind": "sea", "towns": ["Copenhagen", "Malmö"], "shift": [0.05, 0.12]},
+		{"text": "Great Belt", "kind": "sea", "towns": ["Nyborg", "Korsør"], "shift": [0.0, 0.1]},
+		{"text": "Little Belt", "kind": "sea", "towns": ["Middelfart", "Fredericia"], "shift": [-0.04, -0.16]},
+		{"text": "Fehmarn Belt", "kind": "sea", "towns": ["Rødby", "Burg auf Fehmarn"]},
+		{"text": "Smålandsfarvandet", "kind": "sea", "towns": ["Vordingborg", "Nysted"], "shift": [-0.2, 0.0]},
+		{"text": "South Funen Archipelago", "kind": "sea", "towns": ["Svendborg", "Ærøskøbing"]}
+	]
+}

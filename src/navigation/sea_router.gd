@@ -96,6 +96,8 @@ static func load_from(mask_path: String, meta_path: String, graph_path: String) 
 	if not graph is Dictionary:
 		push_error("Route graph missing: %s" % graph_path)
 		return null
+	if mask_path == NavGrid.DEFAULT_MASK:
+		router.grid.load_regions()
 	router._load_graph(graph.nodes, graph.edges)
 	return router
 
@@ -177,6 +179,45 @@ func _is_segment_allowed(a: Vector2, b: Vector2, ports: Array[Vector2]) -> bool:
 				and grid.cell_class_at_geo(other) >= NavGrid.APPROACH:
 			return true
 	return false
+
+
+## The nearest open-water position to `geo` (itself when already navigable),
+## searched outward cell by cell in the finest chart covering it, up to
+## `max_nm`. Prefers water connected to the open sea. Returns Vector2.INF when
+## none is found. Used to recover a saved position that a more detailed chart
+## now places on land.
+func nearest_navigable(geo: Vector2, max_nm := 15.0) -> Vector2:
+	if is_point_navigable(geo) and _reaches_open_sea(geo):
+		return geo
+	var cells := grid.grid_at(geo)
+	var centre := cells.geo_to_cell(geo)
+	var cx := floori(centre.x)
+	var cy := floori(centre.y)
+	var cell_nm := 60.0 / cells.cells_per_degree * maxf(cos(deg_to_rad(geo.y)), 0.1)
+	var radius := mini(ceili(max_nm / cell_nm), 400)
+	var fallback := Vector2.INF
+	for r in range(1, radius + 1):
+		var best := Vector2.INF
+		var best_nm := INF
+		for dy in range(-r, r + 1):
+			var step := 1 if absi(dy) == r else 2 * r
+			for dx in range(-r, r + 1, step):
+				if cells.get_class_at(cx + dx, cy + dy) != NavGrid.NAVIGABLE:
+					continue
+				var candidate := cells.cell_center_geo(cx + dx, cy + dy)
+				if not is_point_navigable(candidate):
+					continue
+				var nm := GeoMath.rhumb_distance_nm(geo, candidate)
+				if nm < best_nm and nm <= max_nm:
+					if not _reaches_open_sea(candidate):
+						if fallback == Vector2.INF:
+							fallback = candidate
+						continue
+					best = candidate
+					best_nm = nm
+		if best != Vector2.INF:
+			return best
+	return fallback
 
 
 # --- Planning ----------------------------------------------------------------------------
@@ -296,17 +337,20 @@ func find_port_approach(port: PortData) -> PackedVector2Array:
 		result = PackedVector2Array([origin])
 		_approach_cache[port.id] = result
 		return result
-	var center := grid.geo_to_cell(origin)
+	# In a detail region the search runs on its finer raster (Iteration 14).
+	var cells_grid := grid.grid_at(origin)
+	var window := APPROACH_WINDOW_CELLS * cells_grid.factor
+	var center := cells_grid.geo_to_cell(origin)
 	var cx := floori(center.x)
 	var cy := floori(center.y)
 	var previous := {}
 	var queue: Array[Vector2i] = []
 	# Berth: all approach water within the berth radius may serve as a start.
-	var berth_cells := ceili(BERTH_RADIUS_NM * 2.0) + 2
+	var berth_cells := (ceili(BERTH_RADIUS_NM * 2.0) + 2) * cells_grid.factor
 	for y in range(cy - berth_cells, cy + berth_cells + 1):
 		for x in range(cx - berth_cells, cx + berth_cells + 1):
-			if grid.get_class_at(x, y) >= NavGrid.APPROACH \
-					and GeoMath.rhumb_distance_nm(origin, grid.cell_center_geo(x, y)) <= BERTH_RADIUS_NM:
+			if cells_grid.get_class_at(x, y) >= NavGrid.APPROACH \
+					and GeoMath.rhumb_distance_nm(origin, cells_grid.cell_center_geo(x, y)) <= BERTH_RADIUS_NM:
 				var cell := Vector2i(x, y)
 				previous[cell] = null
 				queue.append(cell)
@@ -315,24 +359,24 @@ func find_port_approach(port: PortData) -> PackedVector2Array:
 	while head < queue.size():
 		var cell := queue[head]
 		head += 1
-		if grid.get_class_at(cell.x, cell.y) == NavGrid.NAVIGABLE:
-			var geo := grid.cell_center_geo(cell.x, cell.y)
+		if cells_grid.get_class_at(cell.x, cell.y) == NavGrid.NAVIGABLE:
+			var geo := cells_grid.cell_center_geo(cell.x, cell.y)
 			if _reaches_open_sea(geo):
 				found = cell
 				break
 		for offset: Vector2i in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 			var next := cell + offset
-			if previous.has(next) or absi(next.x - cx) > APPROACH_WINDOW_CELLS or absi(next.y - cy) > APPROACH_WINDOW_CELLS:
+			if previous.has(next) or absi(next.x - cx) > window or absi(next.y - cy) > window:
 				continue
-			if grid.get_class_at(next.x, next.y) >= NavGrid.APPROACH \
-					and GeoMath.rhumb_distance_nm(origin, grid.cell_center_geo(next.x, next.y)) <= MAX_APPROACH_NM:
+			if cells_grid.get_class_at(next.x, next.y) >= NavGrid.APPROACH \
+					and GeoMath.rhumb_distance_nm(origin, cells_grid.cell_center_geo(next.x, next.y)) <= MAX_APPROACH_NM:
 				previous[next] = cell
 				queue.append(next)
 	if found.x >= 0:
 		var cells: Array[Vector2] = []
 		var cell: Variant = found
 		while cell != null:
-			cells.append(grid.cell_center_geo(cell.x, cell.y))
+			cells.append(cells_grid.cell_center_geo(cell.x, cell.y))
 			cell = previous[cell]
 		cells.reverse()  # berth ... open water
 		# Berth link to the first cell, then the chain shortened within approach water.
@@ -433,17 +477,58 @@ func _add_temp_point(point: Vector2, neighbours: PackedInt32Array) -> int:
 
 
 func _load_graph(nodes: Array, edges: Array) -> void:
-	var count := nodes.size() / 2
+	# Regional detail (Iteration 14): base nodes inside a region are replaced
+	# by the region's own nodes; seam links join the two, and base edges that
+	# cross a region without being clear on its raster are left out.
+	var cells := PackedVector2Array()
+	var base_index := {}
+	var removed := {}
+	for i in nodes.size() / 2:
+		var key := Vector2i(int(nodes[i * 2]), int(nodes[i * 2 + 1]))
+		base_index[key] = i
+		cells.append(Vector2(key) + Vector2(0.5, 0.5))
+		for region in grid.regions:
+			if region.get_base_rect().has_point(cells[i]):
+				removed[i] = true
+	var all_edges := PackedInt32Array()
+	for i in range(0, edges.size(), 2):
+		all_edges.append(int(edges[i]))
+		all_edges.append(int(edges[i + 1]))
+	var blocked := {}
+	for region in grid.regions:
+		var data := _region_graph(region)
+		var offset := cells.size()
+		var region_nodes: Array = data.get("nodes", [])
+		for j in region_nodes.size() / 2:
+			var fine := Vector2(region_nodes[j * 2] + 0.5, region_nodes[j * 2 + 1] + 0.5)
+			cells.append(Vector2(region.base_cell) + fine / region.factor)
+		var region_edges: Array = data.get("edges", [])
+		for j in region_edges.size():
+			all_edges.append(offset + int(region_edges[j]))
+		for link: Array in data.get("seam", []):
+			var base_node: Variant = base_index.get(Vector2i(int(link[0]), int(link[1])))
+			if base_node != null:
+				all_edges.append(int(base_node))
+				all_edges.append(offset + int(link[2]))
+		for pair: Array in data.get("blocked_base_edges", []):
+			var a: Variant = base_index.get(Vector2i(int(pair[0]), int(pair[1])))
+			var b: Variant = base_index.get(Vector2i(int(pair[2]), int(pair[3])))
+			if a != null and b != null:
+				blocked[Vector2i(mini(a, b), maxi(a, b))] = true
+	var count := cells.size()
 	_node_geo.resize(count)
 	_node_cell.resize(count)
 	_astar.reserve_space(count + 4)
 	_bucket_columns = grid.columns / BUCKET_CELLS + 1
 	for i in count:
-		var cell := Vector2(nodes[i * 2] + 0.5, nodes[i * 2 + 1] + 0.5)
+		var cell := cells[i]
 		var geo := grid.cell_to_geo(cell)
 		_node_cell[i] = cell
 		_node_geo[i] = geo
 		_astar.add_point(i, _project(geo))
+		if removed.has(i):
+			_astar.set_point_disabled(i, true)
+			continue
 		var bucket := floori(cell.y / BUCKET_CELLS) * _bucket_columns + floori(cell.x / BUCKET_CELLS)
 		if not _buckets.has(bucket):
 			_buckets[bucket] = []
@@ -453,9 +538,11 @@ func _load_graph(nodes: Array, edges: Array) -> void:
 	parent.resize(count)
 	for i in count:
 		parent[i] = i
-	for i in range(0, edges.size(), 2):
-		var a := int(edges[i])
-		var b := int(edges[i + 1])
+	for i in range(0, all_edges.size(), 2):
+		var a := all_edges[i]
+		var b := all_edges[i + 1]
+		if removed.has(a) or removed.has(b) or blocked.has(Vector2i(mini(a, b), maxi(a, b))):
+			continue
 		_astar.connect_points(a, b)
 		var ra := _find(parent, a)
 		var rb := _find(parent, b)
@@ -466,6 +553,17 @@ func _load_graph(nodes: Array, edges: Array) -> void:
 		var root := _find(parent, i)
 		_node_component[i] = root
 		_component_size[root] = _component_size.get(root, 0) + 1
+
+
+## A region's route graph (graph.json in its folder).
+func _region_graph(region: NavGrid) -> Dictionary:
+	var index: Variant = JSON.parse_string(FileAccess.get_file_as_string(NavGrid.REGIONS_INDEX))
+	if index is Dictionary:
+		for entry: Dictionary in index.get("regions", []):
+			if entry.get("id", "") == region.region_id:
+				var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(String(entry.folder).path_join("graph.json")))
+				return data if data is Dictionary else {}
+	return {}
 
 
 static func _find(parent: PackedInt32Array, a: int) -> int:

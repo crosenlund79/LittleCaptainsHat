@@ -51,9 +51,12 @@ static func describe_place(position: Vector2, location_id: StringName) -> Dictio
 ## islands included). Cells outside the chart count as land, so the answer is
 ## never too generous.
 static func open_water_nm(position: Vector2, max_nm: float) -> float:
-	var grid := SeaRouter.get_default().grid
-	if grid == null:
+	var chart := SeaRouter.get_default().grid
+	if chart == null:
 		return 0.0
+	# On the detailed raster where a region covers the position (Iteration
+	# 14); cells beyond that grid's edge are read from the composite chart.
+	var grid := chart.grid_at(position)
 	var center := grid.geo_to_cell(position)
 	var cx := floori(center.x)
 	var cy := floori(center.y)
@@ -70,7 +73,11 @@ static func open_water_nm(position: Vector2, max_nm: float) -> float:
 			var d := Vector2(dx * nm_x, dy * nm_y).length()
 			if d >= nearest:
 				continue
-			if grid.get_class_at(cx + dx, cy + dy) != NavGrid.NAVIGABLE:
+			var x := cx + dx
+			var y := cy + dy
+			var inside := x >= 0 and y >= 0 and x < grid.columns and y < grid.rows
+			var cell_class := grid.get_class_at(x, y) if inside or grid == chart else chart.cell_class_at_geo(grid.cell_center_geo(x, y))
+			if cell_class != NavGrid.NAVIGABLE:
 				# The land may start anywhere in that cell: count its near edge.
 				nearest = maxf(d - 0.5 * maxf(nm_x, nm_y), 0.0)
 	return nearest

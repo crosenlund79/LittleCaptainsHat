@@ -1,0 +1,29 @@
+{
+ "id": "denmark",
+ "name": "Danish waters",
+ "source": "OpenStreetMap land polygons via geo-maps earth-lands-100m 0.6.0 (npm @geo-maps/earth-lands-100m, about 100 m accuracy). Map data (c) OpenStreetMap contributors, ODbL 1.0, openstreetmap.org/copyright. Package code MIT.",
+ "retrieved": "2026-10-25",
+ "licence": "ODbL 1.0 (derived database: this region's raster, land and graph are ODbL too)",
+ "label_source": "Label positions from GeoNames town coordinates (lutangar/cities.json, CC BY 4.0, geonames.org); label texts: tools/navigation/danish_labels.json.",
+ "crs": "WGS 84 longitude/latitude (EPSG:4326); raster in Mercator rows like the base chart",
+ "processing": "Clipped to the region with a 0.1 deg margin; holes filled (lakes and tile-seam artefacts are land); raster at 360 cells per Mercator degree (6 x the base), land if any part of a cell is land (1/4 cell precision), approach water with a water majority; display simplified 0.0003 deg (detail) and 0.0035 deg (overview). Not for navigation.",
+ "factor": 6,
+ "base_cells": {
+  "column": 1980,
+  "row": 2040,
+  "columns": 444,
+  "rows": 451
+ },
+ "bounds": {
+  "west": 8.0,
+  "south": 53.795761275575366,
+  "east": 15.399999999999999,
+  "north": 58.00478094036491
+ },
+ "columns": 2664,
+ "rows": 2706,
+ "cells_per_mercator_degree": 360,
+ "mercator_north": 71.58065377036948,
+ "base_west": 8.0,
+ "detail_from_px_per_degree": 140.0
+}

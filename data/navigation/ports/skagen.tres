@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"skagen"
+display_name = "Skagen"
+country = "Denmark"
+latitude = 57.7125
+longitude = 10.5890
+description = "Skagen, at the very top of Jutland, where two seas meet."
+importance = 2
+region = "scandinavia"
+island = false
+source = "GeoNames town position 57.7209N 10.5839E (cities.json, CC BY 4.0); harbour placed 0.15 nm off the nearest OpenStreetMap coastline (ODbL), Iteration 14"
