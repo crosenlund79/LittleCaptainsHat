@@ -119,6 +119,7 @@ Edit the generator and re-run it rather than hand-editing the `.tres`.
 | `vessel_conditions` | each boat's condition in % by vessel id; a missing id is 100 |
 | `damage_applied_until` | weather damage has been applied up to this game time |
 | `rescue_count` / `last_rescue` | rescues so far and the last one (time, fee, funds after, from where) |
+| `hat` | `HatState`: the player's captain's hat (stored, worn, carried or lost), its wind strain, warning, checks, counts and history (Visual Identity V01) |
 
 `GameSession` is the only writer. It exposes intent-level methods
 (`start_new_session`, `enter_boat_area`, `set_player_position`, `plan_route_to`,
@@ -1061,6 +1062,48 @@ are no followers, platforms or sponsors.
   same online connection), so there is no new interactable on board. Remote
   work and the grocery store are unchanged.
 
+## Captain's hat (Visual Identity V01)
+
+One small personal object with its own state, owner and art, built on the
+existing services. There is no inventory system.
+
+- **State:** `HatState` (`src/core/hat_state.gd`) in `SessionState.hat`,
+  saved as the `hat` section. Status `stored` (on its hook in the cabin),
+  `worn`, `carried` (taken off, under the arm) or `lost`. It belongs to the
+  player: `switch_vessel()`, `rescue()` and loading never touch it, so a boat
+  switch shows a stored hat on the new cabin's hook and a lost hat stays lost.
+- **Changes** go through `GameSession`: `use_hat_hook()` (the cabin's `hat`
+  station: put on / hang up), `toggle_hat()` (the H key, `captains_hat`
+  action, handled by `App` like L), `buy_hat()`, and the Simulation-only hooks
+  `apply_hat_check()` and `recover_hat()`. Signals: `hat_changed`,
+  `hat_warning`, `hat_lost`, `hat_bought`.
+- **Wind:** `Simulation._check_hat()` runs after every step of `advance()`
+  for the game time just simulated. Checks are on an absolute grid
+  (`HatConfig.check_interval_s`, 60 s). Only while the hat is worn on deck
+  (`GameSession.is_hat_exposed()`, and not during `sleep()` or `work()`) does
+  a check sample the one `WeatherModel` at the boat. Underway, the boat's
+  position at the check is interpolated along the course inside the step,
+  which is exact because the speed is constant between evaluation points.
+  `HatConfig.strain_per_minute()` turns the sample into strain; the first
+  check with risk only warns (time drops to 1×, like a weather warning); the
+  hat blows away at its own threshold (`HatConfig.threshold_for(seed,
+  serial)`). Nothing is random per frame, so 1×, 20×, one long step and a
+  save/load in between give the same moment of loss (tested).
+- **Balancing** is data: `data/hat/hat_config.json` (see
+  [DEV_GUIDES/CAPTAINS_HAT.md](DEV_GUIDES/CAPTAINS_HAT.md)).
+- **Words:** `HatStory` writes the notifications and the log lines from real
+  state only: the harbour the boat lies in, or the nearest harbour in the
+  catalogue with its distance, and the sampled wind.
+- **Purchase:** the grocery store's own hat row calls `buy_hat()`: harbour
+  only, only when the hat is lost, refused without enough money; one payment
+  of `price_eur`. The provisions figures are untouched.
+- **Presentation (art only, no collision):** each cabin has
+  `Layout/HatSpot` (where `BoatArea` puts the `HatHook` art node) and the
+  `Layout/Stations/Hat` interactable. The player draws the hat through a
+  `PlayerHat` child; the deck shows `HatBlowAway` when the hat is lost.
+  `HatArt` (`data/hat/hat_art.tres`) resolves each slot: assigned texture,
+  then `assets/hat/hat_<slot>.png`, then `HatDrawing`.
+
 ## Harbour catalogue at scale (Iteration 006)
 
 - **Records:** each `PortData` stays a small resource, with `importance`
@@ -1253,6 +1296,9 @@ SaveManager.load_from_slot(slot) ─► LoadResult{state | error} ─► App ─
   `wind` (seed), `vessel` (status, position, propulsion state), `navigation`
   (location, planned route with its path, active voyage with route, progress,
   revision and warned weather ids).
+- **Version 10** (Visual Identity V01) adds the `hat` section (`HatState`).
+  `_migrate_9_to_10` gives every older game the original hat on its hook,
+  with hat checks starting at the saved game time.
 - **Version 9** (Iteration 006) adds the `progress` section
   (`ObjectiveProgress`). `_migrate_8_to_9` starts it empty: no renown is paid
   for the past. Objectives are checked against the Captain's Log at the next

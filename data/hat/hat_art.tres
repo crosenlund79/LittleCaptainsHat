@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HatArt" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/hat/hat_art.gd" id="1_hat"]
+
+[resource]
+script = ExtResource("1_hat")
+art_folder = "res://assets/hat"
+stored_size = 46.0
+worn_size = 36.0
+blowing_size = 40.0
+procedural_only = false

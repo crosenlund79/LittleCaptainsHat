@@ -49,6 +49,13 @@ signal interaction_prompt_changed(prompt: String)
 
 const HELM_PROMPT_IN_PORT := "Take the helm"
 const HELM_PROMPT_UNDERWAY := "Check sail configuration"
+## The cabin's hat hook (station id `hat`), by hat state.
+const HAT_PROMPTS := {
+	HatState.STORED: "Put on captain's hat",
+	HatState.WORN: "Hang up captain's hat",
+	HatState.CARRIED: "Hang up captain's hat",
+	HatState.LOST: "Look at the empty hat hook",
+}
 
 var _leaving := false
 
@@ -68,6 +75,11 @@ func _ready() -> void:
 	_update_mooring()
 	GameSession.voyage_started.connect(_update_mooring)
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
+	_setup_hat_hook()
+	_update_hat_station()
+	GameSession.hat_changed.connect(func(_status: StringName) -> void: _update_hat_station())
+	GameSession.state_replaced.connect(_update_hat_station)
+	GameSession.hat_lost.connect(_on_hat_lost)
 
 
 ## Shows the vessel's art: sprites where the profile has them, procedural
@@ -154,6 +166,8 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			work_requested.emit()
 		&"grocery":
 			grocery_requested.emit()
+		&"hat":
+			message_requested.emit(GameSession.use_hat_hook())
 		&"pet":
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
@@ -187,6 +201,53 @@ func _update_mooring() -> void:
 		mooring.visible = not GameSession.is_underway()
 	if mooring_label and GameSession.get_location():
 		mooring_label.text = "GUEST PONTOON · %s" % GameSession.get_location().display_name.to_upper()
+
+
+# --- Captain's hat ------------------------------------------------------------------
+
+## The cabin's hat hook (art) at Layout/HatSpot, drawn under the player.
+func _setup_hat_hook() -> void:
+	var spot := get_node_or_null(^"Layout/HatSpot") as Node2D
+	if spot == null:
+		return
+	var hook := HatHook.new()
+	hook.name = "HatHook"
+	hook.position = spot.position
+	add_child(hook)
+	move_child(hook, $Layout.get_index())
+
+
+func get_hat_hook() -> HatHook:
+	return get_node_or_null(^"HatHook") as HatHook
+
+
+## The hat station's prompt follows the hat (put on, hang up, empty hook).
+func _update_hat_station() -> void:
+	var station := get_node_or_null(^"Layout/Stations/Hat") as Interactable
+	if station == null:
+		return
+	station.prompt = HAT_PROMPTS.get(GameSession.get_hat_status(), "Captain's hat")
+	if player and player.get_focused_interactable() == station:
+		interaction_prompt_changed.emit(station.prompt)
+
+
+## The hat blew away: on deck it is seen tumbling downwind.
+func _on_hat_lost(_info: Dictionary) -> void:
+	if area_id != SessionState.AREA_EXTERIOR or _leaving:
+		return
+	var effect := HatBlowAway.new()
+	effect.name = "HatBlowAway"
+	add_child(effect)
+	effect.setup(player.position, wind_direction_on_deck())
+
+
+## Where the wind blows towards in this deck's coordinates (+x is the bow,
+## +y starboard), from the WeatherModel at the boat and the course heading
+## (north while moored).
+func wind_direction_on_deck() -> Vector2:
+	var wind := Simulation.get_weather_at_vessel()
+	var heading := Simulation.get_current_heading() if GameSession.is_underway() else 0.0
+	return Vector2.from_angle(deg_to_rad(wind.from_deg + 180.0 - heading))
 
 
 func _on_player_focus_changed(interactable: Interactable) -> void:

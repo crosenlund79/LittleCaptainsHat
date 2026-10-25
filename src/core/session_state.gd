@@ -7,7 +7,7 @@ extends RefCounted
 ## of which scene is visible. to_dict()/from_dict() define the save format;
 ## each subsystem keeps its data in its own top-level section ("boat",
 ## "player", "clock", "wind", "vessel", "navigation", "economy", "provisions",
-## "rescue", "log", "progress") so future systems can add sections of their own.
+## "rescue", "log", "progress", "hat") so future systems can add sections of their own.
 
 const AREA_INTERIOR := &"interior"
 const AREA_EXTERIOR := &"exterior"
@@ -85,6 +85,8 @@ var last_rescue := {}
 var captains_log := CaptainsLog.new()
 ## Renown and the sailing objectives completed.
 var progress := ObjectiveProgress.new()
+## The player's captain's hat (one at a time; it belongs to the player).
+var hat := HatState.new()
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -98,6 +100,7 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.damage_applied_until = state.game_time
 	state.companion = CompanionState.create(companion_kind, state.game_time)
 	state.captains_log = CaptainsLog.create(start_location, state.game_time)
+	state.hat = HatState.create(state.game_time)
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
 	return state
@@ -139,6 +142,7 @@ func duplicate_state() -> SessionState:
 	copy.last_rescue = last_rescue.duplicate(true)
 	copy.captains_log = captains_log.duplicate_log()
 	copy.progress = progress.duplicate_progress()
+	copy.hat = hat.duplicate_hat()
 	return copy
 
 
@@ -177,6 +181,7 @@ func to_dict() -> Dictionary:
 		"rescue": {"count": rescue_count, "last": last_rescue.duplicate(true)},
 		"log": captains_log.to_dict(),
 		"progress": progress.to_dict(),
+		"hat": hat.to_dict(),
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -306,6 +311,9 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		return null
 	state.progress = ObjectiveProgress.from_dict(data.get("progress"), errors)
 	if state.progress == null:
+		return null
+	state.hat = HatState.from_dict(data.get("hat"), errors)
+	if state.hat == null:
 		return null
 
 	var navigation: Variant = data.get("navigation")

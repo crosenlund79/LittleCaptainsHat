@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://src/boat/boat_area.gd" id="1_r"]
 [ext_resource type="AudioStream" path="res://assets/audio/placeholder/placeholder_ambience_cabin.wav" id="2_r"]
@@ -24,6 +24,9 @@ size = Vector2(100, 20)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Berth"]
 size = Vector2(30, 120)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_Hat"]
+radius = 24.0
 
 [node name="Interior" type="Node2D"]
 script = ExtResource("1_r")
@@ -159,6 +162,19 @@ highlight_target = NodePath("")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Berth"]
 shape = SubResource("RectangleShape2D_Berth")
+
+[node name="Hat" type="Area2D" parent="Layout/Stations"]
+position = Vector2(168, -70)
+script = ExtResource("7_r")
+interaction_id = &"hat"
+prompt = "Put on captain's hat"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/Hat"]
+shape = SubResource("CircleShape2D_Hat")
+
+[node name="HatSpot" type="Marker2D" parent="Layout"]
+position = Vector2(168, -96)
 
 [node name="SpawnPoints" type="Node2D" parent="Layout"]
 

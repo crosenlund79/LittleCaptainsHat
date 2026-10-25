@@ -48,6 +48,16 @@ signal voyage_logged(record: Dictionary, new_harbour: bool)
 signal renown_awarded(awards: Array)
 ## A travel update was published: {"renown", "euros", "funds_after"}.
 signal travel_update_published(info: Dictionary)
+## The captain's hat changed hands: put on, taken off, hung up, lost or
+## bought (HatState.STORED / WORN / CARRIED / LOST).
+signal hat_changed(status: StringName)
+## The wind is strong enough to take a worn hat (once per exposure).
+signal hat_warning(text: String)
+## The hat blew away: {"time", "text", "log_text", "lost_count", "serial",
+## "wind_kn", "gust_kn", "in_harbour", "position": {"lon", "lat"}}.
+signal hat_lost(info: Dictionary)
+## A replacement hat was bought: {"price", "funds_after", "serial"}.
+signal hat_bought(info: Dictionary)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -74,6 +84,8 @@ func has_unsaved_changes() -> bool:
 func _exit_tree() -> void:
 	PortCatalog.clear_default()
 	ObjectiveCatalog.clear_default()
+	HatConfig.clear_default()
+	HatArt.clear_default()
 	SeaRouter.clear_default()
 	WeatherModel.clear_default()
 	WindField.clear_default()
@@ -402,6 +414,11 @@ func get_voyage_next_vertex_nm() -> float:
 	return cumulative[mini(i, cumulative.size() - 1)]
 
 
+## The position at `distance_nm` along the active voyage's course (Simulation).
+func get_voyage_position_at(distance_nm: float) -> Vector2:
+	return _state.voyage.position_at(distance_nm) if _state and _state.voyage else get_vessel_position()
+
+
 func get_voyage_revision() -> int:
 	return _state.voyage.revision if _state and _state.voyage else 0
 
@@ -424,6 +441,8 @@ func depart() -> String:
 	if not problem.is_empty():
 		return problem
 	_state.voyage = Voyage.create(route, _state.game_time)
+	_state.hat.voyage_worn_hazard = 0
+	_state.hat.voyage_lost = false
 	_state.weather_exposure.reset(_state.game_time)
 	_state.damage_applied_until = _state.game_time
 	_state.propulsion = PropulsionState.new()  # evaluated by Simulation on voyage_started
@@ -864,6 +883,175 @@ func _check_provisions() -> void:
 			text = "You have run out of food or water. Head for a harbour and buy provisions before the next passage."
 	provisions_changed.emit()
 	provisions_warning.emit(needed, text)
+
+
+# --- Captain's hat -------------------------------------------------------------------
+
+## A copy of the hat (state, strain, history).
+func get_hat() -> HatState:
+	return _state.hat.duplicate_hat() if _state else HatState.new()
+
+
+func get_hat_status() -> StringName:
+	return _state.hat.status if _state else HatState.STORED
+
+
+## What a replacement hat costs (data/hat/hat_config.json).
+func get_hat_price() -> int:
+	return HatConfig.get_default().price_eur
+
+
+## The hook in the cabin: puts the hat on when it hangs there, hangs it up
+## when the player has it. Returns the message for the player.
+func use_hat_hook() -> String:
+	if _state == null:
+		return ""
+	match _state.hat.status:
+		HatState.STORED:
+			_set_hat_status(HatState.WORN)
+			return "You put on your captain's hat. Very distinguished."
+		HatState.WORN, HatState.CARRIED:
+			_set_hat_status(HatState.STORED)
+			return "You hang your captain's hat on its hook."
+	return "An empty hat hook. Replacement captain's hats are sold at the harbour grocery store (%s)." % format_money(get_hat_price())
+
+
+## The hat key (H): takes a worn hat off (it is tucked under the arm, safe from
+## the wind) or puts a carried one back on. A hat on its hook stays there.
+## Returns the message for the player.
+func toggle_hat() -> String:
+	if _state == null:
+		return ""
+	match _state.hat.status:
+		HatState.WORN:
+			_set_hat_status(HatState.CARRIED)
+			return "You take off your captain's hat and tuck it under your arm."
+		HatState.CARRIED:
+			_set_hat_status(HatState.WORN)
+			return "You put your captain's hat back on."
+		HatState.STORED:
+			return "Your captain's hat hangs on its hook in the cabin."
+	return "You have no captain's hat. The harbour grocery store sells replacements (%s)." % format_money(get_hat_price())
+
+
+## The worn hat is out in the wind: on deck. (Simulation also treats sleeping
+## and working as below deck.)
+func is_hat_exposed() -> bool:
+	return _state != null and _state.hat.status == HatState.WORN and _state.boat_area == SessionState.AREA_EXTERIOR
+
+
+## Hat checks have been made up to this game time (Simulation only).
+func get_hat_checked_until() -> float:
+	return _state.hat.checked_until if _state else 0.0
+
+
+## The hat recovers for `ticks` hat checks in which it was not at risk (below
+## deck, taken off, or light wind), the last of them at `until` (Simulation
+## only).
+func recover_hat(ticks: int, until: float) -> void:
+	if _state == null:
+		return
+	var hat := _state.hat
+	hat.checked_until = maxf(hat.checked_until, until)
+	if ticks <= 0 or (hat.strain <= 0.0 and not hat.warned):
+		return
+	var config := HatConfig.get_default()
+	hat.strain = maxf(hat.strain - config.recovery_per_min * config.check_interval_s / 60.0 * ticks, 0.0)
+	# A new warning only after the hat has fully recovered and a while has
+	# passed, so stepping in and out of the companionway never repeats it.
+	if hat.strain <= 0.0 and until - hat.warned_at >= config.warning_repeat_min * 60.0:
+		hat.warned = false
+	_has_unsaved_changes = true
+
+
+## One hat check at `time` while the hat is worn on deck (Simulation only):
+## `strain_per_min` from HatConfig for the weather `sample` at `position`.
+## The first check with any risk only warns; later ones add strain, and the
+## hat blows away at its threshold. Returns &"" , &"warned" or &"lost".
+func apply_hat_check(time: float, strain_per_min: float, sample: WeatherSample, position: Vector2) -> StringName:
+	if _state == null or _state.hat.status != HatState.WORN:
+		return &""
+	var hat := _state.hat
+	var config := HatConfig.get_default()
+	hat.checked_until = maxf(hat.checked_until, time)
+	if _state.voyage:
+		hat.voyage_worn_hazard = maxi(hat.voyage_worn_hazard, sample.hazard)
+	_has_unsaved_changes = true
+	if strain_per_min <= 0.0:
+		recover_hat(1, time)
+		return &""
+	if not hat.warned:
+		hat.warned = true
+		hat.warned_at = time
+		hat_warning.emit("Better hold onto your hat! The wind is %d kn%s. Go below, or press H to take it off." % [
+			roundi(sample.speed_kn), ", gusting %d" % roundi(sample.gust_kn) if sample.gust_kn >= sample.speed_kn + 6.0 else ""])
+		return &"warned"
+	hat.strain += strain_per_min * config.check_interval_s / 60.0
+	if hat.strain < config.threshold_for(_state.wind_seed, hat.serial):
+		return &""
+	_lose_hat(time, sample, position)
+	return &"lost"
+
+
+func _lose_hat(time: float, sample: WeatherSample, position: Vector2) -> void:
+	var hat := _state.hat
+	hat.status = HatState.LOST
+	hat.strain = 0.0
+	hat.warned = false
+	hat.lost_count += 1
+	if _state.voyage:
+		hat.voyage_lost = true
+	var in_harbour := not is_underway()
+	var place := HatStory.describe_place(position, _state.location_id if in_harbour else &"")
+	var log_text := HatStory.loss_log_line(hat.lost_count, place, sample)
+	hat.add_history(time, HatState.EVENT_LOST, log_text)
+	_has_unsaved_changes = true
+	var info := {"time": time, "text": HatStory.loss_message(hat.lost_count), "log_text": log_text,
+		"lost_count": hat.lost_count, "serial": hat.serial, "wind_kn": sample.speed_kn, "gust_kn": sample.gust_kn,
+		"in_harbour": in_harbour, "position": {"lon": position.x, "lat": position.y},
+		"bought_at": hat.bought_at}
+	hat_changed.emit(hat.status)
+	hat_lost.emit(info)
+
+
+## Buys a replacement hat at the harbour grocery store: one transaction that
+## pays get_hat_price() and hands the player the new hat (carried, ready to
+## put on). Harbour only, only without a hat, and refused (nothing changes)
+## when the money is not enough. Returns "" on success, otherwise the reason.
+func buy_hat() -> String:
+	if not is_moored_in_harbour():
+		return "Captain's hats are sold at the harbour grocery store, while moored in harbour."
+	if _state.hat.is_owned():
+		return "You already have your captain's hat."
+	var price := get_hat_price()
+	if price > _state.funds:
+		return "Not enough money: %s needed, you have %s." % [format_money(price), format_money(_state.funds)]
+	var hat := _state.hat
+	_state.funds -= price
+	hat.status = HatState.CARRIED
+	hat.serial += 1
+	hat.bought_count += 1
+	hat.spent += price
+	hat.bought_at = _state.game_time
+	hat.strain = 0.0
+	hat.warned = false
+	var place := get_location()
+	hat.add_history(_state.game_time, HatState.EVENT_BOUGHT, "Bought a new captain's hat in %s for %s%s." % [
+		place.display_name if place else "harbour", format_money(price),
+		"" if hat.bought_count == 1 else " (hat number %d)" % hat.serial])
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	hat_changed.emit(hat.status)
+	hat_bought.emit({"price": price, "funds_after": _state.funds, "serial": hat.serial})
+	return ""
+
+
+func _set_hat_status(status: StringName) -> void:
+	if _state.hat.status == status:
+		return
+	_state.hat.status = status
+	_has_unsaved_changes = true
+	hat_changed.emit(status)
 
 
 # --- Internals ------------------------------------------------------------------------

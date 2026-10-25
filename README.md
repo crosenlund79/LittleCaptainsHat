@@ -159,6 +159,7 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Sleep dialog: duration | **<** / **>** buttons (or Left / Right): 1–12 hours |
 | Cat beside a station | stand at the station to use it; **face the cat** (the arrow on your token) to pet it |
 | Provisions | **E** at the galley's provisions station (every cabin) |
+| Captain's hat | **E** at its hook in the cabin: put it on or hang it up. **H** aboard: take it off (under your arm) or put it back on |
 | Captain's Log | **L** (aboard or on the chart), or **Captain's Log** in the pause menu: Log, Harbours and Objectives tabs; *Publish travel update…* |
 | Chart: find a harbour | type in **Find a harbour…** on the Course tab, then click a result (works for harbours hidden at the current zoom) |
 | Developer test tools | **F9** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |

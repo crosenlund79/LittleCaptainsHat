@@ -597,6 +597,9 @@ def build_cat_cabin(c):
     b.station("Berth", (-293, -hy), "bed", "Sleep", ("rect", (24, 120)))
     b.station("Provisions", (-110, -100), "provisions", "Check provisions", ("rect", (96, 24)))
     b.station("Work", (-150, -hy - 16), "work", "Work remotely", ("rect", (70, 24)))
+    # The captain's hat hangs above the owner's sofa (Visual Identity V01).
+    b.station("Hat", (230, -244), "hat", "Put on captain's hat", ("circle", 24))
+    b.node("HatSpot", "Marker2D", "Layout", ["position = Vector2(230, -292)"])
     b.markers("SpawnPoints", {"start": (-40, -20), "from_deck": (-160, 0), "v_berth": (-278, -hy)})
     b.markers("CompanionSpots", {"settee": (-80, 134), "nav_station": (96, -140), "v_berth": (-322, -hy + 54),
                                  "cabin_floor": (0, 10), "companionway": (-140, -40), "seating": (30, 100)})
@@ -838,6 +841,9 @@ def build_tri_cabin(t):
     b.station("Provisions", (-290, -54), "provisions", "Check provisions", ("rect", (90, 20)))
     b.station("Work", (0, 26), "work", "Work remotely", ("rect", (100, 20)))
     b.station("Berth", (282, 0), "bed", "Sleep", ("rect", (30, 120)))
+    # The captain's hat hangs on a hook on the port side (Visual Identity V01).
+    b.station("Hat", (168, -70), "hat", "Put on captain's hat", ("circle", 24))
+    b.node("HatSpot", "Marker2D", "Layout", ["position = Vector2(168, -96)"])
     b.markers("SpawnPoints", {"start": (-120, 40), "from_deck": (-322, 0), "v_berth": (258, 0)})
     b.markers("CompanionSpots", {"settee": (-40, -90), "nav_station": (-232, 86), "v_berth": (318, 48),
                                  "cabin_floor": (110, 40), "companionway": (-330, -50), "seating": (-90, 52)})

@@ -61,6 +61,8 @@ var auto_advance := true
 
 var _eta_key := ""
 var _eta_seconds := 0.0
+## While sleeping or working the player is below deck: the hat is not at risk.
+var _hat_sheltered := false
 
 
 ## Outcome of an advance() call.
@@ -72,6 +74,9 @@ class AdvanceResult:
 	var arrived_at: StringName = &""
 	## True when a rescue ended the voyage during this advance.
 	var rescued := false
+	## The captain's hat was warned about or blew away during this advance.
+	var hat_warned := false
+	var hat_lost := false
 
 
 func _ready() -> void:
@@ -100,7 +105,7 @@ func tick(real_seconds: float) -> void:
 	var result := advance(real_seconds * game_seconds_per_real_second * GameSession.get_time_scale())
 	# Accelerated time drops back to normal speed when something needs the
 	# player's attention, so nothing actionable flies past at 20×.
-	if not result.warnings.is_empty() and GameSession.get_time_scale() > 1:
+	if (not result.warnings.is_empty() or result.hat_warned) and GameSession.get_time_scale() > 1:
 		GameSession.set_time_scale(1)
 
 
@@ -121,6 +126,7 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 		var time := GameSession.get_game_time()
 		if not GameSession.is_underway():
 			GameSession.apply_simulation_step(time + remaining, 0.0)
+			_check_hat(time, time + remaining, -1.0, -1.0, result)
 			result.elapsed_seconds += remaining
 			break
 		var propulsion := GameSession.get_propulsion()
@@ -150,6 +156,7 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 		var reached_event := to_event <= step
 		var new_progress := event_at if reached_event else progress + speed * step / 3600.0
 		GameSession.apply_simulation_step(time + step, new_progress)
+		_check_hat(time, time + step, progress, new_progress, result)
 		result.elapsed_seconds += step
 		remaining -= step
 		if not reached_event:
@@ -311,7 +318,9 @@ func work(hours: int) -> Dictionary:
 	if not GameSession.can_work_remotely():
 		return {"error": "Remote work needs a steady connection: moor in a harbour first.", "hours": 0, "earned": 0, "elapsed": 0.0}
 	hours = clampi(hours, GameSession.REMOTE_WORK_MIN_HOURS, GameSession.REMOTE_WORK_MAX_HOURS)
+	_hat_sheltered = true
 	var result := advance(hours * 3600.0, true)
+	_hat_sheltered = false
 	var completed := floori(result.elapsed_seconds / 3600.0 + 1e-6)
 	var earned := GameSession.pay_remote_work(completed)
 	return {"error": "", "hours": completed, "earned": earned, "elapsed": result.elapsed_seconds}
@@ -320,7 +329,58 @@ func work(hours: int) -> Dictionary:
 ## Sleeps for `hours`: the normal simulation advanced in one go, stopping
 ## early on arrival or when a weather warning becomes due.
 func sleep(hours: float) -> AdvanceResult:
-	return advance(hours * 3600.0, true)
+	_hat_sheltered = true
+	var result := advance(hours * 3600.0, true)
+	_hat_sheltered = false
+	return result
+
+
+# --- Captain's hat ------------------------------------------------------------------
+
+## True when the worn hat is out in the wind (on deck, not sleeping or working).
+func is_hat_at_risk() -> bool:
+	return GameSession.is_hat_exposed() and not _hat_sheltered
+
+
+## Hat checks for the game time (t0, t1] just simulated: one check on every
+## absolute HatConfig.check_interval_s grid point. While the hat is worn on
+## deck each check samples the WeatherModel at the boat's position at that
+## moment (underway interpolated along the course between `p0` and `p1`, the
+## progress at t0 and t1, which the constant speed between evaluation points
+## makes exact). Otherwise the hat just recovers. The grid and the positions
+## do not depend on how time is chopped, so the outcome is the same at 1x,
+## 20x, in one long step and across save/load.
+func _check_hat(t0: float, t1: float, p0: float, p1: float, result: AdvanceResult) -> void:
+	var config := HatConfig.get_default()
+	var interval := config.check_interval_s
+	var tick := (floorf(GameSession.get_hat_checked_until() / interval + 1e-9) + 1.0) * interval
+	if tick > t1 + 1e-6:
+		return
+	if not is_hat_at_risk():
+		var ticks := floori((t1 + 1e-6 - tick) / interval) + 1
+		GameSession.recover_hat(ticks, tick + (ticks - 1) * interval)
+		return
+	var model := WeatherModel.get_default()
+	var underway := p0 >= 0.0 and GameSession.is_underway()
+	while tick <= t1 + 1e-6:
+		if not is_hat_at_risk():
+			var rest := floori((t1 + 1e-6 - tick) / interval) + 1
+			GameSession.recover_hat(rest, tick + (rest - 1) * interval)
+			return
+		var position := GameSession.get_vessel_position()
+		if underway and t1 > t0:
+			var fraction := clampf((tick - t0) / (t1 - t0), 0.0, 1.0)
+			position = GameSession.get_voyage_position_at(lerpf(p0, p1, fraction))
+		var sample := model.sample(position, tick, GameSession.get_wind_seed())
+		var rate := config.strain_per_minute(sample.speed_kn, sample.gust_kn, not GameSession.is_underway())
+		match GameSession.apply_hat_check(tick, rate, sample, position):
+			&"warned":
+				if result:
+					result.hat_warned = true
+			&"lost":
+				if result:
+					result.hat_lost = true
+		tick += interval
 
 
 # --- Weather along the course and warnings ------------------------------------------

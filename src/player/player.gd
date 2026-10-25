@@ -22,6 +22,14 @@ var _facing := Vector2.RIGHT
 func _ready() -> void:
 	add_to_group(&"player")
 	_sensor.focus_changed.connect(focus_changed.emit)
+	# The captain's hat is drawn by its own art-only child (no collision).
+	var hat := PlayerHat.new()
+	hat.name = "PlayerHat"
+	add_child(hat)
+
+
+func get_hat_visual() -> PlayerHat:
+	return get_node_or_null(^"PlayerHat") as PlayerHat
 
 
 func _physics_process(_delta: float) -> void:

@@ -13,7 +13,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 9
+const SAVE_VERSION := 10
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -248,6 +248,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_7_to_8(data)
 	if from_version < 9:
 		data = _migrate_8_to_9(data)
+	if from_version < 10:
+		data = _migrate_9_to_10(data)
 	return data
 
 
@@ -402,6 +404,20 @@ func _migrate_8_to_9(data: Dictionary) -> Dictionary:
 		return data
 	session["progress"] = ObjectiveProgress.new().to_dict()
 	data["version"] = 9
+	return data
+
+
+## Version 10 (Visual Identity V01) adds the captain's hat. Every older game
+## gets the hat a new game starts with: the original, on its hook in the
+## cabin, with hat checks starting at the saved game time (no wind is charged
+## for the past).
+func _migrate_9_to_10(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("clock") is Dictionary:
+		return data
+	var time := float(session.clock.get("game_time", 0.0))
+	session["hat"] = HatState.create(time).to_dict()
+	data["version"] = 10
 	return data
 
 

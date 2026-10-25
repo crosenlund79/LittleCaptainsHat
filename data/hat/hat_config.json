@@ -1,0 +1,21 @@
+{
+	"version": 1,
+	"comment": "The captain's hat (Visual Identity V01). Wind is the authoritative WeatherModel sample at the boat. The hat is checked once per check_interval_s of game time (an absolute grid), only while it is worn on deck. 'effective' wind = max(sustained, gust - gust_allowance_kn). Each band adds strain per game minute; strain recovers below deck, with the hat off, or in light wind. The hat blows away when strain reaches the hat's own threshold (between threshold_min and threshold_max, fixed per hat from the game's seed). The first minute of risk only warns.",
+	"price_eur": 15,
+	"check_interval_s": 60,
+	"gust_allowance_kn": 10,
+	"bands": [
+		{"from_kn": 25, "strain_per_min": 0.25},
+		{"from_kn": 35, "strain_per_min": 1.0},
+		{"from_kn": 45, "strain_per_min": 2.0}
+	],
+	"gust_bands": [
+		{"from_kn": 45, "strain_per_min": 0.5},
+		{"from_kn": 55, "strain_per_min": 1.5}
+	],
+	"harbour_factor": 0.5,
+	"recovery_per_min": 2.0,
+	"warning_repeat_min": 30,
+	"threshold_min": 30,
+	"threshold_max": 50
+}

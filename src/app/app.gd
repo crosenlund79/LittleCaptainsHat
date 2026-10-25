@@ -80,6 +80,8 @@ func _ready() -> void:
 	GameSession.rescued.connect(_on_rescued)
 	GameSession.voyage_logged.connect(_on_voyage_logged)
 	GameSession.renown_awarded.connect(_on_renown_awarded)
+	GameSession.hat_warning.connect(notify)
+	GameSession.hat_lost.connect(_on_hat_lost)
 	# Test weather never outlives the game it was made in.
 	GameSession.session_started.connect(DevTools.on_session_changed)
 	GameSession.state_replaced.connect(DevTools.on_session_changed)
@@ -146,6 +148,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"captains_log") and not event.is_echo():
 		get_viewport().set_input_as_handled()
 		toggle_captains_log()
+		return
+	if event.is_action_pressed(&"captains_hat") and not event.is_echo():
+		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
+			get_viewport().set_input_as_handled()
+			toggle_hat()
 		return
 	if not event.is_action_pressed(&"pause") or event.is_echo():
 		return
@@ -465,6 +472,17 @@ func _on_renown_awarded(awards: Array) -> void:
 		total += int(award.reward)
 		titles.append(award.title)
 	notify("+%d renown: %s." % [total, ", ".join(titles)])
+
+
+# --- Captain's hat ------------------------------------------------------------------
+
+## The hat key (H): off and under the arm, or back on.
+func toggle_hat() -> void:
+	notify(GameSession.toggle_hat())
+
+
+func _on_hat_lost(info: Dictionary) -> void:
+	notify(info.text)
 
 
 func _show_current_boat_area() -> void:
