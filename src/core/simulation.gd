@@ -53,6 +53,9 @@ const STOP_ARRIVAL := &"arrival"
 const STOP_WARNING := &"warning"
 ## The boat was lost and its crew rescued (the voyage ended mid-advance).
 const STOP_RESCUE := &"rescue"
+## A fish took the lure, or the anchor needs the captain (Iteration 13).
+const STOP_BITE := &"bite"
+const STOP_ANCHOR := &"anchor"
 
 ## Tunable for balancing (and for tests).
 var game_seconds_per_real_second := DEFAULT_GAME_SECONDS_PER_REAL_SECOND
@@ -77,6 +80,10 @@ class AdvanceResult:
 	## The captain's hat was warned about or blew away during this advance.
 	var hat_warned := false
 	var hat_lost := false
+	## A fish bit during this advance (Iteration 13).
+	var bite := false
+	## The anchor alarm went ("poor" or "dragging"), or "".
+	var anchor_alarm := ""
 
 
 func _ready() -> void:
@@ -105,7 +112,8 @@ func tick(real_seconds: float) -> void:
 	var result := advance(real_seconds * game_seconds_per_real_second * GameSession.get_time_scale())
 	# Accelerated time drops back to normal speed when something needs the
 	# player's attention, so nothing actionable flies past at 20×.
-	if (not result.warnings.is_empty() or result.hat_warned) and GameSession.get_time_scale() > 1:
+	if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "") \
+			and GameSession.get_time_scale() > 1:
 		GameSession.set_time_scale(1)
 
 
@@ -124,11 +132,40 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 	while remaining > 1e-6 and guard > 0:
 		guard -= 1
 		var time := GameSession.get_game_time()
-		if not GameSession.is_underway():
-			GameSession.apply_simulation_step(time + remaining, 0.0)
-			_check_hat(time, time + remaining, -1.0, -1.0, result)
-			result.elapsed_seconds += remaining
-			break
+		if not GameSession.is_underway() or GameSession.is_anchored():
+			# In harbour or at anchor the boat stays where it is. At anchor the
+			# weather and the anchor are checked on the evaluation grid; with
+			# the line out the bite checks run on their own grid.
+			var anchored := GameSession.is_anchored()
+			var end := time + remaining
+			var anchor_grid := _next_grid_time(GameSession.get_anchor_checked_until()) if anchored else INF
+			end = minf(end, maxf(anchor_grid, time))
+			var fish_tick := _next_fish_tick(time, end)
+			var step_end := minf(end, fish_tick)
+			GameSession.apply_simulation_step(step_end, GameSession.get_voyage_progress_nm())
+			_check_hat(time, step_end, -1.0, -1.0, result)
+			result.elapsed_seconds += step_end - time
+			remaining -= step_end - time
+			if fish_tick <= step_end + 1e-6 and GameSession.apply_fish_check(fish_tick):
+				result.bite = true
+				if stop_at_events:
+					result.stopped_by = STOP_BITE
+					break
+			if anchored and step_end >= anchor_grid - 1e-6:
+				var warned := _assess_weather(result)
+				if result.rescued:
+					result.stopped_by = STOP_RESCUE
+					break
+				var alarm := GameSession.apply_anchor_check(step_end)
+				if alarm != "":
+					result.anchor_alarm = alarm
+					if stop_at_events:
+						result.stopped_by = STOP_ANCHOR
+						break
+				if warned and stop_at_events:
+					result.stopped_by = STOP_WARNING
+					break
+			continue
 		var propulsion := GameSession.get_propulsion()
 		var next_grid := _next_grid_time(propulsion.last_evaluation_time)
 		if not propulsion.initialised or time >= next_grid - 1e-6:
@@ -152,13 +189,20 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 		var event_at := minf(total, vertex)
 		var to_event := (maxf(event_at - progress, 0.0) / speed * 3600.0) if speed > 0.0 else INF
 		var to_grid := maxf(next_grid - time, 0.0)
-		var step := minf(remaining, minf(to_event, to_grid))
+		var fish_tick := _next_fish_tick(time, time + remaining)
+		var step := minf(minf(remaining, fish_tick - time), minf(to_event, to_grid))
 		var reached_event := to_event <= step
 		var new_progress := event_at if reached_event else progress + speed * step / 3600.0
 		GameSession.apply_simulation_step(time + step, new_progress)
 		_check_hat(time, time + step, progress, new_progress, result)
 		result.elapsed_seconds += step
 		remaining -= step
+		# Trolling: the bite check where the boat is now.
+		if fish_tick <= time + step + 1e-6 and GameSession.apply_fish_check(fish_tick):
+			result.bite = true
+			if stop_at_events and not reached_event:
+				result.stopped_by = STOP_BITE
+				break
 		if not reached_event:
 			continue  # a grid point or the end of the requested time
 		if event_at >= total - 1e-9:
@@ -174,13 +218,25 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 	return result
 
 
+## The next bite check in (t0, t1] with the line out, or INF (Iteration 13):
+## one check every FishingCatalog.check_interval_s on an absolute grid, so
+## bites do not depend on how time is chopped.
+func _next_fish_tick(t0: float, t1: float) -> float:
+	if not GameSession.is_line_out():
+		return INF
+	var interval := FishingCatalog.get_default().check_interval_s
+	var tick := (floorf(GameSession.get_fish_checked_until() / interval + 1e-9) + 1.0) * interval
+	tick = maxf(tick, t0)
+	return tick if tick <= t1 + 1e-6 else INF
+
+
 ## Samples the wind at the vessel and lets the propulsion controller decide
 ## sail or engine and the speed until the next evaluation point.
 ## `reset_history` restarts the rolling average from the current heading;
 ## `reassess` lets clearly good or poor conditions decide at once (see
 ## PropulsionController).
 func evaluate_propulsion(reset_history := false, reassess := false) -> void:
-	if not GameSession.is_underway():
+	if not GameSession.is_underway() or GameSession.is_anchored():
 		return
 	var wind := get_wind_at(GameSession.get_vessel_position())
 	var state := PropulsionController.evaluate(GameSession.get_propulsion(), GameSession.get_vessel_profile(),
@@ -336,6 +392,15 @@ func spend_time_ashore(minutes: float) -> AdvanceResult:
 	return result
 
 
+## Time spent at the galley or the rod (Iteration 13): the hat is out of the
+## wind, events stop it early like sleep.
+func spend_time_aboard(minutes: float) -> AdvanceResult:
+	_hat_sheltered = true
+	var result := advance(maxf(minutes, 0.0) * 60.0, true)
+	_hat_sheltered = false
+	return result
+
+
 ## Sleeps for `hours`: the normal simulation advanced in one go, stopping
 ## early on arrival or when a weather warning becomes due.
 func sleep(hours: float) -> AdvanceResult:
@@ -478,7 +543,8 @@ func _assess_weather(result: AdvanceResult) -> bool:
 	var here := get_weather_at_vessel()
 	GameSession.update_weather_exposure(here)
 	var damage := WeatherDamage.damage_between(GameSession.get_damage_applied_until(), now,
-		GameSession.get_vessel_position(), GameSession.get_wind_seed(), GameSession.get_vessel_profile().weather_damage_factor)
+		GameSession.get_vessel_position(), GameSession.get_wind_seed(), GameSession.get_vessel_profile().weather_damage_factor) \
+		* GameSession.get_anchor_damage_factor()
 	if GameSession.apply_weather_damage(damage, now):
 		if result:
 			result.rescued = true

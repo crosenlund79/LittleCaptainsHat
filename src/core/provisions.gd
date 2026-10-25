@@ -32,12 +32,29 @@ var water_days := CAPACITY_DAYS
 var warning_level := WARN_NONE
 
 
-## Uses up `days` of food and water (never below zero).
-func consume(days: float) -> void:
+## Uses up `days` of food and water (never below zero). `food_factor` below 1
+## makes the food last longer (a well-fed crew, Iteration 13).
+func consume(days: float, food_factor := 1.0) -> void:
 	if days <= 0.0:
 		return
-	food_days = maxf(food_days - days, 0.0)
+	food_days = maxf(food_days - days * food_factor, 0.0)
 	water_days = maxf(water_days - days, 0.0)
+
+
+## Takes `days` of food for cooking (Iteration 13). False, and nothing taken,
+## when there is not that much.
+func take_food(days: float) -> bool:
+	if days < 0.0 or days > food_days + 1e-9:
+		return false
+	food_days = maxf(food_days - days, 0.0)
+	return true
+
+
+## Adds `days` of food (cooked catch), up to the capacity. Returns what fitted.
+func add_food(days: float) -> float:
+	var added := clampf(days, 0.0, CAPACITY_DAYS - food_days)
+	food_days += added
+	return added
 
 
 func restock() -> void:

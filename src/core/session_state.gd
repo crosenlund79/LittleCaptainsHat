@@ -87,6 +87,10 @@ var captains_log := CaptainsLog.new()
 var progress := ObjectiveProgress.new()
 ## The player's captain's hat (one at a time; it belongs to the player).
 var hat := HatState.new()
+## Fishing, the galley and the anchor (Iteration 13).
+var fishing := FishingState.new()
+var galley := GalleyState.new()
+var anchor := AnchorState.new()
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -101,6 +105,8 @@ static func create_new(start_location: StringName, start_area: StringName, start
 	state.companion = CompanionState.create(companion_kind, state.game_time)
 	state.captains_log = CaptainsLog.create(start_location, state.game_time)
 	state.hat = HatState.create(state.game_time)
+	state.fishing.checked_until = state.game_time
+	state.anchor.checked_until = state.game_time
 	var port := PortCatalog.get_default().get_port(start_location)
 	state.vessel_position = port.get_geo_position() if port else Vector2.ZERO
 	return state
@@ -143,6 +149,9 @@ func duplicate_state() -> SessionState:
 	copy.captains_log = captains_log.duplicate_log()
 	copy.progress = progress.duplicate_progress()
 	copy.hat = hat.duplicate_hat()
+	copy.fishing = fishing.duplicate_state()
+	copy.galley = galley.duplicate_state()
+	copy.anchor = anchor.duplicate_state()
 	return copy
 
 
@@ -182,6 +191,9 @@ func to_dict() -> Dictionary:
 		"log": captains_log.to_dict(),
 		"progress": progress.to_dict(),
 		"hat": hat.to_dict(),
+		"fishing": fishing.to_dict(),
+		"galley": galley.to_dict(),
+		"anchor": anchor.to_dict(),
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -315,6 +327,15 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 	state.hat = HatState.from_dict(data.get("hat"), errors)
 	if state.hat == null:
 		return null
+	state.fishing = FishingState.from_dict(data.get("fishing"), errors)
+	if state.fishing == null:
+		return null
+	state.galley = GalleyState.from_dict(data.get("galley"), errors)
+	if state.galley == null:
+		return null
+	state.anchor = AnchorState.from_dict(data.get("anchor"), errors)
+	if state.anchor == null:
+		return null
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:
@@ -345,11 +366,18 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		state.voyage = Voyage.from_dict(voyage_data, catalog, errors)
 		if state.voyage == null:
 			return null
-		if state.voyage.get_position().distance_to(state.vessel_position) > 0.001:
+		if state.anchor.active:
+			# At anchor the boat lies where the anchor holds it (Iteration 13).
+			state.vessel_position = state.anchor.position
+		elif state.voyage.get_position().distance_to(state.vessel_position) > 0.001:
 			errors.append("vessel position does not match the voyage progress")
 			return null
-		# Use the exact derived position so the simulation continues seamlessly.
-		state.vessel_position = state.voyage.get_position()
+		else:
+			# Use the exact derived position so the simulation continues seamlessly.
+			state.vessel_position = state.voyage.get_position()
+	if state.anchor.active and not underway:
+		errors.append("the boat is at anchor but not on a voyage")
+		return null
 	return state
 
 

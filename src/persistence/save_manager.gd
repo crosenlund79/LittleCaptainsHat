@@ -15,7 +15,7 @@ signal slots_changed
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
-const SAVE_VERSION := 10
+const SAVE_VERSION := 11
 const SLOT_COUNT := 3
 const DEFAULT_SAVE_DIR := "user://saves"
 
@@ -309,6 +309,8 @@ func _migrate(data: Dictionary, from_version: int) -> Dictionary:
 		data = _migrate_8_to_9(data)
 	if from_version < 10:
 		data = _migrate_9_to_10(data)
+	if from_version < 11:
+		data = _migrate_10_to_11(data)
 	return data
 
 
@@ -478,6 +480,26 @@ func _migrate_9_to_10(data: Dictionary) -> Dictionary:
 	var time := float(session.clock.get("game_time", 0.0))
 	session["hat"] = HatState.create(time).to_dict()
 	data["version"] = 10
+	return data
+
+
+## Version 10 (Iteration 12) had no fishing, galley or anchor. Version 11
+## (Iteration 13) adds them as a new game starts them: a basic rod and two
+## spinners, an empty cool box, no meal yet, the anchor up. Nothing else in
+## the save changes.
+func _migrate_10_to_11(data: Dictionary) -> Dictionary:
+	var session: Variant = data.get("session")
+	if not session is Dictionary or not session.get("clock") is Dictionary:
+		return data
+	var time := float(session.clock.get("game_time", 0.0))
+	var fishing := FishingState.new()
+	fishing.checked_until = time
+	session["fishing"] = fishing.to_dict()
+	session["galley"] = GalleyState.new().to_dict()
+	var anchor := AnchorState.new()
+	anchor.checked_until = time
+	session["anchor"] = anchor.to_dict()
+	data["version"] = 11
 	return data
 
 

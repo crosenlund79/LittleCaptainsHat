@@ -59,6 +59,23 @@ signal hat_warning(text: String)
 signal hat_lost(info: Dictionary)
 ## A replacement hat was bought: {"price", "funds_after", "serial"}.
 signal hat_bought(info: Dictionary)
+## Iteration 13. A fish took the lure: {"species", "kg", "time"} (a fight
+## follows at the rod).
+signal fish_bite(info: Dictionary)
+## The line went out or came in, a lure was chosen or bought, the cool box
+## changed.
+signal fishing_changed
+## Something about the line needs attention: {"text", "kind"} (e.g. trolling
+## too fast).
+signal fishing_warning(info: Dictionary)
+## A fish was landed: the result of land_fish().
+signal fish_landed(result: Dictionary)
+## A meal was cooked: the result of cook().
+signal meal_cooked(result: Dictionary)
+## The anchor went down or up, or its holding changed.
+signal anchor_changed
+## The anchor needs the captain: {"level": "poor" | "dragging", "text"}.
+signal anchor_alarm(info: Dictionary)
 
 const START_LOCATION := &"copenhagen"
 ## Where a rescued boat is brought back to (fixed in this version).
@@ -238,7 +255,7 @@ func get_vessel_position() -> Vector2:
 
 ## Current speed through the water in knots (0 when not underway).
 func get_vessel_speed_kn() -> float:
-	return _state.propulsion.speed_kn if is_underway() else 0.0
+	return _state.propulsion.speed_kn if is_underway() and not _state.anchor.active else 0.0
 
 
 ## The boat's performance profile (one starter boat for now).
@@ -308,6 +325,8 @@ func switch_vessel(vessel_id: StringName) -> String:
 		return ""
 	_state.vessel_id = vessel_id
 	_state.propulsion = PropulsionState.new()
+	_state.fishing.line_out = false
+	_pending_bite = {}
 	_has_unsaved_changes = true
 	enter_boat_area(SessionState.AREA_EXTERIOR, &"from_boatyard")
 	vessel_changed.emit(vessel_id)
@@ -511,7 +530,10 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 	var elapsed := game_time - _state.game_time
 	_state.game_time = game_time
 	if elapsed > 0.0:
-		_state.provisions.consume(elapsed / Provisions.DAY_SECONDS)
+		# A well-fed crew eats a little less (only the well-fed part of the step).
+		var well_fed := clampf(_state.galley.well_fed_until - (game_time - elapsed), 0.0, elapsed)
+		var factor := lerpf(1.0, WELL_FED_FOOD_FACTOR, well_fed / elapsed)
+		_state.provisions.consume(elapsed / Provisions.DAY_SECONDS, factor)
 		_check_provisions()
 	# The companion's resting schedule runs on the same clock (pure function of time).
 	if _state.companion.advance_to(game_time):
@@ -520,7 +542,7 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 		var progress := clampf(progress_nm, 0.0, _state.voyage.get_total_nm())
 		_state.voyage.sailed_nm += maxf(progress - _state.voyage.progress_nm, 0.0)
 		_state.voyage.progress_nm = progress
-		_state.vessel_position = _state.voyage.get_position()
+		_state.vessel_position = _state.anchor.position if _state.anchor.active else _state.voyage.get_position()
 	_has_unsaved_changes = true
 
 
@@ -653,6 +675,11 @@ func rescue() -> void:
 		return
 	var port := PortCatalog.get_default().get_port(HOME_PORT)
 	var from := _state.vessel_position
+	# Towed home: the anchor is recovered and the line comes in (Iteration 13).
+	_state.anchor.active = false
+	_state.anchor.alarm = false
+	_state.fishing.line_out = false
+	_pending_bite = {}
 	var fee := mini(SessionState.RESCUE_FEE, _state.funds)
 	_state.funds -= fee
 	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_RESCUED)
@@ -778,6 +805,559 @@ func _award_hat_objectives(event: Dictionary) -> Array[Dictionary]:
 	for award in awards:
 		_state.progress.award(StringName(award.id), award.title, award.reward, float(event.time))
 	return awards
+
+
+# --- Fishing (Iteration 13) ---------------------------------------------------------
+
+## A well-fed crew uses this fraction of the usual food (water is unchanged).
+const WELL_FED_FOOD_FACTOR := 0.75
+## A fish on the line waits this long (real seconds) for the captain to reach
+## the rod before it gets away (App; real time so 20x does not rush it).
+const BITE_WAIT_SECONDS := 45.0
+
+## A bite waiting for the captain (not saved: after loading the line is just out).
+var _pending_bite := {}
+
+
+func get_fishing() -> FishingState:
+	return _state.fishing.duplicate_state() if _state else FishingState.new()
+
+
+func is_line_out() -> bool:
+	return _state != null and _state.fishing.line_out
+
+
+## How one fishes here now: from a still boat (in harbour or at anchor) or
+## trolling behind a moving one.
+func get_fishing_mode() -> StringName:
+	return FishingState.MODE_TROLLING if is_underway() and not is_anchored() else FishingState.MODE_STATIONARY
+
+
+## Why the line cannot go out now, or "".
+func fishing_refusal(lure_id: String) -> String:
+	if _state == null:
+		return "No game is running."
+	if not _state.fishing.rod:
+		return "You have no fishing rod."
+	if _state.fishing.get_lure_count(lure_id) <= 0:
+		return "You have no %s left. The harbour grocery store sells lures." % FishingCatalog.get_default().get_lure(lure_id).get("name", "lure").to_lower()
+	if get_fishing_mode() == FishingState.MODE_TROLLING and get_vessel_speed_kn() > FishingCatalog.get_default().max_trolling_kn:
+		return "Too fast to troll: %.1f kn. A trolled lure only works below %d kn; wait for a gentler stretch or anchor." % [
+			get_vessel_speed_kn(), roundi(FishingCatalog.get_default().max_trolling_kn)]
+	return ""
+
+
+## Lets the line out with `lure_id` (or brings it in with out = false).
+## Returns "" or the reason it cannot.
+func set_line(out: bool, lure_id := "") -> String:
+	if _state == null:
+		return "No game is running."
+	var fishing := _state.fishing
+	if not out:
+		if fishing.line_out:
+			fishing.line_out = false
+			_pending_bite = {}
+			_has_unsaved_changes = true
+			fishing_changed.emit()
+		return ""
+	var lure := lure_id if lure_id != "" else fishing.lure
+	var refusal := fishing_refusal(lure)
+	if refusal != "":
+		return refusal
+	fishing.lure = lure
+	fishing.line_out = true
+	fishing.line_mode = get_fishing_mode()
+	fishing.line_since = _state.game_time
+	fishing.checked_until = maxf(fishing.checked_until, _state.game_time)
+	_has_unsaved_changes = true
+	fishing_changed.emit()
+	return ""
+
+
+## One bite check at `tick` with the line out (Simulation only, on its fixed
+## grid). Returns true when a fish bites.
+func apply_fish_check(tick: float) -> bool:
+	if _state == null:
+		return false
+	var fishing := _state.fishing
+	fishing.checked_until = maxf(fishing.checked_until, tick)
+	if not fishing.line_out or not _pending_bite.is_empty():
+		return false
+	var catalog := FishingCatalog.get_default()
+	var mode := get_fishing_mode()
+	fishing.line_mode = mode
+	var speed := get_vessel_speed_kn()
+	if mode == FishingState.MODE_TROLLING and speed > catalog.max_trolling_kn:
+		fishing_warning.emit({"kind": "too_fast", "text": "The line is skipping on the surface at %.1f kn: too fast to troll. Bring it in, or wait for a gentler stretch." % speed})
+		return false
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("%d|fish|%d" % [_state.wind_seed, int(tick)])
+	var wind := Simulation.get_weather_at_vessel()
+	if rng.randf() >= catalog.bite_chance(_state.vessel_position, mode, fishing.lure, speed, wind.speed_kn):
+		return false
+	var fish := catalog.pick(rng, _state.vessel_position, mode, fishing.lure)
+	if fish.is_empty():
+		return false
+	_pending_bite = {"species": fish.species, "kg": fish.kg, "time": tick, "mode": String(mode), "lure": fishing.lure}
+	fish_bite.emit(_pending_bite.duplicate())
+	return true
+
+
+func get_pending_bite() -> Dictionary:
+	return _pending_bite.duplicate()
+
+
+## The fish got away before the captain reached the rod (the lure stays).
+func expire_bite() -> void:
+	_pending_bite = {}
+
+
+## The fight ended. `landed`: the fish is aboard (into the cool box when
+## there is room) and counted once; otherwise it escaped, and a broken line
+## (`line_broke`) costs the lure. Returns {"landed", "fish", "kept",
+## "first", "new_species", "personal_best", "exceptional", "awards", "text"}.
+func finish_fight(landed: bool, line_broke := false) -> Dictionary:
+	var result := {"landed": false, "fish": {}, "kept": false, "first": false, "new_species": false, "personal_best": false,
+		"exceptional": false, "awards": [], "text": ""}
+	if _state == null or _pending_bite.is_empty():
+		return result
+	var bite := _pending_bite
+	_pending_bite = {}
+	var fishing := _state.fishing
+	var catalog := FishingCatalog.get_default()
+	if not landed:
+		if line_broke:
+			fishing.lures[bite.lure] = maxi(fishing.get_lure_count(bite.lure) - 1, 0)
+			if fishing.get_lure_count(bite.lure) <= 0:
+				fishing.line_out = false
+			result.text = "Snap! The line broke and the %s went with the fish." % String(catalog.get_lure(bite.lure).get("name", "lure")).to_lower()
+		else:
+			result.text = "It got away."
+		_has_unsaved_changes = true
+		fishing_changed.emit()
+		return result
+	var species: String = bite.species
+	var kg := float(bite.kg)
+	var fish := {"uid": fishing.next_uid, "species": species, "kg": kg, "caught_at": _state.game_time, "where": _fishing_place()}
+	fishing.next_uid += 1
+	fishing.total_caught += 1
+	var record: Dictionary = fishing.records.get(species, {"count": 0, "best_kg": 0.0})
+	result.new_species = int(record.count) == 0
+	result.personal_best = not result.new_species and kg > float(record.best_kg)
+	record.count = int(record.count) + 1
+	record.best_kg = maxf(float(record.best_kg), kg)
+	fishing.records[species] = record
+	result.first = fishing.total_caught == 1
+	result.exceptional = catalog.is_exceptional(species, kg)
+	# The trophy board: the five most notable catches.
+	var trophy := fish.duplicate()
+	trophy["score"] = catalog.score(species, kg) + (10.0 if result.personal_best or result.new_species else 0.0)
+	fishing.trophies.append(trophy)
+	fishing.trophies.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a.score) > float(b.score) or (is_equal_approx(float(a.score), float(b.score)) and int(a.uid) < int(b.uid)))
+	fishing.trophies = fishing.trophies.slice(0, FishingState.TROPHY_COUNT)
+	if fishing.hold.size() < FishingState.HOLD_CAPACITY:
+		fishing.hold.append(fish)
+		result.kept = true
+	else:
+		fishing.released += 1
+	result.landed = true
+	result.fish = fish
+	# Milestones pay renown once; ordinary fish do not.
+	var awards: Array[Dictionary] = []
+	var name := catalog.get_species_name(species)
+	if result.first:
+		awards.append(_award_once("fish:first", "Your first fish: a %s" % name.to_lower(), 3))
+	if result.new_species:
+		awards.append(_award_once("fish:species:%s" % species, "A new species: %s" % name, 2))
+	if result.exceptional:
+		awards.append(_award_once("fish:exceptional:%s" % species, "An exceptional %s (%.1f kg)" % [name.to_lower(), kg], 4))
+	if result.personal_best:
+		_state.progress.mark(StringName("fish:best:%s" % species), _state.game_time)
+	awards = awards.filter(func(a: Dictionary) -> bool: return not a.is_empty())
+	result.awards = awards
+	result.text = "%s, %.1f kg%s" % [name, kg, "" if result.kept else ". The cool box is full, so it goes back."]
+	_has_unsaved_changes = true
+	fishing_changed.emit()
+	fish_landed.emit(result.duplicate(true))
+	if not awards.is_empty():
+		renown_awarded.emit(awards)
+	return result
+
+
+## Pays `renown` for milestone `id` the first time only (an existing
+## ObjectiveProgress record, like Go Ashore), or {} when already paid.
+func _award_once(id: String, title: String, renown: int) -> Dictionary:
+	if _state.progress.is_completed(StringName(id)):
+		return {}
+	_state.progress.award(StringName(id), title, renown, _state.game_time)
+	return {"id": id, "reward": renown, "title": title, "text": "", "secret": false, "tone": ""}
+
+
+## Where a fish was caught: the harbour, or the sea near the nearest one.
+func _fishing_place() -> String:
+	if not is_underway():
+		return get_location().display_name if get_location() else ""
+	var place := HatStory.describe_place(_state.vessel_position, &"")
+	return String(place.get("text", ""))
+
+
+## Puts a fish from the cool box back into the sea.
+func release_fish(uid: int) -> bool:
+	var index := _state.fishing.find_in_hold(uid) if _state else -1
+	if index < 0:
+		return false
+	_state.fishing.hold.remove_at(index)
+	_state.fishing.released += 1
+	_has_unsaved_changes = true
+	fishing_changed.emit()
+	return true
+
+
+## Sells a fish from the cool box at the harbour grocery store. Returns
+## {"error", "price"}.
+func sell_fish(uid: int) -> Dictionary:
+	if _state == null:
+		return {"error": "No game is running.", "price": 0}
+	if not has_facility(HarbourFacilities.GROCERY):
+		return {"error": "Fish can be sold at a harbour grocery store, while moored.", "price": 0}
+	var index := _state.fishing.find_in_hold(uid)
+	if index < 0:
+		return {"error": "That fish is no longer aboard.", "price": 0}
+	var fish: Dictionary = _state.fishing.hold[index]
+	var price := FishingCatalog.get_default().price(fish.species, float(fish.kg))
+	_state.fishing.hold.remove_at(index)
+	_state.fishing.sold += 1
+	_state.funds += price
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	fishing_changed.emit()
+	return {"error": "", "price": price}
+
+
+## Buys one lure at the harbour grocery store. Returns "" or the reason.
+func buy_lure(lure_id: String) -> String:
+	if _state == null:
+		return "No game is running."
+	if not has_facility(HarbourFacilities.GROCERY):
+		return facility_refusal(HarbourFacilities.GROCERY)
+	var lure := FishingCatalog.get_default().get_lure(lure_id)
+	if lure.is_empty():
+		return "Unknown lure."
+	var price := int(lure.price)
+	if price > _state.funds:
+		return "Not enough money: %s needed." % format_money(price)
+	_state.funds -= price
+	_state.fishing.lures[lure_id] = _state.fishing.get_lure_count(lure_id) + 1
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	fishing_changed.emit()
+	return ""
+
+
+func select_lure(lure_id: String) -> void:
+	if _state and not FishingCatalog.get_default().get_lure(lure_id).is_empty():
+		_state.fishing.lure = lure_id
+		_has_unsaved_changes = true
+		fishing_changed.emit()
+
+
+# --- The galley (Iteration 13) ------------------------------------------------------
+
+func get_galley() -> GalleyState:
+	return _state.galley.duplicate_state() if _state else GalleyState.new()
+
+
+func is_well_fed() -> bool:
+	return _state != null and _state.game_time < _state.galley.well_fed_until
+
+
+## Why the stove cannot be used now, or "": in harbour and at a holding
+## anchor always; underway only in moderate conditions (one simple rule).
+func cooking_refusal() -> String:
+	if _state == null:
+		return "No game is running."
+	if not is_underway():
+		return ""
+	if is_anchored():
+		return "The anchor is dragging: see to it first." if _state.anchor.holding == AnchorState.HOLDING_DRAGGING else ""
+	var here := Simulation.get_weather_at_vessel()
+	if here.speed_kn >= CALM_COOKING_WIND_KN or here.hazard >= WeatherModel.HAZARD_CAUTION:
+		return "Too lively for the stove (wind %d kn). Wait for calmer water, or anchor somewhere sheltered." % roundi(here.speed_kn)
+	return ""
+
+## Underway the stove is used only in winds below this (knots).
+const CALM_COOKING_WIND_KN := 18.0
+
+
+## Why `recipe_id` cannot be cooked (ingredients), or "".
+func recipe_refusal(recipe_id: String) -> String:
+	var recipe := Recipes.get_recipe(recipe_id)
+	if recipe.is_empty():
+		return "Unknown dish."
+	if _state.fishing.hold.size() < int(recipe.fish):
+		return "Needs %d fish from the cool box." % int(recipe.fish)
+	if _state.provisions.food_days + 1e-9 < float(recipe.groceries):
+		return "Not enough food in the stores."
+	return ""
+
+
+## Cooks a dish: one transaction that takes its fish (the oldest in the cool
+## box) and groceries, adds the cooked catch to the food stores and leaves the
+## crew well fed. Refused, with nothing changed, without the ingredients or in
+## rough conditions. Returns {"error", "recipe", "minutes", "food_added",
+## "fish", "well_fed_until", "awards", "evening"}. The cooking time itself is
+## spent by Simulation.spend_time_aboard().
+func cook(recipe_id: String) -> Dictionary:
+	var result := {"error": "", "recipe": recipe_id, "minutes": 0, "food_added": 0.0, "fish": [], "well_fed_until": 0.0,
+		"awards": [], "evening": false}
+	if _state == null:
+		result.error = "No game is running."
+		return result
+	result.error = cooking_refusal()
+	if result.error == "":
+		result.error = recipe_refusal(recipe_id)
+	if result.error != "":
+		return result
+	var recipe := Recipes.get_recipe(recipe_id)
+	var used: Array[Dictionary] = []
+	var kg := 0.0
+	for i in int(recipe.fish):
+		var fish: Dictionary = _state.fishing.hold.pop_front()
+		used.append(fish)
+		kg += float(fish.kg)
+	_state.provisions.take_food(float(recipe.groceries))
+	result.food_added = _state.provisions.add_food(Recipes.food_gained(recipe, kg))
+	var galley := _state.galley
+	galley.well_fed_until = maxf(galley.well_fed_until, _state.game_time + float(recipe.well_fed_hours) * 3600.0)
+	galley.meals_cooked += 1
+	galley.last_meal = recipe_id
+	galley.last_meal_at = _state.game_time
+	result.minutes = int(recipe.minutes)
+	result.fish = used
+	result.well_fed_until = galley.well_fed_until
+	var awards: Array[Dictionary] = [_award_once("cook:first", "Your first meal from the galley: %s" % String(recipe.name).to_lower(), 2)]
+	if not used.is_empty():
+		awards.append(_award_once("cook:own_catch", "Supper from your own catch", 3))
+		# The little story of the day: caught, anchored safely, cooked it.
+		if is_anchored() and _state.anchor.holding != AnchorState.HOLDING_DRAGGING:
+			result.evening = true
+			awards.append(_award_once("evening:catch_anchor_cook", "A quiet evening at anchor. Fresh fish for supper.", 5))
+	awards = awards.filter(func(a: Dictionary) -> bool: return not a.is_empty())
+	result.awards = awards
+	_has_unsaved_changes = true
+	_check_provisions()
+	fishing_changed.emit()
+	meal_cooked.emit(result.duplicate(true))
+	if not awards.is_empty():
+		renown_awarded.emit(awards)
+	return result
+
+
+# --- The anchor (Iteration 13) ------------------------------------------------------
+
+## Dragging moves the boat this far downwind per anchor check (5 minutes).
+const DRAG_NM_PER_CHECK := 0.04
+## Dragging this close to land scrapes the boat (condition per check).
+const DRAG_GROUND_NM := 0.6
+const DRAG_GROUND_DAMAGE := 1.5
+## A stay this long at anchor without dragging counts as a night at anchor.
+const NIGHT_AT_ANCHOR_S := 8.0 * 3600.0
+
+
+func is_anchored() -> bool:
+	return _state != null and _state.anchor.active
+
+
+func get_anchor() -> AnchorState:
+	return _state.anchor.duplicate_state() if _state else AnchorState.new()
+
+
+## The anchorage here, in the wind now (AnchorSite.evaluate()).
+func evaluate_anchorage() -> Dictionary:
+	if _state == null:
+		return {"class": AnchorSite.CLASS_UNSUITABLE, "ok": false, "reason": "No game is running."}
+	return AnchorSite.evaluate(_state.vessel_position, Simulation.get_weather_at_vessel())
+
+
+## Why the anchor cannot go down here, or "".
+func anchoring_refusal() -> String:
+	if _state == null:
+		return "No game is running."
+	if is_anchored():
+		return "The anchor is already down."
+	if not is_underway():
+		return "In harbour the boat is moored: anchoring is for the coast between harbours."
+	var site := evaluate_anchorage()
+	return "" if site.ok else String(site.reason)
+
+
+## Lets the anchor go here on `scope`:1 chain, set with `set_quality` (0..1,
+## from the setting interaction). The voyage pauses where the boat is.
+## Returns {"error", "holding", "site"}.
+func drop_anchor(scope: int, set_quality: float) -> Dictionary:
+	var refusal := anchoring_refusal()
+	if refusal != "":
+		return {"error": refusal, "holding": &"", "site": {}}
+	if not scope in AnchorState.SCOPES:
+		return {"error": "Choose 3, 5 or 7 times the depth of chain.", "holding": &"", "site": {}}
+	var anchor := _state.anchor
+	anchor.active = true
+	anchor.position = _state.vessel_position
+	anchor.scope = scope
+	anchor.set_quality = clampf(set_quality, 0.0, 1.0)
+	anchor.dragged_nm = 0.0
+	anchor.alarm = false
+	anchor.dragged_this_stay = false
+	anchor.anchored_at = _state.game_time
+	anchor.checked_until = _state.game_time
+	var site := evaluate_anchorage()
+	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel())
+	_has_unsaved_changes = true
+	if anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
+		var award := _award_once("anchor:first", "Your first anchorage", 3)
+		if not award.is_empty():
+			renown_awarded.emit([award])
+	anchor_changed.emit()
+	return {"error": "", "holding": anchor.holding, "site": site}
+
+
+## Lets out (or takes in) chain, or sets the anchor again: the holding is
+## worked out afresh. Answers an alarm. Returns the new holding.
+func adjust_anchor(scope: int, set_quality := -1.0) -> StringName:
+	if not is_anchored() or not scope in AnchorState.SCOPES:
+		return &""
+	var anchor := _state.anchor
+	var was_dragging := anchor.holding == AnchorState.HOLDING_DRAGGING or anchor.dragged_this_stay
+	anchor.scope = scope
+	if set_quality >= 0.0:
+		anchor.set_quality = clampf(set_quality, 0.0, 1.0)
+		anchor.position = _state.vessel_position
+	var site := evaluate_anchorage()
+	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel())
+	anchor.alarm = anchor.holding in [AnchorState.HOLDING_POOR, AnchorState.HOLDING_DRAGGING] and anchor.alarm
+	if was_dragging and anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
+		anchor.dragged_this_stay = false
+		var award := _award_once("anchor:drag_handled", "You stopped the anchor dragging", 4)
+		if not award.is_empty():
+			renown_awarded.emit([award])
+	_has_unsaved_changes = true
+	anchor_changed.emit()
+	return anchor.holding
+
+
+## The alarm was seen (it sounds again if things get worse).
+func acknowledge_anchor_alarm() -> void:
+	if is_anchored() and _state.anchor.alarm:
+		_state.anchor.alarm = false
+		_has_unsaved_changes = true
+		anchor_changed.emit()
+
+
+## Weighs anchor: the voyage continues along its course from where it paused.
+func raise_anchor() -> String:
+	if not is_anchored():
+		return "The anchor is not down."
+	_state.anchor.active = false
+	_state.anchor.alarm = false
+	_state.vessel_position = _state.voyage.get_position()
+	_state.propulsion = PropulsionState.new()
+	_has_unsaved_changes = true
+	anchor_changed.emit()
+	return ""
+
+
+## One anchor check at the current game time (Simulation only, on its fixed
+## grid): the holding against the wind now; dragging moves the boat downwind
+## a little (never jumps) and, very near land, scrapes it. Returns "" or
+## "poor" / "dragging" when the captain must be woken.
+func apply_anchor_check(tick: float) -> String:
+	if not is_anchored():
+		return ""
+	var anchor := _state.anchor
+	anchor.checked_until = maxf(anchor.checked_until, tick)
+	var sample := Simulation.get_weather_at_vessel()
+	var site := AnchorSite.evaluate(anchor.position, sample)
+	var before := anchor.holding
+	anchor.holding = AnchorSite.holding(anchor.scope, anchor.set_quality, site.shelter, sample)
+	var event := ""
+	if anchor.holding == AnchorState.HOLDING_DRAGGING:
+		anchor.dragged_this_stay = true
+		anchor.position = AnchorSite.offset(anchor.position, deg_to_rad(sample.from_deg + 180.0), DRAG_NM_PER_CHECK)
+		anchor.dragged_nm += DRAG_NM_PER_CHECK
+		_state.vessel_position = anchor.position
+		if HatStory.open_water_nm(anchor.position, DRAG_GROUND_NM) < DRAG_GROUND_NM:
+			apply_weather_damage(DRAG_GROUND_DAMAGE, tick)
+		if before != AnchorState.HOLDING_DRAGGING or not anchor.alarm:
+			anchor.alarm = true
+			event = "dragging"
+			anchor_alarm.emit({"level": "dragging", "text": "Anchor dragging! The boat is moving downwind. Let out more chain, set the anchor again or weigh anchor."})
+	elif anchor.holding == AnchorState.HOLDING_POOR and before in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
+		anchor.alarm = true
+		event = "poor"
+		anchor_alarm.emit({"level": "poor", "text": "The anchor is holding poorly as the wind rises. Check it: more chain helps."})
+	if before != anchor.holding:
+		anchor_changed.emit()
+	if tick - anchor.anchored_at >= NIGHT_AT_ANCHOR_S and not anchor.dragged_this_stay:
+		var award := _award_once("anchor:night", "A night at anchor", 3)
+		if not award.is_empty():
+			renown_awarded.emit([award])
+	_has_unsaved_changes = true
+	return event
+
+
+## Weather damage at anchor: a sheltered, holding anchorage takes less.
+func get_anchor_damage_factor() -> float:
+	if not is_anchored() or _state.anchor.holding == AnchorState.HOLDING_DRAGGING:
+		return 1.0
+	var site := AnchorSite.evaluate(_state.anchor.position, Simulation.get_weather_at_vessel())
+	return float(AnchorSite.EXPOSURE.get(site.shelter, 1.0))
+
+
+func get_anchor_checked_until() -> float:
+	return _state.anchor.checked_until if _state else 0.0
+
+
+func get_fish_checked_until() -> float:
+	return _state.fishing.checked_until if _state else 0.0
+
+
+## Notable moments of fishing, cooking and anchoring for the Captain's Log:
+## [{"time", "text"}] from the milestone records.
+func get_aboard_moments() -> Array[Dictionary]:
+	var moments: Array[Dictionary] = []
+	if _state == null:
+		return moments
+	var catalog := FishingCatalog.get_default()
+	for key: String in _state.progress.completed:
+		var entry: Dictionary = _state.progress.completed[key]
+		var text := ""
+		var time := float(entry.first)
+		if key == "fish:first":
+			text = "Caught my first fish"
+		elif key.begins_with("fish:species:"):
+			text = "First %s caught" % catalog.get_species_name(key.get_slice(":", 2)).to_lower()
+		elif key.begins_with("fish:exceptional:"):
+			text = "An exceptional %s" % catalog.get_species_name(key.get_slice(":", 2)).to_lower()
+		elif key.begins_with("fish:best:"):
+			var species := key.get_slice(":", 2)
+			text = "New personal best: %s, %.1f kg" % [catalog.get_species_name(species), float(_state.fishing.records.get(species, {}).get("best_kg", 0.0))]
+			time = float(entry.last_event)
+		elif key == "cook:first":
+			text = "First meal cooked in the galley"
+		elif key == "cook:own_catch":
+			text = "Supper from my own catch"
+		elif key == "evening:catch_anchor_cook":
+			text = "A quiet evening at anchor. Fresh fish for supper."
+		elif key == "anchor:first":
+			text = "First anchorage of my own"
+		elif key == "anchor:night":
+			text = "A night at anchor"
+		elif key == "anchor:drag_handled":
+			text = "Stopped the anchor dragging"
+		if text != "":
+			moments.append({"time": time, "text": text})
+	return moments
 
 
 # --- Go Ashore (Iteration 12) -------------------------------------------------------

@@ -62,7 +62,7 @@ func _test_name_and_version() -> void:
 	t.check(commit.is_empty() or RegEx.create_from_string("^[0-9a-f]{7}$").search(commit) != null,
 		"[version] the commit is read from the checkout without running git (%s)" % (commit if commit else "unknown"))
 	t.check(GameVersion.describe().begins_with("0.100c"), "[version] describe(): %s" % GameVersion.describe())
-	t.check_eq(SaveManager.SAVE_VERSION, 10, "[version] the save format has its own version (10), not the game's")
+	t.check_eq(SaveManager.SAVE_VERSION, 11, "[version] the save format has its own version (11), not the game's")
 	t.check_eq(String(ProjectSettings.get_setting("application/config/icon")), "res://assets/branding/little_captains_hat_icon.svg",
 		"[brand] the window icon is the hat")
 	for file in ["little_captains_hat_logo.svg", "little_captains_hat_logo_on_light.svg", "little_captains_hat_icon.svg",
