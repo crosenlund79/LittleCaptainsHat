@@ -447,7 +447,7 @@ func _test_persistence_and_migration() -> void:
 	if result.is_ok():
 		t.check_eq(result.state.hat.to_dict(), GameSession.get_hat().to_dict(), "[hat save] every hat field is restored")
 	var raw: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SaveManager.save_dir.path_join("slot_1.json")))
-	t.check_eq(int(raw.version), 10, "[hat save] saves are version 10")
+	t.check_eq(int(raw.version), SaveManager.SAVE_VERSION, "[hat save] saves are the current version (%d)" % SaveManager.SAVE_VERSION)
 	# A version 9 (Iteration 006) save has no hat: it gets the original, stored.
 	var session: Dictionary = raw.session
 	session.erase("hat")

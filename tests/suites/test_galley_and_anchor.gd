@@ -66,6 +66,7 @@ func _walk_to(area: BoatArea, station: Interactable) -> void:
 	if points.is_empty():
 		return
 	area.player.position = points[0]
+	area.player.set_facing(station.position - points[0])  # walking up to it
 	await t.physics_frames(4)
 
 
@@ -150,6 +151,13 @@ func _test_stove_on_every_boat() -> void:
 		var cells := W.walkable_cells(cabin, cabin.get_spawn_position(&"from_deck"))
 		t.check(not W.use_points(station, cells).is_empty(), "[galley] %s: the captain can walk to the stove" % id)
 		t.check(station.highlight_outline.size() >= 3, "[galley] %s: the stove itself is highlighted" % id)
+		var near_spot := []
+		for marker in cabin.get_node("Layout/CompanionSpots").get_children():
+			for gear in ["Cook", "Trophies"]:
+				var gear_station := cabin.get_node_or_null("Layout/Stations/%s" % gear) as Node2D
+				if gear_station and gear_station.position.distance_to(marker.position) < 60.0:
+					near_spot.append("%s~%s" % [gear, marker.name])
+		t.check(near_spot.is_empty(), "[galley] %s: the stove and the trophy board keep clear of the cat's and dog's resting spots %s" % [id, near_spot])
 		var deck := await _show(DECK, &"start")
 		var anchor := deck.get_node_or_null("Layout/Stations/Anchor") as Interactable
 		if not t.check(anchor != null and deck.get_gear("Windlass") != null, "[anchor] %s: a windlass on the foredeck" % id):

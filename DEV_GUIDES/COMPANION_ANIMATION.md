@@ -3,16 +3,33 @@
 How the ship's cat is drawn in the game, and how you change, add or prepare
 companion artwork. The general sprite rules are in [SPRITES.md](SPRITES.md).
 
-## What the game does with the cat
+## What the game does with the cat and the dog
 
-The cat uses four images, each one **pose**:
+Since Iteration 13 both companions show **illustrated art in the game's own
+style**: seen from above like the boats and the sailor, warm ink outlines over
+soft colour washes. The images are painted by a script,
+`tools/companions/paint_companions.py`, into `assets/companions/cat/` and
+`assets/companions/dog/` (256 × 256 px, transparent, the animal in the same
+place on every pose). The owner's original cat drawings stay in
+`Visuals/Cat/`, unchanged, and can be switched back in through data (§3).
 
-| Pose | File | When it shows |
-|---|---|---|
-| `resting` | `Visuals/Cat/Cat_resting.png` (lying down, eyes open) | most of the time |
-| `sleeping` | `Visuals/Cat/Cat_SleepingBack.png` (asleep on its back) | now and then, for 1–2.5 minutes |
-| `alert` | `Visuals/Cat/Cat_alert.png` (sitting up, looking) | when petted (with hearts and a purr), and briefly when you walk up to it while it rests |
-| `stretching` | `Visuals/Cat/Cat_stretching.png` (big stretch) | a few seconds, before or after a nap |
+Each companion uses four images, each one **pose**:
+
+| Pose | Cat | Dog | When it shows |
+|---|---|---|---|
+| `resting` | `assets/companions/cat/resting.png` | `assets/companions/dog/resting.png` | most of the time (idle) |
+| `sleeping` | `assets/companions/cat/sleeping.png` | `assets/companions/dog/sleeping.png` | now and then, for 1–2.5 minutes |
+| `alert` | `assets/companions/cat/alert.png` | `assets/companions/dog/alert.png` | when petted (with hearts and the purr or panting), and briefly when you walk up to it while it rests |
+| `stretching` | `assets/companions/cat/stretching.png` | `assets/companions/dog/stretching.png` | a few seconds, before or after a nap |
+
+The sets are `data/companions/cat_visuals.tres` (drawn 100 units across) and
+`data/companions/dog_visuals.tres` (116 units). The companions do not walk:
+they move between their resting spots, as before.
+
+**Highlight.** When the captain can pet it, the animal glows around its own
+silhouette (the outline of the pose shown), like every station since
+Iteration 12: no tint, no circle. Stations nearby still win the focus unless
+the captain stands clearly closer to the animal.
 
 **Behaviour.**
 - The cat rests for 25–60 s (real time). Then it usually naps (60%) or stretches.
@@ -25,13 +42,15 @@ The cat uses four images, each one **pose**:
 
 **Where it rests** does not change: the cat still moves between its resting spots
 (settee, nav station, berth) every few game hours, on every boat. Poses are
-presentation only and are never saved. The dog keeps its drawn (procedural) look
-until it gets its own images.
+presentation only and are never saved. The procedural drawings in
+`src/companion/ship_companion.gd` remain only as the fallback when a set's
+resting image is missing.
 
 ## 1. Where to draw and export
 
-- Put your exported images in **`Visuals/Cat/`**. That is the folder the game
-  reads; nothing needs to be copied anywhere else.
+- Put your own exported drawings in **`Visuals/Cat/`** (or a *Visuals/Dog/* folder)
+  and point the set's image paths at them (§3). The game's current art is in
+  `assets/companions/`; repaint it with `tools/companions/paint_companions.py`.
 - Keep working files (`.kra`, `.psd`, layers) outside the project folder, or at
   least outside `Visuals/`.
 - Export PNG. Transparent background is best. A plain white (or any single flat
@@ -165,20 +184,13 @@ godot --headless --path . res://tests/test_runner.tscn -- --only=companion
 - **White halo or missing parts:** see the background notes in §4 and the table
   in [SPRITES.md](SPRITES.md).
 
-## 10. Prepare dog artwork later
+## 10. The dog's artwork
 
-The dog uses the same system. Nothing has to be programmed:
-
-1. Draw the poses on one square canvas: resting, sleeping, alert (petted) and
-   stretching. The four names are the same; use what fits a dog.
-2. Export them into a new folder next to the cat's: *Visuals/Dog/Dog_resting.png*
-   and so on.
-3. In Godot, duplicate `data/companions/cat_visuals.tres` as
-   *data/companions/dog_visuals.tres* (the name must be `<kind>_visuals.tres`).
-4. In the copy, set **Kind** to `dog` and point each pose's **Image Path** at the
-   dog files.
-5. Run the game with a dog. As soon as `dog_visuals.tres` exists and its
-   resting image loads, the dog uses the images instead of the drawn dog.
+Since Iteration 13 the dog has its own set, `data/companions/dog_visuals.tres`,
+with the four poses in `assets/companions/dog/`. To use your own dog drawings
+instead, export them (for example into a *Visuals/Dog/* folder) on one square
+canvas and point each pose's **Image Path** in that file at them; nothing has
+to be programmed.
 
 The dog's sound is `assets/audio/placeholder/companion_dog_pant.wav` (see
 [AUDIO.md](AUDIO.md)).

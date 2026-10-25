@@ -1,5 +1,5 @@
 {
-	"note": "Iteration 13 fishing data. A simplified gameplay model, not science: which fish can be met in which of the harbour catalogue's broad sea areas (PortData.region), how rare they are, how big, and which lures and ways of fishing suit them. Edit freely; see DEV_GUIDES/FISHING.md.",
+	"note": "Iteration 13 fishing data. A simplified gameplay model, not science: which fish can be met in which of the harbour catalogue's broad sea areas (PortData.region), how rare they are, how big, and which lures and ways of fishing suit them. Edit freely; see DEV_GUIDES/LIFE_ABOARD.md.",
 	"bite_chance_per_check": 0.11,
 	"check_interval_s": 300,
 	"coastal_nm": 3.0,
@@ -20,7 +20,7 @@
 			"lures": {"spinner": 1.3, "spoon": 1.2, "soft": 0.7, "jig": 0.9}, "modes": {"stationary": 0.8, "trolling": 1.3}},
 		{"id": "flatfish", "name": "Flounder", "rarity": "common", "kg": [0.3, 2.5], "price_per_kg": 6, "strength": 0.35, "coastal": true,
 			"regions": ["baltic", "north_sea", "channel", "scandinavia", "british_isles"],
-			"lures": {"spinner": 0.4, "spoon": 0.5, "soft": 1.4, "jig": 1.1}, "modes": {"stationary": 1.4, "trolling": 0.3}},
+			"lures": {"spinner": 0.4, "spoon": 0.5, "soft": 1.2, "jig": 1.1}, "modes": {"stationary": 1.3, "trolling": 0.3}},
 		{"id": "cod", "name": "Cod", "rarity": "uncommon", "kg": [1.0, 12.0], "price_per_kg": 8, "strength": 0.7,
 			"regions": ["baltic", "north_sea", "scandinavia", "north_atlantic", "british_isles", "channel"],
 			"lures": {"spinner": 0.6, "spoon": 0.9, "soft": 1.1, "jig": 1.4}, "modes": {"stationary": 1.3, "trolling": 0.7}},

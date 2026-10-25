@@ -146,8 +146,25 @@ func _test_keys_follow_the_screen() -> void:
 	deck.view_heading_override = NAN
 
 
+## A new game aboard `id`, underway, on deck.
+func _aboard(id: StringName) -> BoatArea:
+	GameSession.end_session()
+	app.start_new_game()
+	await _settle()
+	var state := GameSession.get_state_snapshot()
+	state.vessel_id = id
+	GameSession.replace_state(state)
+	_depart()
+	var deck := await _show_deck()
+	app.toasts.clear()
+	app.hud.hide_warning()
+	return deck
+
+
+## On the large Frogleap 36 sailing north the whole hull does not fit at a
+## readable zoom: the camera follows the captain instead.
 func _test_framing_follows_the_captain() -> void:
-	var deck := app.router.current_screen as BoatArea
+	var deck := await _aboard(&"petrel_36")
 	await _view(deck, 0.0)
 	var camera := deck.get_node("Camera2D") as Camera2D
 	var bounds := deck._boat_view_bounds()
@@ -158,7 +175,7 @@ func _test_framing_follows_the_captain() -> void:
 		var at := deck.get_viewport().get_canvas_transform() * deck.to_global(deck.player.position)
 		t.check(deck.get_viewport_rect().grow(-40.0).has_point(at),
 			"[framing] sailing north, the captain at the %s stays in view (%d, %d)" % ["bow" if end > 0 else "stern", roundi(at.x), roundi(at.y)])
-		await t.screenshot("13_view_north_at_the_%s" % ("bow" if end > 0 else "stern"))
+		await t.screenshot("13_view_north_frogleap_at_the_%s" % ("bow" if end > 0 else "stern"))
 	var target := deck.get_course_camera_target(camera.zoom, camera.rotation)
 	t.check(target.x >= bounds.position.x and target.x <= bounds.end.x, "[framing] the camera never aims past the boat's ends")
 	deck.player.position = deck.get_spawn_position(&"start")
@@ -167,16 +184,7 @@ func _test_framing_follows_the_captain() -> void:
 
 func _test_every_boat() -> void:
 	for id: StringName in BOATS:
-		GameSession.end_session()
-		app.start_new_game()
-		await _settle()
-		var state := GameSession.get_state_snapshot()
-		state.vessel_id = id
-		GameSession.replace_state(state)
-		_depart()
-		var deck := await _show_deck()
-		app.toasts.clear()
-		app.hud.hide_warning()
+		var deck := await _aboard(id)
 		await _view(deck, 45.0)
 		t.check(_bow_on_screen(deck).dot(Vector2.from_angle(deg_to_rad(-45.0))) > 0.995, "[boats] %s: drawn north-east like the others" % id)
 		await t.screenshot("13_view_ne_%s" % BOATS[id])

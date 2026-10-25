@@ -68,6 +68,37 @@ section. Notes added by developers are kept apart and marked as such.
   stability and existing save compatibility take priority over forced visual
   changes.
 
+### Iteration 13, The Catch & The Cove
+
+The Captain has approved:
+
+- **Iteration 13, The Catch & The Cove**, version 0.101a, the next feature
+  milestone after the Iteration 12 sea trial.
+- **Fishing, cooking and anchoring as one connected gameplay experience**:
+  sail, fish, find shelter, anchor, cook, rest, continue the voyage.
+- **Fishing with manageable equipment and regional fish**: one basic rod,
+  four lure families with modest differences, stationary fishing and
+  trolling, fair and readable bites and tension.
+- **A five-catch trophy display** in the cabin.
+- **Lightweight galley cooking** using catches and groceries; no hunger,
+  nutrition or mood simulation.
+- **Coastal anchoring**: scope, holding, dragging and wake-up alarms, with a
+  conservative suitability model that invents no depths.
+- **Cozy progression built on the existing renown and Captain's Log
+  systems**, not new currencies.
+- **Replacement of the old cat and dog in-game graphics** with illustrations
+  in the game's established style. (The Captain's original drawings are kept.)
+- **Companion interactions use the current highlight system.**
+- **No visible activation circles**, anywhere, including the new stations.
+- **An eight-directional boat display** rather than continuous
+  arbitrary-angle presentation.
+- **Accurate underlying navigation and sailing physics**: only the picture is
+  in eight directions.
+- **Intuitive movement controls** at every orientation.
+- **Strict preservation of existing game systems.**
+- **Revision iterations remain the preferred follow-up** to significant
+  playtest findings.
+
 ### Iterations and versions
 
 - Iteration numbers are sequential integers: no letter suffixes and no
@@ -98,16 +129,24 @@ section. Notes added by developers are kept apart and marked as such.
 These remain separately approved future assignments; they are not started
 early:
 
-- fishing;
-- anchoring;
 - maintenance and equipment expansion;
 - a worldwide chart.
 
-## Phase Two
+(Fishing and anchoring, listed here until Iteration 12, were commissioned by
+the Captain as Iteration 13.)
 
-The Captain has a locked **Phase Two distinction**. It is **not written down in
-this repository yet**, so it is not restated or guessed here. It stays in force
-exactly as the Captain defined it. *Developer note: please add its wording here.*
+## Phase One and Phase Two
+
+The Captain distinguishes the **current authorized development scope** (Phase
+One) from a **locked future Phase Two**. The precise wording of the Phase Two
+policy is **still not written down in this repository** (checked again in
+Iteration 13), so it is not restated or guessed here. It stays in force
+exactly as the Captain defined it.
+
+What is established by the Captain's current authorization: Iteration 13 is
+within the current scope; it does not reopen or expand Phase Two, and it adds
+no worldwide exploration, future systems or broad content expansions.
+*Developer note: please add the Phase Two wording here.*
 
 ## Iteration log
 
@@ -116,3 +155,6 @@ exactly as the Captain defined it. *Developer note: please add its wording here.
 - A Living Little World, version 0.100b: see `VISUAL_POLISH_0100B_REPORT.md`.
 - **Iteration 12, A Little Harbour Life**, version 0.100c: an authorized revision
   build; see `ITERATION_12_REPORT.md` and `WINDOWS_ACCEPTANCE_12.md`.
+- **Iteration 13, The Catch & The Cove**, version 0.101a: fishing, the galley,
+  anchoring, the new cat and dog and the eight-direction sailing view; see
+  `ITERATION_13_REPORT.md` and `WINDOWS_ACCEPTANCE_13.md`.

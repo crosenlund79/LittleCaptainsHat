@@ -390,10 +390,11 @@ func _test_dog() -> void:
 	var area := app.router.current_screen as BoatArea
 	var cells := W.walkable_cells(area, area.get_spawn_position(&"from_deck"))
 	# Walk up beside the dog (not onto it), as a player would.
-	for p in W.use_points(dog.interactable, cells):
-		if p.distance_to(dog.position) < 26.0:
-			continue
+	var beside := cells.filter(func(c: Vector2) -> bool: return c.distance_to(dog.position) >= 26.0 and c.distance_to(dog.position) <= 60.0)
+	beside.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.distance_to(dog.position) < b.distance_to(dog.position))
+	for p: Vector2 in beside:
 		area.player.position = p
+		area.player.set_facing(dog.position - p)
 		await t.physics_frames(4)
 		if area.player.get_focused_interactable() == dog.interactable:
 			break

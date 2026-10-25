@@ -257,10 +257,18 @@ func _test_reachability_all() -> void:
 						near = true
 						break
 				t.check(near, "[walk] %s: spawn '%s' is free and connected" % [label, spawn])
+			var fine: Array[Vector2] = []
 			for station: Interactable in area.get_node("Layout/Stations").get_children():
 				if not station.enabled:
 					continue
-				t.check(not _use_points(station, cells).is_empty(), "[walk] %s: '%s' can be walked to" % [label, station.interaction_id])
+				var reachable := not _use_points(station, cells).is_empty()
+				if not reachable:
+					# Narrow side decks (the Wing 33's) need a finer grid to find
+					# the way the player fits through (Iteration 13: the windlass).
+					if fine.is_empty():
+						fine = TestWalkability.walkable_cells(area, start, 5.0)
+					reachable = not _use_points(station, fine).is_empty()
+				t.check(reachable, "[walk] %s: '%s' can be walked to" % [label, station.interaction_id])
 			var bounds_ok := true
 			for c in cells:
 				bounds_ok = bounds_ok and area.walkable_bounds.grow(PLAYER_RADIUS).has_point(c)

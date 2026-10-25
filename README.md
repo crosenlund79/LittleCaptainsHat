@@ -20,10 +20,40 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.100c, Iteration 12: A Little Harbour Life**, a revision build
-(see [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md), the sea-trial checklist
-[WINDOWS_ACCEPTANCE_12.md](WINDOWS_ACCEPTANCE_12.md) and the Captain's standing
-decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)):
+Current version: **0.101a, Iteration 13: The Catch & The Cove**
+(see [ITERATION_13_REPORT.md](ITERATION_13_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_13.md](WINDOWS_ACCEPTANCE_13.md), the developer guide
+[DEV_GUIDES/LIFE_ABOARD.md](DEV_GUIDES/LIFE_ABOARD.md) and the Captain's standing
+decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)). An evening at sea
+without a harbour: *sail, fish, find shelter, anchor, cook, rest, sail on*:
+- **fishing**: a rod on the stern rail of every boat and four kinds of lure.
+  Fish from a still boat (moored or at anchor) or **troll** a lure behind the
+  boat while it sails on. Regional fish from data (herring, mackerel, cod, sea
+  trout, perch in the Baltic, bream and bonito in the south…). A bite rings the
+  rod's bell and shows **"Fish on!"** in the HUD; then a small, forgiving
+  tension game: reel in, and ease off when the bar turns red. Keep the fish in
+  the cool box, release it, or sell it at a harbour grocery store;
+- a **trophy board** in the cabin with your five most notable catches;
+- **the galley**: a little stove beside the provisions. Five simple dishes
+  from the catch and the stores; the catch becomes food, and a warm meal
+  makes the stores last a little longer. Underway the stove is used only in
+  moderate conditions;
+- **anchoring**: a windlass on every foredeck. Near a coast it tells you how
+  sheltered the spot is from the wind now, you choose the chain and set the
+  anchor, and the HUD says how it is holding. If the wind rises, an alarm (a
+  red badge, a notice and a soft beep) comes **before** the anchor drags, and
+  wakes you if you sleep. Raise it to sail on;
+- the day's small stories go into the **Captain's Log** with a little renown
+  the first time ("A quiet evening at anchor. Fresh fish for supper.");
+- a **new cat and dog**, illustrated like the rest of the boat, that glow
+  around their own outline when you can pet them;
+- the course view now shows the boat in **eight directions** (N, NE, … NW) and
+  follows the captain along the deck; the sailing itself keeps the exact
+  course.
+
+Version 0.100c, Iteration 12: A Little Harbour Life, a revision build
+(see [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md) and the sea-trial checklist
+[WINDOWS_ACCEPTANCE_12.md](WINDOWS_ACCEPTANCE_12.md)), brought:
 - **walk ashore**: in harbour a gangplank leads from your boat down to the
   pontoon, where the harbour's services stand: the grocery store, the boatyard
   (where there is one) and **Go Ashore**;
@@ -225,6 +255,10 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Sleep dialog: duration | **<** / **>** buttons (or Left / Right): 1–12 hours |
 | Cat beside a station | stand at the station to use it; **face the cat** (the arrow on your token) to pet it |
 | Provisions | **E** at the galley's provisions station (every cabin) |
+| Fishing | **E** at the rod on the stern rail: let the line out, choose a lure, wait for a bite. In the fight **hold E** (or the Reel button) to reel in and let go to ease off |
+| Cooking | **E** at the little stove beside the provisions |
+| Anchoring | **E** at the windlass on the foredeck; while setting the anchor press **E** (or *Set it now*) as the marker crosses the green middle |
+| Trophy board | **E** at the board on the cabin wall |
 | Captain's hat | **E** at its hook in the cabin: put it on or hang it up. **H** aboard: take it off (under your arm) or put it back on |
 | Captain's Log | **L** (aboard or on the chart), or **Captain's Log** in the pause menu: Log, Harbours and Objectives tabs; *Publish travel update…* |
 | Chart: find a harbour | type in **Find a harbour…** on the Course tab, then click a result (works for harbours hidden at the current zoom) |
@@ -413,7 +447,9 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - the boat you sail (by its stable id, e.g. `halcyon_40`);
   - money, food and water, each boat's condition, and the rescues so far.
 - Loading resumes exactly where you saved. **No time passes while the game is closed.**
-- Save format version 10 (independent of the game version). **Older saves still load:**
+- Save format version 11 (independent of the game version). **Older saves still load:**
+  - Iteration 12 saves (v10) get an empty cool box with the basic rod and two
+    spinners, a clean galley record and no anchor down; nothing else changes.
   - Iteration 006 saves (v9 and v8) get the captain's hat: the original, on its hook.
   - Iteration 005a saves (v6) start the new systems as a new game does: €10,000,
     14 days of food and water, every boat at 100 %. A voyage underway is kept.
@@ -495,7 +531,7 @@ templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, the release
-reports [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md) (0.100c),
+reports [ITERATION_13_REPORT.md](ITERATION_13_REPORT.md) (0.101a), [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md) (0.100c),
 [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md) (0.100b) and
 [VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) (0.100a), and
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) with its Windows checklist
@@ -522,8 +558,14 @@ built and verified.
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
 - The companion only rests and changes pose (no walking, no needs) and stays in the
-  cabin. Its sounds are synthetic placeholders. The dog has no drawn artwork yet
-  (it uses the placeholder drawing).
+  cabin. Its sounds are synthetic placeholders.
+- Fishing, the galley and anchoring are deliberately simple models (see
+  [DEV_GUIDES/LIFE_ABOARD.md](DEV_GUIDES/LIFE_ABOARD.md)): fish areas follow the
+  nearest harbour's region, not real fish stocks; anchorages are judged only
+  from the chart's land/water grid (distance to land and the open water
+  upwind), with no depths, seabed or hazards such as rocks; dropping the
+  anchor stops the boat at once, and raising it continues the voyage from its
+  course. The new sounds are synthetic placeholders too.
 - **Routing coverage.** All 163 harbours are reachable (each is tested against the
   chart and router). Waters the chart
   data cannot represent are **not** navigable, and are reported as such instead of being

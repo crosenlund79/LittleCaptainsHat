@@ -661,24 +661,102 @@ func _setup_aboard_gear() -> void:
 		var provisions := stations.get_node_or_null(^"Provisions") as Node2D
 		var galley := _nearest_fixture(provisions.position if provisions else Vector2.ZERO, HighlightResolver.FIXTURES[&"provisions"])
 		if provisions and galley:
-			var cook_at := provisions.position + Vector2(64, 0)
+			var cook_at := provisions.position + Vector2(_clear_offset(provisions.position, STOVE_OFFSETS, stations, STOVE_CLEARANCE), 0.0)
 			var stove := GalleyStove.new()
 			stove.name = "GalleyStove"
 			stove.position = Vector2(cook_at.x, lerpf(provisions.position.y, galley.position.y, 0.85))
 			_add_gear(stove, GalleyStove.outline())
-			_add_station(stations, "Cook", &"cook", "Cook a meal", cook_at, 30.0)
+			# The station sits at the counter, so the stove is used from in front
+			# of it, not from across the cabin (or from beside the cat).
+			_add_station(stations, "Cook", &"cook", "Cook a meal", Vector2(cook_at.x, lerpf(provisions.position.y, galley.position.y, 0.5)), 24.0)
 		var hat_spot := get_node_or_null(^"Layout/HatSpot") as Node2D
 		var hat := stations.get_node_or_null(^"Hat") as Node2D
 		if hat_spot and hat:
+			var place := trophy_place(hat_spot.position, hat.position, stations)
 			var board := TrophyBoard.new()
 			board.name = "TrophyBoard"
-			board.position = hat_spot.position + TROPHY_OFFSET
+			board.position = place[0]
 			_add_gear(board, TrophyBoard.outline())
-			_add_station(stations, "Trophies", &"trophies", "Look at the trophy board", hat.position + TROPHY_OFFSET, 32.0)
+			var station := _add_station(stations, "Trophies", &"trophies", "Look at the trophy board", place[1], 26.0)
+			# A board to look at: like the companion, it never takes the E key
+			# from a station nearby unless the captain stands closer to it.
+			station.focus_priority = -1
 
 
-## The trophy board hangs on the hat's wall, this far from the hook.
-const TROPHY_OFFSET := Vector2(-140, 0)
+## The stove stands beside the provisions, and the trophy board on the hat's
+## wall, at the first of these offsets (along the boat) whose station keeps
+## clear of the companion's resting spots and the other stations, so neither
+## takes the E key where the cat or dog lies.
+const STOVE_OFFSETS: Array[float] = [64.0, 80.0, 96.0, -64.0]
+const STOVE_CLEARANCE := 72.0
+const TROPHY_OFFSETS: Array[float] = [-140.0, 140.0, -160.0, 160.0, -180.0, 180.0, -200.0, 200.0, 120.0, -120.0]
+## Clearances tried in turn: wide first, so the board's station is never
+## between the captain and a resting cat or dog when there is room.
+const TROPHY_CLEARANCES: Array[float] = [100.0, 90.0, 64.0]
+
+
+## Where the trophy board hangs and where its station is: [board, station].
+## On the hat's wall when there is a clear stretch (TROPHY_OFFSETS from the
+## hook); otherwise on the opposite wall, mirrored across the centreline, at
+## the clear place nearest the hook's position along the boat.
+func trophy_place(hat_spot: Vector2, hat_station: Vector2, stations: Node) -> Array[Vector2]:
+	# The station stands a little in front of the board (closer to the wall
+	# than the hat's), so it is used from in front of it.
+	var inward := (hat_station - hat_spot) * 0.6
+	var mirror := Vector2(1.0, -1.0)
+	for clearance in TROPHY_CLEARANCES:
+		for offset in TROPHY_OFFSETS:
+			var board := hat_spot + Vector2(offset, 0.0)
+			if _is_clear(board + inward, stations, clearance, [&"Hat"]):
+				return [board, board + inward]
+		for k in 27:
+			var offset := (k + 1) / 2 * 20.0 * (1.0 if k % 2 == 0 else -1.0)
+			var board := hat_spot * mirror + Vector2(offset, 0.0)
+			if _is_clear(board + inward * mirror, stations, clearance, [&"Hat"]):
+				return [board, board + inward * mirror]
+	var fallback := hat_spot + Vector2(TROPHY_OFFSETS[0], 0.0)
+	return [fallback, fallback + inward]
+
+
+## True when `at` lies in the cabin and keeps `clearance` from the companion's
+## resting spots and from every station (except those named in `ignore`).
+func _is_clear(at: Vector2, stations: Node, clearance: float, ignore: Array[StringName] = []) -> bool:
+	var hull := _cabin_polygon()
+	if hull.size() >= 3 and not Geometry2D.is_point_in_polygon(at, hull):
+		return false
+	for child in stations.get_children():
+		if child is Node2D and not child.name in ignore and (child as Node2D).position.distance_to(at) < clearance:
+			return false
+	var spots := get_node_or_null(^"Layout/CompanionSpots")
+	if spots:
+		for marker in spots.get_children():
+			if marker is Node2D and (marker as Node2D).position.distance_to(at) < clearance:
+				return false
+	return true
+
+
+## The first offset in `offsets` (along x from `from`) whose point lies in
+## the cabin and keeps `clearance` from every companion spot and every other
+## station (`ignore`: station names that do not count); else the first.
+func _clear_offset(from: Vector2, offsets: Array[float], stations: Node, clearance: float) -> float:
+	for offset in offsets:
+		var at := from + Vector2(offset, 0.0)
+		# The station it stands beside (at `from`) does not count.
+		if _is_clear(at, stations, clearance, [_station_at(stations, from)]):
+			return offset
+	return offsets[0]
+
+
+func _station_at(stations: Node, at: Vector2) -> StringName:
+	for child in stations.get_children():
+		if child is Node2D and (child as Node2D).position.distance_to(at) < 1.0:
+			return child.name
+	return &""
+
+
+func _cabin_polygon() -> PackedVector2Array:
+	var shape := get_node_or_null(^"Layout/Collision/Hull/CollisionPolygon2D") as CollisionPolygon2D
+	return shape.polygon if shape else PackedVector2Array()
 
 
 func _add_gear(gear: Node2D, outline: PackedVector2Array) -> void:

@@ -16,22 +16,25 @@ version of each guide.
 | Guide | Read it when you want to… | Applies to |
 |---|---|---|
 | [SPRITES.md](SPRITES.md) | replace any artwork with a PNG: formats, transparency, import settings, sizes, alignment, fallback, common mistakes | all sprites |
-| [COMPANION_ANIMATION.md](COMPANION_ANIMATION.md) | change or add the ship's cat poses, adjust their placement, prepare dog artwork | `Visuals/Cat/`, `data/companions/` |
+| [COMPANION_ANIMATION.md](COMPANION_ANIMATION.md) | change the cat's and the dog's poses, adjust their placement, repaint them or switch back to your own drawings | `assets/companions/`, `Visuals/Cat/`, `data/companions/` |
 | [VESSEL_ART.md](VESSEL_ART.md) | draw a boat's deck, cabin or sails, damage overlays and the provisions display; use the art templates; understand layouts, visual profiles and slots | `assets/vessels/`, `src/vessels/`, `data/vessels/` |
 | [AUDIO.md](AUDIO.md) | replace a sound (purr, engine, storm wind, thunder, ambience, clicks); understand the audio buses | `assets/audio/` |
 | [WEATHER.md](WEATHER.md) | tune where gales, thunderstorms and cyclones form, hazard levels, warnings and weather damage; restyle the chart's weather; use the F9 developer test tools and weather fixtures | `data/weather/`, `src/weather/`, `src/dev/` |
 | [CAPTAINS_HAT.md](CAPTAINS_HAT.md) | replace the captain's hat drawings, move its hook aboard, tune how wind takes it and what a replacement costs | `assets/hat/`, `data/hat/`, `src/hat/` |
 | [HARBOURS.md](HARBOURS.md) | give a harbour or take away a service (grocery, boatyard, Go Ashore), understand the gangplank and shore on every boat, add a Go Ashore event | `data/harbours/facilities/`, `src/harbour/` |
+| [LIFE_ABOARD.md](LIFE_ABOARD.md) | tune the fish, lures and trophies, the galley's dishes and the anchorage model; find the rod, stove, windlass and trophy board | `data/fishing/`, `src/fishing/`, `src/galley/`, `src/anchor/`, `src/aboard/` |
 | [MODDING_FUTURE.md](MODDING_FUTURE.md) | keep the project open for user content later (no mod support exists) | design principles |
 
 ## Where things belong
 
 | What | Where |
 |---|---|
-| Your original companion drawings | `Visuals/Cat/` (a dog later: a `Dog` folder next to it) |
+| Your original companion drawings | `Visuals/Cat/` (kept; a `Dog` folder next to it for your own dog) |
 | Vessel sprites (deck and cabin layers) | `assets/vessels/<vessel_id>/deck/` and `.../cabin/` |
 | Art templates for drawing vessels (generated) | `assets/vessels/<vessel_id>/templates/` |
-| Companion pose configuration | `data/companions/cat_visuals.tres` |
+| Companion art (game, illustrated) | `assets/companions/cat/`, `assets/companions/dog/` |
+| Companion pose configuration | `data/companions/cat_visuals.tres`, `data/companions/dog_visuals.tres` |
+| Fish, lures and rarities | `data/fishing/fishing.json` |
 | Vessel definitions and visual profiles | `data/vessels/` |
 | Sounds | `assets/audio/` (the current ones are placeholders in `assets/audio/placeholder/`) |
 | Weather data (zones, seasons, cyclone basins) | `data/weather/weather_events.json` |

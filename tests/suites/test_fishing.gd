@@ -290,6 +290,7 @@ func _walk_to(area: BoatArea, station: Interactable) -> void:
 	if points.is_empty():
 		return
 	area.player.position = points[0]
+	area.player.set_facing(station.position - points[0])  # walking up to it
 	await t.physics_frames(4)
 
 

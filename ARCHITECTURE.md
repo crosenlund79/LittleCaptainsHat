@@ -100,7 +100,7 @@ their own `LabelSettings` (see *Harbour presentation*).
 
 **Name, version and folder.** The window title and saves' `game_version`
 come from `project.godot` (`application/config/name` "Little Captain's Hat",
-`application/config/version` "0.100c"). `GameVersion`
+`application/config/version` "0.101a"). `GameVersion`
 (`src/app/game_version.gd`) holds the version in one place (a test keeps
 `project.godot` equal to it), a numbers-only form for tools, and the commit
 (from an optional `build_info.json` written by `tools/write_build_info.py`, or
@@ -1171,6 +1171,60 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
 - **Determinism:** it only reads; a test plays the same hat scenario with and
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
+
+## The catch and the cove (Iteration 13, 0.101a)
+
+Fishing, the galley and the anchor, built on the existing systems; tunables
+and the models are in [DEV_GUIDES/LIFE_ABOARD.md](DEV_GUIDES/LIFE_ABOARD.md).
+
+- **State.** `SessionState` gains `fishing` (`FishingState`: rod, lures, the
+  line, the cool box with unique fish ids, records, the five trophies),
+  `galley` (`GalleyState`: well fed until, meals) and `anchor` (`AnchorState`:
+  active, position, scope, set quality, holding, alarm, dragging). GameSession
+  is the only writer. Save format 11; `SaveManager._migrate_10_to_11` adds the
+  empty sections. Validation rejects a fish twice in the cool box, more fish
+  than it holds, and an anchor down outside a voyage. While anchored the
+  boat's position is the anchor's (dragging moves it), not the voyage's.
+- **Time.** `Simulation.advance()` runs the new checks on fixed grids, so the
+  outcome never depends on how time is chopped: bite checks every
+  `FishingCatalog.check_interval_s` with the line out (moored, at anchor, or
+  trolling along the course), and anchor checks on the weather's evaluation
+  grid while anchored (the voyage waits; the weather is still assessed). A
+  bite or an anchor alarm stops sleep (`STOP_BITE`, `STOP_ANCHOR`) and drops
+  20× to 1×. `spend_time_aboard(minutes, sheltered)` is used for waiting at
+  the rod, cooking and anchor work.
+- **Rules.** `FishingCatalog` (data, regions, bite chance, the seeded pick,
+  trophy score), `FishFight` (the real-time tension game), `Recipes`,
+  `AnchorSite` (suitability from the land/water grid, the fetch upwind, the
+  holding margin). All transactions are single GameSession calls
+  (`finish_fight`, `cook`, `drop_anchor`, `adjust_anchor`, `raise_anchor`,
+  `sell_fish`, `buy_lure`) that either complete or change nothing.
+  Milestones use the ObjectiveProgress ledger (`_award_once`), and
+  `get_aboard_moments()` turns them into Captain's Log notable moments.
+- **Presentation.** `BoatArea._setup_aboard_gear()` places the rod holder,
+  windlass, galley stove and trophy board (`src/aboard/`) from each boat's own
+  outline and fixtures, each with a `HighlightProvider`; the panels are
+  `FishingMenu`, `CookingMenu`, `AnchorMenu` and `TrophyMenu`; the HUD's
+  `AboardBadge` shows "Fish on!", the line, the anchor's holding (red when
+  dragging) and "Well fed". The App waits 45 s of play for the captain to reach
+  a biting fish, and sounds `FishingSounds` cues, each with a visible
+  counterpart. At anchor the sails are furled and the helm asks to raise the
+  anchor first.
+- **Companions.** The cat's and the dog's `CompanionVisualSet`s point at the
+  illustrated art in `assets/companions/` (painted by
+  `tools/companions/paint_companions.py`); the owner's drawings stay in
+  `Visuals/Cat/`. `ShipCompanion` is a highlight provider for `pet`: the focus
+  glow follows the silhouette of the pose shown (`ShipCompanion.silhouette`).
+- **Eight directions.** In the course view `BoatArea.get_target_rotation()`
+  uses `get_view_octant()`: the heading's octant with
+  `OCTANT_HYSTERESIS_DEG` (8°). The simulation's heading is untouched. The
+  camera follows the captain along the turned boat
+  (`get_course_camera_target`), so on long north/south views the part of the
+  deck they are on stays in view; movement stays screen-relative
+  (`Player.view_rotation`).
+- **Diagnostics.** Bounded events: `fishing_*`, `fish_landed`, `cooking`,
+  `meal`, `galley_open`, `anchor`, `anchor_open`, `anchor_state`,
+  `anchor_alarm`, `sleep`, `companion_pet`, `view_octant`.
 
 ## A little harbour life (Iteration 12, 0.100c)
 
