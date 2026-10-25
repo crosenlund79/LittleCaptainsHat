@@ -53,6 +53,14 @@ func _ready() -> void:
 	_ui_scale.drag_ended.connect(func(_changed: bool) -> void: _apply_ui_scale())
 	_ui_scale.value_changed.connect(_on_ui_scale_value_changed)
 	_build_art_style_row()
+	var logs := Button.new()
+	logs.name = "LogsButton"
+	logs.text = "Diagnostic logs…"
+	logs.tooltip_text = "Opens the folder with the technical session logs (for bug reports): %s" % SessionLog.get_folder()
+	logs.pressed.connect(func() -> void:
+		if DisplayServer.get_name() != "headless":
+			OS.shell_open(SessionLog.get_folder()))
+	%DefaultsButton.add_sibling(logs)
 	%DefaultsButton.pressed.connect(_on_defaults_pressed)
 	%ApplyButton.pressed.connect(_on_apply_pressed)
 	_back.pressed.connect(handle_back)

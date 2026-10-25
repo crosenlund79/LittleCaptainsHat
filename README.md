@@ -21,7 +21,7 @@ dangerous, and every mishap can be recovered from.
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
 Current version: **0.100a, Visual Identity V01: A Little Personality**
-(see `VISUAL_IDENTITY_V01_REPORT.md`):
+(see [VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) and [WINDOWS_ACCEPTANCE_VISUAL_V01.md](WINDOWS_ACCEPTANCE_VISUAL_V01.md)):
 - the **captain's hat**: it hangs on a hook in every cabin. Wear it (E at the
   hook), take it off (H), and mind the wind on deck: in strong wind it may blow
   away, after a fair warning ("Better hold onto your hat!"). Replacements cost
@@ -389,12 +389,25 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
 - Writes are safe (temporary file, verify, keep `.bak`, then replace). Damaged or invalid
   saves are reported and never change the running game.
 
+## Diagnostic logs
+
+For bug reports, every run writes a small technical log (not the Captain's
+Log): `%APPDATA%\Little Captains Hat\diagnostics\session_<date and time>.jsonl`
+on Windows. **Settings → Diagnostic logs…** opens the folder. It records the
+game version and commit, screen changes, saving and loading, the captain's hat,
+achievements, money, voyages and errors, one line each, never every frame.
+The newest 10 sessions are kept, each at most 1 MB. No personal data is written.
+Attach the latest file to a bug report.
+
 ## Settings
 
 Unchanged from Iteration 001: stored in `user://settings.cfg` (in the game's own folder), separate from saves;
 changes preview immediately, **Apply** saves them, **Back** asks before discarding.
 Volumes are percentages (0% mutes). Window modes: Windowed, Fullscreen (exclusive),
 Borderless fullscreen. Interface scale 80–130% scales menus and HUD only.
+**Artwork** (Visual Identity V01): *Illustrated (prototype)* shows the painted
+Starling 33 and the illustrated harbours; *Classic* shows the earlier art, to
+compare.
 
 ## Project layout
 

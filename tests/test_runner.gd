@@ -41,6 +41,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_secret_achievements.gd"),
 	preload("res://tests/suites/test_branding.gd"),
 	preload("res://tests/suites/test_visual_prototype.gd"),
+	preload("res://tests/suites/test_diagnostics.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
 
@@ -75,6 +76,9 @@ func _exit_tree() -> void:
 func _run() -> void:
 	_reset_scratch_files()
 	SaveManager.save_dir = TEST_SAVE_DIR
+	# The diagnostic log of a test run goes to its own folder.
+	SessionLog.log_dir = "user://test_diagnostics"
+	SessionLog.restart()
 	SettingsManager.settings_path = TEST_SETTINGS_PATH
 	SettingsManager.load_settings()
 	for script in SUITES:

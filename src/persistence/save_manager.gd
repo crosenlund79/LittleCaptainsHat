@@ -153,6 +153,7 @@ func save_to_slot(slot: int, state: SessionState) -> Error:
 			DirAccess.rename_absolute(backup_path, final_path)
 		push_error("Cannot finalize save for slot %d (error %d)" % [slot, err])
 		return err
+	SessionLog.write("save", {"slot": slot, "result": "ok", "dir": save_dir.get_file()})
 	slots_changed.emit()
 	return OK
 
@@ -167,12 +168,15 @@ func load_from_slot(slot: int) -> LoadResult:
 	var path := _resolve_readable_path(slot)
 	if path.is_empty():
 		result.error = "Slot %d is empty." % slot
+		SessionLog.write("load", {"slot": slot, "result": "failed", "error": result.error})
 		return result
 	var read := _read_and_validate(path)
 	if read.status != Status.VALID:
 		result.error = read.error
+		SessionLog.write("load", {"slot": slot, "result": "failed", "error": read.error.left(200)})
 		return result
 	result.state = read.state
+	SessionLog.write("load", {"slot": slot, "result": "ok", "from_backup": path.ends_with(".bak")})
 	return result
 
 
@@ -218,6 +222,7 @@ func import_file(source_path: String, slot: int) -> Error:
 	if err != OK:
 		DirAccess.remove_absolute(temp_path)
 		return err
+	SessionLog.write("import_save", {"slot": slot, "result": "ok"})
 	slots_changed.emit()
 	return OK
 

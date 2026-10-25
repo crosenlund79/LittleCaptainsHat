@@ -9,6 +9,7 @@ const SETTINGS_PATH := "user://test_restart_settings.cfg"
 const SAVE_DIR := "user://test_restart_saves"
 ## What the write phase sailed (speed depends on the wind), checked on read.
 const EXPECT_PATH := "user://test_restart_expect.json"
+const LOG_DIR := "user://test_restart_diagnostics"
 
 
 func _ready() -> void:
@@ -18,6 +19,8 @@ func _ready() -> void:
 			phase = arg.trim_prefix("--phase=")
 	SettingsManager.settings_path = SETTINGS_PATH
 	SaveManager.save_dir = SAVE_DIR
+	SessionLog.log_dir = LOG_DIR
+	SessionLog.restart()
 	if phase == "write":
 		_write()
 		get_tree().quit(0)
@@ -34,6 +37,7 @@ func _write() -> void:
 	SettingsManager.set_volume(&"Master", 0)
 	SettingsManager.set_vsync(false)
 	SettingsManager.set_ui_scale(0.9)
+	SettingsManager.set_art_style(SettingsManager.ART_CLASSIC)
 	SettingsManager.save()
 	Simulation.auto_advance = false
 	GameSession.start_new_session(CompanionState.KIND_DOG)
@@ -42,6 +46,16 @@ func _write() -> void:
 	GameSession.depart()
 	while GameSession.is_underway():
 		Simulation.advance(24.0 * 3600.0, true)
+	# The captain's hat: worn on deck, lost (through the game's own hat check,
+	# which also finds the secret Captain No-Hat), replaced in Gothenburg and
+	# put back on.
+	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"start")
+	GameSession.use_hat_hook()
+	var here := WeatherModel.get_default().sample(GameSession.get_vessel_position(), GameSession.get_game_time(), GameSession.get_wind_seed())
+	GameSession.apply_hat_check(GameSession.get_game_time(), 100.0, here, GameSession.get_vessel_position())
+	GameSession.apply_hat_check(GameSession.get_game_time(), 100.0, here, GameSession.get_vessel_position())
+	GameSession.buy_hat()
+	GameSession.toggle_hat()
 	GameSession.publish_travel_update()
 	GameSession.switch_vessel(&"petrel_36")  # sail the trimaran
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"from_cabin")
@@ -60,6 +74,7 @@ func _write() -> void:
 		"game_time": GameSession.get_game_time(),
 		"log": GameSession.get_captains_log().to_dict(), "progress": GameSession.get_objective_progress().to_dict(),
 		"sailed_nm": GameSession.get_voyage_sailed_nm(),
+		"hat": GameSession.get_hat().to_dict(), "log_file": SessionLog.get_log_path(),
 		"upkeep": {"funds": GameSession.get_funds(), "food": GameSession.get_food_days(), "water": GameSession.get_water_days(),
 			"condition": GameSession.get_condition(),
 			"starling": GameSession.get_vessel_condition(&"starling_33"), "damage_until": GameSession.get_damage_applied_until()}}, "", true, true))
@@ -75,6 +90,7 @@ func _read() -> bool:
 	ok = _expect(AudioServer.is_bus_mute(AudioServer.get_bus_index(&"Master")), "master bus is muted after restart") and ok
 	ok = _expect(not SettingsManager.get_vsync(), "VSync off restored") and ok
 	ok = _expect(is_equal_approx(SettingsManager.get_ui_scale(), 0.9), "UI scale restored") and ok
+	ok = _expect(SettingsManager.get_art_style() == SettingsManager.ART_CLASSIC, "Artwork setting (Classic) restored") and ok
 	var result := SaveManager.load_from_slot(2)
 	ok = _expect(result.is_ok(), "slot 2 loads after restart") and ok
 	if result.is_ok():
@@ -106,6 +122,14 @@ func _read() -> bool:
 			"the same weather after restart (%d events active, %.1f kn at the boat)" % [weather.events.size(), weather.here.speed_kn]) and ok
 		ok = _expect(JSON.parse_string(JSON.stringify(state.weather_exposure.to_dict(), "", true, true)) == expected.exposure,
 			"weather exposure record restored") and ok
+		var hat: Dictionary = JSON.parse_string(JSON.stringify(state.hat.to_dict(), "", true, true))
+		ok = _expect(hat == expected.hat and state.hat.status == HatState.WORN and state.hat.serial == 2 and state.hat.lost_count == 1
+			and state.hat.spent == 15, "the captain's hat restored (hat number 2, worn; one lost, EUR 15 spent)") and ok
+		ok = _expect(state.progress.is_completed(&"secret_captain_no_hat") and state.progress.get_count(&"secret_captain_no_hat") == 1,
+			"the secret achievement Captain No-Hat restored, paid once") and ok
+		var log_text := FileAccess.get_file_as_string(String(expected.log_file))
+		ok = _expect(log_text.contains("\"event\":\"session_start\"") and log_text.contains("\"event\":\"hat_lost\"")
+			and log_text.contains("\"event\":\"save\""), "the first process's diagnostic log was flushed (start, hat loss, save)") and ok
 		var upkeep: Dictionary = expected.upkeep
 		ok = _expect(state.funds == int(upkeep.funds) and absf(state.provisions.food_days - upkeep.food) < 1e-9
 			and absf(state.provisions.water_days - upkeep.water) < 1e-9, "money, food and water restored (%s, %.3f days)" % [
@@ -117,6 +141,11 @@ func _read() -> bool:
 	DirAccess.remove_absolute(EXPECT_PATH)
 	SaveManager.delete_slot(2)
 	DirAccess.remove_absolute(SAVE_DIR)
+	SessionLog.log_dir = SessionLog.DEFAULT_DIR
+	SessionLog.restart()
+	for file in DirAccess.get_files_at(LOG_DIR):
+		DirAccess.remove_absolute(LOG_DIR.path_join(file))
+	DirAccess.remove_absolute(LOG_DIR)
 	SettingsManager.settings_path = SettingsManager.DEFAULT_PATH
 	SettingsManager.load_settings()
 	print("read phase: ", "PASS" if ok else "FAIL")

@@ -24,7 +24,7 @@ doc comments for details.
 - **No speculative systems.** Nothing exists yet for money, provisions, equipment
   and so on. The extension points below describe where they will go.
 
-## Autoloads (5)
+## Autoloads (6)
 
 | Autoload | Script | Responsibility |
 |---|---|---|
@@ -33,6 +33,7 @@ doc comments for details.
 | `GameSession` | `src/core/game_session.gd` | Authoritative session state and its mutations, with change signals. |
 | `Simulation` | `src/core/simulation.gd` | The single simulation timeline: advances the game clock and the active voyage, evaluates wind and propulsion at fixed evaluation points, assesses the weather (warnings, exposure) at the same points, detects arrival, sleeping, wind-aware ETAs. Pausable. |
 | `SaveManager` | `src/persistence/save_manager.gd` | Save slots: JSON read/write, validation, metadata. Converts files ↔ `SessionState` only. |
+| `SessionLog` | `src/diagnostics/session_log.gd` | The diagnostic session log (Visual Identity V01): one JSON Lines file per run in `user://diagnostics/`, meaningful events only, bounded, flushed per line. Reads the game, never changes it. |
 
 Screen transitions are deliberately **not** an autoload: they belong to the
 application shell, the only code that changes screens.
@@ -1140,6 +1141,28 @@ existing services. There is no inventory system.
   `PlayerHat` child; the deck shows `HatBlowAway` when the hat is lost.
   `HatArt` (`data/hat/hat_art.tres`) resolves each slot: assigned texture,
   then `assets/hat/hat_<slot>.png`, then `HatDrawing`.
+
+## Diagnostic session log (Visual Identity V01)
+
+`SessionLog` writes one file per run, `user://diagnostics/session_<UTC time>.jsonl`
+(Windows: `%APPDATA%\Little Captains Hat\diagnostics\`; Settings has a
+*Diagnostic logs…* button that opens the folder). Each line is a JSON object
+with `t` (UTC), `event` and, during a game, `game` (game time).
+
+- **Events:** `session_start` (game version, commit, save format, engine, OS,
+  renderer), `screen`, `game_started` / `game_loaded` / `game_ended`, `save`,
+  `load` (with the result), `import_save`, `hat`, `hat_warning`, `hat_lost`,
+  `hat_bought`, `achievement_unlocked`, `renown_awarded`, `travel_update`,
+  `voyage_started`, `voyage_logged`, `rescued`, `vessel_changed`, `funds`,
+  `error` (engine and script errors through a Godot `Logger`), `session_end`.
+  It subscribes to GameSession's signals; SaveManager and App add the save,
+  load and screen lines. Nothing is logged per frame or per hat check.
+- **Bounds:** at most 5,000 lines or 1 MB per file (then a `log_truncated`
+  line), the newest 10 files are kept. Every line is flushed immediately.
+- **Privacy:** no names, no paths, no free text from the player.
+- **Determinism:** it only reads; a test plays the same hat scenario with and
+  without the log and gets the same result. `-- --no-session-log` turns it
+  off. Tests write to `user://test_diagnostics`.
 
 ## Harbour presentation and the illustrated prototype (Visual Identity V01)
 

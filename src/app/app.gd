@@ -694,6 +694,7 @@ func _connect_world_map(map: WorldMap) -> void:
 
 func _on_screen_changed(screen: Node) -> void:
 	var area := screen as BoatArea
+	SessionLog.write("screen", {"screen": String(screen.name) if screen else "", "area": String(area.area_id) if area else ""})
 	# The HUD's clock bar is the shared time control: also shown on the chart.
 	_hud_layer.visible = area != null or screen is WorldMap
 	hud.set_chart_mode(screen is WorldMap)
