@@ -47,6 +47,11 @@ signal interaction_prompt_changed(prompt: String)
 @export var mooring: Node2D
 @export var mooring_label: Label
 
+## Underway the deck camera eases out a little (0.100b) so more of the sea
+## around the boat shows; in harbour it is as framed in the scene. Cosmetic.
+const UNDERWAY_ZOOM_FACTOR := 0.86
+const ZOOM_TRANSITION_S := 1.8
+
 const HELM_PROMPT_IN_PORT := "Take the helm"
 const HELM_PROMPT_UNDERWAY := "Check sail configuration"
 ## The cabin's hat hook (station id `hat`), by hat state.
@@ -58,6 +63,9 @@ const HAT_PROMPTS := {
 }
 
 var _leaving := false
+## The deck camera's zoom as framed in the scene (the harbour view).
+var _base_zoom := Vector2.ONE
+var _zoom_tween: Tween
 ## The boat this area belongs to (its art follows the Artwork setting).
 var _vessel: VesselDefinition
 
@@ -81,6 +89,7 @@ func _ready() -> void:
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
 	_setup_harbour_dressing()
 	_setup_water_life()
+	_setup_camera()
 	_setup_hat_hook()
 	_update_hat_station()
 	GameSession.hat_changed.connect(func(_status: StringName) -> void: _update_hat_station())
@@ -128,6 +137,40 @@ func _setup_water_life() -> void:
 
 func get_water_life() -> WaterLife:
 	return get_node_or_null(^"Surroundings/WaterLife") as WaterLife
+
+
+# --- Camera -------------------------------------------------------------------------
+
+## Decks (the areas with a mooring) frame wider underway. The camera stays
+## fixed on the boat; only its zoom changes, eased, so nothing jitters.
+func _setup_camera() -> void:
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera == null or mooring == null:
+		return
+	_base_zoom = camera.zoom
+	camera.zoom = get_target_zoom()
+	GameSession.voyage_started.connect(_update_camera)
+	GameSession.voyage_arrived.connect(func(_port: StringName) -> void: _update_camera())
+	GameSession.state_replaced.connect(_update_camera)
+	GameSession.rescued.connect(func(_info: Dictionary) -> void: _update_camera())
+
+
+## The zoom the deck camera settles on: wider while underway.
+func get_target_zoom() -> Vector2:
+	return _base_zoom * (UNDERWAY_ZOOM_FACTOR if GameSession.is_underway() else 1.0)
+
+
+func _update_camera() -> void:
+	var camera := get_node_or_null(^"Camera2D") as Camera2D
+	if camera == null or not is_inside_tree():
+		return
+	var target := get_target_zoom()
+	if _zoom_tween:
+		_zoom_tween.kill()
+	if camera.zoom.is_equal_approx(target):
+		return
+	_zoom_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_zoom_tween.tween_property(camera, "zoom", target, ZOOM_TRANSITION_S)
 
 
 func get_harbour_dressing() -> HarbourDressing:

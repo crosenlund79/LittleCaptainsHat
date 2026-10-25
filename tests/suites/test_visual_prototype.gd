@@ -32,6 +32,8 @@ func run(runner: Node) -> void:
 	await _settle()
 	app.start_new_game()
 	await _settle()
+	# This suite is about the Wing 33 (starling_33) prototype of V01.
+	await t.board(&"starling_33", app)
 	await _test_starling_illustrated()
 	await _test_harbour_copenhagen()
 	await _test_generic_harbour_and_sea()

@@ -32,7 +32,7 @@ from build_multihull_scenes import (  # noqa: E402
 ID = "arctic_wanderer_26"
 STERN, BOW, HALF, STERN_HALF, BLUFF = -390, 380, 128, 104, 0.45
 CANVAS = (-440, -160, 880, 320)
-PONTOON_Y = 212
+PONTOON_Y = 188
 ROOF_X = (-180, 100)
 ROOF_HALF = 54
 COCKPIT = (-382, -200)      # cockpit well, transom .. companionway
