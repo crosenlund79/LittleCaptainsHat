@@ -12,6 +12,7 @@ const TABS_SIZE := Vector2(1020, 560)
 const TAB_LOG := 0
 const TAB_HARBOURS := 1
 const TAB_OBJECTIVES := 2
+const TAB_BOAT := 3
 ## Notable moments listed in the Log tab (the newest).
 const MAX_MOMENTS := 10
 ## Theme variations: decorative headings and a secret achievement's name.
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_tabs.add_child(_build_log_tab())
 	_tabs.add_child(_build_harbours_tab())
 	_tabs.add_child(_build_objectives_tab())
+	_tabs.add_child(_build_boat_tab())
 	_button("CloseButton", "Close", close)
 
 
@@ -282,6 +284,30 @@ static func describe_progress(objective: Dictionary, log: CaptainsLog, count: in
 
 
 # --- Helpers ----------------------------------------------------------------------
+
+# --- Boat tab (Iteration 14) ------------------------------------------------------
+
+## The active boat's condition by area, its equipment and the care history.
+func _build_boat_tab() -> Control:
+	var list := _tab_page("Boat")
+	var vessel := GameSession.get_vessel_definition()
+	var care := GameSession.get_boat_care()
+	var overall := BoatCare.overall_level(care, GameSession.get_condition(), GameSession.get_game_time())
+	var heading := _add_text(list, "BoatHeading", "The %s: %s" % [vessel.display_name, BoatCare.LEVEL_NAMES[overall].to_lower()], HEADING)
+	heading.modulate = BoatCare.LEVEL_COLOURS[overall].lerp(Color.WHITE, 0.5)
+	var view := BoatCareView.new()
+	view.name = "Overview"
+	list.add_child(view)
+	_add_text(list, "CareNote", "Wear comes slowly with the miles: weed on the bottom with the days in the water, the rig with the wind, the engine with its hours. Boatyards look after it; a haul-out needs a yard that can lift boats.", &"MutedLabel")
+	_add_text(list, "HistoryTitle", "Boatyard visits", HEADING)
+	if care.history.is_empty():
+		_add_text(list, "NoHistory", "No boatyard work yet.", &"MutedLabel")
+	for i in range(care.history.size() - 1, -1, -1):
+		var entry: Dictionary = care.history[i]
+		_add_text(list, "History%d" % i, "%s · %s" % [Simulation.format_game_time(float(entry.get("time", 0.0)), false),
+			BoatCare.history_text(entry)])
+	return list.get_parent()
+
 
 ## A scrolling tab page named `title`; returns the list to fill.
 func _tab_page(title: String) -> VBoxContainer:

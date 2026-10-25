@@ -20,11 +20,39 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.101a, Iteration 13: The Catch & The Cove**
+Current version: **0.102a, Iteration 14: A Bigger World, a Better Boat**
+(see [ITERATION_14_REPORT.md](ITERATION_14_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_14.md](WINDOWS_ACCEPTANCE_14.md), the developer guides
+[DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) and
+[DEV_GUIDES/BOAT_CARE.md](DEV_GUIDES/BOAT_CARE.md), and the Captain's standing
+decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)):
+- **detailed Danish waters**: zoom in on Denmark and the chart shows the
+  islands, the Belts and the Øresund from OpenStreetMap coastlines, about six
+  times finer than before; routes, harbour approaches, anchoring and fishing
+  all follow the detailed coast. Zoomed out it is a light outline like the
+  rest of Europe. The chart is built so that more regions can follow;
+- **23 more Danish harbours** (Helsingør, Svendborg, Skagen, Rønne,
+  Ærøskøbing…), each a small, larger or major service harbour: small ones have
+  no boatyard, major ones can haul boats out;
+- **boat care**: the hull and bottom, the rigging and sails, the engine and
+  the equipment wear slowly with the days, the miles and the wind. The
+  Captain's Log has a **Boat** tab with each area in plain words;
+- **the boatyard** (**Boat care…**) repairs and services for a price and a
+  little time, scaled to the work and the boat; where the yard can lift boats,
+  the **haul-out**: a day on the hard, the weed scrubbed off;
+- **six pieces of equipment** with real effects (a heavier anchor, a weather
+  receiver, a gimballed stove, a large cool box, new rigging, a hard bottom
+  coating), each bought once;
+- **Passage Readiness**: before setting out, a friendly word on the boat,
+  the stores, the weather on the route and the passage's length. Advice only:
+  you can always set sail;
+- Iteration 13 saves load (format 12); a position the new coast puts on land
+  is moved gently to open water.
+
+Version 0.101a, Iteration 13: The Catch & The Cove
 (see [ITERATION_13_REPORT.md](ITERATION_13_REPORT.md), the sea-trial checklist
-[WINDOWS_ACCEPTANCE_13.md](WINDOWS_ACCEPTANCE_13.md), the developer guide
-[DEV_GUIDES/LIFE_ABOARD.md](DEV_GUIDES/LIFE_ABOARD.md) and the Captain's standing
-decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)). An evening at sea
+[WINDOWS_ACCEPTANCE_13.md](WINDOWS_ACCEPTANCE_13.md) and the developer guide
+[DEV_GUIDES/LIFE_ABOARD.md](DEV_GUIDES/LIFE_ABOARD.md)), brought an evening at sea
 without a harbour: *sail, fish, find shelter, anchor, cook, rest, sail on*:
 - **fishing**: a rod on the stern rail of every boat and four kinds of lure.
   Fish from a still boat (moored or at anchor) or **troll** a lure behind the
@@ -320,7 +348,8 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
    hours you choose) and the game stays paused afterwards.
 5. **Look after the boat and the crew.** The HUD shows the hull condition,
    money, food and water. Check the stores at the galley's provisions station.
-   In harbour, the boatyard repairs the boat for free. Food and water are
+   In harbour, the boatyard's **Boat care** repairs and services the boat for a
+   price and a little time (and hauls it out where the yard can). Food and water are
    bought at the **grocery store** on the pontoon (€10 per missing day, food and
    water counted together, up to 14 days each), also reachable from the
    provisions panel and the boatyard. Earn money with **remote work** at the
@@ -551,9 +580,13 @@ built and verified.
     check), no tacking (a head-to-wind leg is motored), and no fuel;
   - there are no currents, depth or tides; the waves drawn around the boat are
     cosmetic and never affect sailing;
-  - weather damage is one general condition value (no separate hull, engine,
-    sail or rigging damage), and there are no waves, rain or visibility
-    effects. Repairs are free; income is remote work and travel updates;
+  - weather damage is one general condition value; boat care adds slow wear
+    of the bottom, rig and engine, but there are no separate breakdowns, and
+    there are no waves, rain or visibility effects. Income is remote work and
+    travel updates;
+  - only Denmark has the detailed chart; elsewhere the coast is the Natural
+    Earth outline (about one nautical mile). The chart has no depths, buoys,
+    shoals, rocks, shipping lanes or tides anywhere;
   - the chart shows the weather now; it does not animate a forecast;
   - the ETA is an estimate along the route with the expected wind. It ignores the
     controller's delays.
@@ -597,6 +630,13 @@ built and verified.
 - Coastlines: [Natural Earth](https://www.naturalearthdata.com/) 1:10m land, public domain.
   Clipped, simplified and rasterised by `tools/navigation/build_navigation_data.py`,
   **not for navigation**.
+- Detailed Danish coastlines (Iteration 14): map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
+  contributors, available under the Open Database License (ODbL 1.0), from the OSM land polygons
+  as packaged by geo-maps *earth-lands-100m* 0.6.0 (code MIT). The region files in
+  `data/navigation/regions/denmark/` are derived from it and are ODbL too; built by
+  `tools/navigation/build_region.py`, **not for navigation**.
+- Danish harbour and chart-label positions (Iteration 14): town coordinates from
+  [GeoNames](https://www.geonames.org/) (CC BY 4.0) via the lutangar/cities.json list.
 - Fonts: [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, SIL Open Font License
   (`assets/fonts/OFL.txt`); [Patrick Hand](https://github.com/google/fonts/tree/main/ofl/patrickhand)
   by Patrick Wagesreiter, SIL Open Font License (`assets/fonts/OFL-PatrickHand.txt`). See

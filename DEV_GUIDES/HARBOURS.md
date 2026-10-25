@@ -1,7 +1,8 @@
 # Harbours: services, walking ashore and Go Ashore
 
-Iteration 12. How a harbour decides which services it has, how the gangplank
-and the shore work on every boat, and how to add a Go Ashore event.
+Iteration 12, extended in Iteration 14. How a harbour decides which services
+it has (and its tier), how to add a harbour, how the gangplank and the shore
+work on every boat, and how to add a Go Ashore event.
 
 ## 1. Which services a harbour has
 
@@ -31,6 +32,44 @@ with a short message and costs nothing. Examples in the repository:
 `copenhagen.tres` (everything) and `lohals.tres` (no boatyard).
 
 These are game definitions, not claims about real businesses.
+
+### Haul-outs and tiers (Iteration 14)
+
+A fourth switch, `haul_out = true`, says the boatyard can lift boats out of
+the water (the haul-out, and fitting the hard antifouling coating). It only
+counts together with `boatyard = true`. A harbour **without** a file of its
+own can haul out when it is one of the catalogue's major harbours
+(importance 1); every other harbour without a file has a boatyard but no
+haul-out.
+
+The services give each harbour a gameplay tier, shown in the Boat care panel
+(`HarbourFacilities.get_tier()`):
+
+| Tier | Services | Example |
+|---|---|---|
+| Small harbour | no boatyard (groceries and Go Ashore as set) | `lohals.tres`, `stege.tres` |
+| Larger harbour | a boatyard: repairs, services, equipment | `korsor.tres` |
+| Major service harbour | a boatyard that can haul out | `copenhagen.tres`, `svendborg.tres` |
+
+What the boatyard does, its prices and times are in
+[BOAT_CARE.md](BOAT_CARE.md).
+
+### Adding a harbour
+
+Harbours come from `tools/navigation/harbours.csv` (id, name, country,
+position, importance, region, island flag, source, description); then run
+`python3 tools/navigation/build_harbours.py` to write the port resources in
+`data/navigation/ports/`. Record where each position comes from in the
+`source` column. Check the result with the harbour tests
+(`tests/suites/test_harbours.gd`: the position must be on the coast and have
+an approach to open water).
+
+The Danish harbours of Iteration 14 were added with
+`tools/navigation/add_danish_harbours.py`: it takes a town's position from the
+GeoNames gazetteer and places the harbour 0.15 nm off the nearest coastline of
+the detailed Danish chart, then writes each harbour's facility file from its
+tier. It needs the same source files as the region build (see
+[CHART_REGIONS.md](CHART_REGIONS.md)).
 
 ## 2. The gangplank and the shore
 

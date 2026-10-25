@@ -15,10 +15,13 @@ extends ModalPanel
 ## changes the text inside it. Long details scroll in their own area, and the
 ## services and buttons stay where they are.
 ##
-## Harbour services for the boat you are aboard: Repair vessel (back to 100 %,
-## free in this version) and the grocery store (provisions are bought there).
+## Harbour services for the boat you are aboard: Boat care (Iteration 14:
+## repairs, services, haul-outs and equipment, in BoatCareMenu) and the
+## grocery store (provisions are bought there).
 
 signal vessel_chosen(vessel_id: StringName)
+## The player wants Boat care (App opens it on top of the boatyard).
+signal care_requested
 ## The player wants the grocery store (App opens it on top of the boatyard).
 signal grocery_requested
 
@@ -46,7 +49,7 @@ var _compare_cells := {}
 @onready var _panel: PanelContainer = %Panel
 @onready var _condition: Label = %ConditionLabel
 @onready var _service_status: Label = %ServiceStatus
-@onready var _repair: Button = %RepairButton
+@onready var _care: Button = %CareButton
 @onready var _grocery: Button = %GroceryButton
 
 
@@ -68,7 +71,7 @@ func _ready() -> void:
 	_build_comparison(catalog.vessels)
 	_choose.pressed.connect(func() -> void: vessel_chosen.emit(selected.id))
 	%CloseButton.pressed.connect(close)
-	_repair.pressed.connect(_on_repair)
+	_care.pressed.connect(care_requested.emit)
 	_grocery.pressed.connect(grocery_requested.emit)
 	resized.connect(_fit_panel)
 	_fit_panel()
@@ -99,8 +102,9 @@ func _update_services() -> void:
 	_service_status.text = "Your boat, the %s: hull %s  ·  %s  ·  food %s, water %s" % [vessel.display_name,
 		VesselCondition.describe(GameSession.get_condition()), GameSession.format_money(GameSession.get_funds()),
 		Provisions.format_days(provisions.food_days), Provisions.format_days(provisions.water_days)]
-	var harbour := GameSession.is_moored_in_harbour()
-	_repair.disabled = not harbour or GameSession.get_condition() >= VesselCondition.FULL
+	var level := BoatCare.overall_level(GameSession.get_boat_care(), GameSession.get_condition(), GameSession.get_game_time())
+	_care.disabled = not GameSession.is_moored_in_harbour()
+	_care.text = "Boat care…" if level in [BoatCare.LEVEL_GOOD, BoatCare.LEVEL_COSMETIC] else "Boat care (%s)…" % BoatCare.LEVEL_NAMES[level].to_lower()
 	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
 	_grocery.disabled = not store or provisions.is_full()
 	_grocery.visible = store
@@ -108,13 +112,11 @@ func _update_services() -> void:
 		if not provisions.is_full() else "Grocery store…"
 
 
-func _on_repair() -> void:
-	var error := GameSession.repair_vessel()
-	notify(error if not error.is_empty() else "The %s has been repaired: 100 %%, sound." % GameSession.get_vessel_definition().display_name)
+## Refreshes the condition shown after work done in Boat care.
+func refresh_condition() -> void:
 	_update_services()
 	if selected:
 		select(selected.id)
-
 
 
 func _input(event: InputEvent) -> void:

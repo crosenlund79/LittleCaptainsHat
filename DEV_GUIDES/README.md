@@ -21,7 +21,9 @@ version of each guide.
 | [AUDIO.md](AUDIO.md) | replace a sound (purr, engine, storm wind, thunder, ambience, clicks); understand the audio buses | `assets/audio/` |
 | [WEATHER.md](WEATHER.md) | tune where gales, thunderstorms and cyclones form, hazard levels, warnings and weather damage; restyle the chart's weather; use the F9 developer test tools and weather fixtures | `data/weather/`, `src/weather/`, `src/dev/` |
 | [CAPTAINS_HAT.md](CAPTAINS_HAT.md) | replace the captain's hat drawings, move its hook aboard, tune how wind takes it and what a replacement costs | `assets/hat/`, `data/hat/`, `src/hat/` |
-| [HARBOURS.md](HARBOURS.md) | give a harbour or take away a service (grocery, boatyard, Go Ashore), understand the gangplank and shore on every boat, add a Go Ashore event | `data/harbours/facilities/`, `src/harbour/` |
+| [HARBOURS.md](HARBOURS.md) | give a harbour or take away a service (grocery, boatyard, haul-out, Go Ashore), set its tier, add a harbour, understand the gangplank and shore on every boat, add a Go Ashore event | `data/harbours/facilities/`, `src/harbour/` |
+| [BOAT_CARE.md](BOAT_CARE.md) | tune how the boat wears, the boatyard's services, prices and times, the haul-out, the equipment catalogue and Passage Readiness | `data/boat/`, `src/boat_care/`, `src/ui/boat_care_menu.gd` |
+| [CHART_REGIONS.md](CHART_REGIONS.md) | rebuild the detailed Danish chart from its sources, understand regions and level of detail, add another region | `data/navigation/regions/`, `tools/navigation/build_region.py` |
 | [LIFE_ABOARD.md](LIFE_ABOARD.md) | tune the fish, lures and trophies, the galley's dishes and the anchorage model; find the rod, stove, windlass and trophy board | `data/fishing/`, `src/fishing/`, `src/galley/`, `src/anchor/`, `src/aboard/` |
 | [MODDING_FUTURE.md](MODDING_FUTURE.md) | keep the project open for user content later (no mod support exists) | design principles |
 
@@ -39,6 +41,9 @@ version of each guide.
 | Sounds | `assets/audio/` (the current ones are placeholders in `assets/audio/placeholder/`) |
 | Weather data (zones, seasons, cyclone basins) | `data/weather/weather_events.json` |
 | Captain's hat drawings and balancing | `assets/hat/`, `data/hat/hat_art.tres`, `data/hat/hat_config.json` |
+| Equipment catalogue (boat care) | `data/boat/equipment.json` |
+| Detailed chart regions | `data/navigation/regions.json`, `data/navigation/regions/` |
+| Harbour services and tiers | `data/harbours/facilities/` |
 
 `<vessel_id>` is `arctic_wanderer_26` (the starter monohull), `starling_33`
 (Wing 33, monohull), `halcyon_40` (Clam 40, catamaran) or `petrel_36`

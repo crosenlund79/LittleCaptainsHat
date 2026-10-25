@@ -46,6 +46,7 @@ func run(runner: Node) -> void:
 	_test_detail()
 	_test_harbours()
 	_test_voyages()
+	_test_life_aboard()
 	_test_recovery()
 	_test_performance()
 	await _test_chart()
@@ -116,6 +117,30 @@ func _test_voyages() -> void:
 		t.check(ok and nm >= direct and nm < direct * 3.0 + 10.0, "[route] %s → %s, %s: %.0f nm (direct %.0f), %.0f ms" % [
 			from.display_name, to.display_name, voyage[2], nm, direct, ms])
 		measurements.append(["route %s → %s" % [from.display_name, to.display_name], "%.0f ms, %.0f nm" % [ms, nm]])
+
+
+## Anchoring and fishing read the same detailed coast: just off a Danish
+## harbour's approach the water is near land (anchoring possible, coastal
+## fishing), and the island passages count as sheltered from across them.
+func _test_life_aboard() -> void:
+	var calm := WindField.Sample.make(270.0, 8.0)
+	var problems: Array[String] = []
+	for id: StringName in [&"svendborg", &"lohals", &"stege", &"middelfart", &"faaborg"]:
+		var approach := router.find_port_approach(catalog.get_port(id))
+		var spot := Vector2.INF
+		for point in approach:
+			if router.is_point_navigable(point):
+				spot = point
+				break
+		if spot == Vector2.INF:
+			problems.append("%s: no open water on the approach" % id)
+			continue
+		var site := AnchorSite.evaluate(spot, calm)
+		if not site.ok or float(site.land_nm) > 1.5:
+			problems.append("%s: %s" % [id, site.reason])
+		if not FishingCatalog.get_default().is_coastal(spot):
+			problems.append("%s: not coastal for fishing" % id)
+	t.check(problems.is_empty(), "[life aboard] off Danish harbours you can anchor and fish the coast (%s)" % [problems])
 
 
 # --- Recovery of saved positions ------------------------------------------------------

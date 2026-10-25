@@ -286,7 +286,7 @@ func _test_boatyard() -> void:
 		t.check(same, "[boatyard] at %d%% the panel keeps its size and place for all three boats (%s)" % [roundi(scale * 100), first])
 		var screen := Rect2(Vector2.ZERO, yard.get_viewport_rect().size)
 		var buttons_ok := true
-		for name in ["ChooseButton", "CloseButton", "RepairButton", "GroceryButton"]:
+		for name in ["ChooseButton", "CloseButton", "CareButton", "GroceryButton"]:
 			var b := yard.find_child(name, true, false) as Control
 			buttons_ok = buttons_ok and b.is_visible_in_tree() and screen.encloses(b.get_global_rect()) and first.encloses(b.get_global_rect())
 		t.check(buttons_ok, "[boatyard] at %d%% all buttons are inside the panel and on screen" % roundi(scale * 100))
@@ -296,13 +296,14 @@ func _test_boatyard() -> void:
 	await t.frames(2)
 	var condition := yard.find_child("ConditionLabel", true, false) as Label
 	t.check(condition.text.contains("40 % · Damaged"), "[boatyard] it shows the selected boat's condition (%s)" % condition.text)
-	var repair := yard.find_child("RepairButton", true, false) as Button
+	var care := yard.find_child("CareButton", true, false) as Button
 	var grocery := yard.find_child("GroceryButton", true, false) as Button
-	t.check(not repair.disabled and not grocery.disabled, "[boatyard] repair and the grocery store are offered for a worn boat with used stores")
+	t.check(not care.disabled and care.text.contains("needs attention") and not grocery.disabled,
+		"[boatyard] Boat care (%s) and the grocery store are offered for a worn boat with used stores" % care.text)
 	await t.screenshot("94_boatyard_repair")
 	var funds := GameSession.get_funds()
 	var price := GameSession.get_provisions_price()
-	await t.click(repair)
+	var repair_cost := int(GameSession.service_quote(BoatCare.SERVICE_REPAIR).cost)
 	await t.click(grocery)
 	await t.frames(2)
 	var store := app.modals.get_top() as GroceryMenu
@@ -310,9 +311,18 @@ func _test_boatyard() -> void:
 		await t.click(store.get_buy_button())
 		store.close()
 		await t.frames(2)
-	t.check(is_equal_approx(GameSession.get_condition(), 100.0) and is_equal_approx(GameSession.get_food_days(), 14.0)
-		and GameSession.get_funds() == funds - price and price == 180, "[boatyard] repaired free; provisions bought for €180 (9 + 9 days)")
-	t.check(app.modals.get_top() == yard and repair.disabled and grocery.disabled and condition.text.contains("100 %"),
+	await t.click(care)
+	await t.frames(2)
+	var menu := app.modals.get_top() as BoatCareMenu
+	if t.check(menu != null, "[boatyard] Boat care opens on top of the boatyard"):
+		await t.click(menu.get_service_button(BoatCare.SERVICE_REPAIR))
+		menu.close()
+		await t.frames(2)
+	# The repair's few hours ashore use a little food.
+	t.check(is_equal_approx(GameSession.get_condition(), 100.0) and GameSession.get_food_days() > 13.7
+		and GameSession.get_funds() == funds - price - repair_cost and price == 180,
+		"[boatyard] repaired for %s; provisions bought for €180 (9 + 9 days)" % GameSession.format_money(repair_cost))
+	t.check(app.modals.get_top() == yard and not care.text.contains("needs attention") and condition.text.contains("100 %"),
 		"[boatyard] back in the boatyard, the buttons and condition update at once")
 	await t.screenshot("93_boatyard_after_repair_restock")
 	yard.close()

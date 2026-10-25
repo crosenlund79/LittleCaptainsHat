@@ -862,6 +862,81 @@ func perform_service(service: StringName) -> Dictionary:
 	return result
 
 
+## Work the yard can do while the boat is out of the water (haul-out
+## options): engine and rig services when they are due, and the hard
+## antifouling coating when it is not fitted yet.
+const HAUL_OUT_EXTRAS: Array[StringName] = [BoatCare.SERVICE_ENGINE, BoatCare.SERVICE_RIG, &"hard_antifouling"]
+
+
+## The extras that make sense for the active boat now (subset of HAUL_OUT_EXTRAS).
+func get_haul_out_extras() -> Array[StringName]:
+	var extras: Array[StringName] = []
+	if _state == null:
+		return extras
+	var care := _state.get_boat_care(_state.vessel_id)
+	if care.engine_hours >= 1.0:
+		extras.append(BoatCare.SERVICE_ENGINE)
+	if care.rig_wear >= 1.0:
+		extras.append(BoatCare.SERVICE_RIG)
+	if not care.has_upgrade("hard_antifouling"):
+		extras.append(&"hard_antifouling")
+	return extras
+
+
+## {"cost", "minutes", "items": [[name, cost]]} for a haul-out with `extras`.
+## The extras are done while the boat is out, so they add cost, not time.
+func haul_out_quote(extras: Array[StringName]) -> Dictionary:
+	var quote := service_quote(BoatCare.SERVICE_HAUL_OUT)
+	var items: Array = [[BoatCare.SERVICE_NAMES[BoatCare.SERVICE_HAUL_OUT], int(quote.cost)]]
+	var cost := int(quote.cost)
+	for extra in extras:
+		var price := upgrade_price(String(extra)) if extra == &"hard_antifouling" else int(service_quote(extra).cost)
+		var name: String = BoatCare.get_upgrade(String(extra)).get("name", "") if extra == &"hard_antifouling" \
+			else BoatCare.SERVICE_NAMES.get(extra, String(extra))
+		items.append([name, price])
+		cost += price
+	return {"cost": cost, "minutes": float(quote.minutes), "items": items}
+
+
+## Hauls the boat out (bottom cleaned, hull repaired) and has `extras` done at
+## the same time: one transaction, refused as a whole when anything is not
+## possible or affordable. The caller spends the time (24 h). Returns
+## {"error", "cost", "minutes", "first", "done": [names]}.
+func haul_out(extras: Array[StringName] = []) -> Dictionary:
+	var result := {"error": service_refusal(BoatCare.SERVICE_HAUL_OUT), "cost": 0, "minutes": 0.0, "first": false, "done": []}
+	var allowed := get_haul_out_extras()
+	for extra in extras:
+		if result.error == "" and not extra in allowed:
+			result.error = "That work is not needed now."
+	var quote := haul_out_quote(extras)
+	if result.error == "" and int(quote.cost) > _state.funds:
+		result.error = "Not enough money: %s needed." % format_money(int(quote.cost))
+	if result.error != "":
+		return result
+	var care := _state.get_boat_care(_state.vessel_id)
+	for extra in extras:
+		match extra:
+			BoatCare.SERVICE_ENGINE:
+				care.engine_hours = 0.0
+			BoatCare.SERVICE_RIG:
+				care.rig_wear = 0.0
+			&"hard_antifouling":
+				care.upgrades.append("hard_antifouling")
+	var hauled := perform_service(BoatCare.SERVICE_HAUL_OUT)
+	var extras_cost := int(quote.cost) - int(hauled.cost)
+	_state.funds -= extras_cost
+	for i in range(1, quote.items.size()):
+		care.add_history(_state.game_time, "haul_out_extra:" + String(extras[i - 1]), String(get_location_id()), int(quote.items[i][1]))
+	result.cost = int(quote.cost)
+	result.minutes = float(hauled.minutes)
+	result.first = hauled.first
+	for item: Array in quote.items:
+		result.done.append(item[0])
+	funds_changed.emit(_state.funds)
+	boat_care_changed.emit()
+	return result
+
+
 ## Why an upgrade cannot be fitted here now, or "".
 func upgrade_refusal(id: String) -> String:
 	if _state == null:
@@ -1575,6 +1650,8 @@ func get_aboard_moments() -> Array[Dictionary]:
 			text = "A night at anchor"
 		elif key == "anchor:drag_handled":
 			text = "Stopped the anchor dragging"
+		elif key == "care:first_haul_out":
+			text = "First haul-out: the bottom scrubbed clean"
 		if text != "":
 			moments.append({"time": time, "text": text})
 	return moments

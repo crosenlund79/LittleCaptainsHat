@@ -99,6 +99,47 @@ The Captain has approved:
 - **Revision iterations remain the preferred follow-up** to significant
   playtest findings.
 
+### Iteration 14, A Bigger World, a Better Boat
+
+The Captain has authorized:
+
+- **Iteration 14, A Bigger World, a Better Boat**, combining two scopes:
+  **Boat Care & Equipment** and **Detailed Denmark & Regional Sailing
+  Expansion**. Version 0.102a, save format 12.
+- **Detailed Denmark**: recognizable coastlines, islands, the Belts and the
+  Øresund, keeping the existing chart and one coherent coordinate system. The
+  data source, its version or date, licence, coordinate system,
+  simplification, scripts and limitations are documented.
+- **A reusable regional architecture**, so that later regions (for example
+  Sweden, New Zealand, French Polynesia) can be added; level of detail by
+  zoom; performance stays responsive. (Those later regions are not part of
+  this iteration.)
+- **Navigation stays sound**: routes avoid land, harbours stay reachable,
+  approaches are coherent, and the eight-direction view stays intact.
+- **Harbours**: Copenhagen keeps its boatyard; Lohals keeps no boatyard.
+  Facility metadata (groceries, boatyard, haul-out, Go Ashore) and tiers
+  (small, larger, major) are optional; not every small harbour gets a
+  boatyard.
+- **No invented geography**: coastlines are not drawn from memory; no
+  depth soundings, buoys, shoals, rocks, shipping lanes, tide tables or real
+  marina layouts are invented; no online map tile service is used as an
+  undisclosed runtime dependency.
+- **Boat care extends the existing condition system** (no duplicate):
+  hull, engine, rig and equipment; slow, predictable wear; a readable
+  overview with cosmetic / recommended / necessary levels.
+- **Boatyards show only the services they offer.** The haul-out is a small,
+  satisfying event (options, costs, game time passing, a Captain's Log note).
+  A harbour without a yard offers no interaction and charges nothing. Costs
+  and time scale with the damage and the boat's size.
+- **Four to eight equipment upgrades with real effects**; no pay-to-win, no
+  tech tree; the Arctic Wanderer stays a small boat.
+- **Passage Readiness is advisory, never gating**: condition, provisions,
+  weather, route length and the vessel, in human-friendly words.
+- **Fishing and anchoring use the new geography**; cooking and provisions are
+  recognized; interactions use illustrated highlights, no circles.
+- **Saves migrate from format 11**; a saved position that the new chart
+  places on land is recovered safely: the vessel is never stranded or erased.
+
 ### Iterations and versions
 
 - Iteration numbers are sequential integers: no letter suffixes and no
@@ -129,23 +170,26 @@ The Captain has approved:
 These remain separately approved future assignments; they are not started
 early:
 
-- maintenance and equipment expansion;
-- a worldwide chart.
+- a worldwide chart (Iteration 14 details one region, Denmark, within the
+  existing European chart);
+- further detailed regions (the architecture allows them; none is built yet).
 
 (Fishing and anchoring, listed here until Iteration 12, were commissioned by
-the Captain as Iteration 13.)
+the Captain as Iteration 13. Maintenance and equipment, listed here until
+Iteration 13, were commissioned as part of Iteration 14.)
 
 ## Phase One and Phase Two
 
 The Captain distinguishes the **current authorized development scope** (Phase
 One) from a **locked future Phase Two**. The precise wording of the Phase Two
 policy is **still not written down in this repository** (checked again in
-Iteration 13), so it is not restated or guessed here. It stays in force
-exactly as the Captain defined it.
+Iterations 13 and 14), so it is not restated or guessed here. It stays in
+force exactly as the Captain defined it; the scope freeze holds.
 
-What is established by the Captain's current authorization: Iteration 13 is
-within the current scope; it does not reopen or expand Phase Two, and it adds
-no worldwide exploration, future systems or broad content expansions.
+What is established by the Captain's current authorization: Iterations 13 and
+14 are within the current scope; they do not reopen or expand Phase Two.
+Iteration 14 adds one detailed region and boat care as authorized, and no
+worldwide exploration or other future systems.
 *Developer note: please add the Phase Two wording here.*
 
 ## Iteration log
@@ -158,3 +202,8 @@ no worldwide exploration, future systems or broad content expansions.
 - **Iteration 13, The Catch & The Cove**, version 0.101a: fishing, the galley,
   anchoring, the new cat and dog and the eight-direction sailing view; see
   `ITERATION_13_REPORT.md` and `WINDOWS_ACCEPTANCE_13.md`.
+- **Iteration 14, A Bigger World, a Better Boat**, version 0.102a, save format
+  12: detailed Denmark as the first regional chart, Danish harbours with
+  service tiers, boat care, boatyard services and haul-outs, equipment and
+  Passage Readiness; see `ITERATION_14_REPORT.md` and
+  `WINDOWS_ACCEPTANCE_14.md`.

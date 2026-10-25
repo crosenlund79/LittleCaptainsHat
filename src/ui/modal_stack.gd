@@ -44,6 +44,11 @@ func depth() -> int:
 	return _modals.size()
 
 
+## The open modals, bottom first.
+func get_all() -> Array[ModalPanel]:
+	return _modals.duplicate()
+
+
 func get_top() -> ModalPanel:
 	return null if _modals.is_empty() else _modals.back()
 

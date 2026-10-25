@@ -66,6 +66,7 @@ var _hazards: Array[Dictionary] = []
 @onready var _plot_button: Button = %PlotButton
 @onready var _course_label: Label = %CourseLabel
 @onready var _course_status: Label = %CourseStatus
+@onready var _readiness_label: Label = %ReadinessLabel
 @onready var _apply_button: Button = %ApplyButton
 @onready var _discard_button: Button = %DiscardButton
 @onready var _remove_button: Button = %RemoveWaypointButton
@@ -490,8 +491,11 @@ func _refresh() -> void:
 
 	# Status and clock.
 	if GameSession.is_underway():
-		_set_text(_status, "Underway to %s  ·  %.1f kn %s" % [catalog.get_display_name(GameSession.get_voyage_destination_id()),
-			speed, "under engine" if GameSession.is_motoring() else "under sail"])
+		if GameSession.is_anchored():
+			_set_text(_status, "At anchor on the way to %s" % catalog.get_display_name(GameSession.get_voyage_destination_id()))
+		else:
+			_set_text(_status, "Underway to %s  ·  %.1f kn %s" % [catalog.get_display_name(GameSession.get_voyage_destination_id()),
+				speed, "under engine" if GameSession.is_motoring() else "under sail"])
 	elif location:
 		var verb := "Arrived at" if GameSession.get_vessel_status() == SessionState.STATUS_ARRIVED else "Moored at"
 		_set_text(_status, "%s %s, %s" % [verb, location.display_name, location.country])
@@ -554,6 +558,7 @@ func _refresh() -> void:
 	if not _feedback.is_empty():
 		course_status += "\n" + _feedback
 	_set_text(_course_status, course_status)
+	_update_readiness(valid)
 	_apply_button.text = "Change course" if GameSession.is_underway() else "Apply course"
 	_apply_button.disabled = not _draft_dirty or _draft_route == null
 	_discard_button.disabled = not _draft_dirty
@@ -566,6 +571,32 @@ func _refresh() -> void:
 	_set_text(_weather_label, _describe_weather())
 	var warnings := _count_weather_warnings()
 	_tabs.set_tab_title(TAB_WEATHER, "Weather (%d)" % warnings if warnings > 0 else "Weather")
+
+
+## Passage Readiness for the course in harbour (Iteration 14): advisory,
+## recomputed only when the course, the boat or the half hour changes.
+func _update_readiness(valid: bool) -> void:
+	var path := PackedVector2Array()
+	if valid and not GameSession.is_underway():
+		path = _draft_route.path if _draft_route else (GameSession.get_planned_route().path if GameSession.get_planned_route() else path)
+	if path.size() < 2:
+		_readiness_key = ""
+		_set_text(_readiness_label, "")
+		return
+	var provisions := GameSession.get_provisions()
+	var key := "%d|%.3f|%d|%s|%.1f|%.1f|%.1f" % [path.size(), GeoMath.path_length_nm(path), floori(GameSession.get_game_time() / 1800.0),
+		GameSession.get_vessel_id(), GameSession.get_condition(), provisions.food_days, provisions.water_days]
+	if key == _readiness_key:
+		return
+	_readiness_key = key
+	readiness = PassageReadiness.assess(path)
+	_set_text(_readiness_label, "Passage readiness: " + PassageReadiness.describe(readiness, 3))
+	_readiness_label.modulate = [Color(0.75, 0.92, 0.7), Color(0.93, 0.92, 0.86), Color(1.0, 0.86, 0.62)][int(readiness.level)]
+
+
+## The last Passage Readiness shown (tests).
+var readiness := {}
+var _readiness_key := ""
 
 
 ## Shows one of the sidebar's tabs (TAB_COURSE, TAB_WEATHER, TAB_DETAILS).

@@ -324,9 +324,13 @@ func request_departure() -> void:
 	var estimate := Simulation.estimate_route_seconds(route.path)
 	var waypoints := "" if route.waypoints.is_empty() else " via %d waypoint%s" % [
 		route.waypoints.size(), "" if route.waypoints.size() == 1 else "s"]
+	# Passage Readiness (Iteration 14): advice in the question, never a refusal.
+	var readiness := PassageReadiness.assess(route.path)
+	SessionLog.write("readiness", {"to": String(route.destination_port_id), "level": readiness.level,
+		"topics": readiness.items.filter(func(i: Dictionary) -> bool: return int(i.level) > 0).map(func(i: Dictionary) -> String: return String(i.topic))})
 	var go: bool = await modals.confirm("Set sail for %s?" % catalog.get_display_name(route.destination_port_id),
-		"%d nm%s, about %s with the expected wind (estimate)." % [roundi(route.get_distance_nm()), waypoints,
-			Simulation.format_duration(estimate)], "Set sail")
+		"%d nm%s, about %s with the expected wind (estimate).\n\n%s" % [roundi(route.get_distance_nm()), waypoints,
+			Simulation.format_duration(estimate), PassageReadiness.describe(readiness, 3)], "Set sail")
 	if not go:
 		return
 	var error := GameSession.depart()
@@ -809,7 +813,51 @@ func open_boatyard() -> void:
 	var menu := boatyard_menu_scene.instantiate() as BoatyardMenu
 	menu.vessel_chosen.connect(switch_vessel)
 	menu.grocery_requested.connect(open_grocery)
+	menu.care_requested.connect(open_boat_care)
 	modals.push(menu)
+
+
+## Boat care (Iteration 14), on top of the boatyard: the condition overview,
+## the services this yard offers, equipment and, where the yard can lift
+## boats, the haul-out. The work's time passes ashore.
+func open_boat_care() -> BoatCareMenu:
+	if not GameSession.is_moored_in_harbour() or not GameSession.has_facility(HarbourFacilities.BOATYARD):
+		_refuse_facility(HarbourFacilities.BOATYARD)
+		return null
+	var menu := BoatCareMenu.new()
+	menu.time_requested.connect(_spend_yard_time)
+	menu.haul_out_requested.connect(open_haul_out)
+	modals.push(menu)
+	SessionLog.write("boat_care_open", {"port": String(GameSession.get_location_id()),
+		"overall": String(BoatCare.overall_level(GameSession.get_boat_care(), GameSession.get_condition(), GameSession.get_game_time())),
+		"haul_out": GameSession.has_facility(HarbourFacilities.HAUL_OUT)})
+	return menu
+
+
+## The haul-out (only at a yard that can lift boats).
+func open_haul_out() -> HaulOutPanel:
+	if GameSession.service_refusal(BoatCare.SERVICE_HAUL_OUT) != "":
+		notify(GameSession.service_refusal(BoatCare.SERVICE_HAUL_OUT))
+		return null
+	var panel := HaulOutPanel.new()
+	panel.time_requested.connect(_spend_yard_time)
+	modals.push(panel)
+	return panel
+
+
+func _spend_yard_time(minutes: float) -> void:
+	if minutes > 0.0:
+		Simulation.spend_time_ashore(minutes)
+	var yard := _find_modal(BoatyardMenu) as BoatyardMenu
+	if yard:
+		yard.refresh_condition()
+
+
+func _find_modal(type: Variant) -> ModalPanel:
+	for modal in modals.get_all():
+		if is_instance_of(modal, type):
+			return modal
+	return null
 
 
 ## Moves aboard `vessel_id` (from the boatyard): the session, companion, time

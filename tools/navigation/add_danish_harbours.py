@@ -109,7 +109,7 @@ def main():
         print("%-12s %-12s %.4f %.4f (town %.4f %.4f) %s" % (hid, tier, placed.y, placed.x, lat, lon,
                                                            "%.2f nm" % (math.hypot((placed.x - lon) * math.cos(math.radians(lat)), placed.y - lat) * 60.0)))
     with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=fields)
+        writer = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     print(added, "harbours added")

@@ -154,6 +154,13 @@ theme_override_font_sizes/font_size = 17
 text = ""
 autowrap_mode = 3
 
+[node name="ReadinessLabel" type="Label" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = ""
+autowrap_mode = 3
+
 [node name="WaypointButtons" type="HBoxContainer" parent="Ui/Root/SidePanel/VBox/Tabs/Course/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 8

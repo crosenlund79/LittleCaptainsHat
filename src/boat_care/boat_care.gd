@@ -229,3 +229,37 @@ static func quote(service: StringName, care: BoatCareState, condition: float, le
 		SERVICE_HAUL_OUT:
 			return {"cost": roundi(HAUL_OUT_EUR_PER_FT * length_ft), "minutes": HAUL_OUT_MINUTES}
 	return {"cost": 0, "minutes": 0.0}
+
+
+# --- Wording for the overview and the Log ----------------------------------------------
+
+## Text colours of the levels on the dark panels.
+const LEVEL_COLOURS := {LEVEL_GOOD: Color(0.75, 0.92, 0.7), LEVEL_COSMETIC: Color(0.93, 0.92, 0.86),
+	LEVEL_RECOMMENDED: Color(1.0, 0.86, 0.62), LEVEL_NEEDED: Color(1.0, 0.62, 0.55)}
+
+
+## What the Captain could do about an area at this level ("" when nothing).
+static func advice(area: StringName, level: StringName) -> String:
+	if level == LEVEL_GOOD or area == AREA_EQUIPMENT:
+		return ""
+	if level == LEVEL_COSMETIC:
+		return "Nothing urgent."
+	return {AREA_HULL: "A haul-out cleans the bottom; any boatyard can repair the hull.",
+		AREA_RIG: "Any boatyard can service the rigging and sails.",
+		AREA_ENGINE: "Any boatyard can service the engine."}.get(area, "")
+
+
+## One line for a care history entry: "Haul out, Copenhagen, €260".
+static func history_text(entry: Dictionary) -> String:
+	var kind := String(entry.get("kind", ""))
+	var what := ""
+	if kind.begins_with("upgrade:"):
+		what = "Fitted: %s" % String(get_upgrade(kind.get_slice(":", 1)).get("name", kind.get_slice(":", 1)))
+	elif kind.begins_with("haul_out_extra:"):
+		var extra := kind.get_slice(":", 1)
+		what = "While out: %s" % (String(get_upgrade(extra).get("name", extra)) if not get_upgrade(extra).is_empty()
+			else String(SERVICE_NAMES.get(StringName(extra), extra)).to_lower())
+	else:
+		what = String(SERVICE_NAMES.get(StringName(kind), kind))
+	var port := PortCatalog.get_default().get_display_name(StringName(entry.get("port", "")))
+	return "%s, %s, %s" % [what, port, GameSession.format_money(int(entry.get("cost", 0)))]

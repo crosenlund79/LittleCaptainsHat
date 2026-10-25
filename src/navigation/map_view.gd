@@ -550,7 +550,22 @@ func _build_regions() -> void:
 				"sea": kind == "sea",
 				"size": {"land": 19, "island": 15, "sea": 16}.get(kind, 16),
 				"min_px": float(label.get("min_px_per_degree", 90.0)),
+				"region": true,
 			})
+	# A base chart name that a region also places (the Øresund, the Great
+	# Belt…) is shown once: by the region, at its more exact position, and
+	# as early as the base chart showed it.
+	var base_min := {}
+	for label in _labels:
+		if not label.get("region", false):
+			base_min[label.text] = float(label.min_px)
+	var region_texts := {}
+	for label in _labels:
+		if label.get("region", false):
+			region_texts[label.text] = true
+			if base_min.has(label.text):
+				label.min_px = minf(float(label.min_px), float(base_min[label.text]))
+	_labels = _labels.filter(func(l: Dictionary) -> bool: return l.get("region", false) or not region_texts.has(l.text))
 	_update_region_detail()
 
 

@@ -1,0 +1,136 @@
+class_name PassageReadiness
+extends RefCounted
+## Passage Readiness (Iteration 14): a friendly look at a planned passage
+## before setting out. Advisory only: it never stops a departure.
+##
+## It weighs the boat's condition (the hull and the care areas), food and
+## water against the expected passage time, the weather foreseen on the
+## route (the same forecast as the chart's weather warnings), the passage's
+## length and the boat itself (a small boat is happier waiting out rough
+## weather). Each finding has a level: OK (nothing to do), NOTE (worth
+## knowing) or CONSIDER (worth a second thought).
+
+const OK := 0
+const NOTE := 1
+const CONSIDER := 2
+const SUMMARIES := {OK: "Ready to sail.", NOTE: "Ready to sail, with a few things to note.",
+	CONSIDER: "Worth a second thought before setting out."}
+## Food and water to spare beyond the passage itself (days).
+const STORES_MARGIN_DAYS := 1.0
+const STORES_COMFORT_DAYS := 2.0
+## A passage longer than this runs through a night (hours).
+const OVERNIGHT_HOURS := 14.0
+const LONG_PASSAGE_HOURS := 48.0
+## Boats this short (ft) count as small for rough weather.
+const SMALL_BOAT_FT := 28.0
+## How far ahead the forecast is consulted (hours, at most the passage).
+const FORECAST_HOURS := 24.0
+
+
+## Assesses `path` (a planned course from here) for the active boat.
+## Returns {"level", "summary", "items": [{"topic", "level", "text"}],
+## "hours", "nm"}.
+static func assess(path: PackedVector2Array) -> Dictionary:
+	var items: Array[Dictionary] = []
+	var nm := GeoMath.path_length_nm(path) if path.size() >= 2 else 0.0
+	var hours := Simulation.estimate_route_seconds(path) / 3600.0 if path.size() >= 2 else 0.0
+	var vessel := GameSession.get_vessel_definition()
+	_boat(items, hours)
+	_stores(items, hours)
+	var worst_hazard := _weather(items, path, hours)
+	_length(items, hours)
+	var length_ft := GameSession.get_base_vessel_profile().length_ft
+	if length_ft <= SMALL_BOAT_FT and (worst_hazard >= WeatherModel.HAZARD_CAUTION or hours > LONG_PASSAGE_HOURS):
+		items.append({"topic": "boat_size", "level": NOTE, "text": "The %s is a small boat: she is happiest making long or rough passages in settled weather." % vessel.display_name})
+	var level := OK
+	for item in items:
+		level = maxi(level, int(item.level))
+	return {"level": level, "summary": SUMMARIES[level], "items": items, "hours": hours, "nm": nm}
+
+
+## The findings worth showing, in a few short lines (NOTE and CONSIDER first;
+## the reassuring ones when there is nothing else).
+static func describe(result: Dictionary, max_lines := 4) -> String:
+	var lines := PackedStringArray([String(result.summary)])
+	var shown := 0
+	for level in [CONSIDER, NOTE]:
+		for item: Dictionary in result.items:
+			if int(item.level) == level and shown < max_lines:
+				lines.append("• " + String(item.text))
+				shown += 1
+	if shown == 0:
+		for item: Dictionary in result.items:
+			if shown < 2:
+				lines.append("• " + String(item.text))
+				shown += 1
+	return "\n".join(lines)
+
+
+static func _boat(items: Array[Dictionary], hours: float) -> void:
+	var condition := GameSession.get_condition()
+	var name := GameSession.get_vessel_definition().display_name
+	match VesselCondition.band_of(condition):
+		VesselCondition.BAND_SOUND:
+			items.append({"topic": "hull", "level": OK, "text": "The %s is sound (%d %%)." % [name, roundi(condition)]})
+		VesselCondition.BAND_WORN:
+			items.append({"topic": "hull", "level": CONSIDER if hours > OVERNIGHT_HOURS else NOTE,
+				"text": "The hull is worn (%d %%). Fine for a short hop; a boatyard repair would be wise before a long passage." % roundi(condition)})
+		_:
+			items.append({"topic": "hull", "level": CONSIDER,
+				"text": "The hull is damaged (%d %%). Rough weather would be hard on her; a repair first would be wise." % roundi(condition)})
+	var care := GameSession.get_boat_care()
+	var now := GameSession.get_game_time()
+	for area in [BoatCare.AREA_HULL, BoatCare.AREA_RIG, BoatCare.AREA_ENGINE]:
+		var level := BoatCare.area_level(area, care, condition, now)
+		if area == BoatCare.AREA_HULL:
+			# The damage is covered above; here only the bottom.
+			level = BoatCare._level(BoatCare.fouling(care, now), BoatCare.FOULING_COSMETIC, BoatCare.FOULING_RECOMMENDED, BoatCare.FOULING_NEEDED)
+		if level == BoatCare.LEVEL_RECOMMENDED or level == BoatCare.LEVEL_NEEDED:
+			var text: String = {BoatCare.AREA_HULL: "Weed on the bottom is slowing her a little; a haul-out would clean it.",
+				BoatCare.AREA_RIG: "The rigging and sails are due a service; they lose a little speed and take weather harder.",
+				BoatCare.AREA_ENGINE: "The engine is due a service; it is a little slower under power."}[area]
+			items.append({"topic": String(area), "level": NOTE, "text": text})
+
+
+static func _stores(items: Array[Dictionary], hours: float) -> void:
+	var provisions := GameSession.get_provisions()
+	var days := minf(provisions.food_days, provisions.water_days)
+	var needed := hours / 24.0
+	if days < needed + STORES_MARGIN_DAYS:
+		items.append({"topic": "stores", "level": CONSIDER, "text": "Food or water may run short: %s aboard for a passage of about %s." % [
+			Provisions.format_days(days), Simulation.format_duration(hours * 3600.0)]})
+	elif days < needed + STORES_COMFORT_DAYS:
+		items.append({"topic": "stores", "level": NOTE, "text": "Enough food and water for the passage, with little to spare (%s)." % Provisions.format_days(days)})
+	else:
+		items.append({"topic": "stores", "level": OK, "text": "Food and water for %s." % Provisions.format_days(days)})
+
+
+## Adds the weather finding; returns the worst hazard level foreseen.
+static func _weather(items: Array[Dictionary], path: PackedVector2Array, hours: float) -> int:
+	var hazards := Simulation.route_hazards(path, 0.0, clampf(hours, 1.0, FORECAST_HOURS))
+	var worst := WeatherModel.HAZARD_NORMAL
+	var strongest := 0.0
+	var label := ""
+	var when := 0.0
+	for hazard in hazards:
+		if int(hazard.hazard) > worst:
+			worst = int(hazard.hazard)
+			label = String(hazard.label)
+			when = float(hazard.hours)
+		strongest = maxf(strongest, float(hazard.speed_kn))
+	if worst >= WeatherModel.HAZARD_DANGEROUS:
+		items.append({"topic": "weather", "level": CONSIDER, "text": "%s expected on the route %s (wind up to %d kn). Waiting in harbour may be kinder." % [
+			label, Simulation.describe_when(when), roundi(strongest)]})
+	elif worst >= WeatherModel.HAZARD_CAUTION:
+		items.append({"topic": "weather", "level": NOTE, "text": "A fresh to strong breeze on the way (up to %d kn) %s." % [
+			roundi(strongest), Simulation.describe_when(when)]})
+	else:
+		items.append({"topic": "weather", "level": OK, "text": "No rough weather foreseen on the route."})
+	return worst
+
+
+static func _length(items: Array[Dictionary], hours: float) -> void:
+	if hours > LONG_PASSAGE_HOURS:
+		items.append({"topic": "length", "level": NOTE, "text": "A passage of several days (about %s): the weather can change on the way." % Simulation.format_duration(hours * 3600.0)})
+	elif hours > OVERNIGHT_HOURS:
+		items.append({"topic": "length", "level": NOTE, "text": "An overnight passage (about %s). A rest before setting out helps." % Simulation.format_duration(hours * 3600.0)})

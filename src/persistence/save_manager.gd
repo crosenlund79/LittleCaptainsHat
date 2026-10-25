@@ -526,6 +526,8 @@ func _migrate_11_to_12(data: Dictionary) -> Dictionary:
 	care.engine_hours = clampf(miles * MIGRATED_ENGINE_HOURS_PER_NM, 0.0, MIGRATED_MAX_ENGINE_HOURS)
 	session["boat_care"] = {vessel_id: care.to_dict()}
 	data["version"] = 12
+	SessionLog.write("save_migrated", {"from": 11, "to": 12, "vessel": vessel_id, "rig_wear": snappedf(care.rig_wear, 0.1),
+		"engine_hours": snappedf(care.engine_hours, 0.1), "hull_age_days": MIGRATED_HULL_AGE_DAYS}, false)
 	return data
 
 
