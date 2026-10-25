@@ -151,14 +151,16 @@ func _test_config_bands() -> void:
 	t.check_eq(c.strain_per_minute(30.0, 37.5, false), 0.25, "[hat config] 25-35 kn: very low risk")
 	t.check_eq(c.strain_per_minute(40.0, 44.0, false), 1.0, "[hat config] 35-45 kn: meaningful risk")
 	t.check_eq(c.strain_per_minute(40.0, 50.0, false), 1.5, "[hat config] strong gusts (45+) add risk")
-	t.check_eq(c.strain_per_minute(48.0, 60.0, false), 3.5, "[hat config] above 45 kn with 55+ kn gusts: highest risk")
+	t.check_eq(c.strain_per_minute(48.0, 60.0, false), 6.0, "[hat config] above 45 kn with 55+ kn gusts: highest risk")
+	t.check_eq(c.strain_per_minute(40.0, 55.0, false), 6.0, "[hat config] a 55+ kn gust can snatch a hat: a gale with squall gusts")
 	t.check_eq(c.strain_per_minute(40.0, 50.0, true), 0.75, "[hat config] a harbour halves the risk")
 	var a := c.threshold_for(1, 1)
 	t.check(a >= c.threshold_min and a <= c.threshold_max, "[hat config] each hat's threshold is within the range (%.1f)" % a)
 	t.check_eq(c.threshold_for(1, 1), a, "[hat config] the threshold is fixed for a hat")
 	t.check(not is_equal_approx(c.threshold_for(1, 2), a), "[hat config] the next hat has its own threshold")
 	var minutes := c.threshold_min / 1.5
-	t.check(minutes >= 20.0, "[hat config] in a 40 kn gale at sea a hat lasts at least %d game minutes on deck" % roundi(minutes))
+	t.check(minutes >= 13.0, "[hat config] in a 40 kn gale at sea a hat lasts at least %d game minutes on deck" % roundi(minutes))
+	t.check(c.threshold_min / 0.25 >= 80.0, "[hat config] in 30 kn it lasts at least %d minutes (very low risk)" % roundi(c.threshold_min / 0.25))
 
 
 func _test_light_wind_is_safe() -> void:

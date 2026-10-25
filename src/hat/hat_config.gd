@@ -30,8 +30,8 @@ var recovery_per_min := 2.0
 ## at least this many game minutes have passed.
 var warning_repeat_min := 30.0
 ## Each hat holds until its strain reaches a threshold in this range.
-var threshold_min := 30.0
-var threshold_max := 50.0
+var threshold_min := 20.0
+var threshold_max := 40.0
 
 
 static func get_default() -> HatConfig:

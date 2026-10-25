@@ -5,7 +5,13 @@ extends RefCounted
 ## generated from the harbour catalogue (distant harbours worth a visit).
 ##
 ## Objectives are evaluated only by GameSession, when a voyage has been
-## written to the Captain's Log (see evaluate()). Nothing here changes state.
+## written to the Captain's Log (see evaluate()) or when something happens to
+## the captain's hat (evaluate_hat_event()). Nothing here changes state.
+##
+## Secret achievements (Visual Identity V01) are ordinary objectives with
+## "secret": true. They pay renown like the others, exactly once, but the
+## Captain's Log shows nothing about them (title, condition or reward) until
+## they are found.
 
 const DEFAULT_PATH := "res://data/progression/objectives.json"
 
@@ -17,15 +23,34 @@ const TYPE_PASSAGE_LENGTH := &"passage_length"
 const TYPE_CLEAN_PASSAGE := &"clean_passage"
 const TYPE_WEATHER_ARRIVAL := &"weather_arrival"
 const TYPE_NEW_HARBOUR := &"new_harbour"
+## Captain's hat (Visual Identity V01): hats lost in all; euros spent on
+## replacements; a replacement lost within `target` game minutes of buying
+## it; a voyage through weather of at least `hazard` with the hat worn on
+## deck and not lost; `target` voyages completed with the original hat; a
+## hat lost at sea with no land within `target` nm.
+const TYPE_HAT_LOST_COUNT := &"hat_lost_count"
+const TYPE_HAT_SPENT := &"hat_spent"
+const TYPE_HAT_LOST_SOON := &"hat_lost_soon"
+const TYPE_HAT_WEATHER_VOYAGE := &"hat_weather_voyage"
+const TYPE_ORIGINAL_HAT_VOYAGES := &"original_hat_voyages"
+const TYPE_HAT_LOST_OFFSHORE := &"hat_lost_offshore"
 const TYPES: Array[StringName] = [TYPE_VOYAGE_COUNT, TYPE_TOTAL_DISTANCE, TYPE_VISIT_HARBOUR, TYPE_VISIT_COUNT,
-	TYPE_PASSAGE_LENGTH, TYPE_CLEAN_PASSAGE, TYPE_WEATHER_ARRIVAL, TYPE_NEW_HARBOUR]
+	TYPE_PASSAGE_LENGTH, TYPE_CLEAN_PASSAGE, TYPE_WEATHER_ARRIVAL, TYPE_NEW_HARBOUR, TYPE_HAT_LOST_COUNT, TYPE_HAT_SPENT,
+	TYPE_HAT_LOST_SOON, TYPE_HAT_WEATHER_VOYAGE, TYPE_ORIGINAL_HAT_VOYAGES, TYPE_HAT_LOST_OFFSHORE]
+## What a hat event is (evaluate_hat_event()).
+const HAT_EVENT_LOST := &"lost"
+const HAT_EVENT_BOUGHT := &"bought"
+## How an achievement feels: an accomplishment, or a comic mishap.
+const TONE_PROUD := &"proud"
+const TONE_COMIC := &"comic"
 
 static var _default: ObjectiveCatalog
 
 ## Euros paid per renown point by a travel update (social media).
 var euros_per_renown := 2
 ## Objectives in display order: {"id", "title", "text", "type", "target",
-## "port", "hazard", "reward", "repeatable", "category", "generated"}.
+## "port", "hazard", "reward", "repeatable", "category", "generated",
+## "secret", "tone"}.
 var objectives: Array[Dictionary] = []
 var _by_id := {}
 
@@ -80,7 +105,7 @@ static func validate(entry: Dictionary, ports: PortCatalog) -> String:
 		TYPE_VISIT_HARBOUR:
 			if not ports.has_port(StringName(str(entry.get("port", "")))):
 				return "unknown harbour '%s'" % entry.get("port")
-		TYPE_WEATHER_ARRIVAL:
+		TYPE_WEATHER_ARRIVAL, TYPE_HAT_WEATHER_VOYAGE:
 			var hazard := int(entry.get("hazard", 0))
 			if hazard < WeatherModel.HAZARD_CAUTION or hazard > WeatherModel.HAZARD_SEVERE:
 				return "hazard must be 1-3"
@@ -99,6 +124,8 @@ func _add(entry: Variant, generated: bool, ports: PortCatalog) -> void:
 	var problem := validate(entry, ports)
 	if problem.is_empty() and _by_id.has(String(entry.id)):
 		problem = "duplicate id"
+	if problem.is_empty() and bool(entry.get("secret", false)) and bool(entry.get("repeatable", false)):
+		problem = "a secret achievement cannot be repeatable"
 	if not problem.is_empty():
 		push_error("Objective '%s' left out: %s" % [entry.get("id", "?"), problem])
 		return
@@ -114,6 +141,8 @@ func _add(entry: Variant, generated: bool, ports: PortCatalog) -> void:
 		"repeatable": bool(entry.get("repeatable", false)),
 		"category": str(entry.get("category", "")),
 		"generated": generated,
+		"secret": bool(entry.get("secret", false)),
+		"tone": StringName(str(entry.get("tone", TONE_PROUD))),
 	}
 	objectives.append(objective)
 	_by_id[objective.id] = objective
@@ -158,22 +187,57 @@ static func _generate_far_harbours(settings: Dictionary, ports: PortCatalog) -> 
 
 ## The objectives a just-logged voyage completes: [{"id", "reward"}]. `log`
 ## already contains the voyage (`record`), `new_harbour` tells whether it
-## was a first visit, `progress` is the ObjectiveProgress before this event.
+## was a first visit, `progress` is the ObjectiveProgress before this event,
+## `hat` the captain's hat at the end of the voyage (null: no hat objectives).
 ## One-time objectives already completed and repeatable ones already paid for
 ## this voyage (see ObjectiveProgress.can_pay()) are not returned.
-func evaluate(log: CaptainsLog, record: Dictionary, new_harbour: bool, progress: ObjectiveProgress) -> Array[Dictionary]:
+func evaluate(log: CaptainsLog, record: Dictionary, new_harbour: bool, progress: ObjectiveProgress, hat: HatState = null) -> Array[Dictionary]:
 	var awards: Array[Dictionary] = []
 	var event := float(record.ended)
 	for objective in objectives:
 		if not progress.can_pay(objective, event):
 			continue
-		if is_met(objective, log, record, new_harbour):
-			awards.append({"id": objective.id, "reward": objective.reward, "title": objective.title})
+		if is_met(objective, log, record, new_harbour, hat):
+			awards.append(_award_of(objective))
 	return awards
 
 
-## Whether `objective` is met by the log after the voyage `record`.
-static func is_met(objective: Dictionary, log: CaptainsLog, record: Dictionary, new_harbour: bool) -> bool:
+## The objectives a hat event completes (see evaluate()). `event` =
+## {"kind": HAT_EVENT_LOST or HAT_EVENT_BOUGHT, "time", and for a loss
+## "underway" and "open_water_nm" (no land within this distance; 0 when
+## not checked)}. `hat` is the state after the event.
+func evaluate_hat_event(event: Dictionary, log: CaptainsLog, hat: HatState, progress: ObjectiveProgress) -> Array[Dictionary]:
+	var awards: Array[Dictionary] = []
+	for objective in objectives:
+		if progress.can_pay(objective, float(event.time)) and is_met_by_hat_event(objective, event, log, hat):
+			awards.append(_award_of(objective))
+	return awards
+
+
+static func _award_of(objective: Dictionary) -> Dictionary:
+	return {"id": objective.id, "reward": objective.reward, "title": objective.title, "text": objective.text,
+		"secret": objective.secret, "tone": objective.tone}
+
+
+## Whether a hat objective is met right after `event` (only the hat types).
+static func is_met_by_hat_event(objective: Dictionary, event: Dictionary, _log: CaptainsLog, hat: HatState) -> bool:
+	var lost := StringName(event.get("kind", "")) == HAT_EVENT_LOST
+	match objective.type:
+		TYPE_HAT_LOST_COUNT:
+			return lost and hat.lost_count >= int(objective.target)
+		TYPE_HAT_SPENT:
+			return hat.spent >= int(objective.target)
+		TYPE_HAT_LOST_SOON:
+			var bought_at := float(event.get("bought_at", -1.0))
+			return lost and bought_at >= 0.0 and float(event.time) - bought_at <= objective.target * 60.0 + 1e-6
+		TYPE_HAT_LOST_OFFSHORE:
+			return lost and bool(event.get("underway", false)) and float(event.get("open_water_nm", 0.0)) >= objective.target
+	return false
+
+
+## Whether `objective` is met by the log after the voyage `record` (`hat`:
+## the captain's hat then, or null).
+static func is_met(objective: Dictionary, log: CaptainsLog, record: Dictionary, new_harbour: bool, hat: HatState = null) -> bool:
 	var arrived: bool = record.outcome == String(CaptainsLog.OUTCOME_ARRIVED)
 	match objective.type:
 		TYPE_VOYAGE_COUNT:
@@ -192,6 +256,11 @@ static func is_met(objective: Dictionary, log: CaptainsLog, record: Dictionary, 
 			return arrived and bool(record.complete) and int(record.worst_hazard) >= objective.hazard
 		TYPE_NEW_HARBOUR:
 			return arrived and new_harbour
+		TYPE_HAT_WEATHER_VOYAGE:
+			return hat != null and arrived and bool(record.complete) and hat.voyage_worn_hazard >= objective.hazard \
+				and not hat.voyage_lost and hat.is_owned()
+		TYPE_ORIGINAL_HAT_VOYAGES:
+			return hat != null and arrived and log.voyages_completed >= int(objective.target) and hat.has_original()
 	return false
 
 

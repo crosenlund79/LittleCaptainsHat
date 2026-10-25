@@ -11,11 +11,11 @@
 	],
 	"gust_bands": [
 		{"from_kn": 45, "strain_per_min": 0.5},
-		{"from_kn": 55, "strain_per_min": 1.5}
+		{"from_kn": 55, "strain_per_min": 4.0}
 	],
 	"harbour_factor": 0.5,
 	"recovery_per_min": 2.0,
 	"warning_repeat_min": 30,
-	"threshold_min": 30,
-	"threshold_max": 50
+	"threshold_min": 20,
+	"threshold_max": 40
 }

@@ -45,6 +45,37 @@ static func describe_place(position: Vector2, location_id: StringName) -> Dictio
 	return {"text": text, "port_id": String(nearest.id), "distance_nm": best}
 
 
+## How far open water reaches around `position`, in nm, up to `max_nm`:
+## the distance to the nearest chart cell that touches land (the same
+## navigability raster routing uses, from the chart's coastline data, small
+## islands included). Cells outside the chart count as land, so the answer is
+## never too generous.
+static func open_water_nm(position: Vector2, max_nm: float) -> float:
+	var grid := SeaRouter.get_default().grid
+	if grid == null:
+		return 0.0
+	var center := grid.geo_to_cell(position)
+	var cx := floori(center.x)
+	var cy := floori(center.y)
+	if grid.get_class_at(cx, cy) != NavGrid.NAVIGABLE:
+		return 0.0
+	var origin := grid.cell_center_geo(cx, cy)
+	var nm_x := maxf(GeoMath.distance_nm(origin, grid.cell_center_geo(cx + 1, cy)), 1e-3)
+	var nm_y := maxf(GeoMath.distance_nm(origin, grid.cell_center_geo(cx, cy + 1)), 1e-3)
+	var rx := ceili(max_nm / nm_x) + 1
+	var ry := ceili(max_nm / nm_y) + 1
+	var nearest := max_nm
+	for dy in range(-ry, ry + 1):
+		for dx in range(-rx, rx + 1):
+			var d := Vector2(dx * nm_x, dy * nm_y).length()
+			if d >= nearest:
+				continue
+			if grid.get_class_at(cx + dx, cy + dy) != NavGrid.NAVIGABLE:
+				# The land may start anywhere in that cell: count its near edge.
+				nearest = maxf(d - 0.5 * maxf(nm_x, nm_y), 0.0)
+	return nearest
+
+
 ## The notification when hat number `lost_count` blows away.
 static func loss_message(lost_count: int) -> String:
 	return LOSS_MESSAGES[(maxi(lost_count, 1) - 1) % LOSS_MESSAGES.size()]

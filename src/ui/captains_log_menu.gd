@@ -1,7 +1,9 @@
 class_name CaptainsLogMenu
 extends SimplePanel
 ## The Captain's Log (L, or the pause menu): the player's statistics and
-## renown, recent passages, the harbours visited and the sailing objectives.
+## renown, recent passages, notable moments, the harbours visited, the
+## sailing objectives and the secret achievements found (secret ones reveal
+## nothing until they are found).
 ## It only reads GameSession; nothing here changes the game. The panel has a
 ## fixed size; long lists scroll.
 
@@ -10,6 +12,8 @@ const TABS_SIZE := Vector2(1020, 560)
 const TAB_LOG := 0
 const TAB_HARBOURS := 1
 const TAB_OBJECTIVES := 2
+## Notable moments listed in the Log tab (the newest).
+const MAX_MOMENTS := 10
 
 ## The player asked to publish a travel update (Log tab).
 signal publish_requested
@@ -108,6 +112,19 @@ func _build_log_tab() -> Control:
 		_add_text(passages, "NoPassages", "No passages yet. Plot a course at the chart table and set sail.", &"MutedLabel")
 	for i in range(log.voyages.size() - 1, -1, -1):
 		_add_text(passages, "Passage%d" % (log.voyages.size() - 1 - i), describe_passage(log.voyages[i]))
+	# Short narrative notes (the captain's hat so far): separate from the
+	# voyage records above, which they never change.
+	var history := GameSession.get_hat().history
+	if not history.is_empty():
+		_add_text(list, "MomentsTitle", "Notable moments", &"HeaderLabel")
+		var moments := VBoxContainer.new()
+		moments.name = "Moments"
+		moments.add_theme_constant_override("separation", 6)
+		list.add_child(moments)
+		for i in range(history.size() - 1, maxi(history.size() - 1 - MAX_MOMENTS, -1), -1):
+			var entry: Dictionary = history[i]
+			_add_text(moments, "Moment%d" % (history.size() - 1 - i), "%s  ·  %s" % [
+				Simulation.format_game_time(float(entry.time), false), entry.text])
 	return list.get_parent()
 
 
@@ -178,7 +195,11 @@ func _build_objectives_tab() -> Control:
 	var done := VBoxContainer.new()
 	done.name = "Completed"
 	done.add_theme_constant_override("separation", 10)
+	var secrets: Array[Dictionary] = []
 	for objective in catalog.objectives:
+		if objective.secret:
+			secrets.append(objective)
+			continue
 		var count := progress.get_count(StringName(objective.id))
 		if count == 0 or objective.repeatable:
 			_add_objective(open, objective, describe_progress(objective, log, count))
@@ -191,7 +212,38 @@ func _build_objectives_tab() -> Control:
 	list.add_child(done)
 	if done.get_child_count() == 0:
 		_add_text(done, "NoneCompleted", "None yet.", &"MutedLabel")
+	_build_secrets(list, secrets, progress)
 	return list.get_parent()
+
+
+## Secret achievements: the ones found with their title, description, date
+## and renown; the others only as a count, so nothing gives them away.
+func _build_secrets(list: VBoxContainer, secrets: Array[Dictionary], progress: ObjectiveProgress) -> void:
+	if secrets.is_empty():
+		return
+	_add_text(list, "SecretsTitle", "Secret achievements", &"HeaderLabel")
+	var box := VBoxContainer.new()
+	box.name = "Secrets"
+	box.add_theme_constant_override("separation", 10)
+	list.add_child(box)
+	var hidden := 0
+	for objective in secrets:
+		if not progress.is_completed(StringName(objective.id)):
+			hidden += 1
+			continue
+		var entry: Dictionary = progress.completed[objective.id]
+		var found := VBoxContainer.new()
+		found.name = "Secret_%s" % objective.id
+		found.add_theme_constant_override("separation", 2)
+		box.add_child(found)
+		_add_text(found, "Title", "%s  ·  %d renown  ·  found %s" % [objective.title, objective.reward,
+			Simulation.format_game_time(float(entry.first), false)])
+		_add_text(found, "Detail", objective.text, &"MutedLabel")
+	if hidden > 0:
+		_add_text(box, "SecretsHidden", "%s still to discover. They are not described here: you will know one when you find it." % (
+			"One secret achievement is" if hidden == 1 else "%d secret achievements are" % hidden), &"MutedLabel")
+	else:
+		_add_text(box, "SecretsHidden", "You have found every secret achievement.", &"MutedLabel")
 
 
 func _add_objective(parent: Control, objective: Dictionary, status: String) -> void:

@@ -30,6 +30,10 @@ extends Node
 ## Hazardous weather (Ambience bus): strong wind loop and occasional thunder.
 @export var storm_wind_sound: AudioStream = preload("res://assets/audio/placeholder/storm_wind.wav")
 @export var thunder_sound: AudioStream = preload("res://assets/audio/placeholder/thunder.wav")
+## Secret achievement found (a soft chime), and a hat blowing away (a short
+## sour little note). SFX bus, quiet.
+@export var achievement_sound: AudioStream = preload("res://assets/audio/placeholder/achievement_chime.wav")
+@export var hat_lost_sound: AudioStream = preload("res://assets/audio/placeholder/hat_sour_note.wav")
 
 ## Spawn marker in the cabin where the player wakes after sleeping.
 const WAKE_SPAWN := &"v_berth"
@@ -45,6 +49,9 @@ const STORM_LOOP := &"storm_wind"
 const STORM_AUDIBLE_KN := 20.0
 const STORM_FULL_KN := 45.0
 const WEATHER_AUDIO_INTERVAL := 1.0
+## Loudness of the achievement chime and the hat's sour note (SFX bus).
+const ACHIEVEMENT_DB := -9.0
+const HAT_LOST_DB := -10.0
 
 @onready var router: SceneRouter = $SceneRouter
 @onready var hud: Hud = $HudLayer/Hud
@@ -464,14 +471,21 @@ func _on_voyage_logged(record: Dictionary, new_harbour: bool) -> void:
 			PortCatalog.get_default().ports.size()])
 
 
-## Renown earned on a voyage: one short message for all of it.
+## Renown earned on a voyage: one short message for all of it. A secret
+## achievement found gets its own message (title and description) and a
+## soft chime.
 func _on_renown_awarded(awards: Array) -> void:
 	var total := 0
 	var titles: Array[String] = []
 	for award: Dictionary in awards:
+		if award.get("secret", false):
+			notify("Secret achievement: %s. %s  +%d renown" % [award.title, award.text, int(award.reward)])
+			AudioManager.play_sfx(achievement_sound, ACHIEVEMENT_DB)
+			continue
 		total += int(award.reward)
 		titles.append(award.title)
-	notify("+%d renown: %s." % [total, ", ".join(titles)])
+	if not titles.is_empty():
+		notify("+%d renown: %s." % [total, ", ".join(titles)])
 
 
 # --- Captain's hat ------------------------------------------------------------------
@@ -483,6 +497,7 @@ func toggle_hat() -> void:
 
 func _on_hat_lost(info: Dictionary) -> void:
 	notify(info.text)
+	AudioManager.play_sfx(hat_lost_sound, HAT_LOST_DB)
 
 
 func _show_current_boat_area() -> void:

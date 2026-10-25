@@ -3,19 +3,27 @@
 These are synthetic test signals used to verify audio bus routing and volume
 settings. They are not game audio and are meant to be replaced.
 
-Usage: python3 tools/generate_placeholder_audio.py
+Usage: python3 tools/generate_placeholder_audio.py [name.wav ...]
+With file names, only those files are written (the others are left as they
+are).
 """
 import math
 import os
 import random
 import struct
+import sys
 import wave
 
 RATE = 22050
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "audio", "placeholder")
 
 
+ONLY = set(sys.argv[1:])
+
+
 def write(name, samples):
+    if ONLY and name not in ONLY:
+        return
     path = os.path.join(OUT, name)
     with wave.open(path, "wb") as w:
         w.setnchannels(1)
@@ -184,3 +192,45 @@ def thunder(dur, amp):
 # Ambience bus: hazardous weather (strong wind loop, occasional thunder).
 write("storm_wind.wav", storm_wind(6.0, 0.4))
 write("thunder.wav", thunder(3.5, 0.45))
+
+
+# --- Visual Identity V01: the captain's hat --------------------------------------
+
+def chime(dur, amp):
+    """A soft two-note bell (G5 then D6), each with a gentle decay and a quiet
+    octave partial: a pleasant "found something" cue, never loud."""
+    n = int(dur * RATE)
+    out = [0.0] * n
+    for start, freq in ((0.0, 784.0), (0.16, 1174.7)):
+        s0 = int(start * RATE)
+        for i in range(s0, n):
+            t = (i - s0) / RATE
+            env = min(1.0, t / 0.006) * math.exp(-t * 4.2)
+            out[i] += amp * env * (math.sin(2 * math.pi * freq * t) + 0.25 * math.sin(2 * math.pi * freq * 2 * t))
+    fade = int(0.05 * RATE)
+    for i in range(fade):
+        out[n - 1 - i] *= i / fade
+    return out
+
+
+def sour_note(dur, amp):
+    """A playful "wah-wah": two muted, slightly flat notes sliding down, with a
+    little vibrato and a soft reedy tone. Comic, short and quiet."""
+    n = int(dur * RATE)
+    out, phase = [], 0.0
+    for i in range(n):
+        t = i / RATE
+        first = t < dur * 0.45
+        local = t if first else t - dur * 0.45
+        span = dur * 0.45 if first else dur * 0.55
+        f0, f1 = (392.0, 349.0) if first else (330.0, 262.0)
+        freq = f0 + (f1 - f0) * min(1.0, local / span) + 4.0 * math.sin(2 * math.pi * 6.0 * t)
+        phase += 2 * math.pi * freq / RATE
+        env = min(1.0, local / 0.03) * min(1.0, (span - local) / 0.08)
+        tone_ = math.sin(phase) + 0.35 * math.sin(2 * phase) + 0.12 * math.sin(3 * phase)
+        out.append(amp * env * tone_ / 1.47)
+    return out
+
+
+write("achievement_chime.wav", chime(1.1, 0.22))
+write("hat_sour_note.wav", sour_note(0.9, 0.24))

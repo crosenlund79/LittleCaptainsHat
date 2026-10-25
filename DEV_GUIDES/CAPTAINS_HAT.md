@@ -76,7 +76,8 @@ All numbers are in `data/hat/hat_config.json` (read by `src/hat/hat_config.gd`).
 - The *effective* wind is the sustained wind, or the gusts less
   `gust_allowance_kn` (10) if that is more.
 - `bands` give the strain per game minute: from 25 kn 0.25, from 35 kn 1.0,
-  from 45 kn 2.0. `gust_bands` add 0.5 for gusts from 45 kn and 1.5 from 55 kn.
+  from 45 kn 2.0. `gust_bands` add 0.5 for gusts from 45 kn and 4.0 from 55 kn (a
+  squall gust can snatch a hat).
   Below 25 kn there is no risk at all.
 - In harbour the strain is multiplied by `harbour_factor` (0.5).
 - The first minute with any risk only **warns** ("Better hold onto your
@@ -85,7 +86,7 @@ All numbers are in `data/hat/hat_config.json` (read by `src/hat/hat_config.gd`).
 - Strain recovers by `recovery_per_min` (2) per minute when the hat is not at
   risk.
 - Each hat blows away when its strain reaches its own threshold, between
-  `threshold_min` (30) and `threshold_max` (50), fixed per hat from the game's
+  `threshold_min` (20) and `threshold_max` (40), fixed per hat from the game's
   seed. There is no frame-based dice roll: the outcome is the same at 1×, 5×,
   20×, while sleeping, and across save and load.
 
@@ -94,9 +95,14 @@ What that means at sea on deck with the hat on:
 | Wind (sustained / gusts) | Strain per minute | The hat lasts about |
 |---|---|---|
 | 24 / 30 kn | 0 | for ever |
-| 30 / 37 kn | 0.25 | 2–3.3 hours |
-| 40 / 50 kn (gale) | 1.5 | 20–33 minutes |
-| 48 / 60 kn (storm) | 3.5 | 9–14 minutes |
+| 30 / 37 kn | 0.25 | 80–160 minutes |
+| 40 / 50 kn (gale) | 1.5 | 13–27 minutes |
+| any wind with gusts of 55 kn or more (squalls, storm) | 2.0 + 4.0 = 6.0 | 3.5–7 minutes |
+
+Add the warning minute to each. One game minute is one real second at 1×,
+and the warning drops time to 1×. European gales rarely bring gusts of 55 kn
+or more, so a hat that blows away within minutes is a rare event (and the
+secret achievement *The Last Straw* depends on it).
 
 In harbour it lasts twice as long. Losing a hat costs nothing else: no damage,
 no money.
@@ -107,6 +113,37 @@ The harbour **grocery store** sells a replacement for `price_eur` (15) in its
 own row, only while moored and only when the hat is lost
 (`GameSession.buy_hat()`). The new hat is handed over carried: press H to put
 it on. The provisions price and figures are not touched.
+
+## Secret achievements
+
+Seven hidden achievements are ordinary objectives in
+`data/progression/objectives.json` with `"secret": true` (and a `"tone"`:
+`proud` or `comic`). They pay modest renown through the existing
+`ObjectiveProgress`, exactly once, and the Captain's Log shows nothing about
+them (title, condition or reward) until they are found; then it shows the
+title, description, date and renown. Finding one shows a notification and
+plays `assets/audio/placeholder/achievement_chime.wav`.
+
+| Achievement | Type | Condition | Renown |
+|---|---|---|---|
+| Captain No-Hat | `hat_lost_count` 1 | the first hat lost | 10 |
+| Hat Trick | `hat_lost_count` 3 | three hats lost | 15 |
+| Hold Onto Your Hat | `hat_weather_voyage` hazard 2 | arrive after a voyage on which the hat was worn on deck in dangerous weather, without losing it | 30 |
+| The Hat Tax | `hat_spent` 100 | €100 spent on replacement hats | 10 |
+| The Last Straw | `hat_lost_soon` 5 | a replacement lost within 5 game minutes of buying it | 15 |
+| A Captain of Distinction | `original_hat_voyages` 10 | ten voyages completed and the original hat never lost | 40 |
+| The Sea Wears a Hat Now | `hat_lost_offshore` 20 | a hat lost at sea with no land within 20 nm | 15 |
+
+- Hat events are evaluated in `GameSession` when the hat is lost or bought
+  (`ObjectiveCatalog.evaluate_hat_event()`); the voyage ones when a voyage is
+  logged, with the hat passed to `ObjectiveCatalog.evaluate()`.
+- "No land within 20 nm" is measured on the chart's own navigability raster
+  (`HatStory.open_water_nm()`): the distance to the nearest cell that touches
+  land, small islands included; cells off the chart count as land.
+- Losing hats never pays: all the comic ones together give 65 renown (€130 when
+  published), less than the hats they need.
+- To add one: an entry with a hat type, `"secret": true`, a positive
+  `reward`; secret objectives cannot be `repeatable`.
 
 ## State and saving
 

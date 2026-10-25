@@ -35,6 +35,8 @@ right bus; scenes only say *what* to play. `SettingsManager` sets the bus volume
 | `test_music_arpeggio.wav` | Music | the Music test button | `src/ui/settings_menu.tscn` |
 | `storm_wind.wav` | Ambience | strong-wind loop aboard, louder with more wind (from 20 kn), quieter below deck | `App.storm_wind_sound` (`src/app/app.gd`) |
 | `thunder.wav` | Ambience | distant thunder now and then near an active thunderstorm | `App.thunder_sound` |
+| `achievement_chime.wav` | SFX | a soft two-note chime when a secret achievement is found (−9 dB) | `App.achievement_sound` |
+| `hat_sour_note.wav` | SFX | a short, playful "wah-wah" when the captain's hat blows away (−10 dB) | `App.hat_lost_sound` |
 
 ## Replace a sound (shortest way)
 

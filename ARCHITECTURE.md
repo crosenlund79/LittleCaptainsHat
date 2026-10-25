@@ -1037,6 +1037,16 @@ accepting objectives and no story.
     to a known harbour therefore pay nothing.
   - A lost (rescued) voyage counts only towards distance; passage, harbour
     and weather objectives need an arrival.
+- **Secret achievements (Visual Identity V01):** objectives with
+  `"secret": true` and six hat types (`hat_lost_count`, `hat_spent`,
+  `hat_lost_soon`, `hat_weather_voyage`, `original_hat_voyages`,
+  `hat_lost_offshore`). Hat events are evaluated by
+  `ObjectiveCatalog.evaluate_hat_event()` inside `GameSession._lose_hat()`
+  and `buy_hat()`; the two voyage ones by `evaluate()` (which now receives the
+  hat). Same `ObjectiveProgress`, same pay-once rule, same save section. The
+  Objectives tab hides everything about them until found (a count only).
+  Awards carry `secret`, `text` and `tone`; `App` shows a secret one as its
+  own notification with a soft chime.
 - **UI:** the Captain's Log's Objectives tab lists open objectives (with
   their requirement, progress and reward; repeatable ones stay listed) and
   the completed ones. The Log tab shows lifetime and unpublished renown. The

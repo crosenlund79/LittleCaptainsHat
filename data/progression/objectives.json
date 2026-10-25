@@ -1,6 +1,6 @@
 {
 	"version": 1,
-	"comment": "Sailing objectives and renown balancing (Iteration 006). Rewards are renown points. Types: voyage_count, total_distance, visit_harbour, visit_count, passage_length, clean_passage, weather_arrival, new_harbour. 'repeatable' objectives pay once per qualifying voyage; the others once.",
+	"comment": "Sailing objectives and renown balancing (Iteration 006). Rewards are renown points. Types: voyage_count, total_distance, visit_harbour, visit_count, passage_length, clean_passage, weather_arrival, new_harbour, and for the captain's hat (Visual Identity V01) hat_lost_count, hat_spent (euros), hat_lost_soon (game minutes after buying), hat_weather_voyage (hazard), original_hat_voyages, hat_lost_offshore (nm of open water all round). 'repeatable' objectives pay once per qualifying voyage; the others once. 'secret' ones stay hidden in the Captain's Log (title, condition and reward) until found; 'tone' is proud or comic.",
 	"publishing": {
 		"euros_per_renown": 2
 	},
@@ -30,7 +30,21 @@
 		{"id": "clean_150", "title": "Not a scratch", "type": "clean_passage", "target": 150, "reward": 30, "category": "challenge",
 			"text": "Complete a passage of at least 150 nm without any damage to the boat."},
 		{"id": "heavy_weather", "title": "Heavy weather", "type": "weather_arrival", "hazard": 2, "reward": 40, "category": "weather",
-			"text": "Arrive safely after sailing through dangerous or severe weather."}
+			"text": "Arrive safely after sailing through dangerous or severe weather."},
+		{"id": "secret_captain_no_hat", "title": "Captain No-Hat", "type": "hat_lost_count", "target": 1, "reward": 10, "secret": true, "tone": "comic", "category": "secret",
+			"text": "The sea has claimed its most important trophy."},
+		{"id": "secret_hat_trick", "title": "Hat Trick", "type": "hat_lost_count", "target": 3, "reward": 15, "secret": true, "tone": "comic", "category": "secret",
+			"text": "Three captain's hats lost to the wind. The gulls have started a collection."},
+		{"id": "secret_hold_onto_your_hat", "title": "Hold Onto Your Hat", "type": "hat_weather_voyage", "hazard": 2, "reward": 30, "secret": true, "tone": "proud", "category": "secret",
+			"text": "Sailed through dangerous weather with your hat on deck, and arrived still owning it."},
+		{"id": "secret_hat_tax", "title": "The Hat Tax", "type": "hat_spent", "target": 100, "reward": 10, "secret": true, "tone": "comic", "category": "secret",
+			"text": "Spent €100 on replacement captain's hats. The grocer knows you by name."},
+		{"id": "secret_last_straw", "title": "The Last Straw", "type": "hat_lost_soon", "target": 5, "reward": 15, "secret": true, "tone": "comic", "category": "secret",
+			"text": "Lost a brand-new captain's hat within five minutes of buying it."},
+		{"id": "secret_captain_of_distinction", "title": "A Captain of Distinction", "type": "original_hat_voyages", "target": 10, "reward": 40, "secret": true, "tone": "proud", "category": "secret",
+			"text": "Ten voyages completed without ever losing your original captain's hat."},
+		{"id": "secret_sea_wears_a_hat", "title": "The Sea Wears a Hat Now", "type": "hat_lost_offshore", "target": 20, "reward": 15, "secret": true, "tone": "comic", "category": "secret",
+			"text": "Lost a captain's hat at sea with no land within 20 nm. It suits the ocean."}
 	],
 	"generated": {
 		"comment": "Distant harbours worth a visit, chosen from the harbour catalogue: those at least min_nm (great circle) from the start harbour, evenly spread by distance; the reward grows with distance between min_reward and max_reward.",

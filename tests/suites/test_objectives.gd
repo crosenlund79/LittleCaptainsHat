@@ -87,7 +87,9 @@ func _ids(awards: Array) -> Array:
 func _test_catalog() -> void:
 	var catalog := ObjectiveCatalog.get_default()
 	var ports := PortCatalog.get_default()
-	t.check(catalog.objectives.size() >= 10 and catalog.objectives.size() <= 20, "[objectives] %d objectives (about 10–15 asked)" % catalog.objectives.size())
+	# Secret achievements (Visual Identity V01) are counted in their own suite.
+	var regular := catalog.objectives.filter(func(o: Dictionary) -> bool: return not o.secret).size()
+	t.check(regular >= 10 and regular <= 20, "[objectives] %d objectives (about 10–15 asked)" % regular)
 	var ids := {}
 	var types := {}
 	var valid := true

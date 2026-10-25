@@ -43,8 +43,9 @@ signal rescued(info: Dictionary)
 ## A voyage ended and was written to the Captain's Log (see
 ## CaptainsLog.make_record()); `new_harbour` is true on a first visit.
 signal voyage_logged(record: Dictionary, new_harbour: bool)
-## Objectives completed by a voyage paid renown: [{"id", "title", "reward"}].
-## Emitted once per voyage, after voyage_logged.
+## Objectives completed by a voyage or a hat event paid renown: [{"id",
+## "title", "reward", "text", "secret", "tone"}]. Emitted once per event,
+## after voyage_logged (a voyage) or hat_lost / hat_bought (the hat).
 signal renown_awarded(awards: Array)
 ## A travel update was published: {"renown", "euros", "funds_after"}.
 signal travel_update_published(info: Dictionary)
@@ -740,9 +741,18 @@ func publish_travel_update() -> Dictionary:
 ## complete_voyage() and rescue(), so the reward is part of the same
 ## transaction as the record and can never be paid twice).
 func _award_objectives(record: Dictionary, new_harbour: bool) -> Array[Dictionary]:
-	var awards := ObjectiveCatalog.get_default().evaluate(_state.captains_log, record, new_harbour, _state.progress)
+	var awards := ObjectiveCatalog.get_default().evaluate(_state.captains_log, record, new_harbour, _state.progress, _state.hat)
 	for award in awards:
 		_state.progress.award(StringName(award.id), award.title, award.reward, float(record.ended))
+	return awards
+
+
+## Pays the (secret) objectives a hat event completes, inside the hat's own
+## transaction, so each pays exactly once (see ObjectiveProgress.can_pay()).
+func _award_hat_objectives(event: Dictionary) -> Array[Dictionary]:
+	var awards := ObjectiveCatalog.get_default().evaluate_hat_event(event, _state.captains_log, _state.hat, _state.progress)
+	for award in awards:
+		_state.progress.award(StringName(award.id), award.title, award.reward, float(event.time))
 	return awards
 
 
@@ -887,6 +897,10 @@ func _check_provisions() -> void:
 
 # --- Captain's hat -------------------------------------------------------------------
 
+## Open water is looked for this far around a hat lost at sea (nm).
+const OFFSHORE_CHECK_NM := 30.0
+
+
 ## A copy of the hat (state, strain, history).
 func get_hat() -> HatState:
 	return _state.hat.duplicate_hat() if _state else HatState.new()
@@ -1006,12 +1020,18 @@ func _lose_hat(time: float, sample: WeatherSample, position: Vector2) -> void:
 	var log_text := HatStory.loss_log_line(hat.lost_count, place, sample)
 	hat.add_history(time, HatState.EVENT_LOST, log_text)
 	_has_unsaved_changes = true
+	# How far from land, for "The Sea Wears a Hat Now" (only at sea).
+	var open_water := 0.0 if in_harbour else HatStory.open_water_nm(position, OFFSHORE_CHECK_NM)
 	var info := {"time": time, "text": HatStory.loss_message(hat.lost_count), "log_text": log_text,
 		"lost_count": hat.lost_count, "serial": hat.serial, "wind_kn": sample.speed_kn, "gust_kn": sample.gust_kn,
 		"in_harbour": in_harbour, "position": {"lon": position.x, "lat": position.y},
-		"bought_at": hat.bought_at}
+		"bought_at": hat.bought_at, "open_water_nm": open_water}
+	var awards := _award_hat_objectives({"kind": ObjectiveCatalog.HAT_EVENT_LOST, "time": time, "underway": not in_harbour,
+		"open_water_nm": open_water, "bought_at": hat.bought_at})
 	hat_changed.emit(hat.status)
 	hat_lost.emit(info)
+	if not awards.is_empty():
+		renown_awarded.emit(awards)
 
 
 ## Buys a replacement hat at the harbour grocery store: one transaction that
@@ -1039,10 +1059,13 @@ func buy_hat() -> String:
 	hat.add_history(_state.game_time, HatState.EVENT_BOUGHT, "Bought a new captain's hat in %s for %s%s." % [
 		place.display_name if place else "harbour", format_money(price),
 		"" if hat.bought_count == 1 else " (hat number %d)" % hat.serial])
+	var awards := _award_hat_objectives({"kind": ObjectiveCatalog.HAT_EVENT_BOUGHT, "time": _state.game_time})
 	_has_unsaved_changes = true
 	funds_changed.emit(_state.funds)
 	hat_changed.emit(hat.status)
 	hat_bought.emit({"price": price, "funds_after": _state.funds, "serial": hat.serial})
+	if not awards.is_empty():
+		renown_awarded.emit(awards)
 	return ""
 
 
