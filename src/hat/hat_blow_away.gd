@@ -4,8 +4,10 @@ extends Node2D
 ## lifts a little and fades out over DURATION seconds, then removes itself.
 ## Cosmetic only (real time, not saved); the loss itself is GameSession's.
 
-const DURATION := 1.8
-const DISTANCE := 520.0
+## Long and large enough to be noticed without sound (Iteration 12).
+const DURATION := 2.8
+const DISTANCE := 620.0
+const SCALE := 1.45
 
 var direction := Vector2.LEFT
 var _elapsed := 0.0
@@ -38,5 +40,15 @@ func get_progress() -> float:
 
 func _draw() -> void:
 	var t := get_progress()
-	var alpha := 1.0 - smoothstep(0.55, 1.0, t)
-	HatArt.get_default().draw_slot(self, HatArt.SLOT_BLOWING, Vector2.ZERO, direction.angle() + t * TAU * 2.2, alpha, 1.0 + 0.35 * sin(t * PI))
+	var alpha := 1.0 - smoothstep(0.6, 1.0, t)
+	# Wind streaks behind the tumbling hat, then the hat with two fading echoes.
+	var back := -direction
+	var side := direction.orthogonal()
+	for i in 3:
+		var offset := side * (i - 1) * 12.0
+		draw_line(back * 26.0 + offset, back * (60.0 + i * 14.0) + offset, Color(0.92, 0.96, 0.96, 0.55 * alpha), 2.0, true)
+	for echo in [2, 1]:
+		var lag: float = echo * 0.06
+		var at := direction * DISTANCE * ((t * t) - maxf(t - lag, 0.0) * maxf(t - lag, 0.0))
+		HatArt.get_default().draw_slot(self, HatArt.SLOT_BLOWING, -at, direction.angle() + (t - lag) * TAU * 2.2, alpha * 0.22 * (3 - echo), SCALE * 0.9)
+	HatArt.get_default().draw_slot(self, HatArt.SLOT_BLOWING, Vector2.ZERO, direction.angle() + t * TAU * 2.2, alpha, SCALE * (1.0 + 0.35 * sin(t * PI)))

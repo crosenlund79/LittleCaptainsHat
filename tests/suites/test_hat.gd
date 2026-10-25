@@ -635,7 +635,7 @@ func _test_hat_key_and_player_visual() -> void:
 	t.check_eq(GameSession.get_hat_status(), HatState.WORN, "[hat key] H does nothing while a menu is open")
 	app.modals.clear()
 	await t.frames(2)
-	t.check(app.hud.find_child("Controls", true, false).text.contains("H  hat"), "[hat key] the controls line mentions H")
+	t.check(app.hud.get_controls_text().contains("H hat"), "[hat key] the shortcut strip mentions H")
 
 
 func _test_blow_away_on_deck() -> void:
@@ -651,6 +651,12 @@ func _test_blow_away_on_deck() -> void:
 	for message in app.toasts.get_messages():
 		shown = shown or message.begins_with("Better hold onto your hat!")
 	t.check(shown, "[hat effect] the warning is shown as a notification")
+	# Iteration 12: seen without sound, a fluttering hat in the HUD with the H key.
+	await t.frames(2)
+	var badge: HatBadge = app.hud.hat_badge
+	t.check(badge.visible and badge.get_state() == HatBadge.STATE_AT_RISK and badge.get_text() == HatBadge.AT_RISK_TEXT,
+		"[hat feedback] after the warning the HUD shows the fluttering hat: '%s' with H" % badge.get_text())
+	await t.screenshot("170_hat_warning")
 	var lost := false
 	for i in 120:
 		Simulation.advance(60.0)
@@ -661,12 +667,20 @@ func _test_blow_away_on_deck() -> void:
 	var effect := area.get_node_or_null("HatBlowAway") as HatBlowAway
 	t.check(lost and effect != null, "[hat effect] in a 48 kn storm on deck the hat blows away with a visible effect")
 	t.check(area.player.get_hat_visual().get_shown_status() == &"", "[hat effect] the player no longer wears a hat")
+	var announced := 0
+	for message in app.toasts.get_messages():
+		announced += 1 if message.begins_with(HatBadge.LOST_HEADLINE) else 0
+	t.check(announced == 1, "[hat feedback] one unmistakable message: '%s …' (shown %d s)" % [HatBadge.LOST_HEADLINE, HatBadge.LOST_SECONDS])
+	t.check(HatBadge.LOST_SECONDS >= 8.0 and HatBadge.WARNING_SECONDS > Toasts.DEFAULT_DURATION, "[hat feedback] hat messages stay up longer than ordinary notices")
+	t.check(app.hud.hat_badge.get_state() == HatBadge.STATE_MISSING and app.hud.hat_badge.visible,
+		"[hat feedback] a persistent 'Hat missing' badge stays in the HUD")
 	if effect:
 		var direction := effect.direction
 		var expected := area.wind_direction_on_deck()
 		t.check(direction.dot(expected) > 0.99, "[hat effect] it tumbles downwind")
 		await t.frames(20)
 		await t.screenshot("123_hat_blowing_away")
+		await t.screenshot("171_hat_lost_badge")
 		var ref: WeakRef = weakref(effect)
 		await t.wait_until(func() -> bool: return ref.get_ref() == null, 4.0)
 		t.check(ref.get_ref() == null, "[hat effect] the effect is brief and removes itself")
@@ -675,6 +689,8 @@ func _test_blow_away_on_deck() -> void:
 	var station := _station(area, &"hat")
 	t.check(not area.get_hat_hook().is_showing_hat() and station.prompt == "Look at the empty hat hook",
 		"[hat effect] in the cabin the hook is empty")
+	await t.frames(2)
+	t.check(app.hud.hat_badge.get_state() == HatBadge.STATE_MISSING, "[hat feedback] below deck too, the HUD still says the hat is missing")
 	t.use_calm_wind()
 
 
@@ -697,6 +713,8 @@ func _test_grocery_hat_row() -> void:
 		"[hat shop ui] clicking it buys the hat: funds %s -> %s" % [GameSession.format_money(funds), GameSession.format_money(GameSession.get_funds())])
 	t.check(button.disabled and String(menu.find_child("HatInfo", true, false).text).contains("already"),
 		"[hat shop ui] then the button is disabled: you have your hat")
+	await t.frames(2)
+	t.check(app.hud.hat_badge.get_state() == HatBadge.STATE_NONE, "[hat feedback] with a new hat the 'Hat missing' badge goes away")
 	await t.click(button)
 	t.check_eq(GameSession.get_funds(), funds - 15, "[hat shop ui] a second click charges nothing")
 	t.check(String(menu.find_child("Price", true, false).text).get_slice("  ·  ", 0) == price_before

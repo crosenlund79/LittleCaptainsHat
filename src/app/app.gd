@@ -87,7 +87,7 @@ func _ready() -> void:
 	GameSession.rescued.connect(_on_rescued)
 	GameSession.voyage_logged.connect(_on_voyage_logged)
 	GameSession.renown_awarded.connect(_on_renown_awarded)
-	GameSession.hat_warning.connect(notify)
+	GameSession.hat_warning.connect(_on_hat_warning)
 	GameSession.hat_lost.connect(_on_hat_lost)
 	# Test weather never outlives the game it was made in.
 	GameSession.session_started.connect(DevTools.on_session_changed)
@@ -513,9 +513,23 @@ func toggle_hat() -> void:
 	notify(GameSession.toggle_hat())
 
 
+## Hat messages stay up longer than ordinary notices (HatBadge's durations), so
+## they are noticed even with the sound off or while looking elsewhere
+## (Iteration 12). Toasts sit above every panel.
+
+
+func _on_hat_warning(text: String) -> void:
+	toasts.show_message(text, HatBadge.WARNING_SECONDS)
+	SessionLog.write("hat_warning_shown", {"area": String(GameSession.get_boat_area()), "seconds": HatBadge.WARNING_SECONDS})
+
+
 func _on_hat_lost(info: Dictionary) -> void:
-	notify(info.text)
+	toasts.show_message("%s %s A new one is sold at the harbour grocery store." % [HatBadge.LOST_HEADLINE, info.text], HatBadge.LOST_SECONDS)
+	if hud and hud.hat_badge:
+		hud.hat_badge.pulse()
 	AudioManager.play_sfx(hat_lost_sound, HAT_LOST_DB)
+	SessionLog.write("hat_lost_shown", {"area": String(GameSession.get_boat_area()), "seconds": HatBadge.LOST_SECONDS,
+		"modal_open": not modals.is_empty()})
 
 
 func _show_current_boat_area() -> void:

@@ -32,6 +32,13 @@ signal chart_requested
 @onready var _warning_text: Label = %WarningText
 
 
+## The shortcut strip at the bottom left (Iteration 12): key caps on a dark,
+## translucent backing so it reads over any deck, pontoon or quay.
+const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["H", "hat"], ["L", "Captain's Log"], ["Esc", "menu"]]
+const SHORTCUT_BACKING := Color(0.04, 0.11, 0.15, 0.78)
+const SHORTCUT_TEXT := Color(0.93, 0.92, 0.86)
+
+var hat_badge: HatBadge
 var _planned_key := ""
 var _planned_estimated_at := -INF
 var _planned_seconds := 0.0
@@ -46,6 +53,50 @@ func _ready() -> void:
 	%WarningDismissButton.pressed.connect(hide_warning)
 	set_prompt("")
 	hide_warning()
+	_build_controls()
+	hat_badge = HatBadge.new()
+	hat_badge.name = "HatBadge"
+	hat_badge.position = Vector2(24, 106)
+	add_child(hat_badge)
+
+
+func _build_controls() -> void:
+	var strip := $Controls as PanelContainer
+	var style := StyleBoxFlat.new()
+	style.bg_color = SHORTCUT_BACKING
+	style.set_corner_radius_all(10)
+	style.content_margin_left = 14.0
+	style.content_margin_right = 14.0
+	style.content_margin_top = 6.0
+	style.content_margin_bottom = 6.0
+	strip.add_theme_stylebox_override(&"panel", style)
+	var row := HBoxContainer.new()
+	row.name = "Row"
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override(&"separation", 8)
+	strip.add_child(row)
+	for i in SHORTCUTS.size():
+		if i > 0:
+			var gap := Control.new()
+			gap.custom_minimum_size.x = 10
+			row.add_child(gap)
+		var key := Label.new()
+		key.theme_type_variation = &"KeyLabel"
+		key.text = SHORTCUTS[i][0]
+		row.add_child(key)
+		var what := Label.new()
+		what.text = SHORTCUTS[i][1]
+		what.add_theme_color_override(&"font_color", SHORTCUT_TEXT)
+		what.add_theme_font_size_override(&"font_size", 18)
+		row.add_child(what)
+
+
+## The shortcut strip as text, "E interact · H hat · …" (tests, diagnostics).
+func get_controls_text() -> String:
+	var parts := PackedStringArray()
+	for pair: Array in SHORTCUTS:
+		parts.append("%s %s" % [pair[0], pair[1]])
+	return "  ·  ".join(parts)
 
 
 func _process(_delta: float) -> void:
@@ -65,8 +116,15 @@ var _warning_pending := false
 ## warning that arrives meanwhile is shown again on returning to the boat.
 func set_chart_mode(enabled: bool) -> void:
 	_chart_mode = enabled
-	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls"]:
-		var node := get_node(node_name) as Control
+	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge"]:
+		var node := get_node_or_null(node_name) as Control
+		if node == null:
+			continue
+		if node_name == "HatBadge":
+			node.process_mode = Node.PROCESS_MODE_DISABLED if enabled else Node.PROCESS_MODE_INHERIT
+			if enabled:
+				node.hide()
+			continue
 		node.visible = not enabled if node_name != "PromptPanel" else (not enabled and not _prompt.text.is_empty())
 	_warning_panel.visible = _warning_pending and not enabled
 	var shift := -CHART_SIDEBAR_WIDTH / 2.0 if enabled else 0.0
@@ -124,6 +182,9 @@ func refresh() -> void:
 	if not is_equal_approx(_warning_panel.offset_top, warning_top):
 		_warning_panel.offset_top = warning_top
 		_warning_panel.offset_bottom = warning_top + 124.0
+	# The hat badge sits just below the area panel, whose height follows its text.
+	var area_panel := $AreaPanel as Control
+	hat_badge.position = Vector2(area_panel.position.x, area_panel.position.y + area_panel.size.y + 10.0)
 	_status.text = describe_status()
 	var alarm := GameSession.get_condition() <= 40.0 or GameSession.get_provisions().endurance_days() <= Provisions.LOW_DAYS
 	_status.modulate = Color(1.0, 0.72, 0.55) if alarm else Color.WHITE

@@ -910,6 +910,13 @@ func get_hat_status() -> StringName:
 	return _state.hat.status if _state else HatState.STORED
 
 
+## True while the worn hat has had its wind warning and the player is on deck:
+## the HUD shows it fluttering (Iteration 12; read only, nothing changes).
+func is_hat_at_risk() -> bool:
+	return _state != null and _state.hat.status == HatState.WORN and _state.hat.warned \
+		and _state.boat_area == SessionState.AREA_EXTERIOR
+
+
 ## What a replacement hat costs (data/hat/hat_config.json).
 func get_hat_price() -> int:
 	return HatConfig.get_default().price_eur
