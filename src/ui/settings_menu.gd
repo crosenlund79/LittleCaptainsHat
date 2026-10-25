@@ -12,6 +12,11 @@ const WINDOW_MODE_LABELS := {
 	SettingsManager.WINDOW_FULLSCREEN: "Fullscreen",
 	SettingsManager.WINDOW_BORDERLESS: "Borderless fullscreen",
 }
+## Visual Identity V01: compare the illustrated prototype with the old art.
+const ART_STYLE_LABELS := {
+	SettingsManager.ART_ILLUSTRATED: "Illustrated (prototype)",
+	SettingsManager.ART_CLASSIC: "Classic",
+}
 
 ## Temporary test sounds used by the "Test" buttons to verify bus routing.
 @export var music_test_stream: AudioStream
@@ -22,6 +27,7 @@ const WINDOW_MODE_LABELS := {
 var _saved: Dictionary
 var _volume_sliders := {}
 var _volume_labels := {}
+var _art_style: OptionButton
 
 @onready var _audio_grid: GridContainer = %AudioGrid
 @onready var _window_mode: OptionButton = %WindowMode
@@ -46,6 +52,7 @@ func _ready() -> void:
 	_ui_scale.step = SettingsManager.UI_SCALE_STEP * 100.0
 	_ui_scale.drag_ended.connect(func(_changed: bool) -> void: _apply_ui_scale())
 	_ui_scale.value_changed.connect(_on_ui_scale_value_changed)
+	_build_art_style_row()
 	%DefaultsButton.pressed.connect(_on_defaults_pressed)
 	%ApplyButton.pressed.connect(_on_apply_pressed)
 	_back.pressed.connect(handle_back)
@@ -93,6 +100,25 @@ func _build_audio_rows() -> void:
 		_volume_labels[bus] = value_label
 
 
+## "Artwork": the illustrated prototype (Starling 33 and harbours) or the
+## classic placeholder art. Added below the interface scale.
+func _build_art_style_row() -> void:
+	var grid := _ui_scale.get_parent().get_parent() as GridContainer
+	var label := Label.new()
+	label.name = "ArtStyleLabel"
+	label.text = "Artwork"
+	grid.add_child(label)
+	_art_style = OptionButton.new()
+	_art_style.name = "ArtStyle"
+	_art_style.tooltip_text = "The illustrated look is a prototype on the Starling 33 and in harbour; Classic shows the earlier art."
+	for style: StringName in SettingsManager.ART_STYLES:
+		_art_style.add_item(ART_STYLE_LABELS[style])
+	_art_style.item_selected.connect(func(index: int) -> void:
+		SettingsManager.set_art_style(SettingsManager.ART_STYLES[index])
+		_refresh_status())
+	grid.add_child(_art_style)
+
+
 func _sync_controls() -> void:
 	for bus: StringName in SettingsManager.AUDIO_BUSES:
 		var percent := SettingsManager.get_volume(bus)
@@ -102,6 +128,7 @@ func _sync_controls() -> void:
 	_vsync.set_pressed_no_signal(SettingsManager.get_vsync())
 	_ui_scale.set_value_no_signal(roundf(SettingsManager.get_ui_scale() * 100.0))
 	_ui_scale_value.text = "%d%%" % roundi(_ui_scale.value)
+	_art_style.select(SettingsManager.ART_STYLES.find(SettingsManager.get_art_style()))
 	_refresh_status()
 
 

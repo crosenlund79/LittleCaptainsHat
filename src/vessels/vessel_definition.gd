@@ -26,6 +26,18 @@ const HULL_TRIMARAN := &"trimaran"
 @export var deck_visual_scene: PackedScene
 ## Which art each visual slot uses (sprites with procedural fallback).
 @export var visual_profile: VesselVisualProfile
+## An illustrated art-direction prototype (Visual Identity V01), shown instead
+## of visual_profile while the Artwork setting is "illustrated". Null for a
+## boat that has none (only the Starling 33 so far).
+@export var illustrated_visual_profile: VesselVisualProfile
+
+
+## The art to show now: the illustrated prototype when the player's Artwork
+## setting asks for it and this boat has one, otherwise visual_profile.
+func get_active_visual_profile() -> VesselVisualProfile:
+	if illustrated_visual_profile and SettingsManager.get_art_style() == SettingsManager.ART_ILLUSTRATED:
+		return illustrated_visual_profile
+	return visual_profile
 
 
 ## The gameplay scene for a boat area (SessionState.AREA_*).

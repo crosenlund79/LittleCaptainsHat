@@ -58,13 +58,17 @@ const HAT_PROMPTS := {
 }
 
 var _leaving := false
+## The boat this area belongs to (its art follows the Artwork setting).
+var _vessel: VesselDefinition
 
 @onready var player: Player = $Player
 @onready var _spawn_points: Node2D = $Layout/SpawnPoints
 
 
 func _ready() -> void:
-	apply_visual_profile(GameSession.get_vessel_definition().visual_profile)
+	_vessel = GameSession.get_vessel_definition()
+	apply_visual_profile(_vessel.get_active_visual_profile())
+	SettingsManager.art_style_changed.connect(_on_art_style_changed)
 	_place_player()
 	player.focus_changed.connect(_on_player_focus_changed)
 	for node in find_children("*", "Interactable", true, false):
@@ -75,6 +79,7 @@ func _ready() -> void:
 	_update_mooring()
 	GameSession.voyage_started.connect(_update_mooring)
 	GameSession.voyage_arrived.connect(_on_voyage_arrived)
+	_setup_harbour_dressing()
 	_setup_hat_hook()
 	_update_hat_station()
 	GameSession.hat_changed.connect(func(_status: StringName) -> void: _update_hat_station())
@@ -91,6 +96,36 @@ func apply_visual_profile(profile: VesselVisualProfile) -> void:
 	var rig := get_node_or_null("SailRig") as SailRig
 	if rig:
 		rig.apply_profile(profile)
+
+
+## The illustrated harbour (art only) on the deck's mooring, if it has one.
+func _setup_harbour_dressing() -> void:
+	if mooring == null:
+		return
+	var dressing := HarbourDressing.new()
+	dressing.name = "HarbourDressing"
+	mooring.add_child(dressing)
+	# Right above the pontoon's base shape, under the harbour's name sign.
+	var pontoon := mooring.get_node_or_null(^"Pontoon")
+	if pontoon:
+		mooring.move_child(dressing, pontoon.get_index() + 1)
+	dressing.setup(self, mooring)
+
+
+func get_harbour_dressing() -> HarbourDressing:
+	return mooring.get_node_or_null(^"HarbourDressing") as HarbourDressing if mooring else null
+
+
+## The Artwork setting changed: show the other art (and harbour) at once.
+func _on_art_style_changed(_style: StringName) -> void:
+	var dressing := get_harbour_dressing()
+	if dressing:
+		dressing.refresh()
+	apply_visual_profile(_vessel.get_active_visual_profile())
+	show_condition()
+	var provisions := get_node_or_null(^"ProvisionDisplay")
+	if provisions and provisions.has_method(&"refresh"):
+		provisions.refresh()
 
 
 ## Shows the boat's wear and damage over its art (VesselVisual.set_condition).
@@ -181,6 +216,9 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 
 func _on_voyage_arrived(_port: StringName) -> void:
 	_update_mooring()
+	var dressing := get_harbour_dressing()
+	if dressing:
+		dressing.refresh()
 
 
 ## Shows the pontoon only in port; while underway the boat is at sea. The

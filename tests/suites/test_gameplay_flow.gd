@@ -719,6 +719,13 @@ func _same_state(actual: Dictionary, expected: Dictionary) -> bool:
 		stores_ok = stores_ok and absf(used - drift / Provisions.DAY_SECONDS) < 1e-6
 		a.provisions.erase(key)
 		b.provisions.erase(key)
+	# The captain's hat is checked on the game clock (Visual Identity V01):
+	# its checks follow the time that passed, like the stores.
+	if a.has("hat") and b.has("hat"):
+		var checked: float = a.hat.checked_until - b.hat.checked_until
+		stores_ok = stores_ok and checked >= 0.0 and checked <= drift + HatConfig.get_default().check_interval_s
+		a.hat.erase("checked_until")
+		b.hat.erase("checked_until")
 	return a == b and stores_ok and drift >= 0.0 and drift < 20.0 * Simulation.game_seconds_per_real_second
 
 

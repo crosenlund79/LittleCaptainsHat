@@ -1,5 +1,6 @@
 extends Node
-## Owns player preferences (audio volumes, display mode, VSync, UI scale).
+## Owns player preferences (audio volumes, display mode, VSync, UI scale,
+## artwork style).
 ##
 ## Preferences are stored in user://settings.cfg via ConfigFile and are kept
 ## completely separate from game saves. Every setter applies its value to the
@@ -8,6 +9,7 @@ extends Node
 
 signal settings_applied
 signal ui_scale_changed(scale: float)
+signal art_style_changed(style: StringName)
 
 const DEFAULT_PATH := "user://settings.cfg"
 
@@ -26,6 +28,13 @@ const UI_SCALE_MAX := 1.3
 const UI_SCALE_STEP := 0.05
 const DEFAULT_UI_SCALE := 1.0
 
+## Artwork (Visual Identity V01): the illustrated prototype (the Starling 33
+## and the harbour) or the classic placeholder art, to compare them.
+const ART_ILLUSTRATED := &"illustrated"
+const ART_CLASSIC := &"classic"
+const ART_STYLES: Array[StringName] = [ART_ILLUSTRATED, ART_CLASSIC]
+const DEFAULT_ART_STYLE := ART_ILLUSTRATED
+
 ## Window size used when (re)entering windowed mode. Clamped to the screen.
 const WINDOWED_SIZE := Vector2i(1600, 900)
 
@@ -36,6 +45,7 @@ var _volumes: Dictionary = DEFAULT_VOLUMES.duplicate()
 var _window_mode: StringName = DEFAULT_WINDOW_MODE
 var _vsync := DEFAULT_VSYNC
 var _ui_scale := DEFAULT_UI_SCALE
+var _art_style: StringName = DEFAULT_ART_STYLE
 
 
 func _ready() -> void:
@@ -99,6 +109,21 @@ func set_ui_scale(value: float) -> void:
 	settings_applied.emit()
 
 
+func get_art_style() -> StringName:
+	return _art_style
+
+
+func set_art_style(style: StringName) -> void:
+	if style not in ART_STYLES:
+		push_warning("Unknown art style: %s" % style)
+		return
+	if style == _art_style:
+		return
+	_art_style = style
+	art_style_changed.emit(style)
+	settings_applied.emit()
+
+
 # --- Snapshots, defaults and persistence ------------------------------------
 
 ## Returns a plain copy of the current values (used by the menu for Cancel).
@@ -108,6 +133,7 @@ func snapshot() -> Dictionary:
 		"window_mode": _window_mode,
 		"vsync": _vsync,
 		"ui_scale": _ui_scale,
+		"art_style": _art_style,
 	}
 
 
@@ -116,7 +142,12 @@ func restore_snapshot(data: Dictionary) -> void:
 	_window_mode = data.get("window_mode", DEFAULT_WINDOW_MODE)
 	_vsync = data.get("vsync", DEFAULT_VSYNC)
 	_ui_scale = data.get("ui_scale", DEFAULT_UI_SCALE)
+	var style: StringName = data.get("art_style", DEFAULT_ART_STYLE)
+	var style_changed := style != _art_style
+	_art_style = style
 	apply_all()
+	if style_changed:
+		art_style_changed.emit(_art_style)
 
 
 ## Resets every preference to its default and applies it (not saved yet).
@@ -131,6 +162,7 @@ func save() -> Error:
 	config.set_value("display", "window_mode", String(_window_mode))
 	config.set_value("display", "vsync", _vsync)
 	config.set_value("interface", "ui_scale", _ui_scale)
+	config.set_value("display", "art_style", String(_art_style))
 	var err := config.save(settings_path)
 	if err != OK:
 		push_error("Could not save settings to %s (error %d)" % [settings_path, err])
@@ -156,6 +188,8 @@ func load_settings() -> void:
 	loaded["vsync"] = vsync if vsync is bool else DEFAULT_VSYNC
 	var scale: Variant = config.get_value("interface", "ui_scale", DEFAULT_UI_SCALE)
 	loaded["ui_scale"] = _sanitize_ui_scale(float(scale)) if _is_number(scale) else DEFAULT_UI_SCALE
+	var style := StringName(str(config.get_value("display", "art_style", DEFAULT_ART_STYLE)))
+	loaded["art_style"] = style if style in ART_STYLES else DEFAULT_ART_STYLE
 	restore_snapshot(loaded)
 
 

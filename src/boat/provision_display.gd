@@ -119,7 +119,7 @@ static func _tint(days: float, normal: Color) -> Color:
 
 
 func _art_for(level: StringName) -> Texture2D:
-	var profile := GameSession.get_vessel_definition().visual_profile
+	var profile := GameSession.get_vessel_definition().get_active_visual_profile()
 	if profile == null or profile.procedural_only or profile.art_folder.is_empty():
 		return null
 	var path := profile.art_folder.path_join("cabin").path_join("provisions_%s.png" % level)

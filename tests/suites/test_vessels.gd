@@ -452,6 +452,9 @@ func _test_sprite_swap_on_monohull() -> void:
 	_restart_in_port()
 	await _show(SessionState.AREA_EXTERIOR, &"start")
 	var deck := app.router.current_screen as BoatArea
+	# Since Visual Identity V01 the Starling shows its illustrated prototype by
+	# default; this check starts from its classic (procedural) profile.
+	deck.apply_visual_profile(GameSession.get_vessel_definition().visual_profile)
 	var visual := deck.get_node("Visual") as VesselVisual
 	var procedural := _layout_snapshot(deck)
 	var coachroof := visual.get_slot(&"Coachroof")

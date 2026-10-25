@@ -1141,6 +1141,25 @@ existing services. There is no inventory system.
   `HatArt` (`data/hat/hat_art.tres`) resolves each slot: assigned texture,
   then `assets/hat/hat_<slot>.png`, then `HatDrawing`.
 
+## Harbour presentation and the illustrated prototype (Visual Identity V01)
+
+- **Artwork setting.** `SettingsManager` has `art_style` (`illustrated`,
+  default, or `classic`), saved in `settings.cfg` and offered in Settings as
+  *Artwork*. `VesselDefinition.get_active_visual_profile()` returns
+  `illustrated_visual_profile` when the setting asks for it and the boat has
+  one (only the Starling 33), otherwise `visual_profile`. `BoatArea`, the
+  boatyard preview and the provisions display use it; `BoatArea` re-applies it
+  live on `art_style_changed` (for the boat it was built for).
+- **Harbour.** `BoatArea` adds a `HarbourDressing` to the deck's
+  `Surroundings/Mooring`, right above the pontoon shape, so it shows only in
+  port, over the water and under the boat. It draws the illustrated pontoon,
+  ropes, cleats, quay and water from the mooring's own nodes, wooden signs for
+  the enabled `grocery` and `boatyard` stations, the harbour's name sign in the
+  display font (the existing label with other `LabelSettings`) and the
+  landmarks of `HarbourArt.for_port(location_id)` (at most three; none needed).
+  It has no collision and hides itself under the Classic setting, which shows
+  the original pontoon drawing.
+
 ## Harbour catalogue at scale (Iteration 006)
 
 - **Records:** each `PortData` stays a small resource, with `importance`

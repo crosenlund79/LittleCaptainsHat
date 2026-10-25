@@ -211,7 +211,7 @@ func _show_preview(vessel: VesselDefinition) -> void:
 	var root := Node2D.new()
 	root.name = "Preview"
 	root.add_child(visual)
-	visual.apply(vessel.visual_profile)
+	visual.apply(vessel.get_active_visual_profile())
 	visual.set_condition(GameSession.get_vessel_condition(vessel.id), "%s/exterior" % vessel.id)
 	var camera := Camera2D.new()
 	var fit := minf(PREVIEW_SIZE.x / visual.canvas.size.x, PREVIEW_SIZE.y / visual.canvas.size.y) * 0.95
