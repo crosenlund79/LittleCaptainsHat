@@ -64,6 +64,9 @@ var _rings: Array[Dictionary] = []
 ## Points along the hulls' waterline with their outward normal and tangent,
 ## where the water laps against the boat.
 var _laps: Array[Dictionary] = []
+## Strokes collected while drawing, per line width, and drawn in one call per
+## width at the end (far cheaper than a call per crest).
+var _strokes := {}
 
 
 func setup(area: BoatArea) -> void:
@@ -276,10 +279,14 @@ func _move_waves(delta: float) -> void:
 # --- Drawing ------------------------------------------------------------------------
 
 func _draw() -> void:
+	_strokes.clear()
 	if _underway:
 		_draw_waves()
 	else:
 		_draw_harbour()
+	for width: float in _strokes:
+		var batch: Array = _strokes[width]
+		draw_multiline_colors(PackedVector2Array(batch[0]), PackedColorArray(batch[1]), width, true)
 
 
 func _draw_harbour() -> void:
@@ -362,7 +369,7 @@ func _arc(center: Vector2, length: float, along: Vector2, colour: Color, width: 
 	for k in 5:
 		var t := k / 4.0 - 0.5
 		pts.append(center + along * t * length - normal * (0.25 - t * t) * length * bow)
-	draw_polyline(pts, colour, width, true)
+	_stroke(pts, colour, width)
 
 
 func _ellipse(center: Vector2, radii: Vector2, colour: Color, width: float) -> void:
@@ -370,4 +377,17 @@ func _ellipse(center: Vector2, radii: Vector2, colour: Color, width: float) -> v
 	for k in 17:
 		var t := TAU * k / 16.0
 		pts.append(center + Vector2(cos(t) * radii.x, sin(t) * radii.y))
-	draw_polyline(pts, colour, width, true)
+	_stroke(pts, colour, width)
+
+
+## Queues a polyline (as segments) for the batched draw at the end of _draw().
+func _stroke(pts: PackedVector2Array, colour: Color, width: float) -> void:
+	var key := snappedf(width, 0.2)
+	if not _strokes.has(key):
+		_strokes[key] = [[], []]
+	var segments: Array = _strokes[key][0]
+	var colours: Array = _strokes[key][1]
+	for k in pts.size() - 1:
+		segments.append(pts[k])
+		segments.append(pts[k + 1])
+		colours.append(colour)

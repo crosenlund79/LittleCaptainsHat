@@ -57,9 +57,14 @@ data/vessels/<vessel_id>.tres            VesselDefinition: id, name, scenes, per
 - **No text** in sprites. Labels are separate nodes in the placeholder art and stay
   optional.
 
-### The illustrated Starling 33 prototype (Visual Identity V01)
+### Illustrated profiles (Visual Identity V01, all boats since 0.100b)
 
-The Starling 33 has a second profile, `data/vessels/starling_33_visuals_illustrated.tres`
+Boat names: since 0.100b the boats are shown as **Arctic Wanderer 26**
+(`arctic_wanderer_26`), **Wing 33** (`starling_33`), **Clam 40** (`halcyon_40`)
+and **Frogleap 36** (`petrel_36`). Folders and files use the ids, which never
+change.
+
+The Wing 33 (`starling_33`) has a second profile, `data/vessels/starling_33_visuals_illustrated.tres`
 (`illustrated_visual_profile` in `data/vessels/starling_33.tres`), with
 painted layers in `assets/vessels/starling_33/illustrated/` (deck:
 `hull_base`, `deck_base`, `coachroof`, `deck_details`; cabin: `cabin_base`,
@@ -75,8 +80,31 @@ sails stay procedural.
   `assets/vessels/starling_33/illustrated/deck/` or `.../cabin/` (same canvas and
   size as §2). Re-running the painter overwrites that folder, so do not run it
   once drawings are there.
-- The Halcyon 40 and Petrel 36 have no illustrated profile yet: their redesign
-  waits for the owner's verdict on the Starling.
+- **Every other boat** (0.100b) has the same kind of profile,
+  `data/vessels/<id>_visuals_illustrated.tres`, with layers in
+  `assets/vessels/<id>/illustrated/`, painted by the generic
+  `tools/vessels/paint_illustrated_vessel.py`:
+
+  ```
+  python3 tools/vessels/paint_illustrated_vessel.py <vessel_id> [deck] [cabin]
+  ```
+
+  It reads the boat's own `deck_visual.tscn` and `cabin_visual.tscn` (every
+  shape, with its parents' offsets) and paints each slot from the shapes'
+  colours, mapped to materials in its `MATERIALS` table (hull cream, deck teak,
+  cockpit sole, settee cushions, berths, glass, metal, nets…), so the art is
+  always aligned with the collision. Per-boat touches (coiled lines, a kettle,
+  books) are small functions in `EXTRAS`. It needs Python 3 with Pillow and
+  shapely. Like the Wing 33's painter it overwrites its folder: once a real
+  drawing replaces a layer, do not run it for that boat again.
+- **Marine teak** comes from `tools/vessels/illustrate.py`, shared by both
+  painters: `teak_deck(layer, area, holes=…, king_plank=…)` lays long narrow
+  strips (dark caulking, a pale holly seam now and then, slight colour
+  variation) fore and aft, a margin board following the deck edge and around
+  every hole (coachroof, cockpit, hatches), a few strips sprung along the curve
+  of the hull, and an optional king plank down the foredeck; `teak_sole()` is the
+  cockpit sole, a finer grid of teak and holly. To change the look of every
+  boat's deck at once, change these two functions and re-run the painters.
 
 ## 2. Coordinate conventions (every vessel, deck and cabin)
 
@@ -84,16 +112,17 @@ sails stay procedural.
   - **+x** is forward (towards the bow); **−x** is aft.
   - **−y** is port; **+y** is starboard.
   - The origin is the middle of the boat.
-- **Units.** The player token is 40 units across. The Starling 33's hull is about
-  1000 units long.
+- **Units.** The player token is 40 units across (about 30 units per foot). The
+  Wing 33's hull is about 1000 units long, the Arctic Wanderer 26's 770.
 - **Canvas.** Each art scene's `VesselVisual.canvas` is the rectangle the sprites
   cover, in scene units:
 
   | Vessel | Deck and cabin canvas | Sprite size at 2× |
   |---|---|---|
-  | Starling 33 (monohull) | `Rect2(-560, -200, 1120, 400)` | 2240 × 800 px |
-  | Halcyon 40 (catamaran) | `Rect2(-560, -330, 1120, 660)` | 2240 × 1320 px |
-  | Petrel 36 (trimaran) | `Rect2(-600, -320, 1200, 640)` | 2400 × 1280 px |
+  | Arctic Wanderer 26 (monohull) | `Rect2(-440, -160, 880, 320)` | 1760 × 640 px |
+  | Wing 33 / `starling_33` (monohull) | `Rect2(-560, -200, 1120, 400)` | 2240 × 800 px |
+  | Clam 40 / `halcyon_40` (catamaran) | `Rect2(-560, -330, 1120, 660)` | 2240 × 1320 px |
+  | Frogleap 36 / `petrel_36` (trimaran) | `Rect2(-600, -320, 1200, 640)` | 2400 × 1280 px |
 
 - **Sprite size.** Every slot sprite is a **full-canvas PNG**, transparent wherever
   the slot has nothing. Draw it at **2 px per unit** (the table above).
@@ -168,7 +197,7 @@ is *Illustrated*, every deck's pontoon is drawn by `HarbourDressing`
 stone quay with bollards and lamps, gentle water, and wooden signs for the
 services the harbour has (the grocery store; the boatyard with repairs). It
 reads the positions from the deck's `Surroundings/Mooring` nodes, so it fits
-all three boats with no scene changes. A harbour can add up to three landmark
+every boat with no scene changes. A harbour can add up to three landmark
 illustrations: a `HarbourArt` resource at `data/harbours/<port_id>.tres` lists
 `HarbourLandmark`s (image, offset from the middle of the pontoon's landward
 edge, width in scene units). Only Copenhagen has one so far
@@ -177,6 +206,24 @@ edge, width in scene units). Only Copenhagen has one so far
 `tools/harbours/paint_copenhagen_landmark.py`); every other harbour shows the
 generic harbour. Landmarks are art only and never change collision or
 mooring.
+
+**Living water (0.100b).** `WaterLife` (`src/water/water_life.gd`) draws the
+moving water on every deck, right above `Surroundings/Water` and under the
+boat, in the Illustrated art only. It needs nothing from the boat's art except
+its hull polygons: the water laps along every `Polygon2D` in `Visual/HullBase`
+whose name contains `Hull` or `Ama`, so name a new boat's hull shapes that way.
+In harbour it shows ripple rings, wavelets, glints, lapping at the hull and the
+pontoon, and a few drifting things chosen by the harbour's broad
+**atmosphere**: `marina` (open water, the odd leaf), `coastal` (seaweed and
+foam) or `urban` (leaves, now and then a scrap of paper). A harbour sets it in
+its `HarbourArt` resource (`atmosphere = "urban"` in
+`data/harbours/copenhagen.tres`); without one it is derived from the harbour
+catalogue (island harbours: coastal, major ports: urban, others: marina). These
+are broad moods, not claims about a real harbour. At sea the crests follow the
+wind from the WeatherModel relative to the boat's course, grow livelier and more
+numerous with wind speed (white flecks from 20 kn) and stream aft with the
+boat's speed. Colours and limits are constants at the top of the script; it is
+drawn, not sprites, and is cosmetic only.
 
 ## 4. Where files go, and the fallback order
 
@@ -320,7 +367,11 @@ Screenshots: `docs/screenshots/45_monohull_procedural.png` and
 ## 10. For developers
 
 - **Generator.** `tools/vessels/build_multihull_scenes.py` generates the catamaran
-  and trimaran scenes. The Halcyon 40 cabin was regenerated in Iteration 004b.
+  and trimaran scenes. The Halcyon 40 (Clam 40) cabin was regenerated in Iteration
+  004b. `tools/vessels/build_arctic_wanderer_26.py` (0.100b) generates the Arctic
+  Wanderer 26's four scenes with the same helpers. After regenerating a boat's
+  scenes, re-run `paint_illustrated_vessel.py` for it so the illustrated art
+  follows.
   - Furniture, collision and the placeholder drawing come from one list
     (`cat_furniture()`), so they always match.
   - Use the script with `--force` only for scenes nobody has edited by hand;

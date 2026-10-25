@@ -330,7 +330,7 @@ func _test_vessels_and_repair() -> void:
 		_weather_at_boat(44.0)
 		Simulation.advance(2.0 * HOUR)
 		loss[id] = 100.0 - GameSession.get_condition()
-	t.check(loss.values().all(func(v: float) -> bool: return v > 1.0), "[boats] all three boats take storm damage (%s)" % [loss])
+	t.check(loss.values().all(func(v: float) -> bool: return v > 1.0), "[boats] every boat takes storm damage (%s)" % [loss])
 	t.check(loss[&"halcyon_40"] < loss[&"starling_33"] and loss[&"starling_33"] < loss[&"petrel_36"],
 		"[boats] the catamaran takes heavy weather best, the light trimaran worst")
 
@@ -405,6 +405,12 @@ func _test_rescue_while_advancing() -> void:
 		Simulation.tick(1.0)
 	t.check(rescues.size() == 1 and not GameSession.is_underway() and GameSession.get_vessel_id() == &"petrel_36",
 		"[rescue] at 20×: one rescue, the Petrel is back in Copenhagen")
+	# The starter boat too: still the Arctic Wanderer 26 afterwards, the hat untouched.
+	_rescue_setup(&"arctic_wanderer_26")
+	var hat_before := GameSession.get_hat().to_dict()
+	Simulation.sleep(10.0)
+	t.check(rescues.size() == 1 and not GameSession.is_underway() and GameSession.get_vessel_id() == &"arctic_wanderer_26"
+		and GameSession.get_hat().to_dict() == hat_before, "[rescue] the Arctic Wanderer 26 is rescued as itself, its hat on the hook")
 	# A long advance stops there too.
 	_rescue_setup()
 	var long := Simulation.advance(48.0 * HOUR)

@@ -56,7 +56,7 @@ small, draw it larger rather than enabling mipmaps.
 - **Vessel art.**
   - Every layer is a **full-canvas** image covering the vessel's art canvas, a
     rectangle in scene units listed in [VESSEL_ART.md](VESSEL_ART.md).
-  - Draw at **2 px per scene unit**: the Starling 33 deck is 2240 × 800 px.
+  - Draw at **2 px per scene unit**: the Wing 33 (`starling_33`) deck is 2240 × 800 px.
   - The game puts the image's top-left corner on the canvas's top-left and scales
     it uniformly to the canvas width.
   - Every layer covers the same rectangle, so layers line up without offsets.

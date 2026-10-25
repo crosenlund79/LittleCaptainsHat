@@ -47,12 +47,14 @@ Every cabin has two nodes for the hat:
 
 | Boat | Hook | Station |
 |---|---|---|
-| Starling 33 | above the port storage locker, forward (200, −100) | (200, −52) |
-| Halcyon 40 | above the owner's sofa (230, −292) | (230, −244) |
-| Petrel 36 | on the port side, forward of the settee (168, −96) | (168, −70) |
+| Arctic Wanderer 26 | starboard, above the forward end of the settee (122, 96) | (120, 92) |
+| Wing 33 (`starling_33`) | above the port storage locker, forward (200, −100) | (200, −52) |
+| Clam 40 (`halcyon_40`) | above the owner's sofa (230, −292) | (230, −244) |
+| Frogleap 36 (`petrel_36`) | on the port side, forward of the settee (168, −96) | (168, −70) |
 
-The Halcyon and Petrel cabins come from
-`tools/vessels/build_multihull_scenes.py`; the hat nodes are in its cabin
+The Clam and Frogleap cabins come from
+`tools/vessels/build_multihull_scenes.py`, the Arctic Wanderer's from
+`tools/vessels/build_arctic_wanderer_26.py`; the hat nodes are in their cabin
 functions too, so a regenerated cabin keeps them. The tests check that every
 companion resting spot is at least 110 px from the hat, that petting the cat is
 not affected anywhere, and that the station can be walked to.

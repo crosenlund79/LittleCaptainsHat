@@ -20,8 +20,26 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.100a, Visual Identity V01: A Little Personality**
-(see [VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) and [WINDOWS_ACCEPTANCE_VISUAL_V01.md](WINDOWS_ACCEPTANCE_VISUAL_V01.md)):
+Current version: **0.100b, A Living Little World**
+(see [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md), which ends with a short Windows visual-testing guide):
+- a new starter boat, the **Arctic Wanderer 26**: a small tiller-steered sloop
+  with a snug one-room cabin. New games start aboard it; the other three boats
+  stay one boatyard visit away. Existing saves keep the boat they had;
+- the boats have their official names: **Wing 33** (formerly Starling 33),
+  **Clam 40** (Halcyon 40) and **Frogleap 36** (Petrel 36); handling, prices,
+  sizes and saves are unchanged;
+- every boat is illustrated, with **marine teak decks** (long narrow planks,
+  dark caulking, margin boards, a king plank and a distinct cockpit sole);
+- a more expressive **sailor** with shoulders, arms and hands that swing as
+  you walk, with or without the hat;
+- **living water**: ripples, wavelets, glints and lapping along the hull and
+  the pontoon in harbour, with a few drifting leaves, seaweed or foam chosen by
+  the harbour's broad character; at sea, wave crests aligned with the wind and
+  livelier as it rises;
+- underway the deck view eases out a little to show more sea.
+
+Version 0.100a, Visual Identity V01: A Little Personality
+(see [VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) and [WINDOWS_ACCEPTANCE_VISUAL_V01.md](WINDOWS_ACCEPTANCE_VISUAL_V01.md)), brought:
 - the **captain's hat**: it hangs on a hook in every cabin. Wear it (E at the
   hook), take it off (H), and mind the wind on deck: in strong wind it may blow
   away, after a fair warning ("Better hold onto your hat!"). Replacements cost
@@ -278,13 +296,16 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
 
 - **Main menu** with the Next Harbor logo: New Game, Continue (most recent valid save),
   Load Game, Settings, Quit.
-- **Three boats**, each with its own deck and cabin, player movement, collision and
-  interactions (berth, navigation table, helm, companionway, boatyard):
-  - **Starling 33**, the monohull you start with: up to 10 kn, 5 kn under engine;
-  - **Halcyon 40**, a catamaran with a bridgedeck saloon and two hulls: fast reaching,
-    poorer upwind, 6.5 kn under its twin engines;
-  - **Petrel 36**, a trimaran with a central cabin hull and two floats: the fastest,
-    up to 14 kn, 5.5 kn under its outboard.
+- **Four boats**, each with its own deck and cabin (all on one level), player movement,
+  collision and interactions (berth, navigation table, helm, companionway, boatyard):
+  - **Arctic Wanderer 26**, the small monohull you start with (0.100b): tiller steering,
+    up to 8 kn under sail, 5 kn under engine;
+  - **Wing 33** (internal id `starling_33`, formerly Starling 33), a 33 ft cruising
+    sloop: up to 10 kn, 5 kn under engine;
+  - **Clam 40** (`halcyon_40`, formerly Halcyon 40), a catamaran with a bridgedeck
+    saloon and two hulls: fast reaching, poorer upwind, 6.5 kn under its twin engines;
+  - **Frogleap 36** (`petrel_36`, formerly Petrel 36), a trimaran with a central cabin
+    hull and two floats: the fastest, up to 14 kn, 5.5 kn under its outboard.
 - **Boatyard** (in harbour only): the station by the pontoon opens it. It shows each
   boat's preview, hull type, description, specs and a comparison table (top speed,
   speed in 12 kn of wind at 45°, 90° and 150°, engine speed), all computed from the
@@ -377,9 +398,12 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - Iteration 004/004b saves (v5) get the new weather section. Their old
     warnings belonged to the retired demonstration areas and are cleared, so
     the new weather is announced normally.
-  - Iteration 003b saves (v4) load aboard the Starling 33 monohull.
-  - A save naming a boat this version does not know loads aboard the Starling 33,
-    and you are told.
+  - Iteration 003b saves (v4) load aboard the Wing 33 (`starling_33`), the starter
+    boat of that time, not today's Arctic Wanderer 26.
+  - Every save keeps the boat it names; 0.100b changed no save data, only the
+    starter boat of *new* games.
+  - A save naming a boat this version does not know loads aboard the starter boat
+    (the Arctic Wanderer 26), and you are told.
   - Iteration 003 saves (v3) get a ship's cat (the default companion).
   - Iteration 002 saves (v2) keep their voyage. Sail or engine is decided from the
     wind where and when the boat was saved.
@@ -406,8 +430,8 @@ changes preview immediately, **Apply** saves them, **Back** asks before discardi
 Volumes are percentages (0% mutes). Window modes: Windowed, Fullscreen (exclusive),
 Borderless fullscreen. Interface scale 80–130% scales menus and HUD only.
 **Artwork** (Visual Identity V01): *Illustrated (prototype)* shows the painted
-Starling 33 and the illustrated harbours; *Classic* shows the earlier art, to
-compare.
+boats (all four since 0.100b), the living water and the illustrated harbours;
+*Classic* shows the earlier art, to compare.
 
 ## Project layout
 
@@ -448,7 +472,9 @@ manual for replacing art and sounds, the companion poses, and the vessel art
 templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, and
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, the release
+reports [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md) (0.100b) and
+[VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) (0.100a), and
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) with its Windows checklist
 [WINDOWS_ACCEPTANCE_I006.md](WINDOWS_ACCEPTANCE_I006.md), [005c](ITERATION_005C_REPORT.md),
 [005b](ITERATION_005B_REPORT.md), the Windows checklist
@@ -464,7 +490,8 @@ built and verified.
 - The wind and weather are synthetic, not real weather and not a forecast. Sailing is simplified:
   - there is no manual sail or engine control (the helm only asks for a fresh
     check), no tacking (a head-to-wind leg is motored), and no fuel;
-  - there are no currents, waves, depth or tides;
+  - there are no currents, depth or tides; the waves drawn around the boat are
+    cosmetic and never affect sailing;
   - weather damage is one general condition value (no separate hull, engine,
     sail or rigging damage), and there are no waves, rain or visibility
     effects. Repairs are free; income is remote work and travel updates;
@@ -492,7 +519,7 @@ built and verified.
 - The chart and the save files are game data, **not for real navigation**.
 - All audio is temporary synthetic test sound. Boat graphics are still procedural
   placeholders: the sprite pipeline is ready, but only one demo sprite exists (the
-  Starling's coachroof, not enabled by default).
+  Wing 33's coachroof, not enabled by default).
 - Boats are only swapped, never bought: money is only used for rescues; there is
   no maintenance, upgrades or decoration yet. The catamaran's and trimaran's layouts are first versions.
 - Tested on Linux with Godot 4.7.2 (headless and under a virtual display with software

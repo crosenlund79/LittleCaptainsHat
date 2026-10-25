@@ -100,7 +100,7 @@ their own `LabelSettings` (see *Harbour presentation*).
 
 **Name, version and folder.** The window title and saves' `game_version`
 come from `project.godot` (`application/config/name` "Little Captain's Hat",
-`application/config/version` "0.100a"). `GameVersion`
+`application/config/version` "0.100b"). `GameVersion`
 (`src/app/game_version.gd`) holds the version in one place (a test keeps
 `project.godot` equal to it), a numbers-only form for tools, and the commit
 (from an optional `build_info.json` written by `tools/write_build_info.py`, or
@@ -328,7 +328,14 @@ chart is open and no boat scene exists.
   - `deck_visual_scene`: art only, used for the boatyard preview;
   - `visual_profile`.
 - **`VesselCatalog`** (`data/vessels/vessel_catalog.tres`) lists the boats; the first
-  one, `starling_33`, is the starter.
+  one is the starter (`VesselCatalog.STARTER_ID`, `arctic_wanderer_26` since 0.100b,
+  `starling_33` before). `SessionState.vessel_id` defaults to it, so every new game
+  starts aboard it; a loaded save always keeps the id it names (the v4→v5 migration
+  names `starling_33` literally, the starter of that era).
+- **Ids are stable, names are display only.** 0.100b renamed three boats without
+  touching their ids: `starling_33` is shown as **Wing 33**, `halcyon_40` as **Clam 40**,
+  `petrel_36` as **Frogleap 36**. Saves, the Captain's Log records and the tests use
+  the ids; the UI reads `display_name` from the catalog.
 - **`GameSession`** owns which boat is active (`SessionState.vessel_id`):
   - `get_vessel_definition()` and `get_vessel_profile()`: the Simulation, the
     propulsion controller, the ETA and the helm reassessment all read the active
@@ -354,16 +361,17 @@ chart is open and no boat scene exists.
     `PANEL_SIZE` is 1180×860, made smaller only to fit a small window. The
     boat details sit beside the preview in a scroll area, so selecting another
     boat changes text, never the panel's size or the button positions (tested
-    for all three boats, at 100 % and 130 %).
+    for every boat, at 100 % and 130 %).
   - Each boat's own condition is shown. The services row offers **Repair
     vessel** (free) for the boat you are aboard, and a **Grocery store…** button
     that opens the grocery store on top (Iteration 005c).
 
 | Vessel | Hull | Top speed | 12 kn at 45° / 90° / 150° | Engine | Spinnaker from |
 |---|---|---|---|---|---|
-| Starling 33 | monohull | 10.0 kn | 2.6 / 6.8 / 6.9 kn | 5.0 kn | 115° |
-| Halcyon 40 | catamaran | 11.0 kn | 1.1 / 7.0 / 6.8 kn | 6.5 kn | 100° |
-| Petrel 36 | trimaran | 14.0 kn | 5.2 / 10.6 / 10.2 kn | 5.5 kn | 120° |
+| Arctic Wanderer 26 (`arctic_wanderer_26`) | monohull | 8.0 kn | 2.0 / 5.3 / 5.2 kn | 5.0 kn | 115° |
+| Wing 33 (`starling_33`) | monohull | 10.0 kn | 2.6 / 6.8 / 6.9 kn | 5.0 kn | 115° |
+| Clam 40 (`halcyon_40`) | catamaran | 11.0 kn | 1.1 / 7.0 / 6.8 kn | 6.5 kn | 100° |
+| Frogleap 36 (`petrel_36`) | trimaran | 14.0 kn | 5.2 / 10.6 / 10.2 kn | 5.5 kn | 120° |
 
 ### Visual layer (sprite-ready)
 
@@ -1164,13 +1172,60 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
 
+## A living little world (0.100b)
+
+All presentation; nothing here changes sailing, routing, weather, economy,
+rescue, progression or saves.
+
+- **Sailor.** `SailorDrawing` (`src/player/sailor_drawing.gd`) draws the
+  top-down sailor (shoulders, arms, hands, head) for `Player._draw()`. The arm
+  swing comes from `Player._walk_phase`, advanced by the distance actually
+  walked (so it stops against a wall), and eases to rest. `Player.get_carry_point()`
+  is the left hand, where `PlayerHat` draws a carried hat. Collision (radius 20),
+  movement, interaction reach and the hat states are unchanged; no animation
+  framework.
+- **Living water.** `WaterLife` (`src/water/water_life.gd`), added by
+  `BoatArea._setup_water_life()` to every deck's `Surroundings` right above
+  `Water`, draws procedurally on real time with a fixed seed (moving while the
+  game clock is paused, stopping when a menu pauses the tree). Moored: rings,
+  wavelets and glints, lapping along the hull polygons named `*Hull*`/`*Ama*` in
+  `Visual/HullBase` and along the pontoon, plus at most six drifters chosen by
+  the harbour's broad atmosphere (`marina`, `coastal`, `urban`), from
+  `HarbourArt.atmosphere` when set (Copenhagen: `urban`), else derived from the
+  catalogue (island: coastal; importance 3: urban; otherwise marina). Underway:
+  up to 70 crests across the WeatherModel wind at the boat, seen relative to the
+  course, more and livelier with wind speed, white flecks from 20 kn, streaming
+  aft with boat speed. Element counts are fixed (nothing accumulates); strokes
+  are batched into one `draw_multiline_colors` call per line width. Classic art
+  hides it and shows the old `Ripple*` strokes.
+- **Underway framing.** `BoatArea._setup_camera()` (decks only) remembers the
+  scene's camera zoom and tweens to `UNDERWAY_ZOOM_FACTOR` (0.86) of it on
+  departure, back on arrival or rescue (`ZOOM_TRANSITION_S` 1.8 s, sine). The
+  camera does not move, so there is no jitter; `SailRig` still owns `offset.x`
+  for the spinnaker.
+- **Illustrated boats.** Every boat has an `illustrated_visual_profile` with
+  PNGs under `assets/vessels/<id>/illustrated/`. The Wing 33's are painted by
+  `tools/vessels/paint_illustrated_starling.py`; the others by the generic
+  `tools/vessels/paint_illustrated_vessel.py`, which reads each boat's own
+  `deck_visual.tscn`/`cabin_visual.tscn` (so art and collision always line up)
+  and maps the scene palette to materials. Both share `tools/vessels/illustrate.py`
+  (ink, wobble, shading, and the marine teak helpers `teak_deck()`/`teak_sole()`).
+- **Arctic Wanderer 26.** Scenes generated once by
+  `tools/vessels/build_arctic_wanderer_26.py` (same conventions as the multihull
+  builder, which it reuses): 770 units long, tiller cockpit with coamings,
+  modest coachroof, single-level cabin. Profile `data/vessel/arctic_wanderer_26.tres`.
+- **Tests.** New games start aboard the 26, so suites whose scripted walks or
+  timings were written for the Wing 33 call `t.board(&"starling_33", app)` right
+  after starting a game (having checked the game starts aboard the 26); the
+  all-boats suites (vessels, hat, living, living world) include the 26.
+
 ## Harbour presentation and the illustrated prototype (Visual Identity V01)
 
 - **Artwork setting.** `SettingsManager` has `art_style` (`illustrated`,
   default, or `classic`), saved in `settings.cfg` and offered in Settings as
   *Artwork*. `VesselDefinition.get_active_visual_profile()` returns
   `illustrated_visual_profile` when the setting asks for it and the boat has
-  one (only the Starling 33), otherwise `visual_profile`. `BoatArea`, the
+  one (every boat since 0.100b), otherwise `visual_profile`. `BoatArea`, the
   boatyard preview and the provisions display use it; `BoatArea` re-applies it
   live on `art_style_changed` (for the boat it was built for).
 - **Harbour.** `BoatArea` adds a `HarbourDressing` to the deck's

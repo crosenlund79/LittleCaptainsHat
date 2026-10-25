@@ -11,8 +11,8 @@ extends RefCounted
 ##
 ## The version is independent of the save format (SaveManager.SAVE_VERSION).
 
-const DISPLAY := "0.100a"
-const MACHINE := "0.100.1"
+const DISPLAY := "0.100b"
+const MACHINE := "0.100.2"
 ## Written by tools/write_build_info.py before an export (optional); in a run
 ## from the project the commit is read from the checkout's .git instead.
 const BUILD_INFO_PATH := "res://build_info.json"
@@ -20,7 +20,7 @@ const BUILD_INFO_PATH := "res://build_info.json"
 static var _commit := ""
 
 
-## "0.100a", or "0.100a (1a2b3c4)" when the commit is known.
+## "0.100b", or "0.100b (1a2b3c4)" when the commit is known.
 static func describe() -> String:
 	var commit := get_commit()
 	return DISPLAY if commit.is_empty() else "%s (%s)" % [DISPLAY, commit]
