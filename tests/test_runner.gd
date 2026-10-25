@@ -107,6 +107,23 @@ func use_calm_wind() -> void:
 	set_wind(0.0, 0.0)
 
 
+## Test fixture: puts the running game aboard `vessel_id` in place (same
+## area and spawn point, no boatyard visit) and, given the app, shows it.
+## Suites whose walks, coordinates or timings were written for the Wing 33
+## (starling_33, the starter boat until 0.100b) board it right after a new
+## game; new games themselves start aboard the Arctic Wanderer 26, which
+## test_vessels and the all-boats suites cover.
+func board(vessel_id: StringName, app: Node = null) -> void:
+	var state := GameSession.get_state_snapshot()
+	state.vessel_id = vessel_id
+	GameSession.replace_state(state)
+	if app:
+		var before: Node = app.router.current_screen
+		app._show_current_boat_area()
+		await wait_until(func() -> bool: return app.router.current_screen != before and app.router.current_screen.is_inside_tree())
+		await physics_frames(3)
+
+
 ## Test fixture: the same wind everywhere, at all times.
 func set_wind(from_deg: float, speed_kn: float) -> void:
 	WindField.get_default().test_override = func(_geo: Vector2, _time: float) -> WindField.Sample:

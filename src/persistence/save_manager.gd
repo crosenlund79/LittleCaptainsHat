@@ -375,12 +375,13 @@ func _migrate_3_to_4(data: Dictionary) -> Dictionary:
 
 
 ## Version 4 (Iteration 003b) had one boat. Version 5 (Iteration 004) stores
-## which vessel the player owns; older games keep the starter monohull.
+## which vessel the player owns; older games keep the boat they had then
+## (the Starling 33, shown as the Wing 33 since 0.100b).
 func _migrate_4_to_5(data: Dictionary) -> Dictionary:
 	var session: Variant = data.get("session")
 	if not session is Dictionary or not session.get("vessel") is Dictionary:
 		return data
-	session.vessel["id"] = String(VesselCatalog.STARTER_ID)
+	session.vessel["id"] = "starling_33"  # the starter boat of that era, not today's
 	data["version"] = 5
 	return data
 

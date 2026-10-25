@@ -113,7 +113,7 @@ func _test_arrival() -> void:
 	t.check(log.voyages_completed == 1 and log.arrivals == 1 and log.get_distinct_harbours() == 2 and log.has_visited(&"kiel"),
 		"[log] 1 voyage, 1 arrival, 2 harbours")
 	var record: Dictionary = log.voyages[0]
-	t.check(record.from == "copenhagen" and record.to == "kiel" and record.vessel == "starling_33" and record.outcome == "arrived"
+	t.check(record.from == "copenhagen" and record.to == "kiel" and record.vessel == "arctic_wanderer_26" and record.outcome == "arrived"
 		and is_equal_approx(float(record.departed), departed) and is_equal_approx(float(record.ended), GameSession.get_game_time())
 		and absf(float(record.nm) - total) < 1e-6 and record.complete == true,
 		"[log] the record: Copenhagen → Kiel, departure and arrival times, distance, boat, arrived")

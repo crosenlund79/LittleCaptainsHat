@@ -9,7 +9,7 @@ extends RefCounted
 
 const APP_SCENE := preload("res://src/app/app.tscn")
 const W := preload("res://tests/helpers/walkability.gd")
-const VESSELS: Array[StringName] = [&"starling_33", &"halcyon_40", &"petrel_36"]
+const VESSELS: Array[StringName] = [&"arctic_wanderer_26", &"starling_33", &"halcyon_40", &"petrel_36"]
 const HOUR := 3600.0
 const DECK := SessionState.AREA_EXTERIOR
 const CABIN := SessionState.AREA_INTERIOR
@@ -381,7 +381,7 @@ func _test_vessel_switching() -> void:
 			state.hat.status = status
 			state.hat.lost_count = 1 if status == HatState.LOST else 0
 			state.hat.serial = 1 if status != HatState.LOST else 1)
-		for id in [&"halcyon_40", &"petrel_36", &"starling_33"]:
+		for id in [&"halcyon_40", &"petrel_36", &"starling_33", &"arctic_wanderer_26"]:
 			GameSession.switch_vessel(id)
 			var hat := GameSession.get_hat()
 			t.check(hat.status == status and hat.serial == 1, "[hat switch] %s hat, aboard the %s: still %s, the same hat" % [status, id, status])

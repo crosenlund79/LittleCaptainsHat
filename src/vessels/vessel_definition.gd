@@ -27,8 +27,8 @@ const HULL_TRIMARAN := &"trimaran"
 ## Which art each visual slot uses (sprites with procedural fallback).
 @export var visual_profile: VesselVisualProfile
 ## An illustrated art-direction prototype (Visual Identity V01), shown instead
-## of visual_profile while the Artwork setting is "illustrated". Null for a
-## boat that has none (only the Starling 33 so far).
+## of visual_profile while the Artwork setting is "illustrated". Null would fall
+## back to visual_profile (every boat has one since 0.100b).
 @export var illustrated_visual_profile: VesselVisualProfile
 
 

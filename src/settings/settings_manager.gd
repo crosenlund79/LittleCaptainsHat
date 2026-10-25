@@ -28,7 +28,7 @@ const UI_SCALE_MAX := 1.3
 const UI_SCALE_STEP := 0.05
 const DEFAULT_UI_SCALE := 1.0
 
-## Artwork (Visual Identity V01): the illustrated prototype (the Starling 33
+## Artwork (Visual Identity V01): the illustrated prototype (all four boats
 ## and the harbour) or the classic placeholder art, to compare them.
 const ART_ILLUSTRATED := &"illustrated"
 const ART_CLASSIC := &"classic"

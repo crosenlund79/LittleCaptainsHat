@@ -11,7 +11,7 @@
 [resource]
 script = ExtResource("1_def")
 id = &"halcyon_40"
-display_name = "Halcyon 40"
+display_name = "Clam 40"
 hull_type = "catamaran"
 description = "A spacious 40 ft cruising catamaran: two hulls, a wide bridgedeck saloon and room to spread out. Fast and stable reaching, less keen to point upwind."
 specs = Dictionary[String, String]({"Length": "12.2 m (40 ft)", "Beam": "6.8 m", "Accommodation": "Bridgedeck saloon, owner's berth in the port hull, guest cabin", "Engine": "Twin diesels"})

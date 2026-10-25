@@ -4,7 +4,7 @@ extends Resource
 ## starter boat and the fallback for unknown or missing vessel ids.
 
 const DEFAULT_PATH := "res://data/vessels/vessel_catalog.tres"
-const STARTER_ID := &"starling_33"
+const STARTER_ID := &"arctic_wanderer_26"
 
 static var _default: VesselCatalog
 

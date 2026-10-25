@@ -429,11 +429,10 @@ def _wanderer_roof(L):
 
 
 def _wanderer_details(L):
-    L.circle((-40, -4), 7, (210, 120, 90), 1.1)                    # kettle on the little table
-    L.circle((-14, 8), 4, WHITE, 1.0, n=12)
+    L.circle((26, -4), 7, (210, 120, 90), 1.1)                     # kettle on the little table
+    L.circle((54, 6), 4, WHITE, 1.0, n=12)
     for i, color in enumerate(((160, 72, 60), (70, 104, 130), (200, 160, 80))):
-        L.piece(L.rect(96 + i * 8, 58, 7, 12), color, 0.8, shadow=False)  # books on the shelf
-    L.circle((150, 30), 5, OCHRE, 1.0, n=12)                        # reading lamp by the berth
+        L.piece(L.rect(146 + i * 7, 87, 6, 12), color, 0.8, shadow=False)  # books on the shelf
     L.piece(L.rounded(-170, -64, 9, 18, 3), (196, 160, 110), 0.8, shadow=False)  # tea towel
 
 

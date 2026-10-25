@@ -57,8 +57,20 @@ func run(runner: Node) -> void:
 
 func _test_catalog_and_definitions() -> void:
 	var catalog := VesselCatalog.get_default()
-	t.check_eq(catalog.get_ids(), [&"starling_33", &"halcyon_40", &"petrel_36"] as Array[StringName], "[vessels] three vessels, starter first")
-	t.check_eq(catalog.get_starter().id, &"starling_33", "[vessels] the monohull is the starter boat")
+	t.check_eq(catalog.get_ids(), [&"arctic_wanderer_26", &"starling_33", &"halcyon_40", &"petrel_36"] as Array[StringName], "[vessels] four vessels, starter first")
+	t.check_eq(catalog.get_starter().id, &"arctic_wanderer_26", "[vessels] the Arctic Wanderer 26 is the starter boat (0.100b)")
+	t.check_eq(SessionState.create_new(&"copenhagen", SessionState.AREA_EXTERIOR, &"start").vessel_id, &"arctic_wanderer_26",
+		"[vessels] a new game starts aboard the Arctic Wanderer 26")
+	# Official names (0.100b); the internal ids, and so every save, stay the same.
+	var names := {}
+	for vessel in catalog.vessels:
+		names[vessel.id] = vessel.display_name
+	t.check_eq(names, {&"arctic_wanderer_26": "Arctic Wanderer 26", &"starling_33": "Wing 33", &"halcyon_40": "Clam 40", &"petrel_36": "Frogleap 36"},
+		"[vessels] official names: Arctic Wanderer 26, Wing 33, Clam 40, Frogleap 36")
+	var small := catalog.get_starter().performance
+	var wing := catalog.get_vessel(&"starling_33").performance
+	t.check(small.length_ft < wing.length_ft and small.max_sail_speed_kn < wing.max_sail_speed_kn and is_equal_approx(small.engine_speed_kn, 5.0),
+		"[vessels] the 26 is smaller and slower under sail than the Wing 33, with the usual 5 kn engine")
 	var hulls := {}
 	for vessel in catalog.vessels:
 		t.check(vessel.validate().is_empty(), "[vessels] %s is complete (%s)" % [vessel.id, ", ".join(vessel.validate())])
@@ -274,7 +286,7 @@ func _test_boatyard_menu() -> void:
 	t.check_eq(menu.selected.id, &"starling_33", "[boatyard] it shows the current boat first")
 	t.check(menu.find_child("ChooseButton", true, false).disabled, "[boatyard] the current boat cannot be chosen again")
 	var list := menu.find_child("VesselList", true, false)
-	t.check_eq(list.get_child_count(), 3, "[boatyard] three boats to browse")
+	t.check_eq(list.get_child_count(), 4, "[boatyard] four boats to browse")
 	var before_time := GameSession.get_game_time()
 	var before_location := GameSession.get_location_id()
 	var before_companion := GameSession.get_companion().to_dict()
@@ -305,7 +317,7 @@ func _test_boatyard_menu() -> void:
 	t.check(is_equal_approx(GameSession.get_game_time(), before_time) and GameSession.get_location_id() == before_location
 		and GameSession.get_companion().to_dict() == before_companion, "[boatyard] time, harbour and companion are kept")
 	t.check(not GameSession.get_propulsion().initialised, "[boatyard] stale propulsion data is reset")
-	t.check(_toast_contains("Welcome aboard the Halcyon 40"), "[boatyard] the player is told")
+	t.check(_toast_contains("Welcome aboard the Clam 40"), "[boatyard] the player is told")
 	t.check_eq(app.get_node("Screen").get_child_count(), 1, "[boatyard] exactly one boat area (no duplicate scenes)")
 	t.check_eq(_count(BoatArea), 1, "[boatyard] no stale boat area left behind")
 	t.check_eq(GameSession.switch_vessel(&"atlantis_99"), "Unknown boat 'atlantis_99'.", "[boatyard] an unknown boat is refused")
@@ -535,6 +547,11 @@ func _save_load(slot: int, label: String) -> Dictionary:
 
 func _test_persistence() -> void:
 	_restart_in_port()
+	t.check_eq(GameSession.get_vessel_id(), &"arctic_wanderer_26", "[persistence] a new game is aboard the Arctic Wanderer 26")
+	await _show(SessionState.AREA_INTERIOR, &"from_deck")
+	await _save_load(2, "in the Arctic Wanderer 26's cabin")
+	await _show(SessionState.AREA_EXTERIOR, &"start")
+	await _save_load(2, "on the Arctic Wanderer 26's deck")
 	GameSession.switch_vessel(&"halcyon_40")
 	await _show(SessionState.AREA_INTERIOR, &"from_deck")
 	await _save_load(2, "in the catamaran's cabin")
@@ -566,7 +583,7 @@ func _test_persistence() -> void:
 	session.vessel.erase("id")
 	_write_slot(3, 4, session)
 	var loaded := SaveManager.load_from_slot(3)
-	t.check(loaded.is_ok() and loaded.state.vessel_id == &"starling_33", "[migration] a v4 save loads aboard the Starling 33")
+	t.check(loaded.is_ok() and loaded.state.vessel_id == &"starling_33", "[migration] a v4 save loads aboard the Starling 33 (Wing 33), not today's starter")
 
 	# An unknown id: the starter boat, and the player is told.
 	session = GameSession.get_state_snapshot().to_dict()
@@ -578,7 +595,7 @@ func _test_persistence() -> void:
 	await _settle()
 	await t.frames(2)
 	var area := app.router.current_screen as BoatArea
-	t.check(GameSession.get_vessel_id() == &"starling_33" and area != null and area.scene_file_path.contains("starling_33"),
+	t.check(GameSession.get_vessel_id() == &"arctic_wanderer_26" and area != null and area.scene_file_path.contains("arctic_wanderer_26"),
 		"[migration] an unknown vessel id falls back to the starter boat")
 	t.check(_toast_contains("galleon_99"), "[migration] and the player is told")
 	t.check(GameSession.get_companion() != null, "[migration] the rest of the save is kept")

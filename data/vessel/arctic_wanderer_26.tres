@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="VesselProfile" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/vessel_profile.gd" id="1_vessel"]
+
+[resource]
+script = ExtResource("1_vessel")
+display_name = "26 ft pocket cruiser"
+length_ft = 26.0
+max_sail_speed_kn = 8.0
+wind_speed_scale_kn = 9.5
+light_air_min_kn = 1.0
+light_air_full_kn = 3.4
+spinnaker_bonus = 1.08
+engine_speed_kn = 5.0
+weather_damage_factor = 1.1

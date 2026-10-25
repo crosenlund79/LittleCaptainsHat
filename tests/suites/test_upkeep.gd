@@ -52,7 +52,7 @@ func _on_provisions_warning(level: int, _text: String) -> void:
 func _new_game(vessel := &"starling_33") -> void:
 	WeatherFixtures.use([])
 	GameSession.start_new_session()
-	if vessel != &"starling_33":
+	if vessel != VesselCatalog.STARTER_ID:
 		GameSession.switch_vessel(vessel)
 	rescues.clear()
 	warnings.clear()
@@ -340,7 +340,7 @@ func _test_vessels_and_repair() -> void:
 func _rescue_setup(vessel := &"starling_33", companion := CompanionState.KIND_CAT) -> void:
 	WeatherFixtures.use([])
 	GameSession.start_new_session(companion)
-	if vessel != &"starling_33":
+	if vessel != VesselCatalog.STARTER_ID:
 		GameSession.switch_vessel(vessel)
 	rescues.clear()
 	_depart()

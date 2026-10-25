@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="VesselCatalog" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="VesselCatalog" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/vessels/vessel_catalog.gd" id="1_cat"]
 [ext_resource type="Script" path="res://src/vessels/vessel_definition.gd" id="5_def"]
+[ext_resource type="Resource" path="res://data/vessels/arctic_wanderer_26.tres" id="6_v"]
 [ext_resource type="Resource" path="res://data/vessels/starling_33.tres" id="2_v"]
 [ext_resource type="Resource" path="res://data/vessels/halcyon_40.tres" id="3_v"]
 [ext_resource type="Resource" path="res://data/vessels/petrel_36.tres" id="4_v"]
 
 [resource]
 script = ExtResource("1_cat")
-vessels = Array[ExtResource("5_def")]([ExtResource("2_v"), ExtResource("3_v"), ExtResource("4_v")])
+vessels = Array[ExtResource("5_def")]([ExtResource("6_v"), ExtResource("2_v"), ExtResource("3_v"), ExtResource("4_v")])

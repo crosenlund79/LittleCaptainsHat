@@ -7,7 +7,7 @@ extends RefCounted
 
 const APP_SCENE := preload("res://src/app/app.tscn")
 const W := preload("res://tests/helpers/walkability.gd")
-const VESSELS: Array[StringName] = [&"starling_33", &"halcyon_40", &"petrel_36"]
+const VESSELS: Array[StringName] = [&"arctic_wanderer_26", &"starling_33", &"halcyon_40", &"petrel_36"]
 const HOUR := 3600.0
 
 var t: Node

@@ -67,6 +67,10 @@ func _test_new_game_and_movement() -> void:
 	var spawn: Vector2 = area.get_node("Layout/SpawnPoints/start").position
 	t.check(area.player.position.distance_to(spawn) < 1.0, "player starts at the start spawn point")
 	await t.screenshot("03_cabin")
+	t.check_eq(GameSession.get_vessel_id(), &"arctic_wanderer_26", "New Game starts aboard the Arctic Wanderer 26")
+	# The walks below were written for the Wing 33's cabin (the starter until 0.100b).
+	await t.board(&"starling_33", app)
+	area = app.router.current_screen as BoatArea
 
 	var player := area.player
 	var start := player.position
@@ -490,6 +494,8 @@ func _test_first_voyage_acceptance() -> void:
 	await t.click(_button(app.modals.get_top(), "StartButton"))
 	await _settle()
 	t.check_eq(GameSession.get_location_id(), &"copenhagen", "[voyage] a new game starts in Copenhagen")
+	# The acceptance walk was written for the Wing 33 (the starter until 0.100b).
+	await t.board(&"starling_33", app)
 
 	# 3-4. Walk to the navigation station and open the European chart.
 	await _move_player_to(Vector2(-232, 62))

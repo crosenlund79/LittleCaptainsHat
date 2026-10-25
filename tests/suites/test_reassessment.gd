@@ -98,6 +98,7 @@ func _test_heading_reset_keeps_stall() -> void:
 
 func _start_voyage(from: StringName, to: StringName) -> void:
 	GameSession.start_new_session()
+	t.board(&"starling_33")  # timings written for the Wing 33's speeds
 	if from != GameSession.START_LOCATION:
 		var state := GameSession.get_state_snapshot()
 		state.location_id = from

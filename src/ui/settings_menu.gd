@@ -108,7 +108,7 @@ func _build_audio_rows() -> void:
 		_volume_labels[bus] = value_label
 
 
-## "Artwork": the illustrated prototype (Starling 33 and harbours) or the
+## "Artwork": the illustrated prototype (every boat and the harbours) or the
 ## classic placeholder art. Added below the interface scale.
 func _build_art_style_row() -> void:
 	var grid := _ui_scale.get_parent().get_parent() as GridContainer
@@ -118,7 +118,7 @@ func _build_art_style_row() -> void:
 	grid.add_child(label)
 	_art_style = OptionButton.new()
 	_art_style.name = "ArtStyle"
-	_art_style.tooltip_text = "The illustrated look is a prototype on the Starling 33 and in harbour; Classic shows the earlier art."
+	_art_style.tooltip_text = "The illustrated look is a prototype on every boat and in harbour; Classic shows the earlier art."
 	for style: StringName in SettingsManager.ART_STYLES:
 		_art_style.add_item(ART_STYLE_LABELS[style])
 	_art_style.item_selected.connect(func(index: int) -> void:

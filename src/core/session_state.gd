@@ -62,7 +62,7 @@ var weather_model_version := 1
 ## The weather the boat has been in and for how long (see WeatherExposure).
 var weather_exposure := WeatherExposure.new()
 ## Which boat the player owns (a VesselDefinition id, stable across versions).
-var vessel_id: StringName = &"starling_33"
+var vessel_id: StringName = VesselCatalog.STARTER_ID
 ## The ship's companion (kind and resting spot in the cabin).
 var companion := CompanionState.new()
 ## The voyage being sailed, or null when not underway.

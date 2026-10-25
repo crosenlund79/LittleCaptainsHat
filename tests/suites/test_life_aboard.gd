@@ -56,6 +56,9 @@ func _test_new_game_companion_choice() -> void:
 	await _settle()
 	t.check(app.router.current_screen is BoatArea and GameSession.get_companion().kind == CompanionState.KIND_CAT,
 		"[companion] the game starts with the chosen cat")
+	t.check_eq(GameSession.get_vessel_id(), &"arctic_wanderer_26", "[companion] aboard the Arctic Wanderer 26")
+	# The walks in this suite were written for the Wing 33's cabin (the starter until 0.100b).
+	await t.board(&"starling_33", app)
 	var companion := _companion()
 	t.check(companion != null and companion.visible and companion.kind == CompanionState.KIND_CAT, "[companion] the cat rests in the cabin")
 	t.check_eq(_companion_count(), 1, "[companion] exactly one companion")
@@ -361,6 +364,7 @@ func _test_interrupted_sleep() -> void:
 	WeatherFixtures.use([WeatherFixtures.gale("test_strong_winds", Vector2(12.2, 54.78), 9.0, 26.0,
 		SessionState.get_start_time() - 3600.0, 24.0 * 365.0)])
 	GameSession.start_new_session()
+	t.board(&"starling_33")  # walks written for the Wing 33
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"start")
 	app._show_current_boat_area()
 	await _settle()
@@ -393,6 +397,7 @@ func _test_interrupted_sleep() -> void:
 func _test_helm_and_sails() -> void:
 	t.set_wind(185.0, 14.0)  # a head wind out of Copenhagen towards Kiel: motoring
 	GameSession.start_new_session()
+	t.board(&"starling_33")  # walks written for the Wing 33
 	GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"start")
 	GameSession.plan_route_to(&"kiel")
 	GameSession.depart()

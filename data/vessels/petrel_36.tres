@@ -11,7 +11,7 @@
 [resource]
 script = ExtResource("1_def")
 id = &"petrel_36"
-display_name = "Petrel 36"
+display_name = "Frogleap 36"
 hull_type = "trimaran"
 description = "A light 36 ft cruising trimaran: a slim central hull between two floats. Quick in a breeze and good upwind, with a snug cabin in the main hull."
 specs = Dictionary[String, String]({"Length": "11.0 m (36 ft)", "Beam": "8.2 m (floats out)", "Accommodation": "Forward V-berth, saloon and galley in the main hull", "Engine": "Outboard"})
