@@ -1,6 +1,6 @@
 # Future modding: compatibility notes
 
-**There is no mod support in Next Harbor**, and none is planned for now. This
+**There is no mod support in Little Captain's Hat**, and none is planned for now. This
 short note lists the habits that keep the option open, so that a later
 decision is not blocked by avoidable choices made today.
 

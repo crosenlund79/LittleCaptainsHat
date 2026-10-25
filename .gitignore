@@ -20,3 +20,4 @@ Thumbs.db
 .vscode/
 .idea/
 __pycache__/
+build_info.json

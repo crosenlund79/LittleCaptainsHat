@@ -10,14 +10,16 @@ config_version=5
 
 [application]
 
-config/name="Next Harbor"
-config/description="A 2D liveaboard sailing life simulation."
-config/version="0.1.0"
+config/name="Little Captain's Hat"
+config/description="A cozy sailing adventure about making a home on the water and exploring the world at your own pace. (Developed as Next Harbor until Iteration 006.)"
+config/version="0.100a"
 run/main_scene="res://src/app/app.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 boot_splash/bg_color=Color(0.0627, 0.1765, 0.2314, 1)
-boot_splash/image="res://assets/branding/png/next_harbor_logo_480.png"
-config/icon="res://assets/branding/next_harbor_icon.svg"
+boot_splash/image="res://assets/branding/png/little_captains_hat_logo_480.png"
+config/icon="res://assets/branding/little_captains_hat_icon.svg"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Little Captains Hat"
 
 [autoload]
 

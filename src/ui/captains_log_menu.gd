@@ -14,6 +14,9 @@ const TAB_HARBOURS := 1
 const TAB_OBJECTIVES := 2
 ## Notable moments listed in the Log tab (the newest).
 const MAX_MOMENTS := 10
+## Theme variations: decorative headings and a secret achievement's name.
+const HEADING := &"DisplayHeader"
+const NAME := &"DisplayName"
 
 ## The player asked to publish a travel update (Log tab).
 signal publish_requested
@@ -23,6 +26,9 @@ var _tabs: TabContainer
 
 func _ready() -> void:
 	_build("Captain's Log", PANEL_SIZE.x)
+	# Hand lettering for the log's title and section headings (the display
+	# font, see tools/build_theme.gd); every figure stays in Barlow.
+	(_box.get_node("Title") as Label).theme_type_variation = HEADING
 	_tabs = TabContainer.new()
 	_tabs.name = "Tabs"
 	_tabs.custom_minimum_size = TABS_SIZE
@@ -103,7 +109,7 @@ func _build_log_tab() -> Control:
 	if GameSession.is_underway():
 		_add_text(list, "UnderwayNote", "Under way to %s: %s nm sailed on this voyage so far." % [
 			catalog.get_display_name(GameSession.get_voyage_destination_id()), _nm(GameSession.get_voyage_sailed_nm())], &"MutedLabel")
-	_add_text(list, "RecentTitle", "Recent passages", &"HeaderLabel")
+	_add_text(list, "RecentTitle", "Recent passages", HEADING)
 	var passages := VBoxContainer.new()
 	passages.name = "Passages"
 	passages.add_theme_constant_override("separation", 6)
@@ -116,7 +122,7 @@ func _build_log_tab() -> Control:
 	# voyage records above, which they never change.
 	var history := GameSession.get_hat().history
 	if not history.is_empty():
-		_add_text(list, "MomentsTitle", "Notable moments", &"HeaderLabel")
+		_add_text(list, "MomentsTitle", "Notable moments", HEADING)
 		var moments := VBoxContainer.new()
 		moments.name = "Moments"
 		moments.add_theme_constant_override("separation", 6)
@@ -155,7 +161,7 @@ func _build_harbours_tab() -> Control:
 	var catalog := PortCatalog.get_default()
 	_add_text(list, "HarbourSummary", "You have visited %d of the %d harbours on the chart. A harbour counts once you arrive and moor there." % [
 		log.get_distinct_harbours(), catalog.ports.size()], &"MutedLabel")
-	_add_text(list, "VisitedTitle", "Visited", &"HeaderLabel")
+	_add_text(list, "VisitedTitle", "Visited", HEADING)
 	var visited := VBoxContainer.new()
 	visited.name = "Visited"
 	list.add_child(visited)
@@ -168,7 +174,7 @@ func _build_harbours_tab() -> Control:
 		var arrivals := int(entry.arrivals)
 		var visits := "start harbour" if arrivals == 0 and first >= 0.0 else "%d arrival%s" % [arrivals, "" if arrivals == 1 else "s"]
 		_add_text(visited, "Harbour_%s" % id, "%s  ·  %s  ·  %s" % [place, when, visits])
-	_add_text(list, "UnvisitedTitle", "Not yet visited", &"HeaderLabel")
+	_add_text(list, "UnvisitedTitle", "Not yet visited", HEADING)
 	var names: Array[String] = []
 	for port in catalog.ports:
 		if not log.has_visited(port.id):
@@ -187,7 +193,7 @@ func _build_objectives_tab() -> Control:
 	var log := GameSession.get_captains_log()
 	_add_text(list, "RenownSummary", "Renown: %d earned in all, %d not yet published. Objectives are tracked automatically and pay renown when a voyage completes them." % [
 		progress.lifetime_renown, progress.unpublished_renown], &"MutedLabel")
-	_add_text(list, "OpenTitle", "Objectives", &"HeaderLabel")
+	_add_text(list, "OpenTitle", "Objectives", HEADING)
 	var open := VBoxContainer.new()
 	open.name = "Open"
 	open.add_theme_constant_override("separation", 10)
@@ -208,7 +214,7 @@ func _build_objectives_tab() -> Control:
 			var when := Simulation.format_game_time(float(entry.first), false)
 			var times := "  ·  %d times" % count if count > 1 else ""
 			_add_text(done, "Done_%s" % objective.id, "%s  ·  %d renown  ·  first %s%s" % [objective.title, objective.reward, when, times])
-	_add_text(list, "CompletedTitle", "Completed", &"HeaderLabel")
+	_add_text(list, "CompletedTitle", "Completed", HEADING)
 	list.add_child(done)
 	if done.get_child_count() == 0:
 		_add_text(done, "NoneCompleted", "None yet.", &"MutedLabel")
@@ -221,7 +227,7 @@ func _build_objectives_tab() -> Control:
 func _build_secrets(list: VBoxContainer, secrets: Array[Dictionary], progress: ObjectiveProgress) -> void:
 	if secrets.is_empty():
 		return
-	_add_text(list, "SecretsTitle", "Secret achievements", &"HeaderLabel")
+	_add_text(list, "SecretsTitle", "Secret achievements", HEADING)
 	var box := VBoxContainer.new()
 	box.name = "Secrets"
 	box.add_theme_constant_override("separation", 10)
@@ -236,9 +242,9 @@ func _build_secrets(list: VBoxContainer, secrets: Array[Dictionary], progress: O
 		found.name = "Secret_%s" % objective.id
 		found.add_theme_constant_override("separation", 2)
 		box.add_child(found)
-		_add_text(found, "Title", "%s  ·  %d renown  ·  found %s" % [objective.title, objective.reward,
-			Simulation.format_game_time(float(entry.first), false)])
-		_add_text(found, "Detail", objective.text, &"MutedLabel")
+		_add_text(found, "Title", objective.title, NAME)
+		_add_text(found, "Detail", "%s  ·  %d renown  ·  found %s" % [objective.text, objective.reward,
+			Simulation.format_game_time(float(entry.first), false)], &"MutedLabel")
 	if hidden > 0:
 		_add_text(box, "SecretsHidden", "%s still to discover. They are not described here: you will know one when you find it." % (
 			"One secret achievement is" if hidden == 1 else "%d secret achievements are" % hidden), &"MutedLabel")

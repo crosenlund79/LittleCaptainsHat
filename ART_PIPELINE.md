@@ -1,4 +1,4 @@
-# Next Harbor: Art Pipeline
+# Little Captain's Hat: Art Pipeline
 
 The art instructions now live in the developer guides, which are kept up to date
 with each iteration:

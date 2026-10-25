@@ -1,6 +1,7 @@
 # Developer guides
 
-Practical, step-by-step instructions for working on Next Harbor's assets and
+Practical, step-by-step instructions for working on Little Captain's Hat's
+(developed as Next Harbor until Iteration 006) assets and
 systems. These guides are the manual for day-to-day development: replacing
 artwork, adding companion poses, changing sounds. Each guide uses the real
 paths in this repository.

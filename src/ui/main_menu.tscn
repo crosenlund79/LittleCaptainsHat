@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://src/ui/main_menu.gd" id="1_menu"]
-[ext_resource type="Texture2D" path="res://assets/branding/next_harbor_logo.svg" id="2_logo"]
+[ext_resource type="Texture2D" path="res://assets/branding/little_captains_hat_logo.svg" id="2_logo"]
 
 [sub_resource type="Gradient" id="Gradient_sky"]
 offsets = PackedFloat32Array(0, 0.62, 0.6201, 1)
@@ -62,14 +62,21 @@ layout_mode = 2
 theme_override_constants/separation = 14
 
 [node name="Logo" type="TextureRect" parent="Root/Center/Column"]
-custom_minimum_size = Vector2(640, 322)
+custom_minimum_size = Vector2(600, 280)
 layout_mode = 2
 texture = ExtResource("2_logo")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Tagline" type="Label" parent="Root/Center/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"DisplayTagline"
+text = "Small boat. Wide world. Hold onto your hat."
+horizontal_alignment = 1
+
 [node name="Gap" type="Control" parent="Root/Center/Column"]
-custom_minimum_size = Vector2(0, 24)
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
 [node name="Buttons" type="VBoxContainer" parent="Root/Center/Column"]
@@ -103,6 +110,13 @@ layout_mode = 2
 theme_type_variation = &"BigButton"
 text = "Load Game"
 
+[node name="ImportButton" type="Button" parent="Root/Center/Column/Buttons"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+tooltip_text = "Copies your saves from Next Harbor (the game's earlier name). The originals stay where they are."
+text = "Import Next Harbor saves…"
+
 [node name="SettingsButton" type="Button" parent="Root/Center/Column/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -125,7 +139,7 @@ offset_top = -52.0
 offset_right = 900.0
 offset_bottom = -24.0
 grow_vertical = 0
-text = "Coastlines: Natural Earth (public domain)  ·  Font: Barlow (SIL OFL)"
+text = "Coastlines: Natural Earth (public domain)  ·  Fonts: Barlow, Patrick Hand (SIL OFL)"
 label_settings = SubResource("LabelSettings_hint")
 
 [node name="DevGuidesButton" type="Button" parent="Root"]
@@ -157,6 +171,6 @@ offset_right = -32.0
 offset_bottom = -24.0
 grow_horizontal = 0
 grow_vertical = 0
-text = "v0.1.0"
+text = "0.100a"
 label_settings = SubResource("LabelSettings_hint")
 horizontal_alignment = 2

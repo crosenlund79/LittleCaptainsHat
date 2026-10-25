@@ -1,6 +1,6 @@
 # Weather: tuning, styling and testing
 
-Next Harbor has **one** weather model. Everything that needs wind or weather
+Little Captain's Hat has **one** weather model. Everything that needs wind or weather
 asks it: the boat's speed and sail/engine choice, the ETA, the chart overlay,
 the Weather tab, the HUD, the warnings, sleep interruptions and the storm
 sounds. Never add a second source of wind or hazards; extend this one.

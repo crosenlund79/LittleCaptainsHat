@@ -256,6 +256,24 @@ func quit_game() -> void:
 	get_tree().quit()
 
 
+## Copies the saves from Next Harbor (the game's earlier name) after asking.
+## Only copies: the originals are never changed, occupied slots never
+## overwritten (see LegacySaves).
+func import_legacy_saves() -> void:
+	var count := LegacySaves.count_importable()
+	if count == 0 or not modals.is_empty():
+		return
+	var go: bool = await modals.confirm("Import Next Harbor saves?",
+		"%d save%s from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten." % [
+			count, "" if count == 1 else "s"], "Import")
+	if not go:
+		return
+	notify(LegacySaves.describe(LegacySaves.import_all()))
+	var menu := router.current_screen as MainMenu
+	if menu:
+		menu.refresh_saves()
+
+
 # --- Boat and chart ----------------------------------------------------------------
 
 func open_chart() -> void:
@@ -652,6 +670,7 @@ func _connect_main_menu(menu: MainMenu) -> void:
 	menu.settings_requested.connect(open_settings)
 	menu.quit_requested.connect(quit_game)
 	menu.dev_guides_requested.connect(open_dev_guides)
+	menu.import_requested.connect(import_legacy_saves)
 
 
 func _connect_boat_area(area: BoatArea) -> void:

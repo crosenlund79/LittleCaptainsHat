@@ -1,19 +1,45 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/next_harbor_logo.svg">
-    <img src="assets/branding/next_harbor_logo_on_light.svg" alt="Next Harbor" width="420">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/little_captains_hat_logo.svg">
+    <img src="assets/branding/little_captains_hat_logo_on_light.svg" alt="Little Captain's Hat" width="420">
   </picture>
 </p>
 
-# Next Harbor
+# Little Captain's Hat
 
-A 2D liveaboard sailing life simulation. You own a small cruising sailboat and
-dream of sailing around the world. The game is about living aboard, planning
-voyages and preparing for the next destination, not about steering the boat
-across every mile of ocean.
+*Small boat. Wide world. Hold onto your hat.*
 
-Current state: **Iteration 006: Making Waves**. Sail, arrive, record, earn
-renown, publish, get paid, and sail again:
+A cozy 2D sailing adventure about making a home on the water and exploring
+the world at your own pace. You live aboard a small cruising sailboat, plan
+voyages and prepare for the next destination; the game is not about steering
+across every mile of ocean. Sailing is mostly peaceful, the weather can turn
+dangerous, and every mishap can be recovered from.
+
+**Little Captain's Hat is the provisional name.** The game was developed as
+**Next Harbor** up to Iteration 006. The iteration reports up to
+[ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
+and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
+
+Current version: **0.100a, Visual Identity V01: A Little Personality**
+(see `VISUAL_IDENTITY_V01_REPORT.md`):
+- the **captain's hat**: it hangs on a hook in every cabin. Wear it (E at the
+  hook), take it off (H), and mind the wind on deck: in strong wind it may blow
+  away, after a fair warning ("Better hold onto your hat!"). Replacements cost
+  €15 at the harbour grocery store;
+- seven **secret achievements** about the hat, hidden in the Captain's Log until
+  you find them, and short *Notable moments* in the log;
+- the new name, logo and a hand-lettered display font (Patrick Hand) for the
+  title and decorative headings; Barlow stays the font for everything you read
+  closely;
+- the game keeps its saves in its own folder, and can copy saves over from Next
+  Harbor.
+
+Version numbers follow the convention 0.100a, 0.100b (fixes within a
+milestone), 0.101a (the next feature milestone), 0.200a (a large step); see
+`src/app/game_version.gd`.
+
+Iteration 006: Making Waves built the loop Sail, arrive, record, earn renown,
+publish, get paid, and sail again:
 - a **Captain's Log** (**L**, or the pause menu) records your distance,
   voyages, harbours visited, longest passage, rescues and recent passages;
 - 16 optional **sailing objectives**, tracked automatically, pay **renown**
@@ -317,8 +343,20 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
 
 ## Saves
 
-- Stored as JSON in Godot's user folder: `user://saves/slot_1.json` … `slot_3.json`.
-  On Windows that is `%APPDATA%\Godot\app_userdata\Next Harbor\saves\`.
+- Stored as JSON in the game's own folder: `user://saves/slot_1.json` … `slot_3.json`.
+  On Windows that is `%APPDATA%\Little Captains Hat\saves\` (project setting
+  `application/config/custom_user_dir_name`, so a future change of name cannot
+  move the saves). Settings are `%APPDATA%\Little Captains Hat\settings.cfg`.
+- **Saves from Next Harbor** stay where they were:
+  `%APPDATA%\Godot\app_userdata\Next Harbor\saves\`. The new game never writes
+  there. When saves exist in that folder, the main menu shows **Import Next
+  Harbor saves…**. It asks first and then only *copies*: each save goes into the
+  slot with the same number if it is free, otherwise into the next free slot,
+  otherwise it is skipped and you are told. A slot in use is never overwritten,
+  a save already imported is not copied again, and the original files are never
+  changed. Old settings are not imported (set them again once).
+  To import by hand instead, copy `slot_N.json` from the old folder into the new
+  one while the game is closed.
 - A save holds everything needed to resume, including mid-voyage:
   - the game clock and time acceleration;
   - the boat's position and status, and the exact course being sailed with the
@@ -332,7 +370,8 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - the boat you sail (by its stable id, e.g. `halcyon_40`);
   - money, food and water, each boat's condition, and the rescues so far.
 - Loading resumes exactly where you saved. **No time passes while the game is closed.**
-- Save format version 7. **Older saves still load:**
+- Save format version 10 (independent of the game version). **Older saves still load:**
+  - Iteration 006 saves (v9 and v8) get the captain's hat: the original, on its hook.
   - Iteration 005a saves (v6) start the new systems as a new game does: €10,000,
     14 days of food and water, every boat at 100 %. A voyage underway is kept.
   - Iteration 004/004b saves (v5) get the new weather section. Their old
@@ -352,7 +391,7 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
 
 ## Settings
 
-Unchanged from Iteration 001: stored in `user://settings.cfg`, separate from saves;
+Unchanged from Iteration 001: stored in `user://settings.cfg` (in the game's own folder), separate from saves;
 changes preview immediately, **Apply** saves them, **Back** asks before discarding.
 Volumes are percentages (0% mutes). Window modes: Windowed, Fullscreen (exclusive),
 Borderless fullscreen. Interface scale 80–130% scales menus and HUD only.
@@ -360,7 +399,7 @@ Borderless fullscreen. Interface scale 80–130% scales menus and HUD only.
 ## Project layout
 
 ```
-assets/          branding, fonts (Barlow, OFL), UI theme, placeholder audio,
+assets/          branding, fonts (Barlow and Patrick Hand, OFL), the hat's art slots, UI theme, placeholder audio,
                  vessel art folders and templates (assets/vessels/<id>/)
 data/navigation/ ports, coastlines, navigation raster and sea-route graph (generated)
 data/weather/    weather event zones and cyclone basins (weather_events.json), wind climatology
@@ -453,6 +492,8 @@ built and verified.
 - Coastlines: [Natural Earth](https://www.naturalearthdata.com/) 1:10m land, public domain.
   Clipped, simplified and rasterised by `tools/navigation/build_navigation_data.py`,
   **not for navigation**.
-- Font: [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, SIL Open Font License
-  (`assets/fonts/OFL.txt`).
+- Fonts: [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, SIL Open Font License
+  (`assets/fonts/OFL.txt`); [Patrick Hand](https://github.com/google/fonts/tree/main/ofl/patrickhand)
+  by Patrick Wagesreiter, SIL Open Font License (`assets/fonts/OFL-PatrickHand.txt`). See
+  `assets/fonts/README.md`.
 - Logo, UI, scenes, weather data and placeholder sounds were made for this project.

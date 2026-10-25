@@ -10,6 +10,8 @@ extends Node
 
 signal slots_changed
 
+## The file format id. It keeps the name from the game's development as Next
+## Harbor, so saves from before the rename stay valid without conversion.
 const FORMAT_ID := "next_harbor_save"
 ## Bump when the save layout changes, and add a migration step in
 ## _migrate() for older versions that should stay loadable.
@@ -174,6 +176,58 @@ func load_from_slot(slot: int) -> LoadResult:
 	return result
 
 
+## Whether a slot has nothing in it (no save, no backup, no interrupted write).
+func is_slot_free(slot: int) -> bool:
+	return _is_valid_slot(slot) and not (FileAccess.file_exists(_slot_path(slot)) or FileAccess.file_exists(_slot_path(slot) + ".bak")
+		or FileAccess.file_exists(_slot_path(slot) + ".tmp"))
+
+
+## Checks any save file without loading it into the game (used for saves from
+## Next Harbor): {"status": Status, "error", "saved_at_unix", "state"}.
+func check_file(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
+		return {"status": Status.EMPTY, "error": "No file.", "saved_at_unix": 0.0, "state": null}
+	var read := _read_and_validate(path)
+	return {"status": read.status, "error": read.error, "saved_at_unix": read.saved_at_unix, "state": read.state}
+
+
+## Copies the save file at `source_path` unchanged into `slot`, which must be
+## free (is_slot_free): nothing is ever overwritten, and the source is only
+## read. The copy is written to a temporary file, verified and then moved into
+## place. Loading it later upgrades it in memory as usual.
+func import_file(source_path: String, slot: int) -> Error:
+	if not is_slot_free(slot):
+		return ERR_ALREADY_EXISTS
+	var bytes := FileAccess.get_file_as_bytes(source_path)
+	if bytes.is_empty():
+		return ERR_FILE_CANT_READ
+	var err := DirAccess.make_dir_recursive_absolute(save_dir)
+	if err != OK:
+		return err
+	var final_path := _slot_path(slot)
+	var temp_path := final_path + ".tmp"
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
+	if file == null:
+		return FileAccess.get_open_error()
+	file.store_buffer(bytes)
+	file.close()
+	if FileAccess.get_file_as_bytes(temp_path) != bytes:
+		DirAccess.remove_absolute(temp_path)
+		return ERR_FILE_CORRUPT
+	err = DirAccess.rename_absolute(temp_path, final_path)
+	if err != OK:
+		DirAccess.remove_absolute(temp_path)
+		return err
+	slots_changed.emit()
+	return OK
+
+
+## The bytes in `slot`'s save file (empty when there is none).
+func get_slot_bytes(slot: int) -> PackedByteArray:
+	var path := _resolve_readable_path(slot)
+	return FileAccess.get_file_as_bytes(path) if not path.is_empty() else PackedByteArray()
+
+
 func delete_slot(slot: int) -> void:
 	for suffix in ["", ".bak", ".tmp"]:
 		var path: String = _slot_path(slot) + suffix
@@ -203,7 +257,7 @@ func _read_and_validate(path: String) -> _ReadResult:
 		return read
 	var data: Variant = json.data
 	if not data is Dictionary or data.get("format") != FORMAT_ID:
-		read.error = "This is not a Next Harbor save file."
+		read.error = "This is not a Little Captain's Hat (or Next Harbor) save file."
 		return read
 	var version: Variant = data.get("version")
 	if not (version is int or version is float):

@@ -10,6 +10,8 @@ signal settings_requested
 signal quit_requested
 ## Development builds only: the DEV_GUIDES viewer.
 signal dev_guides_requested
+## Copy the saves from Next Harbor (shown only when there are any to copy).
+signal import_requested
 
 @onready var _new_game: Button = %NewGameButton
 @onready var _continue: Button = %ContinueButton
@@ -27,7 +29,8 @@ func _ready() -> void:
 	# Developer resources: only when running from the project in a debug build.
 	%DevGuidesButton.visible = DevGuides.is_available()
 	%DevGuidesButton.pressed.connect(dev_guides_requested.emit)
-	%Version.text = "v%s" % ProjectSettings.get_setting("application/config/version", "")
+	%ImportButton.pressed.connect(import_requested.emit)
+	%Version.text = "Version %s" % (GameVersion.describe() if OS.is_debug_build() else GameVersion.DISPLAY)
 	SaveManager.slots_changed.connect(refresh_saves)
 	refresh_saves()
 	focus_default.call_deferred()
@@ -38,6 +41,7 @@ func focus_default() -> void:
 
 
 func refresh_saves() -> void:
+	%ImportButton.visible = LegacySaves.count_importable() > 0
 	var slot := SaveManager.get_most_recent_valid_slot()
 	_continue.disabled = slot == 0
 	_load.disabled = not _any_slot_used()

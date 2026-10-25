@@ -9,11 +9,12 @@ const SOURCE_DIR := "res://assets/branding/"
 const OUTPUT_DIR := "res://assets/branding/png/"
 
 ## file name (without extension) -> list of output heights in pixels
+## (The old next_harbor_* PNGs are kept unchanged for history.)
 const EXPORTS := {
-	"next_harbor_logo": [480, 960],
-	"next_harbor_logo_on_light": [480],
-	"next_harbor_symbol": [64, 256, 512],
-	"next_harbor_icon": [32, 64, 256, 512],
+	"little_captains_hat_logo": [480, 960],
+	"little_captains_hat_logo_on_light": [480],
+	"little_captains_hat_symbol": [64, 256, 512],
+	"little_captains_hat_icon": [32, 64, 256, 512],
 }
 
 

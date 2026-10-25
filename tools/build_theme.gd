@@ -19,6 +19,10 @@ const BRASS := Color("#C79F6D")
 const FONT_REGULAR := "res://assets/fonts/Barlow-Regular.ttf"
 const FONT_MEDIUM := "res://assets/fonts/Barlow-Medium.ttf"
 const FONT_SEMIBOLD := "res://assets/fonts/Barlow-SemiBold.ttf"
+## The display font (Visual Identity V01): hand lettering for the title,
+## decorative headings, signs and secret achievement names only. Barlow stays
+## the functional font for every number, menu, dialog and description.
+const FONT_DISPLAY := "res://assets/fonts/PatrickHand-Regular.ttf"
 
 
 func _initialize() -> void:
@@ -30,6 +34,7 @@ func _initialize() -> void:
 	theme.default_font_size = 22
 
 	_labels(theme, medium, semibold)
+	_display(theme, regular)
 	_buttons(theme, medium)
 	_panels(theme)
 	_ranges(theme)
@@ -59,6 +64,29 @@ func _labels(theme: Theme, medium: Font, semibold: Font) -> void:
 	theme.set_font_size("font_size", "KeyLabel", 18)
 	theme.set_color("font_color", "KeyLabel", NAVY)
 	theme.set_stylebox("normal", "KeyLabel", _box(BRASS, Color.TRANSPARENT, 0, 4, Vector4(8, 2, 8, 2)))
+
+
+## Type variations that use the display font. Patrick Hand has no arrows and
+## a few other symbols, so Barlow is its fallback for any such character.
+func _display(theme: Theme, fallback: Font) -> void:
+	var display := FontVariation.new()
+	display.base_font = load(FONT_DISPLAY)
+	display.fallbacks = [fallback]
+	# The game's title on the main menu, under the logo.
+	_variation(theme, "DisplayTagline", "Label")
+	theme.set_font("font", "DisplayTagline", display)
+	theme.set_font_size("font_size", "DisplayTagline", 34)
+	theme.set_color("font_color", "DisplayTagline", SEAFOAM)
+	# Decorative headings (the Captain's Log title and its section headings).
+	_variation(theme, "DisplayHeader", "Label")
+	theme.set_font("font", "DisplayHeader", display)
+	theme.set_font_size("font_size", "DisplayHeader", 34)
+	theme.set_color("font_color", "DisplayHeader", BRASS)
+	# A name worth celebrating (a secret achievement that was found).
+	_variation(theme, "DisplayName", "Label")
+	theme.set_font("font", "DisplayName", display)
+	theme.set_font_size("font_size", "DisplayName", 30)
+	theme.set_color("font_color", "DisplayName", CREAM)
 
 
 func _buttons(theme: Theme, medium: Font) -> void:
