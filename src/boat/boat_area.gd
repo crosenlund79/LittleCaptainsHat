@@ -414,6 +414,7 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
 				companion.pet()
+				SessionLog.write("companion_pet", {"kind": String(companion.kind), "pose": String(companion.pose)})
 		_:
 			if not interactable.message.is_empty():
 				message_requested.emit(interactable.message)

@@ -123,8 +123,10 @@ func _on_cook() -> void:
 	if refusal == "":
 		refusal = GameSession.recipe_refusal(recipe.id)
 	if refusal != "":
+		SessionLog.write("cooking", {"recipe": recipe.id, "error": refusal})
 		notify(refusal)
 		return
+	SessionLog.write("cooking_started", {"recipe": recipe.id})
 	_cooking = COOK_SECONDS
 	_cook_button.disabled = true
 	_outcome.visible = false

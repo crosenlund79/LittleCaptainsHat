@@ -165,13 +165,16 @@ func refresh() -> void:
 		row.add_child(label)
 		var release := Button.new()
 		release.text = "Release"
-		release.pressed.connect(func() -> void: GameSession.release_fish(int(fish.uid)))
+		release.pressed.connect(func() -> void:
+			if GameSession.release_fish(int(fish.uid)):
+				SessionLog.write("fishing_fish", {"action": "released", "species": fish.species, "kg": fish.kg}))
 		row.add_child(release)
 		if selling:
 			var sell := Button.new()
 			sell.text = "Sell (%s)" % GameSession.format_money(catalog.price(fish.species, float(fish.kg)))
 			sell.pressed.connect(func() -> void:
 				var result := GameSession.sell_fish(int(fish.uid))
+				SessionLog.write("fishing_fish", {"action": "sold", "species": fish.species, "kg": fish.kg, "price": result.price, "error": result.error})
 				notify("Sold for %s." % GameSession.format_money(int(result.price)) if result.error == "" else String(result.error)))
 			row.add_child(sell)
 		_hold_box.add_child(row)

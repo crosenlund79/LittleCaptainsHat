@@ -393,6 +393,8 @@ func open_sleep_menu() -> void:
 func sleep_for(hours: float) -> void:
 	modals.clear()
 	var result := Simulation.sleep(hours)
+	SessionLog.write("sleep", {"hours": hours, "slept_h": snappedf(result.elapsed_seconds / 3600.0, 0.01), "stopped_by": String(result.stopped_by),
+		"anchored": GameSession.is_anchored()})
 	if result.stopped_by == Simulation.STOP_RESCUE:
 		return  # the rescue has already brought the player ashore and reports itself
 	_wake_in_berth()

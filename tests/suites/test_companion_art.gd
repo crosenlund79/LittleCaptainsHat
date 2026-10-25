@@ -1,16 +1,38 @@
 extends RefCounted
-## Iteration 004b: the owner's cat artwork (Visuals/Cat/) as poses. The files
-## and their mapping, background removal, consistent placement, the pose
-## behaviour, petting, fallbacks, replacing a pose image through data only,
-## all three vessels, the dog, and persistence.
+## Iteration 004b: the cat's artwork as poses; since Iteration 13 the cat and
+## the dog are new illustrated art in the game's style
+## (tools/companions/paint_companions.py), and the owner's original cat
+## drawings stay in Visuals/Cat/, unchanged. The files and their mapping,
+## background removal (checked on the owner's opaque drawings), consistent
+## placement, the pose behaviour, petting, fallbacks, replacing a pose image
+## through data only, all the vessels, the dog, and persistence.
 
 const APP_SCENE := preload("res://src/app/app.tscn")
 const W := preload("res://tests/helpers/walkability.gd")
 const CAT_FILES := {
+	&"resting": "res://assets/companions/cat/resting.png",
+	&"sleeping": "res://assets/companions/cat/sleeping.png",
+	&"alert": "res://assets/companions/cat/alert.png",
+	&"stretching": "res://assets/companions/cat/stretching.png",
+}
+const DOG_FILES := {
+	&"resting": "res://assets/companions/dog/resting.png",
+	&"sleeping": "res://assets/companions/dog/sleeping.png",
+	&"alert": "res://assets/companions/dog/alert.png",
+	&"stretching": "res://assets/companions/dog/stretching.png",
+}
+## The owner's original drawings (kept, never modified) and their checksums.
+const OWNER_FILES := {
 	&"resting": "res://Visuals/Cat/Cat_resting.png",
 	&"sleeping": "res://Visuals/Cat/Cat_SleepingBack.png",
 	&"alert": "res://Visuals/Cat/Cat_alert.png",
 	&"stretching": "res://Visuals/Cat/Cat_stretching.png",
+}
+const OWNER_MD5 := {
+	&"resting": "0bb77ddaeca77b6e958e63e4ead8d494",
+	&"sleeping": "687e62a876079c3fa7ee86d10b191974",
+	&"alert": "70f0c3b5091153c614202b4a9dc2e6c2",
+	&"stretching": "550e3c3d7f6b61521c87c4a3dee3387d",
 }
 const REPLACEMENT_DIR := "user://test_companion_art"
 
@@ -61,13 +83,24 @@ func _test_files_and_mapping() -> void:
 		var art := set.get_pose_art(pose)
 		t.check(art != null and art.image_path == CAT_FILES[pose], "[cat art] '%s' uses %s" % [pose, String(CAT_FILES[pose]).get_file()])
 		var texture := set.get_texture(pose)
-		t.check(texture != null and texture.get_width() == set.max_texture_size, "[cat art] '%s' loads (%s)" % [pose, texture.get_size() if texture else "missing"])
-	t.check(CompanionVisualSet.for_kind(&"dog") == null, "[cat art] the dog has no pose set (keeps its drawing)")
+		t.check(texture != null and texture.get_width() <= set.max_texture_size and texture.get_width() >= 200,
+			"[cat art] '%s' loads (%s)" % [pose, texture.get_size() if texture else "missing"])
+	for pose: StringName in OWNER_FILES:
+		t.check(FileAccess.get_md5(OWNER_FILES[pose]) == OWNER_MD5[pose], "[cat art] the owner's original %s is kept, unchanged" % String(OWNER_FILES[pose]).get_file())
+	var dog := CompanionVisualSet.for_kind(&"dog")
+	if t.check(dog != null and dog.get_pose_names() == ([&"resting", &"sleeping", &"alert", &"stretching"] as Array[StringName]),
+			"[dog art] data/companions/dog_visuals.tres: the dog's four poses"):
+		for pose: StringName in DOG_FILES:
+			t.check(dog.get_pose_art(pose).image_path == DOG_FILES[pose] and dog.get_texture(pose) != null, "[dog art] '%s' uses %s" % [pose, String(DOG_FILES[pose]).get_file()])
 
 
 func _test_background_removal() -> void:
-	var set := CompanionVisualSet.for_kind(&"cat")
-	for pose: StringName in CAT_FILES:
+	# On the owner's drawings (opaque, on white paper): a copy of the set that
+	# points at them.
+	var set := CompanionVisualSet.for_kind(&"cat").duplicate(true) as CompanionVisualSet
+	for pose: StringName in OWNER_FILES:
+		set.get_pose_art(pose).image_path = OWNER_FILES[pose]
+	for pose: StringName in OWNER_FILES:
 		var image := set.get_texture(pose).get_image()
 		var w := image.get_width()
 		var corners_clear := image.get_pixel(0, 0).a < 0.05 and image.get_pixel(w - 1, w - 1).a < 0.05
@@ -120,7 +153,8 @@ func _test_new_game_preview() -> void:
 	t.check(preview.is_sprite_mode() and preview.pose == &"resting", "[cat art] the New Game dialog previews the drawn cat")
 	await t.screenshot("53_new_game_cat_art")
 	await t.click(menu.find_child("DogButton", true, false) as Button)
-	t.check(not preview.is_sprite_mode(), "[cat art] the dog preview keeps its drawing")
+	t.check(preview.is_sprite_mode() and preview.kind == CompanionState.KIND_DOG, "[dog art] the dog preview shows the new illustrated dog")
+	await t.screenshot("13_new_game_dog_art")
 	await t.click(menu.find_child("CatButton", true, false) as Button)
 	await t.click(menu.find_child("StartButton", true, false) as Button)
 	await _settle()
@@ -133,7 +167,7 @@ func _companion() -> ShipCompanion:
 
 func _test_poses_in_cabin() -> void:
 	var cat := _companion()
-	if not t.check(cat != null and cat.is_sprite_mode(), "[cat art] the cat in the cabin shows the owner's artwork"):
+	if not t.check(cat != null and cat.is_sprite_mode(), "[cat art] the cat in the cabin shows its illustrated artwork"):
 		return
 	t.check(cat.pose == &"resting" and cat.rotation == 0.0, "[cat art] it starts resting, upright (never rotated)")
 	var camera := (app.router.current_screen as Node).get_node("Camera2D") as Camera2D
@@ -191,11 +225,27 @@ func _test_approach_and_petting() -> void:
 	var near := W.nearest(cells, cat.position)
 	area.player.position = area.get_spawn_position(&"start")
 	await t.physics_frames(3)
+	app.toasts.clear()
+	await t.frames(2)
+	await t.screenshot("13_companion_cat")
 	area.player.position = near
 	await t.physics_frames(3)
 	await t.frames(2)
 	t.check(area.player.get_focused_interactable() == cat.interactable, "[cat art] the cat can be reached")
 	t.check_eq(cat.pose, &"alert", "[cat art] walking up to the resting cat makes it look up")
+	# Iteration 13: focused, the cat glows around its own outline, like the
+	# stations: no tint and no circle, and the focus rules are unchanged.
+	t.check(cat.interactable.highlight_target.is_empty() and cat.modulate == Color.WHITE and cat.interactable.highlight_outline.size() >= 6,
+		"[highlight] the focused cat glows around its silhouette (%d points), untinted" % cat.interactable.highlight_outline.size())
+	t.check_eq(cat.interactable.focus_priority, -1, "[highlight] stations nearby keep precedence over the cat")
+	var bounds := Rect2(cat.interactable.highlight_outline[0], Vector2.ZERO)
+	for p in cat.interactable.highlight_outline:
+		bounds = bounds.expand(p)
+	var drawn := cat.get_pose_rect()
+	t.check(bounds.size.x < drawn.size.x + 10.0 and bounds.size.y < drawn.size.y + 10.0 and bounds.size.x > drawn.size.x * 0.4,
+		"[highlight] the outline hugs the drawn cat (%s inside %s)" % [bounds.size.round(), drawn.size.round()])
+	await t.get_tree().create_timer(0.7).timeout
+	await t.screenshot("13_companion_cat_highlighted")
 	await t.wait_until(func() -> bool: return cat.pose == &"resting", 4.0)
 	t.check_eq(cat.pose, &"resting", "[cat art] and it settles again")
 	# Petting (one press of E): alert + hearts + purr, then back to resting.
@@ -274,7 +324,9 @@ func _test_replacement_workflow() -> void:
 	var untouched := true
 	for pose: StringName in CAT_FILES:
 		untouched = untouched and FileAccess.get_md5(CAT_FILES[pose]) == originals[pose]
-	t.check(untouched, "[art workflow] the owner's original files are unchanged")
+	for pose: StringName in OWNER_FILES:
+		untouched = untouched and FileAccess.get_md5(OWNER_FILES[pose]) == OWNER_MD5[pose]
+	t.check(untouched, "[art workflow] the game's and the owner's original files are unchanged")
 	await t.frames(2)
 	await t.screenshot("57_cat_replaced_resting_pose")
 	cat.use_visual_set(CompanionVisualSet.for_kind(&"cat"))
@@ -330,12 +382,32 @@ func _test_dog() -> void:
 	GameSession.start_new_session(CompanionState.KIND_DOG)
 	await _show(SessionState.AREA_INTERIOR, &"from_deck")
 	var dog := _companion()
-	t.check(dog != null and dog.kind == CompanionState.KIND_DOG and not dog.is_sprite_mode(), "[dog] the dog keeps its drawn look")
-	t.check(dog.rotation != 0.0 or dog.spot == &"", "[dog] lying in its spot's direction as before")
+	t.check(dog != null and dog.kind == CompanionState.KIND_DOG and dog.is_sprite_mode() and dog.pose == &"resting",
+		"[dog] the dog shows its new illustrated art, resting")
+	dog.set_pose(&"resting", 999.0)
+	await t.frames(2)
+	await t.screenshot("13_companion_dog")
+	var area := app.router.current_screen as BoatArea
+	var cells := W.walkable_cells(area, area.get_spawn_position(&"from_deck"))
+	# Walk up beside the dog (not onto it), as a player would.
+	for p in W.use_points(dog.interactable, cells):
+		if p.distance_to(dog.position) < 26.0:
+			continue
+		area.player.position = p
+		await t.physics_frames(4)
+		if area.player.get_focused_interactable() == dog.interactable:
+			break
+	await t.frames(2)
+	t.check(area.player.get_focused_interactable() == dog.interactable and dog.interactable.highlight_outline.size() >= 6 and dog.modulate == Color.WHITE,
+		"[highlight] the focused dog glows around its silhouette, untinted")
+	await t.get_tree().create_timer(0.7).timeout
+	await t.screenshot("13_companion_dog_highlighted")
+	t.check(dog.rotation == 0.0, "[dog] drawn upright like the cat")
 	dog.pet()
 	t.check(dog.is_reacting() and _sfx_player_with(dog.dog_sound) != null, "[dog] petting: reaction and panting sound")
 	await t.frames(2)
-	await t.screenshot("59_dog_unchanged")
+	t.check(dog.pose == &"alert", "[dog] petted: it looks up happily")
+	await t.screenshot("59_dog_petted")
 
 
 # --- Helpers ------------------------------------------------------------------------

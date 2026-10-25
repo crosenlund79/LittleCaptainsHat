@@ -166,6 +166,17 @@ func _connect_game() -> void:
 	GameSession.hat_lost.connect(func(info: Dictionary) -> void: write("hat_lost", {"lost_count": info.lost_count, "serial": info.serial,
 		"wind_kn": snappedf(float(info.wind_kn), 0.1), "gust_kn": snappedf(float(info.gust_kn), 0.1), "in_harbour": info.in_harbour,
 		"open_water_nm": snappedf(float(info.open_water_nm), 0.1)}))
+	# Iteration 13: life aboard (fishing, the galley, the anchor). One line per
+	# event, never per frame.
+	GameSession.fish_landed.connect(func(result: Dictionary) -> void: write("fish_landed", {"species": result.fish.species,
+		"kg": result.fish.kg, "kept": result.kept, "new_species": result.new_species, "personal_best": result.personal_best,
+		"exceptional": result.exceptional}))
+	GameSession.meal_cooked.connect(func(result: Dictionary) -> void: write("meal", {"recipe": result.recipe, "minutes": result.minutes,
+		"food_added": snappedf(float(result.food_added), 0.01), "fish": result.fish.size(), "evening": result.evening}))
+	GameSession.anchor_changed.connect(func() -> void:
+		var anchor := GameSession.get_anchor()
+		write("anchor_state", {"active": anchor.active, "holding": String(anchor.holding), "scope": anchor.scope,
+			"set": snappedf(anchor.set_quality, 0.01), "alarm": anchor.alarm, "dragged_nm": snappedf(anchor.dragged_nm, 0.001)}))
 	GameSession.hat_bought.connect(func(info: Dictionary) -> void: write("hat_bought", {"price": info.price, "funds_after": info.funds_after,
 		"serial": info.serial}))
 

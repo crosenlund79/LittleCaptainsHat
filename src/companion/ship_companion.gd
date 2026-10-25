@@ -12,12 +12,12 @@ extends Node2D
 ## player).
 ##
 ## Look: when the kind has a CompanionVisualSet (data/companions/<kind>_visuals.tres,
-## currently the cat) the companion shows pose images: resting most of the
+## the cat and, since Iteration 13, the dog) the companion shows pose images: resting most of the
 ## time, now and then a nap or a stretch, a short alert look when the player
 ## comes close, and the alert pose with hearts when petted. Poses change with
 ## a short cross-fade; the timing comes from the set. Poses are presentation
 ## only and never saved. Without a set, or when its images are missing, the
-## procedural top-down drawing is used (currently the dog).
+## procedural top-down drawing is used (the fallback).
 ##
 ## Petting it (E, via its Interactable) plays a short sound on the SFX bus and
 ## a small reaction: the cat purrs and shows a few hearts; the dog pants softly
@@ -76,13 +76,17 @@ func _ready() -> void:
 	interactable.name = "Pet"
 	interactable.interaction_id = &"pet"
 	interactable.focus_priority = -1  # stations and doors nearby keep precedence
-	interactable.highlight_target = ^".."
+	# Focused, it glows around the animal itself (Iteration 13), like every
+	# station: no tint, no circle.
+	interactable.highlight_target = ^""
 	var shape := CollisionShape2D.new()
 	var circle := CircleShape2D.new()
 	circle.radius = INTERACT_RADIUS
 	shape.shape = circle
 	interactable.add_child(shape)
 	add_child(interactable)
+	set_meta(HighlightResolver.META_FOR, &"pet")
+	add_to_group(HighlightResolver.GROUP)
 	_sync()
 	GameSession.companion_moved.connect(_on_companion_moved)
 	GameSession.state_replaced.connect(_sync)
@@ -143,6 +147,7 @@ func set_pose(pose_name: StringName, seconds := -1.0) -> void:
 		_fade = 0.0 if visual_set and visual_set.fade_seconds > 0.0 else 1.0
 		pose = pose_name
 		pose_changed.emit(pose)
+		update_highlight()
 	_pose_left = seconds if seconds >= 0.0 else _idle_duration(pose_name)
 
 
@@ -216,6 +221,7 @@ func _load_visuals() -> void:
 	_fade = 1.0
 	pose = CompanionVisualSet.POSE_RESTING
 	_pose_left = _idle_duration(pose)
+	update_highlight()
 
 
 ## Uses `visual_set_override` instead of the kind's set (tests and tools; a
@@ -235,6 +241,7 @@ func use_visual_set(visual_set_override: CompanionVisualSet) -> void:
 	_fade = 1.0
 	_pose_left = _idle_duration(pose)
 	_sync_rotation()
+	update_highlight()
 	queue_redraw()
 
 
@@ -252,6 +259,7 @@ func _sync() -> void:
 	spot = companion.spot
 	position = get_spot_position(spot)
 	_sync_rotation()
+	update_highlight()
 	interactable.prompt = "Pet %s" % CompanionState.display_name(kind)
 
 
@@ -259,6 +267,73 @@ func _sync_rotation() -> void:
 	# The procedural drawing lies in its own (fixed) direction per spot; pose
 	# images are drawn upright, never rotated.
 	rotation = 0.0 if is_sprite_mode() else deg_to_rad(float(absi(hash(String(spot))) % 360))
+
+
+# --- Highlight (Iteration 13) ------------------------------------------------------
+
+## How far the glow stands off the animal's outline (scene units).
+const HIGHLIGHT_MARGIN := 3.0
+## Silhouettes of pose images (texture -> local hull in image pixels).
+static var _hulls := {}
+
+
+## The outline of the animal as drawn now, in this node's coordinates: the
+## silhouette of the pose image (its convex hull), or an ellipse around the
+## procedural drawing. HighlightResolver reads it through
+## get_highlight_outline(); pose changes update the focus glow directly.
+func get_local_outline() -> PackedVector2Array:
+	if is_sprite_mode():
+		var texture := get_pose_texture(pose)
+		var rect := visual_set.get_draw_rect(pose, texture)
+		var hull := silhouette(texture)
+		if hull.size() >= 3:
+			var points := PackedVector2Array()
+			var size := texture.get_size()
+			for p in hull:
+				points.append(rect.position + p / size * rect.size)
+			var grown := Geometry2D.offset_polygon(points, HIGHLIGHT_MARGIN, Geometry2D.JOIN_ROUND)
+			return grown[0] if not grown.is_empty() else points
+		return HighlightResolver.rounded_rect(rect, 10.0)
+	var radii := Vector2(38, 18) if kind == CompanionState.KIND_DOG else Vector2(22, 19)
+	var centre := Vector2(4, 0) if kind == CompanionState.KIND_DOG else Vector2(2, 1)
+	# Local space: the node's rotation turns it with the drawing.
+	return _ellipse(centre, radii, 28)
+
+
+func get_highlight_outline() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for p in get_local_outline():
+		points.append(to_global(p))
+	return points
+
+
+## Refreshes the focus glow's outline (the pose or the look changed).
+func update_highlight() -> void:
+	if interactable:
+		interactable.set_highlight_outline_global(get_highlight_outline())
+
+
+## The convex silhouette of a pose image (pixels; opaque parts only, the soft
+## shadow left out). Cached per texture.
+static func silhouette(texture: Texture2D) -> PackedVector2Array:
+	if _hulls.has(texture):
+		return _hulls[texture]
+	var image := texture.get_image()
+	if image == null:
+		return PackedVector2Array()
+	if image.is_compressed():
+		image.decompress()
+	var points := PackedVector2Array()
+	var step := maxi(1, image.get_width() / 96)
+	for y in range(0, image.get_height(), step):
+		for x in range(0, image.get_width(), step):
+			if image.get_pixel(x, y).a > 0.6:
+				points.append(Vector2(x, y))
+	var hull := Geometry2D.convex_hull(points) if points.size() >= 3 else PackedVector2Array()
+	if hull.size() > 1 and hull[0] == hull[hull.size() - 1]:
+		hull.remove_at(hull.size() - 1)
+	_hulls[texture] = hull
+	return hull
 
 
 ## The resting position of `spot_id` in this cabin (its marker), or the

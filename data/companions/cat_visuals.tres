@@ -6,24 +6,25 @@
 [sub_resource type="Resource" id="Pose_resting"]
 script = ExtResource("2_pose")
 pose = &"resting"
-image_path = "res://Visuals/Cat/Cat_resting.png"
+image_path = "res://assets/companions/cat/resting.png"
 
 [sub_resource type="Resource" id="Pose_sleeping"]
 script = ExtResource("2_pose")
 pose = &"sleeping"
-image_path = "res://Visuals/Cat/Cat_SleepingBack.png"
+image_path = "res://assets/companions/cat/sleeping.png"
 
 [sub_resource type="Resource" id="Pose_alert"]
 script = ExtResource("2_pose")
 pose = &"alert"
-image_path = "res://Visuals/Cat/Cat_alert.png"
+image_path = "res://assets/companions/cat/alert.png"
 
 [sub_resource type="Resource" id="Pose_stretching"]
 script = ExtResource("2_pose")
 pose = &"stretching"
-image_path = "res://Visuals/Cat/Cat_stretching.png"
+image_path = "res://assets/companions/cat/stretching.png"
 
 [resource]
 script = ExtResource("1_set")
 kind = &"cat"
+display_size = 100.0
 poses = Array[ExtResource("2_pose")]([SubResource("Pose_resting"), SubResource("Pose_sleeping"), SubResource("Pose_alert"), SubResource("Pose_stretching")])
