@@ -169,8 +169,8 @@ static func describe_area(area: StringName, care: BoatCareState, condition: floa
 			var growth := fouling(care, now)
 			var bottom := "bottom clean" if growth < FOULING_COSMETIC else ("some weed on the bottom" if growth < FOULING_RECOMMENDED
 				else ("a good deal of growth on the bottom" if growth < FOULING_NEEDED else "the bottom is badly fouled"))
-			return "Hull %s, %s (%d days since the last haul-out)" % [VesselCondition.describe(condition), bottom,
-				floori(maxf(now - care.hull_cleaned_at, 0.0) / 86400.0)]
+			var days := floori(maxf(now - care.hull_cleaned_at, 0.0) / 86400.0)
+			return "Hull %s, %s (%d day%s since the last haul-out)" % [VesselCondition.describe(condition), bottom, days, "" if days == 1 else "s"]
 		AREA_RIG:
 			return "Rig wear %d %%%s" % [roundi(care.rig_wear), " (stainless rigging)" if care.has_upgrade("stainless_rigging") else ""]
 		AREA_ENGINE:

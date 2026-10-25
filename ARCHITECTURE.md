@@ -100,7 +100,7 @@ their own `LabelSettings` (see *Harbour presentation*).
 
 **Name, version and folder.** The window title and saves' `game_version`
 come from `project.godot` (`application/config/name` "Little Captain's Hat",
-`application/config/version` "0.101a"). `GameVersion`
+`application/config/version` "0.102a"). `GameVersion`
 (`src/app/game_version.gd`) holds the version in one place (a test keeps
 `project.godot` equal to it), a numbers-only form for tools, and the commit
 (from an optional `build_info.json` written by `tools/write_build_info.py`, or
@@ -1171,6 +1171,57 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
 - **Determinism:** it only reads; a test plays the same hat scenario with and
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
+
+## A bigger world, a better boat (Iteration 14, 0.102a)
+
+Detailed regional charts (Denmark first) and boat care. How-tos:
+[DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md),
+[DEV_GUIDES/BOAT_CARE.md](DEV_GUIDES/BOAT_CARE.md).
+
+- **Regions.** `data/navigation/regions.json` lists region packages
+  (`region.json`, `navmask.png`, `land.json`, `graph.json`, built by
+  `tools/navigation/build_region.py` from OSM land polygons). `NavGrid`
+  keeps the base chart and holds the regions (`regions`, `grid_at()`,
+  `region_id_at()`); `cell_class_at_geo()` and `is_geo_line_clear()` are
+  composite and clip a line at region edges. `SeaRouter._load_graph()`
+  disables base nodes inside a region, appends the region's nodes (in base
+  cell units), adds seam edges and skips blocked base edges;
+  `find_port_approach()` searches the finest grid. `MapView` clips base land
+  and coast outside regions and adds an overview and a detail layer per region,
+  switched by zoom (`_update_region_detail()`); a base label that a region
+  also places is dropped. Godot's 32-bit `Vector2` sets the seam nudge and
+  edge clamp (`SEAM_NUDGE`).
+- **Recovery on load.** `GameSession.replace_state()` calls
+  `_recover_location()`: an invalid voyage position, anchor or course is moved
+  to `SeaRouter.nearest_navigable()` and re-planned; reported through
+  `location_recovered` and `get_last_location_recovery()`.
+- **Harbours.** 23 Danish ports; `HarbourFacilities` gains `haul_out` and
+  `get_tier()` (small / larger / major); a port without a file hauls out when
+  it has importance 1.
+- **Boat care state.** `SessionState.boat_care` {vessel id → `BoatCareState`}
+  (hull cleaned at, rig wear, engine hours, upgrades, history), created lazily
+  per boat. Save format 12; `SaveManager._migrate_11_to_12` derives a starting
+  record from the Log's miles.
+- **Rules.** `BoatCare` (static): levels per area, wear (`rig_wear_for`,
+  `fouling`), effects (speed and damage multipliers), quotes, the equipment
+  catalogue (`data/boat/equipment.json`). `GameSession._wear()` runs in
+  `apply_simulation_step`; `get_vessel_profile()` returns the base profile with
+  the effects applied (cached by key), so sailing, the ETA and propulsion use
+  it. Transactions: `perform_service`, `haul_out(extras)`, `install_upgrade`;
+  refusals: `service_refusal`, `upgrade_refusal`. Equipment effects are read
+  through small getters (`get_cool_box_capacity`, `get_calm_cooking_wind_kn`,
+  `get_anchor_holding_bonus_kn`, `get_warning_horizon_hours`). Repairs are
+  paid (`repair_vessel()` is the repair service).
+- **Passage Readiness.** `PassageReadiness.assess(path)` (static) uses
+  `Simulation.estimate_route_seconds()` and `route_hazards()`; shown by
+  `WorldMap._update_readiness()` (cached by course, boat, stores and the half
+  hour) and in `App.request_departure()`'s question. It never gates.
+- **Presentation.** `BoatyardMenu` → **Boat care…** (`care_requested`) →
+  `BoatCareMenu` (with `BoatCareView`) → `HaulOutPanel` (`HaulOutScene`). The
+  App spends their time with `Simulation.spend_time_ashore`. The Captain's Log
+  has a Boat tab (`TAB_BOAT`).
+- **Diagnostics.** `location_recovered`, `boat_care_open`, `boat_service`,
+  `upgrade_fitted`, `haul_out`, `readiness`, `save_migrated`.
 
 ## The catch and the cove (Iteration 13, 0.101a)
 

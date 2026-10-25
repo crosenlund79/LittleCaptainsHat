@@ -313,7 +313,16 @@ open side; the detailed Øresund coast now shelters the first site from the
 east), `test_life_aboard` (a heading may differ by one unit in the last place
 after JSON).
 
-RESULTS_PLACEHOLDER
+**Results** (Godot 4.7.2, this container):
+
+- Full headless regression, 41 suites: **3,322 checks passed, 0 failed**
+  (final tree). An earlier full run on the way found 19 failures, all from
+  the intended changes or from tests tied to the old coarse geometry; each
+  was resolved as described above, none by weakening a check.
+- Restart check (two processes, write then read): **PASS**.
+- Rendered runs (Xvfb, software OpenGL, 1600 × 900) with screenshots:
+  `test_denmark_views` 17/0, `test_boat_care` 80/0.
+- Windows: not run (the Captain's trial).
 
 ## 18. Rendered screenshots
 
@@ -323,14 +332,14 @@ in `docs/screenshots/iteration14/`:
 | # | Required | File | Seen |
 |---|---|---|---|
 | 1 | Denmark at regional scale | `14_01_denmark_regional.png` | all of Denmark in detail, the new harbours, island and water names |
-| 2 | Zealand | `14_02_zealand.png` | Zealand with Isefjord, Roskilde Fjord, Køge Bay; Copenhagen, Dragør, Rødvig |
+| 2 | Zealand | `14_02_zealand.png` | Zealand with its northern fjords and the bay south of Copenhagen; Helsingør, Copenhagen, Dragør, Rødvig, Korsør |
 | 3 | Funen | `14_03_funen.png` | Funen, the Little and Great Belts, the archipelago south of it |
 | 4 | Jutland waters | `14_04_jutland_waters.png` | Jutland's east coast fjords, Juelsminde, the Little Belt |
 | 5 | Langeland and Lohals | `14_05_langeland_lohals.png` | the long island with Lohals at its north end, Rudkøbing on its west shore |
 | 6 | Island passages | `14_06_island_passages.png` | Ærø, Marstal, Ærøskøbing and the sounds between the islands |
-| 7 | Copenhagen approach | `14_07_copenhagen_approach.png` | the harbour, Amager, Saltholm, the Øresund |
+| 7 | Copenhagen approach | `14_07_copenhagen_approach.png` | the harbour entrance, the island with Dragør, the low island in the Øresund, Malmö opposite |
 | 8 | Route around land | `14_08_route_around_land.png` | Copenhagen → Svendborg south through the Øresund, past Møn, Smålandsfarvandet, round Langeland's north end |
-| 9 | Close coastal view | `14_09_close_coastal_view.png` | Svendborg Sound at close zoom |
+| 9 | Close coastal view | `14_09_close_coastal_view.png` | Svendborg and the sounds and islets between Funen and Langeland at close zoom |
 | 10 | Zoomed-out view | `14_10_zoomed_out.png` | Europe; Denmark's light outline matches the rest |
 | 11 | Maintenance overview | `14_11_maintenance_overview.png`, `14_11b_log_boat_tab.png` | the four areas in words and colour; the Log's Boat tab |
 | 12 | Boatyard repairs | `14_12_boatyard_repairs.png` | services with price and time, done ones no longer offered |
@@ -339,7 +348,7 @@ in `docs/screenshots/iteration14/`:
 | 15 | Passage Readiness | `14_15_passage_readiness.png` | the Course tab: worth a second thought, hull and stores |
 | 16 | Small harbour without a yard | `14_16_small_harbour_without_yard.png` | Stege: groceries and Go Ashore only |
 | 17 | Sailing in Danish waters | `14_17_sailing_danish_waters.png`, `14_17b_chart_underway_danish_waters.png` | on deck underway to Svendborg; the chart around the boat |
-| 18 | Anchorage near the coast | `14_18_anchorage_near_coast.png`, `14_18b_anchorage_on_deck.png` | anchored off the coast; at anchor on deck |
+| 18 | Anchorage near the coast | `14_18_anchorage_near_coast.png`, `14_18b_anchorage_on_deck.png` | anchored off Møn's east coast, more than 3 nm from any harbour ("At anchor on the way to Svendborg"); at anchor on deck |
 | 19 | Fleet in harbour interactions | `14_19_fleet_in_harbour.png`, `14_19b_boatyard_fleet.png` | Svendborg's boatyard sign lit up; the boatyard with the fleet |
 
 Findings from the review, fixed before delivery: base-chart water names
@@ -348,7 +357,10 @@ once, by the region, visible as early as before); the haul-out mast poked
 above its picture (clipped); the chart header said "0.0 kn under sail" at
 anchor (now "At anchor on the way to …"); readiness text was long in the
 side panel (three findings at most); test notices covered some panels
-(cleared for the shots).
+(cleared for the shots); "1 days" in the hull line (now "1 day").
+Left as is: the Langeland label sits next to the Rudkøbing marker at close
+zoom (labels are placed at towns); the boat care panel scrolls at
+1600 × 900.
 
 ## 19. Known limitations
 
@@ -380,4 +392,13 @@ unchanged.
 
 ## 21. Commits, tag and push status
 
-COMMITS_PLACEHOLDER
+| Checkpoint | Commit | Content |
+|---|---|---|
+| A | (audit, no commit) | repository, geography data options, condition system, saves |
+| B and C | `c128f1c` | the Denmark region and regional architecture, Danish harbours and tiers, location recovery, the boat-care core and save format 12 |
+| D, E and F | `894ba63` | boat care panel, haul-out, equipment, Passage Readiness, the Log's Boat tab, diagnostics, new suites |
+| G and H | the final commit on the branch | review fixes, screenshots, report, final verification |
+
+All commits are pushed to `origin/claude/friendly-fermat-dey23f`; the final
+commit and the tag result are stated in the delivery message. No pull
+request was opened.
