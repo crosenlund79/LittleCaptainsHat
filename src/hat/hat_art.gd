@@ -28,7 +28,7 @@ static var _default: HatArt
 @export var blowing_texture: Texture2D
 ## Drawn size (larger side, pixels in the boat scene) per slot.
 @export var stored_size := 46.0
-@export var worn_size := 36.0
+@export var worn_size := 27.0
 @export var blowing_size := 40.0
 ## Forces the procedural drawings (to compare, or while art is unfinished).
 @export var procedural_only := false

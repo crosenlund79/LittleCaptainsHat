@@ -31,7 +31,7 @@ How to draw them:
 - Use a transparent background (PNG with alpha). See [SPRITES.md](SPRITES.md)
   for import settings.
 - The image is scaled so its larger side is the slot's size in
-  `data/hat/hat_art.tres`: `stored_size` 46, `worn_size` 36 (the player token is
+  `data/hat/hat_art.tres`: `stored_size` 46, `worn_size` 27 (the sailor's shoulders are
   42 across), `blowing_size` 40. Change the sizes there, not in code.
 - `procedural_only = true` in the resource forces the drawings, to compare.
 

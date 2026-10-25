@@ -1,20 +1,23 @@
 class_name Player
 extends CharacterBody2D
-## The player's token on board: keyboard movement with collision, plus an
-## InteractionSensor for nearby objects. It reads input only while the game is
+## The player on board, drawn as a little sailor (SailorDrawing): keyboard
+## movement with collision, plus an InteractionSensor for nearby objects. It reads input only while the game is
 ## unpaused, so open menus automatically block movement and interaction.
 
 signal focus_changed(interactable: Interactable)
 
 @export var speed := 250.0
 
+## Collision radius (the CollisionShape2D in player.tscn is 20); the drawing
+## (SailorDrawing) stays within about this size.
 const RADIUS := 21.0
-const BODY_COLOR := Color("#EFE5CC")
-const RIM_COLOR := Color("#102D3B")
-const FACING_COLOR := Color("#C79F6D")
 
 var input_enabled := true
 var _facing := Vector2.RIGHT
+## Walking cycle (radians), advanced by the distance actually walked, so the
+## arms swing with the steps and rest when the player stands still.
+var _walk_phase := 0.0
+var _walk_amount := 0.0
 
 @onready var _sensor: InteractionSensor = $InteractionSensor
 
@@ -38,10 +41,37 @@ func _physics_process(_delta: float) -> void:
 		# get_vector() limits the length to 1, so diagonals are not faster.
 		direction = Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 	velocity = direction * speed
+	var before := position
 	move_and_slide()
 	if direction != Vector2.ZERO and not direction.is_equal_approx(_facing):
 		_facing = direction.normalized()
 		queue_redraw()
+	_animate_walk(position.distance_to(before), _delta)
+
+
+## Arm swing (presentation only): one stride per STRIDE units walked, easing
+## to rest when stopped. Never affects movement or collision.
+const STRIDE := 46.0
+
+
+func _animate_walk(moved: float, delta: float) -> void:
+	var target := 1.0 if moved > 0.5 else 0.0
+	var amount := move_toward(_walk_amount, target, delta * 6.0)
+	if moved > 0.0:
+		_walk_phase = fmod(_walk_phase + moved / STRIDE * PI, TAU)
+	if amount != _walk_amount or moved > 0.0:
+		_walk_amount = amount
+		queue_redraw()
+
+
+## The walking cycle now (-1..1, 0 when standing).
+func get_swing() -> float:
+	return sin(_walk_phase) * _walk_amount
+
+
+## Where the player's left hand is (a carried hat is held there).
+func get_carry_point() -> Vector2:
+	return SailorDrawing.hand_position(_facing, 0.2, -1.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -74,11 +104,5 @@ func set_input_enabled(enabled: bool) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2(2, 3), RADIUS, Color(0, 0, 0, 0.25))
-	draw_circle(Vector2.ZERO, RADIUS, RIM_COLOR)
-	draw_circle(Vector2.ZERO, RADIUS - 4.0, BODY_COLOR)
-	# A small brass wedge shows which way the player last moved.
-	var tip := _facing * (RADIUS - 6.0)
-	var side := _facing.orthogonal() * 7.0
-	var base := _facing * 4.0
-	draw_colored_polygon(PackedVector2Array([tip, base + side, base - side]), FACING_COLOR)
+	var hat := get_hat_visual()
+	SailorDrawing.draw(self, _facing, get_swing(), hat != null and hat.get_shown_status() == HatState.CARRIED)
