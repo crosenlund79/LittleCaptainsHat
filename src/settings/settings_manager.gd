@@ -39,6 +39,10 @@ const DEFAULT_ART_STYLE := ART_ILLUSTRATED
 ## Sailing view (Iteration 12): underway the deck turns so the bow points along
 ## the course on screen (north up). Off: the boat stays bow-right as before.
 const DEFAULT_COURSE_VIEW := true
+## Accessibility (Iteration 17): gentler highlights instead of blinking, and
+## how bright lightning flashes may be (0-100 %; 0 = no flash, thunder only).
+const DEFAULT_REDUCE_FLASHING := false
+const DEFAULT_FLASH_INTENSITY := 100
 
 ## Window size used when (re)entering windowed mode. Clamped to the screen.
 const WINDOWED_SIZE := Vector2i(1600, 900)
@@ -52,6 +56,8 @@ var _vsync := DEFAULT_VSYNC
 var _ui_scale := DEFAULT_UI_SCALE
 var _art_style: StringName = DEFAULT_ART_STYLE
 var _course_view := DEFAULT_COURSE_VIEW
+var _reduce_flashing := DEFAULT_REDUCE_FLASHING
+var _flash_intensity := DEFAULT_FLASH_INTENSITY
 
 
 func _ready() -> void:
@@ -130,6 +136,25 @@ func set_course_view(enabled: bool) -> void:
 	course_view_changed.emit(enabled)
 
 
+func get_reduce_flashing() -> bool:
+	return _reduce_flashing
+
+
+func set_reduce_flashing(enabled: bool) -> void:
+	_reduce_flashing = enabled
+	settings_applied.emit()
+
+
+## Lightning flash brightness, 0-100 %.
+func get_flash_intensity() -> int:
+	return _flash_intensity
+
+
+func set_flash_intensity(percent: int) -> void:
+	_flash_intensity = clampi(percent, 0, 100)
+	settings_applied.emit()
+
+
 func set_art_style(style: StringName) -> void:
 	if style not in ART_STYLES:
 		push_warning("Unknown art style: %s" % style)
@@ -152,6 +177,8 @@ func snapshot() -> Dictionary:
 		"ui_scale": _ui_scale,
 		"art_style": _art_style,
 		"course_view": _course_view,
+		"reduce_flashing": _reduce_flashing,
+		"flash_intensity": _flash_intensity,
 	}
 
 
@@ -166,6 +193,8 @@ func restore_snapshot(data: Dictionary) -> void:
 	var course: bool = data.get("course_view", DEFAULT_COURSE_VIEW)
 	var course_changed := course != _course_view
 	_course_view = course
+	_reduce_flashing = bool(data.get("reduce_flashing", DEFAULT_REDUCE_FLASHING))
+	_flash_intensity = clampi(int(data.get("flash_intensity", DEFAULT_FLASH_INTENSITY)), 0, 100)
 	apply_all()
 	if style_changed:
 		art_style_changed.emit(_art_style)
@@ -187,6 +216,8 @@ func save() -> Error:
 	config.set_value("interface", "ui_scale", _ui_scale)
 	config.set_value("display", "art_style", String(_art_style))
 	config.set_value("display", "course_view", _course_view)
+	config.set_value("accessibility", "reduce_flashing", _reduce_flashing)
+	config.set_value("accessibility", "flash_intensity", _flash_intensity)
 	var err := config.save(settings_path)
 	if err != OK:
 		push_error("Could not save settings to %s (error %d)" % [settings_path, err])
@@ -216,6 +247,10 @@ func load_settings() -> void:
 	loaded["art_style"] = style if style in ART_STYLES else DEFAULT_ART_STYLE
 	var course: Variant = config.get_value("display", "course_view", DEFAULT_COURSE_VIEW)
 	loaded["course_view"] = course if course is bool else DEFAULT_COURSE_VIEW
+	var reduce: Variant = config.get_value("accessibility", "reduce_flashing", DEFAULT_REDUCE_FLASHING)
+	loaded["reduce_flashing"] = reduce if reduce is bool else DEFAULT_REDUCE_FLASHING
+	var flash: Variant = config.get_value("accessibility", "flash_intensity", DEFAULT_FLASH_INTENSITY)
+	loaded["flash_intensity"] = clampi(int(flash), 0, 100) if _is_number(flash) else DEFAULT_FLASH_INTENSITY
 	restore_snapshot(loaded)
 
 

@@ -36,7 +36,8 @@ signal save_requested
 
 ## The shortcut strip at the bottom left (Iteration 12): key caps on a dark,
 ## translucent backing so it reads over any deck, pontoon or quay.
-const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["H", "hat"], ["L", "Captain's Log"], ["Esc", "menu"]]
+const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["Q", "actions"], ["H", "hat"], ["L", "Captain's Log"],
+	["Esc", "menu"]]
 const SHORTCUT_BACKING := Color(0.04, 0.11, 0.15, 0.78)
 const SHORTCUT_TEXT := Color(0.93, 0.92, 0.86)
 
@@ -45,6 +46,11 @@ var hat_badge: HatBadge
 var aboard_badge: AboardBadge
 ## Long Passage (Iteration 16): bottom right, underway on long voyages.
 var passage_panel: PassagePanel
+## Iteration 17: the sailing panel (right, underway) and the chartplotter
+## (left, on deck underway, P or the action wheel).
+var sailing_panel: SailingPanel
+var chart_plotter: ChartPlotter
+var _area_id: StringName
 var _planned_key := ""
 var _planned_estimated_at := -INF
 var _planned_seconds := 0.0
@@ -78,6 +84,19 @@ func _ready() -> void:
 	passage_panel.chart_requested.connect(chart_requested.emit)
 	passage_panel.save_requested.connect(save_requested.emit)
 	add_child(passage_panel)
+	sailing_panel = SailingPanel.new()
+	sailing_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE)
+	sailing_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	sailing_panel.offset_right = -24.0
+	sailing_panel.offset_top = 150.0
+	add_child(sailing_panel)
+	chart_plotter = ChartPlotter.new()
+	chart_plotter.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE)
+	chart_plotter.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	chart_plotter.offset_left = 24.0
+	chart_plotter.offset_bottom = -64.0
+	chart_plotter.on_deck = func() -> bool: return _area_id == SessionState.AREA_EXTERIOR
+	add_child(chart_plotter)
 
 
 func _build_controls() -> void:
@@ -136,11 +155,12 @@ var _warning_pending := false
 ## warning that arrives meanwhile is shown again on returning to the boat.
 func set_chart_mode(enabled: bool) -> void:
 	_chart_mode = enabled
-	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge", "AboardBadge", "PassagePanel"]:
+	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge", "AboardBadge", "PassagePanel",
+			"SailingPanel", "ChartPlotter"]:
 		var node := get_node_or_null(node_name) as Control
 		if node == null:
 			continue
-		if node_name in ["HatBadge", "AboardBadge", "PassagePanel"]:
+		if node_name in ["HatBadge", "AboardBadge", "PassagePanel", "SailingPanel", "ChartPlotter"]:
 			node.process_mode = Node.PROCESS_MODE_DISABLED if enabled else Node.PROCESS_MODE_INHERIT
 			if enabled:
 				node.hide()
@@ -159,6 +179,7 @@ func is_chart_mode() -> bool:
 
 
 func set_area(area: StringName) -> void:
+	_area_id = area
 	_area.text = SessionState.get_area_display_name(area)
 
 
@@ -204,6 +225,8 @@ func refresh() -> void:
 	if not is_equal_approx(_warning_panel.offset_top, warning_top):
 		_warning_panel.offset_top = warning_top
 		_warning_panel.offset_bottom = warning_top + 124.0
+	# The sailing panel sits below the route panel, or below a warning.
+	sailing_panel.offset_top = (_warning_panel.offset_bottom if _warning_panel.visible else warning_top - 12.0) + 12.0
 	# The hat badge sits just below the area panel, whose height follows its text.
 	var area_panel := $AreaPanel as Control
 	hat_badge.position = Vector2(area_panel.position.x, area_panel.position.y + area_panel.size.y + 10.0)

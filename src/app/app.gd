@@ -184,6 +184,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			toggle_hat()
 		return
+	if event.is_action_pressed(&"action_wheel") and not event.is_echo():
+		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
+			get_viewport().set_input_as_handled()
+			open_action_wheel()
+		return
+	if event.is_action_pressed(&"chartplotter") and not event.is_echo():
+		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
+			get_viewport().set_input_as_handled()
+			toggle_chartplotter()
+		return
 	if not event.is_action_pressed(&"pause") or event.is_echo():
 		return
 	get_viewport().set_input_as_handled()
@@ -365,6 +375,60 @@ func import_legacy_saves() -> void:
 
 func open_chart() -> void:
 	router.change_screen(world_map_scene, _connect_world_map)
+
+
+# --- Action wheel and chartplotter (Iteration 17) --------------------------------------
+
+## The chartplotter on deck (shown underway): on or off.
+func toggle_chartplotter() -> void:
+	ChartPlotter.shown = not ChartPlotter.shown
+	if ChartPlotter.shown and not (GameSession.is_underway() and _is_on_deck()):
+		notify("The chartplotter shows on deck while underway.")
+
+
+## The actions that make sense here, for the action wheel:
+## [{"id", "label", "action"}]. Existing actions only.
+func get_wheel_actions() -> Array[Dictionary]:
+	var actions: Array[Dictionary] = []
+	var area := router.current_screen as BoatArea
+	if area == null:
+		return actions
+	var add := func(id: StringName, label: String, action: Callable) -> void:
+		actions.append({"id": id, "label": label, "action": action})
+	var go_label := "Go below" if area.area_id == SessionState.AREA_EXTERIOR else "Go on deck"
+	if area.area_id == SessionState.AREA_INTERIOR:
+		add.call(&"sleep", "Sleep", open_sleep_menu)
+		add.call(&"dream_map", "World map", open_dream_map)
+		add.call(&"chart", "Chart table", open_chart)
+		add.call(&"provisions", "Provisions", open_provisions)
+	else:
+		if GameSession.is_underway():
+			add.call(&"chartplotter", "Hide chartplotter" if ChartPlotter.shown else "Show chartplotter", toggle_chartplotter)
+			add.call(&"sailing_panel", "More sailing details" if SailingPanel.collapsed else "Fewer sailing details",
+				func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
+			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "":
+				add.call(&"anchor", "Anchor", func() -> void: open_anchor())
+		elif GameSession.get_planned_route() != null:
+			add.call(&"set_sail", "Set sail", request_departure)
+		add.call(&"chart", "Open the chart", open_chart)
+	add.call(&"go", go_label, func() -> void:
+		if router.current_screen == area and not router.is_busy():
+			area.begin_exit()
+			_on_area_change_requested(area.companionway_target_area, area.companionway_target_spawn))
+	add.call(&"log", "Captain's Log", toggle_captains_log)
+	return actions
+
+
+func open_action_wheel() -> ActionWheel:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	var area := router.current_screen as BoatArea
+	var wheel := ActionWheel.new()
+	var title := "In the cabin" if area.area_id == SessionState.AREA_INTERIOR else (
+		"At anchor" if GameSession.is_anchored() else ("At the helm" if GameSession.is_underway() else "On deck"))
+	wheel.setup(get_wheel_actions(), title)
+	modals.push(wheel)
+	return wheel
 
 
 ## The cabin's framed world map: the Dreamer's Map (WorldMap.MODE_DREAM).

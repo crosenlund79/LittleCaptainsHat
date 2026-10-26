@@ -39,15 +39,15 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| NAV-1 | Three interfaces share one geography, router, catalogue, vessel, voyage, weather, save | PARTIAL | Dreamer's Map and working chart are two modes of WorldMap (one MapView, SeaRouter, PortCatalog, voyage); test_navigation_views "same router: the same route" | Chartplotter: Checkpoint G |
+| NAV-1 | Three interfaces share one geography, router, catalogue, vessel, voyage, weather, save | DONE | Dreamer's Map and working chart: two modes of WorldMap; chartplotter reads the same voyage and the router's navigation grid (test_navigation_views, test_cockpit_ui) |  |
 | NAV-2 | Framed world map object in every cabin; contextual interaction; no circle | DONE | test_navigation_views [cabin]: all four boats, focusable, frame highlighted (no circle); screenshots cabin_world_map_* |  |
 | NAV-3 | Cabin world map: whole world, pan, zoom, names, harbours by zoom, search, select, name/country/description, visited, return | DONE | test_navigation_views [dream]: world, pan across the Date Line, search, name/country/story, visited / not visited, back to the cabin |  |
 | NAV-4 | Cabin map has no wind/weather overlay; static/cached | DONE | test_navigation_views [dream]: no wind layer, no weather areas, no wind sampling while panning |  |
 | NAV-5 | Voyage daydreams: real route, distance, 2–3 real intermediate places, modest template variety, no invented names, read-only, cached | DONE | test_navigation_views [daydream]: real route, real harbours near it in order, cached, nothing changed, short hop, tones; src/navigation/voyage_daydream.gd |  |
 | NAV-6 | Navigation station: regional working chart (~300–500 nm, latitude-aware), boat, coast, harbours, route segment, waypoints, next waypoint, heading, distance/course, weather, wind | DONE | test_navigation_views [station]: opens ~400 nm across at Copenhagen and Papeete (latitude-aware); next turn ring and "Steering … next turn" line; wind arrows only at sea | Weather/wind use the B overlay |
 | NAV-7 | Global destinations still plannable from the station | DONE | test_navigation_views: "Plan it at the chart table" → working chart with the harbour selected; plotting uses the global router |  |
-| NAV-8 | Cockpit chartplotter: lightweight, bounded, boat, heading, coast, route, next waypoint and distance, planned course, local wind; toggle from action wheel and a key | TODO | | |
-| NAV-9 | Same route in station, vessel, chartplotter and readiness | PARTIAL | Next turn on the chart = voyage path point = Simulation heading (test_navigation_views) | Chartplotter and panel: Checkpoint G |
+| NAV-8 | Cockpit chartplotter: lightweight, bounded, boat, heading, coast, route, next waypoint and distance, planned course, local wind; toggle from action wheel and a key | DONE | test_cockpit_ui [plotter]: P and the action wheel, deck underway only, coast raster from the navigation grid, the voyage's next turn, no world chart built; screenshot 17_chartplotter | Coast is a 96×96 raster (bounded), smoothed |
+| NAV-9 | Same route in station, vessel, chartplotter and readiness | DONE | Next turn: chart ring = WorldMap.get_next_turn() = sailing panel = chartplotter = voyage path (test_navigation_views, test_cockpit_ui) |  |
 
 ## BOAT — Vessel graphics and movement [§26–§28]
 
@@ -93,10 +93,10 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| HUD-1 | Right-side sailing panel: speed, heading, wind dir/speed, next-leg forecast wind, time to next course change; optional fields; actual vs planned vs forecast distinguished; collapsible | TODO | | |
-| HUD-2 | Course-change notification (>~5°, restrained, accessible) | TODO | | |
-| HUD-3 | Context-aware action wheel (helm, cabin, anchor), keyboard, no click-through | TODO | | |
-| HUD-4 | Action-wheel shortcut in the bottom help panel | TODO | | |
+| HUD-1 | Right-side sailing panel: speed, heading, wind dir/speed, next-leg forecast wind, time to next course change; optional fields; actual vs planned vs forecast distinguished; collapsible | DONE | test_cockpit_ui [panel]: speed, heading, wind now, next leg (forecast, estimate), next turn or "No more turns", distance/ETA (estimate), collapsible, no overlap; screenshot 17_sailing_panel |  |
+| HUD-2 | Course-change notification (>~5°, restrained, accessible) | DONE | test_cockpit_ui [pulse]: a >5° autopilot course change highlights, ends by itself, none while steady; Reduce flashing = one gentle pulse |  |
+| HUD-3 | Context-aware action wheel (helm, cabin, anchor), keyboard, no click-through | DONE | test_cockpit_ui [wheel]: helm/cabin actions, D/E keys, mouse, Esc closes, nothing under it reacts, captain does not move |  |
+| HUD-4 | Action-wheel shortcut in the bottom help panel | DONE | test_cockpit_ui [help]: "Q actions" in the help strip |  |
 
 ## PORT — Harbours and arrival [§35–§37]
 

@@ -30,7 +30,7 @@ size = Vector2(24, 100)
 radius = 24.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_WorldMap"]
-size = Vector2(110, 30)
+size = Vector2(70, 30)
 
 [node name="Interior" type="Node2D"]
 script = ExtResource("1_r")
@@ -232,11 +232,11 @@ position = Vector2(40, 0)
 zoom = Vector2(1.7, 1.7)
 
 [node name="WorldMapFrame" parent="Layout" instance=ExtResource("cwm_scene")]
-position = Vector2(40, -98)
+position = Vector2(-15, -98)
 size = Vector2(88, 48)
 
 [node name="WorldMap" type="Area2D" parent="Layout/Stations"]
-position = Vector2(40, -62)
+position = Vector2(-15, -62)
 script = ExtResource("7_r")
 interaction_id = &"world_map"
 prompt = "Look at the world map"
