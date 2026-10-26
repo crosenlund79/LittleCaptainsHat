@@ -74,6 +74,14 @@ func _show(area: StringName) -> BoatArea:
 	return app.router.current_screen as BoatArea
 
 
+## Before a screenshot: no old notices, and the screen's fade-in done.
+func _quiet() -> void:
+	for toast in app.toasts.get_children():
+		toast.queue_free()
+	await t.get_tree().create_timer(0.5).timeout
+	await t.frames(2)
+
+
 func _plan(from: StringName, to: StringName) -> PlannedRoute:
 	var r := router.plan_route(from, catalog.get_port(from).get_geo_position(), [] as Array[Vector2], to)
 	return r.route
@@ -189,11 +197,13 @@ func _test_canal_charts() -> void:
 		map.plot_course_to(pair[1])
 		await t.frames(2)
 		var view := map.get_map_view()
-		if pair[0] == &"kiel":
-			view.center_on_geo(Vector2(9.6, 54.1), 60.0)
-		else:
-			view.center_on_geo(Vector2(35.0, 24.0), 6.0)
-		await t.frames(3)
+		var region := Rect2(8.6, 53.6, 2.0, 1.2) if pair[0] == &"kiel" else Rect2(28.0, 10.0, 18.0, 23.0)
+		var shown := PackedVector2Array()
+		for p in map.get_draft_route().path:
+			if region.has_point(p):
+				shown.append(p)
+		view.frame_geo_points(shown)
+		await _quiet()
 		await t.screenshot(pair[2])
 		map.discard_changes()
 		app.close_chart()
@@ -234,6 +244,7 @@ func _test_route_replanning() -> void:
 	t.check(legs.size() == 1 and legs[0].ok and map.get_draft_waypoints().is_empty(), "[replan] plotting again: one course, nothing stale")
 	view.frame_geo_points(GameSession.get_planned_route().path)
 	await t.frames(3)
+	await _quiet()
 	await t.screenshot("cozy_palermo_limassol")
 	map.discard_changes()
 	app.close_chart()
@@ -283,11 +294,13 @@ func _test_debris() -> void:
 		directions.append([count, aft, moved, GameSession.get_vessel_speed_kn(), roundi(rad_to_deg(life.get_global_transform_with_canvas().x.angle())),
 			roundi(deck.get_view_heading()), deck.is_course_view()])
 		if destination == &"kiel":
+			await _quiet()
 			await t.screenshot("cozy_debris_course_view")
 	SettingsManager.set_course_view(course_view)
 	var ok := directions.all(func(d: Array) -> bool: return d[0] >= 8 and d[2] > 0 and d[1] >= d[2] * 0.8)
 	t.check(ok, "[debris] at sea, %s floating things in view pass astern at two headings (count, astern, moved, kn, bow° on screen, heading°, course view: %s)" % [
 		"8+", directions])
+	await _quiet()
 	await t.screenshot("cozy_debris_underway")
 	# Speeds: becalmed, slow and fast, no wind - they pass at the boat's own speed.
 	var life := _water_life(app.router.current_screen as BoatArea)
@@ -316,6 +329,12 @@ func _test_debris() -> void:
 		life._respawn_sea_drifter(d, i % 2 == 0)
 		clear = clear and (d.p.y < life._beam.x or d.p.y > life._beam.y)
 	t.check(clear, "[debris] 300 new floating things: none placed over the hull (beam %s)" % life._beam)
+	# By day, for the eye: twelve hours on, still on the way to Kiel.
+	for i in 48:
+		Simulation.advance(900.0)
+	await _show(SessionState.AREA_EXTERIOR)
+	await _quiet()
+	await t.screenshot("cozy_debris_day")
 	_moor_at(&"copenhagen")
 	life = _water_life(await _show(SessionState.AREA_EXTERIOR))
 	life.refresh()
@@ -351,6 +370,7 @@ func _test_wheel() -> void:
 	var details := wheel.find_child("Action_sailing_panel", true, false) as Button
 	t.check(plotter.get_meta(&"checked") == true and details.get_meta(&"checked") == false and plotter.icon != null and details.icon != null,
 		"[wheel] check marks show the real state: plotter on, details off")
+	await _quiet()
 	await t.screenshot("cozy_wheel_checks")
 	wheel.choose(wheel.items.map(func(i: Dictionary) -> StringName: return i.id).find(&"chartplotter"))
 	await t.frames(3)
@@ -387,6 +407,10 @@ func _test_coffee_all_boats() -> void:
 		GameSession.toggle_hat()
 		var full := GameSession.free_hands() == 0 and GameSession.get_hat_status() == HatState.CARRIED
 		var refused: bool = app.open_fishing() == null and app.open_cooking() == null and GameSession.hands_refusal() != ""
+		refused = refused and Array(app.toasts.get_messages()).count(GameSession.hands_refusal()) == 1
+		if id == &"starling_33":
+			await t.frames(3)
+			await t.screenshot("cozy_hands_full")
 		app.modals.clear()
 		GameSession.toggle_hat()  # back on: a hand free again
 		var freed := GameSession.free_hands() == 1
@@ -406,9 +430,11 @@ func _test_coffee_all_boats() -> void:
 		if id == &"starling_33":
 			GameSession.make_coffee()
 			await _show(SessionState.AREA_EXTERIOR)
+			await _quiet()
 			await t.screenshot("cozy_coffee_in_hand")
 			GameSession.put_coffee_down()
 			await t.frames(2)
+			await _quiet()
 			await t.screenshot("cozy_cup_holder")
 			GameSession.pick_up_coffee()
 			GameSession.finish_coffee()
@@ -433,6 +459,7 @@ func _test_sleep_memory() -> void:
 	await t.frames(3)
 	menu = app.modals.get_top() as SleepMenu
 	t.check(menu.hours == SettingsManager.DEFAULT_SLEEP_HOURS + 3, "[sleep] opened again: the duration chosen last (%d h)" % menu.hours)
+	await _quiet()
 	await t.screenshot("cozy_sleep_compact")
 	var panel := menu.find_child("Panel", true, false) as Control
 	t.check(panel.size.x <= 460.0, "[compact] the sleep window is smaller (%d px wide, was 520+)" % roundi(panel.size.x))
@@ -468,11 +495,13 @@ func _test_pins() -> void:
 	await t.frames(2)
 	var broad := view.get_pin_groups()
 	t.check(broad.size() < visited.size(), "[pins] at world zoom the Danish and German pins merge into one (%d groups for %d pins)" % [broad.size(), visited.size()])
+	await _quiet()
 	await t.screenshot("cozy_pins_world")
 	view.center_on_geo(Vector2(11.5, 55.5), 40.0 / view.units_per_degree)
 	await t.frames(3)
 	var close := view.get_pin_groups()
 	t.check(close.size() >= 2, "[pins] closer in they separate (%d)" % close.size())
+	await _quiet()
 	await t.screenshot("cozy_pins_close")
 	app.close_chart()
 	await _settle()
@@ -492,6 +521,7 @@ func _test_compact_ui() -> void:
 	t.check(area.size.y < 101.0 and area.size.x < 533.0 and clock.size.x < 520.0,
 		"[compact] location panel %dx%d, clock bar %d wide (were 533x101 and 520, UI units)" % [
 		roundi(area.size.x), roundi(area.size.y), roundi(clock.size.x)])
+	await _quiet()
 	await t.screenshot("cozy_cabin_compact")
 
 
@@ -502,7 +532,6 @@ func _test_loading_screen() -> void:
 	screen.finished.connect(func() -> void: done[0] = true)
 	t.add_child(screen)
 	var status := (screen.find_child("Status", true, false) as Label).text
-	await t.screenshot("cozy_loading_screen")
 	await t.wait_until(func() -> bool: return done[0], 20.0)
 	t.check(done[0] and status.contains("of 3"), "[loading] real loading steps named one by one (%s), then it fades away" % status)
 

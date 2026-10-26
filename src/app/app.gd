@@ -998,7 +998,8 @@ func _hand_free() -> bool:
 	var refusal := GameSession.hands_refusal()
 	if refusal.is_empty():
 		return true
-	notify(refusal)
+	if not refusal in toasts.get_messages():  # once, however often the key is pressed
+		notify(refusal)
 	return false
 
 

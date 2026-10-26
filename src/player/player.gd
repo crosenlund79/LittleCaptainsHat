@@ -33,6 +33,13 @@ func _ready() -> void:
 	var hat := PlayerHat.new()
 	hat.name = "PlayerHat"
 	add_child(hat)
+	# The mug in hand (Cozy Polish) shows and goes with the coffee's place.
+	GameSession.coffee_changed.connect(_on_coffee_changed)
+	GameSession.state_replaced.connect(queue_redraw)
+
+
+func _on_coffee_changed(_place: StringName) -> void:
+	queue_redraw()
 
 
 func get_hat_visual() -> PlayerHat:
