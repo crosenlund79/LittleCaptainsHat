@@ -137,6 +137,8 @@ func _process(_delta: float) -> void:
 ## Width the chart's sidebar takes on the right, in unscaled UI pixels; the
 ## clock bar is centred over the remaining map area in chart mode.
 const CHART_SIDEBAR_WIDTH := 544.0
+## Half the clock bar's width (Cozy Polish: a compact bar).
+const CLOCK_HALF_WIDTH := 190.0
 
 var _chart_mode := false
 var _warning_pending := false
@@ -161,8 +163,8 @@ func set_chart_mode(enabled: bool) -> void:
 		node.visible = not enabled if node_name != "PromptPanel" else (not enabled and not _prompt.text.is_empty())
 	_warning_panel.visible = _warning_pending and not enabled
 	var shift := -CHART_SIDEBAR_WIDTH / 2.0 if enabled else 0.0
-	_clock_panel.offset_left = -260.0 + shift
-	_clock_panel.offset_right = 260.0 + shift
+	_clock_panel.offset_left = -CLOCK_HALF_WIDTH + shift
+	_clock_panel.offset_right = CLOCK_HALF_WIDTH + shift
 
 
 func is_chart_mode() -> bool:

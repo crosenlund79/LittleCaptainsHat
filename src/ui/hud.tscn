@@ -18,16 +18,16 @@ script = ExtResource("1_hud")
 layout_mode = 0
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 400.0
-offset_bottom = 96.0
+offset_right = 24.0
+offset_bottom = 24.0
 theme_type_variation = &"HudPanel"
 
 [node name="HBox" type="HBoxContainer" parent="AreaPanel"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 8
 
 [node name="Symbol" type="TextureRect" parent="AreaPanel/HBox"]
-custom_minimum_size = Vector2(52, 52)
+custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 texture = ExtResource("2_symbol")
 expand_mode = 1
@@ -41,18 +41,21 @@ theme_override_constants/separation = 0
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
+theme_override_font_sizes/font_size = 22
 text = "Cabin"
 
 [node name="LocationLabel" type="Label" parent="AreaPanel/HBox/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
 text = "Moored"
 
 [node name="StatusLabel" type="Label" parent="AreaPanel/HBox/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
+theme_override_font_sizes/font_size = 17
 text = "Hull 100 % · Sound"
 
 [node name="ClockPanel" type="PanelContainer" parent="."]
@@ -60,22 +63,23 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -260.0
+offset_left = -190.0
 offset_top = 24.0
-offset_right = 260.0
-offset_bottom = 84.0
+offset_right = 190.0
+offset_bottom = 24.0
 grow_horizontal = 2
 theme_type_variation = &"HudPanel"
 
 [node name="HBox" type="HBoxContainer" parent="ClockPanel"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 8
 alignment = 1
 
 [node name="ClockLabel" type="Label" parent="ClockPanel/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
 text = "Fri 1 May 2026, 08:00 UTC"
 
 [node name="PausedBadge" type="Label" parent="ClockPanel/HBox"]

@@ -96,6 +96,7 @@ var _shore_stations := {}
 const SHORE_CAMERA_RATE := 3.5
 ## The boat this area belongs to (its art follows the Artwork setting).
 var _vessel: VesselDefinition
+var _table_mug_station: Interactable
 
 @onready var player: Player = $Player
 @onready var _spawn_points: Node2D = $Layout/SpawnPoints
@@ -559,7 +560,17 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			trophies_requested.emit()
 		&"hat":
 			message_requested.emit(GameSession.use_hat_hook())
+		&"cup_holder", &"coffee_table":
+			if GameSession.is_carrying_coffee() and interactable.interaction_id == &"cup_holder":
+				message_requested.emit(GameSession.put_coffee_down())
+			elif GameSession.coffee_waits_here():
+				message_requested.emit(GameSession.pick_up_coffee())
+			else:
+				message_requested.emit("The cup holder, just the size of a mug. Make a coffee in the galley.")
 		&"pet":
+			if GameSession.free_hands() == 0:
+				message_requested.emit("Snøvs gets a friendly look: your hands are full (hat and coffee).")
+				return
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
 				companion.pet()
@@ -868,6 +879,17 @@ func _setup_aboard_gear() -> void:
 			windlass.bow = Vector2(_bow_x(hull) - windlass_at.x - 8.0, 0.0)
 			_add_gear(windlass, Windlass.outline())
 			_add_station(stations, "Anchor", &"anchor", "Anchor", windlass_at + Vector2(-30, 0), 40.0)
+		# The coffee cup holder (Cozy Polish): on the starboard coaming by the helm.
+		var cup := cup_holder_position(hull, helm.position if helm else Vector2.INF)
+		if cup.size() == 2:
+			var holder := CoffeeMug.new()
+			holder.name = "CupHolder"
+			holder.place = GameSession.COFFEE_HOLDER
+			holder.position = cup[0]
+			add_child(holder)
+			move_child(holder, get_node(^"Layout").get_index())
+			var station := _add_station(stations, "CupHolder", &"cup_holder", "Cup holder", cup[1], 20.0)
+			station.focus_priority = -1  # never takes E from the helm unless closer
 	elif area_id == SessionState.AREA_INTERIOR:
 		var provisions := stations.get_node_or_null(^"Provisions") as Node2D
 		var galley := _nearest_fixture(provisions.position if provisions else Vector2.ZERO, HighlightResolver.FIXTURES[&"provisions"])
@@ -880,6 +902,7 @@ func _setup_aboard_gear() -> void:
 			# The station sits at the counter, so the stove is used from in front
 			# of it, not from across the cabin (or from beside the cat).
 			_add_station(stations, "Cook", &"cook", "Cook a meal or make coffee", Vector2(cook_at.x, lerpf(provisions.position.y, galley.position.y, 0.5)), 24.0)
+		_setup_table_mug(stations)
 		var hat_spot := get_node_or_null(^"Layout/HatSpot") as Node2D
 		var hat := stations.get_node_or_null(^"Hat") as Node2D
 		if hat_spot and hat:
@@ -892,6 +915,74 @@ func _setup_aboard_gear() -> void:
 			# A board to look at: like the companion, it never takes the E key
 			# from a station nearby unless the captain stands closer to it.
 			station.focus_priority = -1
+
+
+## A mug set down below stands on the saloon table; its station (picking it
+## up) is next to it, active only while the mug is there.
+func _setup_table_mug(stations: Node) -> void:
+	var table := _nearest_fixture(Vector2.ZERO, ["SaloonTable", "Table"])
+	if table == null:
+		return
+	var size: Vector2 = table.get(&"size") if table.get(&"size") is Vector2 else Vector2(80, 34)
+	var mug_at := table.position + Vector2(size.x * 0.25, 0.0)
+	var station_at := Vector2.INF
+	for side in [-1.0, 1.0]:
+		var at := mug_at + Vector2(0.0, side * (size.y / 2.0 + 22.0))
+		if _is_clear(at, stations, 30.0):
+			station_at = at
+			break
+	if station_at == Vector2.INF:
+		station_at = mug_at + Vector2(0.0, size.y / 2.0 + 22.0)
+	var mug := CoffeeMug.new()
+	mug.name = "TableMug"
+	mug.place = GameSession.COFFEE_TABLE
+	mug.position = mug_at
+	add_child(mug)
+	move_child(mug, get_node(^"Layout").get_index() + 1)
+	var station := _add_station(stations, "TableMug", &"coffee_table", "Your coffee", station_at, 22.0)
+	station.focus_priority = -1
+	station.enabled = GameSession.get_coffee() == GameSession.COFFEE_TABLE
+	_table_mug_station = station
+	if not GameSession.coffee_changed.is_connected(_on_coffee_changed):
+		GameSession.coffee_changed.connect(_on_coffee_changed)
+
+
+func _on_coffee_changed(place: StringName) -> void:
+	if is_instance_valid(_table_mug_station):
+		_table_mug_station.enabled = place == GameSession.COFFEE_TABLE
+
+
+## The cup holder by the helm: [holder, station] on the starboard coaming
+## within reach of the helm (scanning a little aft and forward of it), the
+## station inboard of the holder and clear of the helm's own; [] when the
+## outline has no room.
+static func cup_holder_position(hull: PackedVector2Array, helm: Vector2) -> Array[Vector2]:
+	if helm == Vector2.INF:
+		return []
+	for dx in [0.0, -24.0, 24.0, -48.0, 48.0, -72.0, 72.0]:
+		var x: float = helm.x + dx
+		var edge := starboard_edge(hull, x)
+		if edge <= 40.0:
+			continue
+		var holder := Vector2(x, edge - 14.0)
+		var station := holder + Vector2(0.0, -26.0)
+		if Geometry2D.is_point_in_polygon(station, hull) and Geometry2D.is_point_in_polygon(holder, hull) \
+				and station.distance_to(helm) >= CUP_HELM_CLEARANCE:
+			return [holder, station]
+	return []
+
+
+const CUP_HELM_CLEARANCE := 44.0
+
+
+## The deck's starboard edge at `x`: the most positive y inside the outline.
+static func starboard_edge(hull: PackedVector2Array, x: float) -> float:
+	var y := 420.0
+	while y > 0.0:
+		if Geometry2D.is_point_in_polygon(Vector2(x, y), hull):
+			return y
+		y -= 2.0
+	return 0.0
 
 
 ## The stove stands beside the provisions, and the trophy board on the hat's

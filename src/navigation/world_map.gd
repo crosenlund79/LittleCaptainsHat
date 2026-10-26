@@ -477,6 +477,8 @@ func _refresh_dream() -> void:
 		"vessel_geo": GameSession.get_vessel_position(),
 		"draft_is_proposal": true,
 		"editing_enabled": false,
+		# Little red pins: the harbours visited (Captain's Log; each once).
+		"visited_pins": GameSession.get_captains_log().get_visited_ids(),
 	}
 	if _daydream_port == _selected_port_id and _daydream.get("ok", false):
 		display["draft_legs"] = [{"path": _daydream.path, "ok": true}] as Array[Dictionary]

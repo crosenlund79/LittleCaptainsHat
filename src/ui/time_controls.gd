@@ -18,7 +18,8 @@ func _ready() -> void:
 	_pause.name = "Pause"
 	_pause.toggle_mode = true
 	_pause.focus_mode = Control.FOCUS_NONE
-	_pause.custom_minimum_size = Vector2(52, 0)
+	_pause.custom_minimum_size = Vector2(40, 0)
+	_pause.theme_type_variation = &"MapButton"  # compact (Cozy Polish)
 	_pause.icon = _pause_icon()
 	_pause.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_pause.tooltip_text = "Pause: stop the clock (the boat and the wind wait). Press again, or pick a speed, to continue."
@@ -32,7 +33,8 @@ func _ready() -> void:
 		button.toggle_mode = true
 		button.button_group = group
 		button.focus_mode = Control.FOCUS_NONE
-		button.custom_minimum_size = Vector2(52, 0)
+		button.custom_minimum_size = Vector2(40, 0)
+		button.theme_type_variation = &"MapButton"
 		button.tooltip_text = ["Normal time", "Accelerated time", "Fast time"][SessionState.TIME_SCALES.find(scale)]
 		button.pressed.connect(GameSession.set_time_scale.bind(scale))
 		add_child(button)

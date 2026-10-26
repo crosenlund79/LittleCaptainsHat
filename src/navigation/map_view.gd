@@ -203,7 +203,70 @@ func set_display(display: Dictionary) -> void:
 	selected_waypoint = display.get("selected_waypoint", -1)
 	editing_enabled = display.get("editing_enabled", false)
 	next_waypoint_geo = display.get("next_waypoint_geo", Vector2.INF)
+	visited_pins = display.get("visited_pins", [] as Array[StringName])
 	_overlay.queue_redraw()
+
+
+# --- Visited harbours (Cozy Polish, the Dreamer's Map) -----------------------------------
+# A small red pin for each harbour the Captain has visited (the Captain's Log),
+# whatever the zoom. Pins closer than PIN_CLUSTER_PX on screen become one pin
+# with a number; hovering a pin names its harbour(s).
+
+const PIN_RED := Color("#C0392B")
+const PIN_RED_DARK := Color("#7A1F16")
+const PIN_CLUSTER_PX := 16.0
+var visited_pins: Array[StringName] = []
+var _hovered_pin := -1
+
+
+## The pins as drawn now: [{"geo", "ids": [port ids], "screen"}], nearby pins
+## merged (most visited part of the map stays tidy at broad zoom).
+func get_pin_groups() -> Array[Dictionary]:
+	var groups: Array[Dictionary] = []
+	for id in visited_pins:
+		var port := catalog.get_port(id)
+		if port == null:
+			continue
+		var at := map_to_screen(_near_view(projection.geo_to_map(port.get_geo_position())))
+		var joined := false
+		for g in groups:
+			if (g.screen as Vector2).distance_to(at) < PIN_CLUSTER_PX:
+				(g.ids as Array).append(id)
+				joined = true
+				break
+		if not joined:
+			groups.append({"geo": port.get_geo_position(), "ids": [id], "screen": at})
+	return groups
+
+
+func _draw_pins(s: float) -> void:
+	var groups := get_pin_groups()
+	for i in groups.size():
+		var g: Dictionary = groups[i]
+		var tip := _near_view(projection.geo_to_map(g.geo))
+		var head := tip + Vector2(0.0, -15.0) * s
+		_overlay.draw_line(tip, head, PIN_RED_DARK, 2.0 * s, true)
+		_overlay.draw_circle(head, 6.0 * s, PIN_RED_DARK, true, -1.0, true)
+		_overlay.draw_circle(head, 4.8 * s, PIN_RED, true, -1.0, true)
+		_overlay.draw_circle(head + Vector2(-1.6, -1.6) * s, 1.4 * s, Color(1, 1, 1, 0.55), true, -1.0, true)
+		var count := (g.ids as Array).size()
+		if count > 1:
+			_draw_text(str(count), head + Vector2(8.0, 4.0) * s, 13.0 * s, PIN_RED_DARK, false, true)
+		if i == _hovered_pin:
+			var names := PackedStringArray()
+			for id: StringName in g.ids:
+				names.append(catalog.get_port(id).display_name)
+			var text := ", ".join(names) if names.size() <= 4 else "%s and %d more" % [", ".join(names.slice(0, 3)), names.size() - 3]
+			_draw_text(text, head + Vector2(10.0, -10.0) * s, 15.0 * s, PORT_FILL, false, true)
+
+
+func _pin_at(screen_point: Vector2) -> int:
+	var groups := get_pin_groups()
+	for i in groups.size():
+		var head: Vector2 = (groups[i].screen as Vector2) + Vector2(0.0, -15.0)
+		if head.distance_to(screen_point) <= 9.0 or (groups[i].screen as Vector2).distance_to(screen_point) <= 6.0:
+			return i
+	return -1
 
 
 ## The smallest zoom allowed now (the whole chart, never past its data).
@@ -476,6 +539,11 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 		Press.WAYPOINT:
 			if _moved:
 				waypoint_dragged.emit(_press_waypoint, screen_to_geo(event.position))
+	if not visited_pins.is_empty():
+		var pin := _pin_at(event.position)
+		if pin != _hovered_pin:
+			_hovered_pin = pin
+			_overlay.queue_redraw()
 	var hovered := pick_port(event.position)
 	if hovered != _hovered_port_id:
 		_hovered_port_id = hovered
@@ -1375,6 +1443,8 @@ func _draw_overlay() -> void:
 	for i in range(_shown_ports.size() - 1, -1, -1):  # most important drawn last (on top)
 		_draw_port(_shown_ports[i], s, _labelled_ports.has(_shown_ports[i].id))
 	_draw_waypoints(s)
+	if not visited_pins.is_empty():
+		_draw_pins(s)
 	if next_waypoint_geo != Vector2.INF:
 		var turn := _near_view(projection.geo_to_map(next_waypoint_geo))
 		_overlay.draw_arc(turn, 11.0 * s, 0.0, TAU, 24, BRASS, 2.5 * s)

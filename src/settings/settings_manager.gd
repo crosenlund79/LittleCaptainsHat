@@ -168,6 +168,33 @@ func set_reduce_motion(enabled: bool) -> void:
 	settings_applied.emit()
 
 
+## The sleep duration last chosen (hours; Cozy Polish): the sleep window
+## opens on it. A preference in settings.cfg [gameplay], not in the save.
+const SLEEP_HOURS_MIN := 1
+const SLEEP_HOURS_MAX := 12
+const DEFAULT_SLEEP_HOURS := 6
+var _sleep_hours := DEFAULT_SLEEP_HOURS
+
+
+func get_sleep_hours() -> int:
+	return _sleep_hours
+
+
+## Remembers the chosen duration (kept within the sleep window's range);
+## `persist` also writes the settings file when it changed.
+func set_sleep_hours(hours: int, persist := true) -> void:
+	var value := clampi(hours, SLEEP_HOURS_MIN, SLEEP_HOURS_MAX)
+	var changed := value != _sleep_hours
+	_sleep_hours = value
+	if changed:
+		_sleep_hours_saved = false
+	if persist and not _sleep_hours_saved:
+		_sleep_hours_saved = save() == OK
+
+
+var _sleep_hours_saved := true
+
+
 func get_ui_light() -> StringName:
 	return _ui_light
 
@@ -267,6 +294,7 @@ func save() -> Error:
 	config.set_value("accessibility", "flash_intensity", _flash_intensity)
 	config.set_value("accessibility", "reduce_motion", _reduce_motion)
 	config.set_value("interface", "ui_light", String(_ui_light))
+	config.set_value("gameplay", "sleep_hours", _sleep_hours)
 	var err := config.save(settings_path)
 	if err != OK:
 		push_error("Could not save settings to %s (error %d)" % [settings_path, err])
@@ -304,6 +332,8 @@ func load_settings() -> void:
 	loaded["reduce_motion"] = motion if motion is bool else DEFAULT_REDUCE_MOTION
 	var light := StringName(str(config.get_value("interface", "ui_light", DEFAULT_UI_LIGHT)))
 	loaded["ui_light"] = light if light in UI_LIGHTS else DEFAULT_UI_LIGHT
+	var sleep: Variant = config.get_value("gameplay", "sleep_hours", DEFAULT_SLEEP_HOURS)
+	_sleep_hours = clampi(int(sleep), SLEEP_HOURS_MIN, SLEEP_HOURS_MAX) if _is_number(sleep) else DEFAULT_SLEEP_HOURS
 	restore_snapshot(loaded)
 
 

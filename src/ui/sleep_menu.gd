@@ -11,6 +11,7 @@ const MIN_HOURS := 1
 const MAX_HOURS := 12
 const DEFAULT_HOURS := 6
 
+## Opens on the duration chosen last time (SettingsManager), or DEFAULT_HOURS.
 var hours := DEFAULT_HOURS
 
 @onready var _info: Label = %Info
@@ -22,6 +23,7 @@ var hours := DEFAULT_HOURS
 
 
 func _ready() -> void:
+	hours = clampi(SettingsManager.get_sleep_hours(), MIN_HOURS, MAX_HOURS)
 	if GameSession.is_underway():
 		_info.text = "The boat sails on while you sleep. You will be woken early on arrival or when a weather warning comes in."
 	else:
@@ -30,7 +32,9 @@ func _ready() -> void:
 		_info.text += " The game is paused: sleeping moves time on by the hours you choose, and it stays paused afterwards."
 	_decrease.pressed.connect(change_hours.bind(-1))
 	_increase.pressed.connect(change_hours.bind(1))
-	_sleep.pressed.connect(func() -> void: sleep_requested.emit(float(hours)))
+	_sleep.pressed.connect(func() -> void:
+		SettingsManager.set_sleep_hours(hours)  # remembered for next time (and after a restart)
+		sleep_requested.emit(float(hours)))
 	%CancelButton.pressed.connect(close)
 	_update()
 
@@ -47,6 +51,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## Changes the duration by `delta` hours, kept within MIN_HOURS..MAX_HOURS.
 func change_hours(delta: int) -> void:
 	hours = clampi(hours + delta, MIN_HOURS, MAX_HOURS)
+	SettingsManager.set_sleep_hours(hours, false)
 	_update()
 
 

@@ -33,21 +33,26 @@ static func hand_position(facing: Vector2, swing: float, side_sign: float) -> Ve
 	return shoulder + facing * (5.0 + SWING * swing * side_sign) + side * side_sign * 3.0
 
 
-static func draw(canvas: CanvasItem, facing: Vector2, swing: float, carrying := false) -> void:
+static func draw(canvas: CanvasItem, facing: Vector2, swing: float, carrying := false, mug := false) -> void:
 	var side := facing.orthogonal()
 	var body_center := -facing * 2.5
 	canvas.draw_colored_polygon(_ellipse(body_center + Vector2(3, 4), SHOULDER + 1.0, DEPTH + 2.0, side), SHADOW)
 	# Arms first (under the shoulders): sleeve from shoulder to wrist, a hand.
+	var right_hand := Vector2.ZERO
 	for side_sign: float in [-1.0, 1.0]:
 		var shoulder: Vector2 = body_center + side * (SHOULDER - 3.0) * side_sign
 		var arm_swing := swing * side_sign
 		if carrying and side_sign < 0.0:
 			arm_swing = 0.2  # the arm holding the hat moves less
+		if mug and side_sign > 0.0:
+			arm_swing = 0.25  # and the one holding the coffee, carefully
 		var hand := hand_position(facing, arm_swing, side_sign)
 		canvas.draw_line(shoulder, hand, INK, 8.0, true)
 		canvas.draw_line(shoulder, hand, SLEEVE, 5.5, true)
 		canvas.draw_circle(hand, 3.6, INK)
 		canvas.draw_circle(hand, 2.6, SKIN)
+		if side_sign > 0.0:
+			right_hand = hand
 	# Shoulders and body: the striped jumper.
 	var body := _ellipse(body_center, SHOULDER, DEPTH, side)
 	canvas.draw_colored_polygon(body, JUMPER)
@@ -67,6 +72,9 @@ static func draw(canvas: CanvasItem, facing: Vector2, swing: float, carrying := 
 	canvas.draw_colored_polygon(face, SKIN)
 	canvas.draw_circle(facing * (HEAD + 0.6), 1.6, SKIN.darkened(0.15))  # nose
 	canvas.draw_arc(Vector2.ZERO, HEAD + 0.6, 0.0, TAU, 24, INK, 1.4, true)
+	# The coffee mug in the right hand (Cozy Polish), on top so it reads.
+	if mug:
+		CoffeeMug.draw_mug(canvas, right_hand + facing * 3.0, 0.75, side.angle())
 
 
 static func _ellipse(center: Vector2, half_across: float, half_along: float, side: Vector2) -> PackedVector2Array:

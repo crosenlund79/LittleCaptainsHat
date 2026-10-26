@@ -17,6 +17,13 @@ extends Node2D
 ## wind rises, white crests from 20 kn, all streaming aft with the boat's
 ## speed. Calm water stays calm.
 ##
+## Underway, too (Cozy Polish): a pool of small floating things (seaweed,
+## driftwood, leaves, foam, kelp, a feather) lies still in the water, so they
+## pass the boat from ahead to astern at its own speed (in the deck's own
+## coordinates: the bow is +x, and the whole deck turns with the course view),
+## drifting a little with the wind. One that falls behind the view comes back
+## ahead at a new place, spacing and size, never across the hull's beam.
+##
 ## Presentation only: it reads the game, never changes it. It runs on real
 ## time with its own fixed random seed, so it moves naturally while the game
 ## clock is paused (like the sails), and stops with the scene when a menu
@@ -31,6 +38,11 @@ const ATMOSPHERES: Array[StringName] = [ATMOSPHERE_MARINA, ATMOSPHERE_COASTAL, A
 const MAX_WAVES := 70
 const MAX_DRIFTERS := 6
 const MAX_RINGS := 8
+## Floating things around the boat at sea (a fixed pool, reused).
+const SEA_DRIFTERS := 16
+const SEA_KINDS: Array[StringName] = [&"seaweed", &"seaweed", &"driftwood", &"leaf", &"foam", &"foam", &"kelp", &"feather"]
+## Pixels per second per knot the water passes the boat (as the wave crests).
+const FLOW_PX_PER_KN := 9.0
 const WAVELETS := 34
 ## Seconds between two looks at the wind (it changes slowly).
 const WIND_REFRESH := 0.5
@@ -42,6 +54,9 @@ const GLINT := Color(1.0, 0.98, 0.88, 0.55)
 const SEAWEED := Color("#4f6b3a")
 const LEAF_COLOURS := [Color("#c98a3c"), Color("#a5552f"), Color("#8f9a3e")]
 const PAPER := Color("#ece6d6")
+const DRIFTWOOD := Color("#7a5a3c")
+const DRIFTWOOD_GRAIN := Color("#4e3826")
+const FEATHER := Color("#f1ece0")
 
 var _area: BoatArea
 var _rng := RandomNumberGenerator.new()
@@ -61,6 +76,10 @@ var _waves: Array[Dictionary] = []
 var _wavelets: Array[Dictionary] = []
 var _drifters: Array[Dictionary] = []
 var _rings: Array[Dictionary] = []
+var _sea_drifters: Array[Dictionary] = []
+## The hull's beam band (local y) that floating things keep out of when they
+## come back ahead, so none appears through the boat.
+var _beam := Vector2(-120.0, 120.0)
 ## Points along the hulls' waterline with their outward normal and tangent,
 ## where the water laps against the boat.
 var _laps: Array[Dictionary] = []
@@ -86,7 +105,42 @@ func setup(area: BoatArea) -> void:
 			"drift": Vector2.from_angle(_rng.randf() * TAU) * _rng.randf_range(2, 6), "glint": _rng.randf() < 0.3})
 	for i in MAX_RINGS:
 		_rings.append({"p": _random_point(), "age": _rng.randf_range(0, 4), "life": _rng.randf_range(2.5, 4.5)})
+	_measure_beam()
+	for i in SEA_DRIFTERS:
+		var d := {}
+		_respawn_sea_drifter(d, true)
+		_sea_drifters.append(d)
 	refresh()
+
+
+func _measure_beam() -> void:
+	if _laps.is_empty():
+		return
+	var lo := INF
+	var hi := -INF
+	for lap in _laps:
+		lo = minf(lo, lap.p.y)
+		hi = maxf(hi, lap.p.y)
+	_beam = Vector2(lo - 30.0, hi + 30.0)
+
+
+## Places a floating thing: anywhere in view at first, later ahead of the bow
+## (beyond the view, a varied distance on), clear of the hull's beam.
+func _respawn_sea_drifter(d: Dictionary, anywhere: bool) -> void:
+	var x := _rng.randf_range(_view.position.x, _view.end.x) if anywhere \
+		else _view.end.x + _rng.randf_range(10.0, _view.size.x * 0.6)
+	var y := _rng.randf_range(_view.position.y, _view.end.y)
+	if y > _beam.x and y < _beam.y:
+		# Off the beam band: to the nearer side, a little further out.
+		y = _beam.x - _rng.randf_range(10.0, 160.0) if y < (_beam.x + _beam.y) / 2.0 else _beam.y + _rng.randf_range(10.0, 160.0)
+	d.kind = SEA_KINDS[_rng.randi() % SEA_KINDS.size()]
+	d.p = Vector2(x, y)
+	d.angle = _rng.randf() * TAU
+	d.spin = _rng.randf_range(-0.12, 0.12)
+	d.drift = _rng.randf_range(0.4, 1.0)
+	d.phase = _rng.randf() * TAU
+	d.colour = LEAF_COLOURS[_rng.randi() % LEAF_COLOURS.size()]
+	d.size = _rng.randf_range(0.7, 1.4)
 
 
 func _collect_laps(area: BoatArea) -> void:
@@ -164,6 +218,21 @@ func get_wave_count() -> int:
 
 func get_drifter_count() -> int:
 	return _drifters.size() if not _underway else 0
+
+
+## Floating things in view at sea (tests).
+func get_sea_drifter_count() -> int:
+	if not _underway:
+		return 0
+	var count := 0
+	for d in _sea_drifters:
+		if _view.has_point(d.p):
+			count += 1
+	return count
+
+
+func get_sea_drifters() -> Array[Dictionary]:
+	return _sea_drifters
 
 
 ## The broad atmosphere of a harbour: HarbourArt.atmosphere when set,
@@ -273,9 +342,22 @@ func _move_harbour(delta: float) -> void:
 
 func _move_waves(delta: float) -> void:
 	# Crests travel downwind; the boat's own speed streams them aft (-x).
-	var flow := _wind_dir * (6.0 + _wind_kn * 1.4) + Vector2.LEFT * _boat_kn * 9.0
+	var flow := _wind_dir * (6.0 + _wind_kn * 1.4) + Vector2.LEFT * _boat_kn * FLOW_PX_PER_KN
 	for w in _waves:
 		w.p = _wrap(w.p + flow * w.speed * delta)
+	# Floating things lie in the water: past the boat at its speed, plus a
+	# little drift with the wind. Behind the view: back ahead, somewhere new.
+	var pass_by := Vector2.LEFT * _boat_kn * FLOW_PX_PER_KN
+	var wind_drift := _wind_dir * minf(_wind_kn, 25.0) * 0.25
+	for d in _sea_drifters:
+		d.p += (pass_by + wind_drift * d.drift) * delta
+		d.angle += d.spin * delta
+		if d.p.x < _view.position.x - 40.0:
+			_respawn_sea_drifter(d, false)
+		elif not Rect2(_view.position - Vector2(80, 80), _view.size + Vector2(_view.size.x + 160, 160)).has_point(d.p):
+			# Drifted far off sideways (a turn, a calm, the view changing): back
+			# somewhere new, ahead when the boat makes way, else anywhere.
+			_respawn_sea_drifter(d, _boat_kn < 0.3)
 
 
 # --- Drawing ------------------------------------------------------------------------
@@ -348,6 +430,34 @@ func _draw_drifter(d: Dictionary) -> void:
 				p - dir * 5 * s + side * 3 * s])
 			draw_colored_polygon(quad, Color(PAPER, 0.8))
 			draw_line(quad[0], quad[1], Color(0.3, 0.3, 0.3, 0.3), 0.8)
+		&"driftwood":
+			var side := dir.orthogonal()
+			var length := 26.0 * s
+			var stick := PackedVector2Array([p - dir * length / 2 - side * 2.4 * s, p + dir * length / 2 - side * 1.6 * s,
+				p + dir * length / 2 + side * 1.8 * s, p - dir * length / 2 + side * 2.6 * s])
+			for k in stick.size():
+				stick[k] += Vector2(0, bob)
+			draw_colored_polygon(stick, DRIFTWOOD)
+			draw_line(p - dir * length * 0.35 + Vector2(0, bob), p + dir * length * 0.3 + Vector2(0, bob), DRIFTWOOD_GRAIN, 1.0, true)
+			draw_line(p + dir * length * 0.1 + Vector2(0, bob), p + dir * length * 0.1 + side * 6.0 * s + Vector2(0, bob), DRIFTWOOD, 1.6, true)
+			_arc(p - dir * (length / 2 + 3.0), 10.0 * s, dir.orthogonal(), Color(FOAM, 0.3), 1.2, 0.3)
+		&"kelp":
+			for k in 3:
+				var o := Vector2.from_angle(k * 2.1 + d.phase) * 5.0 * s
+				draw_circle(p + o + Vector2(0, bob), 2.6 * s, SEAWEED.darkened(0.15))
+			var frond := PackedVector2Array()
+			for k in 7:
+				var t := k / 6.0
+				frond.append(p + dir * t * 22.0 * s + dir.orthogonal() * sin(t * 5.0 + _time + d.phase) * 2.5)
+			draw_polyline(frond, SEAWEED, 2.2 * s, true)
+		&"feather":
+			var side := dir.orthogonal()
+			draw_line(p - dir * 7 * s + Vector2(0, bob), p + dir * 7 * s + Vector2(0, bob), Color(0.5, 0.45, 0.4, 0.8), 0.8, true)
+			var vane := PackedVector2Array([p - dir * 5 * s, p - dir * 2 * s + side * 3 * s, p + dir * 6 * s + side * 1.2 * s, p + dir * 6.5 * s,
+				p + dir * 5 * s - side * 1.5 * s, p - dir * 3 * s - side * 2.5 * s])
+			for k in vane.size():
+				vane[k] += Vector2(0, bob)
+			draw_colored_polygon(vane, Color(FEATHER, 0.9))
 
 
 func _draw_waves() -> void:
@@ -362,6 +472,9 @@ func _draw_waves() -> void:
 		_arc(w.p - _wind_dir * 3.0, length * 0.9, across, Color(CREST_DARK, 0.25 * (0.4 + energy)), 1.2, 0.25)
 		if _wind_kn >= 20.0 and i % 3 == 0:
 			draw_circle(w.p + _wind_dir * 1.5, 1.5 + energy * 1.5, Color(FOAM, 0.4 * pulse))
+	for d in _sea_drifters:
+		if _view.has_point(d.p):
+			_draw_drifter(d)
 
 
 ## A small crest: a curved stroke of `length` along `along`, bowed by `bow`.

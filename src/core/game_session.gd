@@ -58,6 +58,8 @@ signal travel_update_published(info: Dictionary)
 ## The captain's hat changed hands: put on, taken off, hung up, lost or
 ## bought (HatState.STORED / WORN / CARRIED / LOST).
 signal hat_changed(status: StringName)
+## The coffee mug moved: into a hand, the holder, onto the table, or finished.
+signal coffee_changed(place: StringName)
 ## The wind is strong enough to take a worn hat (once per exposure).
 signal hat_warning(text: String)
 ## The hat blew away: {"time", "text", "log_text", "lost_count", "serial",
@@ -1730,8 +1732,88 @@ func make_coffee() -> Dictionary:
 		result.text = "Coffee aboard while the harbour wakes around you." if morning \
 			else "Coffee aboard. Halyards tap along the pontoon."
 	result.minutes = COFFEE_MINUTES
+	# The coffee goes into the captain's hand, in the one mug aboard.
+	_set_coffee(COFFEE_CARRIED)
 	_has_unsaved_changes = true
 	return result
+
+
+# --- The coffee mug and the captain's hands (Cozy Polish) ----------------------------
+# A simple rule, not an inventory: two hands; the hat carried under the arm
+# takes one, the coffee mug the other. With both full, the things that need a
+# hand say so kindly (hands_refusal); walking, the stairs, the helm and the
+# menus stay free. There is one mug; nothing about it is simulated.
+
+const COFFEE_NONE := &""
+const COFFEE_CARRIED := &"carried"
+const COFFEE_HOLDER := &"holder"
+const COFFEE_TABLE := &"table"
+
+
+func get_coffee() -> StringName:
+	return _state.galley.coffee if _state else COFFEE_NONE
+
+
+func is_carrying_coffee() -> bool:
+	return get_coffee() == COFFEE_CARRIED
+
+
+## Free hands: two, less the carried hat and the carried mug.
+func free_hands() -> int:
+	if _state == null:
+		return 2
+	return 2 - (1 if _state.hat.status == HatState.CARRIED else 0) - (1 if is_carrying_coffee() else 0)
+
+
+## Why an action needing a free hand cannot be done now, or "".
+func hands_refusal() -> String:
+	if free_hands() > 0:
+		return ""
+	return "Your hands are full: the hat and a mug of coffee. Put your hat back on (H) or set the coffee down first."
+
+
+## Puts the carried mug in the cup holder by the helm (on deck) or on the
+## cabin table. Returns the message for the player.
+func put_coffee_down() -> String:
+	if not is_carrying_coffee():
+		return "You have no coffee in hand."
+	if get_boat_area() == SessionState.AREA_EXTERIOR:
+		_set_coffee(COFFEE_HOLDER)
+		return "You set your coffee in the cup holder by the helm."
+	_set_coffee(COFFEE_TABLE)
+	return "You set your coffee down on the table."
+
+
+## Takes the mug from where it stands here (holder on deck, table below).
+func pick_up_coffee() -> String:
+	var here := COFFEE_HOLDER if get_boat_area() == SessionState.AREA_EXTERIOR else COFFEE_TABLE
+	if get_coffee() != here:
+		return "There is no coffee here."
+	if free_hands() == 0:
+		return "Your hands are full. Put your hat back on (H) first."
+	_set_coffee(COFFEE_CARRIED)
+	return "You pick up your coffee. Still warm enough."
+
+
+## Drinks up: the mug is empty and goes back to the galley.
+func finish_coffee() -> String:
+	if not is_carrying_coffee():
+		return "You have no coffee in hand."
+	_set_coffee(COFFEE_NONE)
+	return "You finish your coffee. Lovely."
+
+
+## Whether the mug stands here, to be picked up (holder on deck, table below).
+func coffee_waits_here() -> bool:
+	return get_coffee() == (COFFEE_HOLDER if get_boat_area() == SessionState.AREA_EXTERIOR else COFFEE_TABLE)
+
+
+func _set_coffee(place: StringName) -> void:
+	if _state == null or _state.galley.coffee == place:
+		return
+	_state.galley.coffee = place
+	_has_unsaved_changes = true
+	coffee_changed.emit(place)
 
 
 ## Why `recipe_id` cannot be cooked (ingredients), or "".
@@ -2497,6 +2579,8 @@ func toggle_hat() -> String:
 		return ""
 	match _state.hat.status:
 		HatState.WORN:
+			if free_hands() == 0:
+				return hands_refusal()
 			_set_hat_status(HatState.CARRIED)
 			return "You take off your captain's hat and tuck it under your arm."
 		HatState.CARRIED:

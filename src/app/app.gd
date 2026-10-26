@@ -155,6 +155,19 @@ func _ready() -> void:
 	GameSession.state_replaced.connect(update_engine_audio)
 	_hud_layer.hide()
 	show_main_menu()
+	# Cozy Polish: the game's own loading screen over the menu, once per launch.
+	if LoadingScreen.wanted():
+		loading_screen = LoadingScreen.new()
+		loading_screen.name = "LoadingScreen"
+		add_child(loading_screen)
+
+
+## The start-up loading screen while it is up (null afterwards).
+var loading_screen: LoadingScreen
+
+
+func is_loading() -> bool:
+	return is_instance_valid(loading_screen) and not loading_screen.is_done()
 
 
 func _process(delta: float) -> void:
@@ -437,7 +450,8 @@ func toggle_chartplotter() -> void:
 
 
 ## The actions that make sense here, for the action wheel:
-## [{"id", "label", "action"}]. Existing actions only.
+## [{"id", "label", "action"}, plus "checked" (a Callable read when the wheel
+## opens) for the on/off ones]. Existing actions only.
 func get_wheel_actions() -> Array[Dictionary]:
 	var actions: Array[Dictionary] = []
 	var area := router.current_screen as BoatArea
@@ -456,11 +470,13 @@ func get_wheel_actions() -> Array[Dictionary]:
 		add.call(&"provisions", "Provisions", open_provisions)
 	else:
 		if GameSession.is_underway():
-			add.call(&"chartplotter", "Hide chartplotter" if ChartPlotter.shown else "Show chartplotter", toggle_chartplotter)
-			add.call(&"sailing_panel", "More sailing details" if SailingPanel.collapsed else "Fewer sailing details",
-				func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
+			# On/off items show a check mark read from the setting itself (Cozy Polish).
+			add.call(&"chartplotter", "Chart plotter", toggle_chartplotter)
+			actions.back().checked = func() -> bool: return ChartPlotter.shown
+			add.call(&"sailing_panel", "Sailing details", func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
+			actions.back().checked = func() -> bool: return not SailingPanel.collapsed
 			if not GameSession.is_anchored():
-				add.call(&"sail_trim", "Trim the sails", func() -> void: open_sail_trim.call_deferred())
+				add.call(&"sail_trim", "Trim sails", func() -> void: open_sail_trim.call_deferred())
 			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "" or GameSession.is_holding_at_anchorage():
 				add.call(&"anchor", "Anchor", func() -> void: open_anchor())
 			if GameSession.is_holding_at_anchorage():
@@ -469,20 +485,29 @@ func get_wheel_actions() -> Array[Dictionary]:
 					notify("Sailing on along the course." if error == "" else error))
 		elif GameSession.get_planned_route() != null:
 			add.call(&"set_sail", "Set sail", request_departure)
-		add.call(&"chart", "Open the chart", open_chart)
+		add.call(&"chart", "Charts", open_chart)
 		if GameSession.get_pending_bite().is_empty():
 			add.call(&"fishing", "Fishing rod", func() -> void: open_fishing.call_deferred())
 	add.call(&"go", go_label, func() -> void:
 		if router.current_screen == area and not router.is_busy():
 			area.begin_exit()
 			_on_area_change_requested(area.companionway_target_area, area.companionway_target_spawn))
-	add.call(&"log", "Captain's Log", toggle_captains_log)
+	# The coffee mug (Cozy Polish): set down here, take it, or drink up.
+	if GameSession.is_carrying_coffee():
+		add.call(&"coffee_down", "Coffee in the holder" if area.area_id == SessionState.AREA_EXTERIOR else "Set coffee down",
+			func() -> void: notify(GameSession.put_coffee_down()))
+		add.call(&"coffee_finish", "Finish the coffee", func() -> void: notify(GameSession.finish_coffee()))
+	elif GameSession.coffee_waits_here():
+		add.call(&"coffee_take", "Take your coffee", func() -> void: notify(GameSession.pick_up_coffee()))
+	add.call(&"log", "log" if not GameSession.is_underway() else "Captain's Log", toggle_captains_log)
 	return actions
 
 
 ## Sail trim (Iteration 18): underway, at sea (not at anchor).
 func open_sail_trim() -> SailTrimPanel:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	if not _hand_free():
 		return null
 	if not GameSession.is_underway() or GameSession.is_anchored():
 		notify("Sail trim is for sailing: set sail first." if not GameSession.is_underway() else "At anchor the sails are down.")
@@ -740,6 +765,8 @@ func _on_shore_choice(event_id: String, choice_index: int, menu: GoAshoreMenu) -
 func open_fishing() -> FishingMenu:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return null
+	if not _hand_free():
+		return null
 	var menu := FishingMenu.new()
 	menu.wait_requested.connect(_on_fishing_wait.bind(menu))
 	modals.push(menu)
@@ -793,6 +820,8 @@ func get_bite_wait() -> float:
 func open_cooking() -> CookingMenu:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return null
+	if not _hand_free():
+		return null
 	var menu := CookingMenu.new()
 	menu.cooked.connect(_on_meal_cooked)
 	menu.coffee_made.connect(func(result: Dictionary) -> void: Simulation.spend_time_aboard(float(result.minutes), true))
@@ -838,6 +867,8 @@ func is_anchorage_prompt_due() -> bool:
 
 func open_anchor() -> AnchorMenu:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	if not _hand_free():
 		return null
 	var menu := AnchorMenu.new()
 	menu.time_requested.connect(func(minutes: float) -> void: Simulation.spend_time_aboard(minutes, false))
@@ -960,6 +991,16 @@ func _on_renown_awarded(awards: Array) -> void:
 
 
 # --- Captain's hat ------------------------------------------------------------------
+
+## Actions that need a free hand (the rod, the anchor, the stove, the
+## sheets): with the hat and a mug in hand, a friendly word instead.
+func _hand_free() -> bool:
+	var refusal := GameSession.hands_refusal()
+	if refusal.is_empty():
+		return true
+	notify(refusal)
+	return false
+
 
 ## The hat key (H): off and under the arm, or back on.
 func toggle_hat() -> void:

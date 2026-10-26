@@ -109,4 +109,5 @@ func set_input_enabled(enabled: bool) -> void:
 
 func _draw() -> void:
 	var hat := get_hat_visual()
-	SailorDrawing.draw(self, _facing, get_swing(), hat != null and hat.get_shown_status() == HatState.CARRIED)
+	SailorDrawing.draw(self, _facing, get_swing(), hat != null and hat.get_shown_status() == HatState.CARRIED,
+		GameSession.is_active() and GameSession.is_carrying_coffee())

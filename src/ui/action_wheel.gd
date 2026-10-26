@@ -8,7 +8,9 @@ extends ModalPanel
 ## existing actions only; it is not a new command system.
 ##
 ## Items: [{"id", "label", "action": Callable}] given by the App (see
-## App.get_wheel_actions()).
+## App.get_wheel_actions()); an on/off item also has "checked": a Callable
+## returning whether it is on now, shown as a theme check box (never a copy
+## of the state).
 
 signal action_chosen(id: StringName)
 
@@ -53,6 +55,11 @@ func _ready() -> void:
 		var button := Button.new()
 		button.name = "Action_%s" % items[i].id
 		button.text = items[i].label
+		if items[i].has("checked") and (items[i].checked as Callable).is_valid():
+			var on: bool = (items[i].checked as Callable).call()
+			button.icon = get_theme_icon(&"checked" if on else &"unchecked", &"CheckBox")
+			button.set_meta(&"checked", on)
+			button.tooltip_text = ("On" if on else "Off") + ": choose to switch it " + ("off" if on else "on")
 		button.size = ITEM_SIZE
 		button.custom_minimum_size = ITEM_SIZE
 		button.pressed.connect(choose.bind(i))

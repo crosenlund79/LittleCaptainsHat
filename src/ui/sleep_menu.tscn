@@ -29,21 +29,21 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="PanelContainer" parent="Center"]
-custom_minimum_size = Vector2(520, 0)
+custom_minimum_size = Vector2(380, 0)
 layout_mode = 2
 
 [node name="VBox" type="VBoxContainer" parent="Center/Panel"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 8
 
 [node name="Title" type="Label" parent="Center/Panel/VBox"]
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
+theme_type_variation = &"HeaderLabel"
 text = "Sleep"
 
 [node name="Info" type="Label" parent="Center/Panel/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(440, 0)
+custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 autowrap_mode = 3
@@ -51,36 +51,34 @@ autowrap_mode = 3
 [node name="DurationRow" type="HBoxContainer" parent="Center/Panel/VBox"]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 16
+theme_override_constants/separation = 10
 
 [node name="DecreaseButton" type="Button" parent="Center/Panel/VBox/DurationRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(44, 40)
 layout_mode = 2
-theme_type_variation = &"MenuItem"
 tooltip_text = "One hour less (Left arrow)"
 text = "<"
 
 [node name="DurationLabel" type="Label" parent="Center/Panel/VBox/DurationRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-theme_type_variation = &"TitleLabel"
+theme_type_variation = &"HeaderLabel"
 text = "6 hours"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="IncreaseButton" type="Button" parent="Center/Panel/VBox/DurationRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 64)
+custom_minimum_size = Vector2(44, 40)
 layout_mode = 2
-theme_type_variation = &"MenuItem"
 tooltip_text = "One hour more (Right arrow)"
 text = ">"
 
 [node name="WakeLabel" type="Label" parent="Center/Panel/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(440, 0)
+custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 horizontal_alignment = 1
