@@ -382,29 +382,29 @@ Two; the wording was again not found in the repository in Iteration 18.
 ## Iteration log
 
 - Iterations 001–006: built as *Next Harbor* (see the iteration reports).
-- Visual Identity V01, version 0.100a: see `VISUAL_IDENTITY_V01_REPORT.md`.
-- A Living Little World, version 0.100b: see `VISUAL_POLISH_0100B_REPORT.md`.
+- Visual Identity V01, version 0.100a: see `docs/revisions/v0.100a/VISUAL_IDENTITY_V01_REPORT.md`.
+- A Living Little World, version 0.100b: see `docs/revisions/v0.100b/VISUAL_POLISH_0100B_REPORT.md`.
 - **Iteration 12, A Little Harbour Life**, version 0.100c: an authorized revision
-  build; see `ITERATION_12_REPORT.md` and `WINDOWS_ACCEPTANCE_12.md`.
+  build; see `docs/iterations/i012/ITERATION_12_REPORT.md` and `docs/iterations/i012/WINDOWS_ACCEPTANCE_12.md`.
 - **Iteration 13, The Catch & The Cove**, version 0.101a: fishing, the galley,
   anchoring, the new cat and dog and the eight-direction sailing view; see
-  `ITERATION_13_REPORT.md` and `WINDOWS_ACCEPTANCE_13.md`.
+  `docs/iterations/i013/ITERATION_13_REPORT.md` and `docs/iterations/i013/WINDOWS_ACCEPTANCE_13.md`.
 - **Iteration 14, A Bigger World, a Better Boat**, version 0.102a, save format
   12: detailed Denmark as the first regional chart, Danish harbours with
   service tiers, boat care, boatyard services and haul-outs, equipment and
-  Passage Readiness; see `ITERATION_14_REPORT.md` and
-  `WINDOWS_ACCEPTANCE_14.md`.
+  Passage Readiness; see `docs/iterations/i014/ITERATION_14_REPORT.md` and
+  `docs/iterations/i014/WINDOWS_ACCEPTANCE_14.md`.
 - **Revision 0.102b, Life at Anchor**: a cozy revision after Iteration 14
   (life at anchor, morning coffee; save format unchanged); see
-  `REVISION_0_102B_REPORT.md` and `WINDOWS_SMOKE_0_102B.md`. Iteration 15 is
+  `docs/revisions/v0.102b/REVISION_0_102B_REPORT.md` and `docs/revisions/v0.102b/WINDOWS_SMOKE_0_102B.md`. Iteration 15 is
   reserved for the performance and stability pass.
 - **Iteration 16, The World Awaits**, version 0.103a, save format 12
   (unchanged): a worldwide chart on OpenStreetMap land with Date Line
   wrapping, worldwide routing, 36 international harbours (Atlantic islands,
   the Caribbean, Panama, the Pacific, New Zealand), Long Passage time,
   passage stores, global wind and ocean weather, and the Captain's Log firsts
-  of the voyage abroad; see `ITERATION_16_REPORT.md` and
-  `WINDOWS_ACCEPTANCE_16.md`. Iteration 15 (the performance and stability
+  of the voyage abroad; see `docs/iterations/i016/ITERATION_16_REPORT.md` and
+  `docs/iterations/i016/WINDOWS_ACCEPTANCE_16.md`. Iteration 15 (the performance and stability
   pass) was skipped at the Captain's instruction.
 - **Iteration 17, Let There Be Light**, version 0.104a, save format 12
   (unchanged): day and night lighting with warm cabin lamps, deck and harbour
@@ -414,8 +414,8 @@ Two; the wording was again not found in the repository in Iteration 18.
   fix and the cached wind overlay with time previews; the deck turning with
   the course, the sail above the captain, fenders stowed underway, the
   sailing panel, the action wheel, F5/F9 quicksave, harbours by country and
-  the docking arrival; see `ITERATION_17_REPORT.md` and
-  `WINDOWS_ACCEPTANCE_17.md`.
+  the docking arrival; see `docs/iterations/i017/ITERATION_17_REPORT.md` and
+  `docs/iterations/i017/WINDOWS_ACCEPTANCE_17.md`.
 - **Iteration 18, The Joy of the Journey**, version 0.105a, save format 12
   (unchanged; optional new fields): Fishing 2.0 with the circular reel-in
   dial, illustrated fish that blink and flick their tails, weight grades,
@@ -424,12 +424,12 @@ Two; the wording was again not found in the repository in Iteration 18.
   anchor ball, anchor light, rode and buoy; the companion following the
   captain on deck; cabin light contrast, navigation lights on the rail and
   1-hour wind forecast steps; the world-route panning fix; see
-  `ITERATION_18_REPORT.md` and `WINDOWS_ACCEPTANCE_18.md`.
+  `docs/iterations/i018/ITERATION_18_REPORT.md` and `docs/iterations/i018/WINDOWS_ACCEPTANCE_18.md`.
 - **Revision 0.105b, Safe Harbours, Deep Waters & the Sprite Workshop**,
   version 0.105b, save format 12 (unchanged; optional new fields): anchoring
   worldwide on a fine coastal raster with game-estimated depths (labelled
   GAME ESTIMATE), shelter judged separately, the zoom-limited anchorage
   overlay, the fictional Magic Anchor with its timing dial, the engine
   stopping at anchor, decorative solar panels on all four boats, and Sprite
-  Workshop Phase 1 (`art_replacements/`); see `REVISION_0_105B_REPORT.md`,
-  `SPRITE_WORKSHOP_REPORT.md` and `WINDOWS_ACCEPTANCE_0_105B.md`.
+  Workshop Phase 1 (`art_replacements/`); see `docs/revisions/v0.105b/REVISION_0_105B_REPORT.md`,
+  `docs/artwork/SPRITE_WORKSHOP_REPORT.md` and `docs/revisions/v0.105b/WINDOWS_ACCEPTANCE_0_105B.md`.

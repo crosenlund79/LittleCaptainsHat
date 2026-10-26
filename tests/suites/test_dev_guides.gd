@@ -7,10 +7,11 @@ extends RefCounted
 const APP_SCENE := preload("res://src/app/app.tscn")
 const GUIDES := ["README.md", "SPRITES.md", "COMPANION_ANIMATION.md", "VESSEL_ART.md", "AUDIO.md", "WEATHER.md", "CAPTAINS_HAT.md", "HARBOURS.md", "LIFE_ABOARD.md", "BOAT_CARE.md", "CHART_REGIONS.md", "MODDING_FUTURE.md"]
 ## Documents whose Markdown links are checked.
-const LINKED_DOCS := ["res://README.md", "res://ARCHITECTURE.md", "res://ART_PIPELINE.md", "res://ITERATION_004B_REPORT.md", "res://ITERATION_005A_REPORT.md",
-	"res://ITERATION_005B_REPORT.md", "res://ITERATION_005C_REPORT.md", "res://WINDOWS_ACCEPTANCE_I005.md",
-	"res://ITERATION_006_REPORT.md", "res://WINDOWS_ACCEPTANCE_I006.md", "res://VISUAL_IDENTITY_V01_REPORT.md",
-	"res://WINDOWS_ACCEPTANCE_VISUAL_V01.md"]
+const LINKED_DOCS := ["res://README.md", "res://docs/README.md", "res://docs/technical/ARCHITECTURE.md", "res://docs/artwork/ART_PIPELINE.md",
+	"res://docs/iterations/i004/ITERATION_004B_REPORT.md", "res://docs/iterations/i005/ITERATION_005A_REPORT.md",
+	"res://docs/iterations/i005/ITERATION_005B_REPORT.md", "res://docs/iterations/i005/ITERATION_005C_REPORT.md", "res://docs/iterations/i005/WINDOWS_ACCEPTANCE_I005.md",
+	"res://docs/iterations/i006/ITERATION_006_REPORT.md", "res://docs/iterations/i006/WINDOWS_ACCEPTANCE_I006.md", "res://docs/revisions/v0.100a/VISUAL_IDENTITY_V01_REPORT.md",
+	"res://docs/revisions/v0.100a/WINDOWS_ACCEPTANCE_VISUAL_V01.md"]
 const PATH_ROOTS := ["assets/", "data/", "src/", "tools/", "tests/", "Visuals/", "DEV_GUIDES/", "docs/"]
 
 var t: Node
@@ -38,7 +39,7 @@ func _test_files_and_links() -> void:
 	for file in GUIDES.slice(1):
 		t.check(index.contains("(%s)" % file), "[guides] the index links %s" % file)
 	t.check(FileAccess.get_file_as_string("res://README.md").contains("DEV_GUIDES/README.md"), "[guides] README.md links the guide index")
-	t.check(FileAccess.get_file_as_string("res://ARCHITECTURE.md").contains("DEV_GUIDES/"), "[guides] ARCHITECTURE.md points to DEV_GUIDES")
+	t.check(FileAccess.get_file_as_string("res://docs/technical/ARCHITECTURE.md").contains("DEV_GUIDES/"), "[guides] docs/technical/ARCHITECTURE.md points to DEV_GUIDES")
 	var docs: Array = LINKED_DOCS.duplicate()
 	for file in GUIDES:
 		docs.append("res://DEV_GUIDES/" + file)

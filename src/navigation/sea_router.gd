@@ -2,7 +2,7 @@ class_name SeaRouter
 extends RefCounted
 ## Calculates sea routes that never cross land, and validates routes.
 ##
-## Method (see ARCHITECTURE.md, "Route calculation"):
+## Method (see docs/technical/ARCHITECTURE.md, "Route calculation"):
 ## 1. A precomputed sparse graph of open-water points (europe_route_graph.json)
 ##    covers the chart; every edge is a straight line through navigable cells.
 ##    It is searched with Godot's native AStar2D.

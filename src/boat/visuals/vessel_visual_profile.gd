@@ -8,7 +8,7 @@ extends Resource
 ##      art folder is enough;
 ##   3. the procedural (placeholder) drawing already in the scene.
 ## A missing or unreadable file therefore never makes the boat disappear: the
-## slot simply keeps its procedural art. See ART_PIPELINE.md.
+## slot simply keeps its procedural art. See docs/artwork/ART_PIPELINE.md.
 
 ## Deck (exterior) slots, in drawing order from bottom to top.
 const DECK_SLOTS: Array[StringName] = [

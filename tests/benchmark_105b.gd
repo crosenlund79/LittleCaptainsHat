@@ -4,7 +4,7 @@ extends Node
 ## it. Provenance (0.105b): every result file records the version, the commit
 ## and the label it was run as (--label=before/after), and when; the I018
 ## "after" files reported 0.104a because they were run on the Checkpoint H
-## tree before the version was raised (see REVISION_0_105B_REPORT.md).
+## tree before the version was raised (see docs/revisions/v0.105b/REVISION_0_105B_REPORT.md).
 ##
 ## Iteration 18 benchmark: frame times of the scenes this iteration touched,
 ## measured the same way on any build (newer APIs are looked up at run time,

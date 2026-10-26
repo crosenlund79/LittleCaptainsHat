@@ -52,7 +52,7 @@ version of each guide.
 ## Finding the latest implementation documentation
 
 - [../README.md](../README.md): what the game does, controls, how to run it.
-- [../ARCHITECTURE.md](../ARCHITECTURE.md): how the code fits together (autoloads,
+- [../ARCHITECTURE.md](../docs/technical/ARCHITECTURE.md): how the code fits together (autoloads,
   scenes, state, saves, weather, vessels, visuals, audio, tests).
 - `ITERATION_*_REPORT.md` in the project root: what each iteration built and
   verified. The newest one is the most current.
@@ -63,7 +63,7 @@ version of each guide.
 **Rule:** whenever an iteration changes an asset workflow or a system described
 here, the matching guide is updated **in the same iteration**. Instructions live
 in one place only:
-- `ART_PIPELINE.md` in the root only points here;
+- `docs/artwork/ART_PIPELINE.md` in the root only points here;
 - the reports describe what changed, not how to do things.
 
 The automated tests check that every repository path written in backticks in

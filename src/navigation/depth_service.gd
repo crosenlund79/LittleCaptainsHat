@@ -15,7 +15,7 @@ extends RefCounted
 ##                       deterministic estimate, the same at the same place in
 ##                       every game and after every restart.
 ## No real bathymetry could be obtained for this build (see
-## REVISION_0_105B_REPORT.md section 5), so every depth shown is a GAME
+## docs/revisions/v0.105b/REVISION_0_105B_REPORT.md section 5), so every depth shown is a GAME
 ## ESTIMATE and is labelled as one.
 ##
 ## The estimate: depth grows with distance from the shore,

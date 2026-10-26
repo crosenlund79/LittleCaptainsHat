@@ -27,6 +27,6 @@ It works with the normal routine: download the branch as a ZIP, extract it, open
 ## Where to look next
 
 - [`INDEX.md`](INDEX.md) has the counts, the first 25 subjects worth drawing, quick wins, and the three inventory counts. It is generated from the manifests by `tools/art/build_index.py`, so run that script after editing a manifest.
-- `SPRITE_WORKSHOP_REPORT.md` at the project root explains the reasoning behind the priorities, sizes and counts.
+- [`docs/artwork/SPRITE_WORKSHOP_REPORT.md`](../docs/artwork/SPRITE_WORKSHOP_REPORT.md) (in the Ship's Library) explains the reasoning behind the priorities, sizes and counts.
 
 Pictures never change the game itself. Walkable deck, collisions, interaction spots, Snøvs's safe places, routes, anchorages, fish data and saves all come from the game's own data.

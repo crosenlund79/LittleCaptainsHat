@@ -11,7 +11,7 @@ sounds. Never add a second source of wind or hazards; extend this one.
 - Data: `data/weather/weather_events.json` (where and when weather forms).
 - Background wind: `src/weather/wind_field.gd` with `data/weather/wind_climate.json`.
 - How it fits together: the *Weather model* section of
-  [../ARCHITECTURE.md](../ARCHITECTURE.md).
+  [../ARCHITECTURE.md](../docs/technical/ARCHITECTURE.md).
 
 ## How weather is made (in one paragraph)
 
@@ -179,7 +179,7 @@ Test weather is never saved. It is removed by Normal weather, New Game, Load and
 Main menu. The panel does not exist in exported games. Start the project with
 `-- --no-dev-tools` to hide it while testing as a player. Code:
 `src/dev/dev_tools.gd`, `src/dev/dev_test_panel.gd`. The step-by-step Windows
-checklist is [../WINDOWS_ACCEPTANCE_I005.md](../WINDOWS_ACCEPTANCE_I005.md).
+checklist is [../WINDOWS_ACCEPTANCE_I005.md](../docs/iterations/i005/WINDOWS_ACCEPTANCE_I005.md).
 
 ## Weather damage
 
@@ -190,7 +190,7 @@ in `src/sailing/weather_damage.gd`:
 - the two scale factors;
 - each boat's `weather_damage_factor` in `data/vessel/<profile>.tres`.
 
-The table of expected losses is in [../ARCHITECTURE.md](../ARCHITECTURE.md)
+The table of expected losses is in [../ARCHITECTURE.md](../docs/technical/ARCHITECTURE.md)
 (*Boat condition, rescue, money and provisions*). After tuning, run
 `test_upkeep`: it checks that ordinary weather and strong winds stay harmless,
 that gales and storms cost a sensible amount, and that results do not depend on

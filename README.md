@@ -9,6 +9,10 @@
 
 *Small boat. Wide world. Hold onto your hat.*
 
+**Documentation:** every report, assignment, requirement tracker and Windows checklist is in
+[the Ship's Library](docs/README.md) (`docs/`), grouped by iteration and revision. The Captain's
+decisions stay in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md).
+
 A cozy 2D sailing adventure about making a home on the water and exploring
 the world at your own pace. You live aboard a small cruising sailboat, plan
 voyages and prepare for the next destination; the game is not about steering
@@ -17,12 +21,12 @@ dangerous, and every mishap can be recovered from.
 
 **Little Captain's Hat is the provisional name.** The game was developed as
 **Next Harbor** up to Iteration 006. The iteration reports up to
-[ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
+[ITERATION_006_REPORT.md](docs/iterations/i006/ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
 Current version: **0.105a, Iteration 18: The Joy of the Journey** (see
-[ITERATION_18_REPORT.md](ITERATION_18_REPORT.md) and the sea-trial checklist
-[WINDOWS_ACCEPTANCE_18.md](WINDOWS_ACCEPTANCE_18.md)). Saves are unchanged
+[ITERATION_18_REPORT.md](docs/iterations/i018/ITERATION_18_REPORT.md) and the sea-trial checklist
+[WINDOWS_ACCEPTANCE_18.md](docs/iterations/i018/WINDOWS_ACCEPTANCE_18.md)). Saves are unchanged
 (format 12):
 - **Fishing 2.0**: reel a fish in on a dial (press as the needle passes the
   arc; rarer fish need more presses); every species illustrated, blinking
@@ -39,14 +43,14 @@ Current version: **0.105a, Iteration 18: The Joy of the Journey** (see
   the chart while you pan round the world.
 
 Version 0.104a, Iteration 17: Let There Be Light (see
-[ITERATION_17_REPORT.md](ITERATION_17_REPORT.md) and
-[WINDOWS_ACCEPTANCE_17.md](WINDOWS_ACCEPTANCE_17.md)): day and night,
+[ITERATION_17_REPORT.md](docs/iterations/i017/ITERATION_17_REPORT.md) and
+[WINDOWS_ACCEPTANCE_17.md](docs/iterations/i017/WINDOWS_ACCEPTANCE_17.md)): day and night,
 lamplight and weather sound, the cabin world map, the chart table and the
 cockpit chartplotter.
 
 Version 0.103a, Iteration 16: The World Awaits (see
-[ITERATION_16_REPORT.md](ITERATION_16_REPORT.md), the sea-trial checklist
-[WINDOWS_ACCEPTANCE_16.md](WINDOWS_ACCEPTANCE_16.md) and the guides
+[ITERATION_16_REPORT.md](docs/iterations/i016/ITERATION_16_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_16.md](docs/iterations/i016/WINDOWS_ACCEPTANCE_16.md) and the guides
 [DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) and
 [DEV_GUIDES/HARBOURS.md](DEV_GUIDES/HARBOURS.md)). The chart now covers the
 whole world:
@@ -73,8 +77,8 @@ whole world:
   Paradise. Saves are unchanged (format 12).
 
 Version 0.102b, revision build "Life at Anchor" (see
-[REVISION_0_102B_REPORT.md](REVISION_0_102B_REPORT.md) and the quick check
-[WINDOWS_SMOKE_0_102B.md](WINDOWS_SMOKE_0_102B.md)): a small cozy pass. Drop
+[REVISION_0_102B_REPORT.md](docs/revisions/v0.102b/REVISION_0_102B_REPORT.md) and the quick check
+[WINDOWS_SMOKE_0_102B.md](docs/revisions/v0.102b/WINDOWS_SMOKE_0_102B.md)): a small cozy pass. Drop
 anchor somewhere sheltered and the boat settles: the evening light goes warm,
 the cabin lamp glows, the cat or dog curls up for long naps, and a few quiet
 lines come now and then (never repeated). Waking at anchor has its own
@@ -83,8 +87,8 @@ moment, and the first morning coffee at anchor goes into the Captain's Log.
 Saves are unchanged (format 12).
 
 Version 0.102a, Iteration 14: A Bigger World, a Better Boat
-(see [ITERATION_14_REPORT.md](ITERATION_14_REPORT.md), the sea-trial checklist
-[WINDOWS_ACCEPTANCE_14.md](WINDOWS_ACCEPTANCE_14.md), the developer guides
+(see [ITERATION_14_REPORT.md](docs/iterations/i014/ITERATION_14_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_14.md](docs/iterations/i014/WINDOWS_ACCEPTANCE_14.md), the developer guides
 [DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) and
 [DEV_GUIDES/BOAT_CARE.md](DEV_GUIDES/BOAT_CARE.md), and the Captain's standing
 decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)):
@@ -112,8 +116,8 @@ decisions in [CAPTAINS_ORDERS.md](CAPTAINS_ORDERS.md)):
   is moved gently to open water.
 
 Version 0.101a, Iteration 13: The Catch & The Cove
-(see [ITERATION_13_REPORT.md](ITERATION_13_REPORT.md), the sea-trial checklist
-[WINDOWS_ACCEPTANCE_13.md](WINDOWS_ACCEPTANCE_13.md) and the developer guide
+(see [ITERATION_13_REPORT.md](docs/iterations/i013/ITERATION_13_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_13.md](docs/iterations/i013/WINDOWS_ACCEPTANCE_13.md) and the developer guide
 [DEV_GUIDES/LIFE_ABOARD.md](DEV_GUIDES/LIFE_ABOARD.md)), brought an evening at sea
 without a harbour: *sail, fish, find shelter, anchor, cook, rest, sail on*:
 - **fishing**: a rod on the stern rail of every boat and four kinds of lure.
@@ -142,8 +146,8 @@ without a harbour: *sail, fish, find shelter, anchor, cook, rest, sail on*:
   course.
 
 Version 0.100c, Iteration 12: A Little Harbour Life, a revision build
-(see [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md) and the sea-trial checklist
-[WINDOWS_ACCEPTANCE_12.md](WINDOWS_ACCEPTANCE_12.md)), brought:
+(see [ITERATION_12_REPORT.md](docs/iterations/i012/ITERATION_12_REPORT.md) and the sea-trial checklist
+[WINDOWS_ACCEPTANCE_12.md](docs/iterations/i012/WINDOWS_ACCEPTANCE_12.md)), brought:
 - **walk ashore**: in harbour a gangplank leads from your boat down to the
   pontoon, where the harbour's services stand: the grocery store, the boatyard
   (where there is one) and **Go Ashore**;
@@ -163,7 +167,7 @@ Version 0.100c, Iteration 12: A Little Harbour Life, a revision build
   background.
 
 Version 0.100b, A Living Little World
-(see [VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md), which ends with a short Windows visual-testing guide), brought:
+(see [VISUAL_POLISH_0100B_REPORT.md](docs/revisions/v0.100b/VISUAL_POLISH_0100B_REPORT.md), which ends with a short Windows visual-testing guide), brought:
 - a new starter boat, the **Arctic Wanderer 26**: a small tiller-steered sloop
   with a snug one-room cabin. New games start aboard it; the other three boats
   stay one boatyard visit away. Existing saves keep the boat they had;
@@ -181,7 +185,7 @@ Version 0.100b, A Living Little World
 - underway the deck view eases out a little to show more sea.
 
 Version 0.100a, Visual Identity V01: A Little Personality
-(see [VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) and [WINDOWS_ACCEPTANCE_VISUAL_V01.md](WINDOWS_ACCEPTANCE_VISUAL_V01.md)), brought:
+(see [VISUAL_IDENTITY_V01_REPORT.md](docs/revisions/v0.100a/VISUAL_IDENTITY_V01_REPORT.md) and [WINDOWS_ACCEPTANCE_VISUAL_V01.md](docs/revisions/v0.100a/WINDOWS_ACCEPTANCE_VISUAL_V01.md)), brought:
 - the **captain's hat**: it hangs on a hook in every cabin. Wear it (E at the
   hook), take it off (H), and mind the wind on deck: in strong wind it may blow
   away, after a fair warning ("Better hold onto your hat!"). Replacements cost
@@ -246,7 +250,7 @@ Iteration 005b adds:
   it); a fixed-size boatyard panel.
 - **developer test tools** (F10 since Iteration 17, only when run from the Godot editor): test
   storms, squalls, condition levels, the real rescue, stores and time, for
-  [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md).
+  [WINDOWS_ACCEPTANCE_I005.md](docs/iterations/i005/WINDOWS_ACCEPTANCE_I005.md).
 
 ![Rescued at Sea](docs/screenshots/97_rescue_dialog.png)
 ![Provisions in the cabin](docs/screenshots/90_provisions_after_sleep.png)
@@ -361,7 +365,7 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Quicksave / quickload (Iteration 17) | **F5** aboard saves to the quicksave (never a manual slot); **F9** loads it (asks first if you would lose progress); also listed under Load Game |
 | Dreamer's Map (Iteration 17) | **E** at the framed world map on the cabin wall: explore the world, read about harbours, *Imagine this voyage*, *Plan it at the chart table* |
 | Wind time (Iteration 17, steps changed in Iteration 18) | on the chart: **◀ 1 h / Now / 1 h ▶** under the wind legend (six hours back or ahead; read-only) |
-| Developer test tools | **F10** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |
+| Developer test tools | **F10** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](docs/iterations/i005/WINDOWS_ACCEPTANCE_I005.md)) |
 
 Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / Space to press).
 
@@ -457,7 +461,7 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   - **Engine off at anchor.** The engine stops whenever the anchor goes down.
   - **Solar panels.** Decorative panels on all four boats.
   - **The Sprite Workshop.** `art_replacements/` lets hand-drawn PNGs replace the game's art without code (start with `art_replacements/README_START_HERE.md`).
-  - See `REVISION_0_105B_REPORT.md`.
+  - See `docs/revisions/v0.105b/REVISION_0_105B_REPORT.md`.
 
 - **Main menu** with the Next Harbor logo: New Game, Continue (most recent valid save),
   Load Game, Settings, Quit.
@@ -641,18 +645,18 @@ manual for replacing art and sounds, the companion poses, and the vessel art
 templates. **Rule:** whenever an iteration changes an asset workflow or a
 documented system, the matching guide is updated in the same iteration.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for how it fits together, the release
-reports [ITERATION_13_REPORT.md](ITERATION_13_REPORT.md) (0.101a), [ITERATION_12_REPORT.md](ITERATION_12_REPORT.md) (0.100c),
-[VISUAL_POLISH_0100B_REPORT.md](VISUAL_POLISH_0100B_REPORT.md) (0.100b) and
-[VISUAL_IDENTITY_V01_REPORT.md](VISUAL_IDENTITY_V01_REPORT.md) (0.100a), and
-[ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) with its Windows checklist
-[WINDOWS_ACCEPTANCE_I006.md](WINDOWS_ACCEPTANCE_I006.md), [005c](ITERATION_005C_REPORT.md),
-[005b](ITERATION_005B_REPORT.md), the Windows checklist
-[WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md) (and the reports for
-[005a](ITERATION_005A_REPORT.md), [004b](ITERATION_004B_REPORT.md), [004](ITERATION_004_REPORT.md),
-[003b](ITERATION_003B_REPORT.md), the [003b hotfix](ITERATION_003B_UI_HOTFIX_REPORT.md),
-[003](ITERATION_003_REPORT.md),
-[002](ITERATION_002_REPORT.md) and [001](ITERATION_001_REPORT.md)) for what was
+See [ARCHITECTURE.md](docs/technical/ARCHITECTURE.md) for how it fits together, the release
+reports [ITERATION_13_REPORT.md](docs/iterations/i013/ITERATION_13_REPORT.md) (0.101a), [ITERATION_12_REPORT.md](docs/iterations/i012/ITERATION_12_REPORT.md) (0.100c),
+[VISUAL_POLISH_0100B_REPORT.md](docs/revisions/v0.100b/VISUAL_POLISH_0100B_REPORT.md) (0.100b) and
+[VISUAL_IDENTITY_V01_REPORT.md](docs/revisions/v0.100a/VISUAL_IDENTITY_V01_REPORT.md) (0.100a), and
+[ITERATION_006_REPORT.md](docs/iterations/i006/ITERATION_006_REPORT.md) with its Windows checklist
+[WINDOWS_ACCEPTANCE_I006.md](docs/iterations/i006/WINDOWS_ACCEPTANCE_I006.md), [005c](docs/iterations/i005/ITERATION_005C_REPORT.md),
+[005b](docs/iterations/i005/ITERATION_005B_REPORT.md), the Windows checklist
+[WINDOWS_ACCEPTANCE_I005.md](docs/iterations/i005/WINDOWS_ACCEPTANCE_I005.md) (and the reports for
+[005a](docs/iterations/i005/ITERATION_005A_REPORT.md), [004b](docs/iterations/i004/ITERATION_004B_REPORT.md), [004](docs/iterations/i004/ITERATION_004_REPORT.md),
+[003b](docs/iterations/i003/ITERATION_003B_REPORT.md), the [003b hotfix](docs/iterations/i003/ITERATION_003B_UI_HOTFIX_REPORT.md),
+[003](docs/iterations/i003/ITERATION_003_REPORT.md),
+[002](docs/iterations/i002/ITERATION_002_REPORT.md) and [001](docs/iterations/i001/ITERATION_001_REPORT.md)) for what was
 built and verified.
 
 ## Known limitations

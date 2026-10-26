@@ -15,7 +15,7 @@ extends Node2D
 ##   half an hour changes the wind 0.2 kn and 0.8° on average and recolours 3%
 ##   of the arrows, so steps looked identical; an hour recolours 7%, and six
 ##   hours 34% (2.3 kn, 10° on average) - see
-##   tools/weather/measure_wind_variation.gd and ITERATION_18_REPORT.md.
+##   tools/weather/measure_wind_variation.gd and docs/iterations/i018/ITERATION_18_REPORT.md.
 ##   Now itself still follows the clock every half hour. Forecast snapshots only
 ##   include weather already formed at the current time, like every other
 ##   forecast in the game. A new Now snapshot is taken when the clock crosses
@@ -37,7 +37,7 @@ extends Node2D
 ##   wind is drawn and `detail_hidden` tells the chart to say "Zoom in to see
 ##   wind details."; the arrow spacing on screen widens at continental scale
 ##   and tightens at coastal scale (ZOOM_BANDS). Thresholds: see
-##   ITERATION_17_REPORT.md (measured).
+##   docs/iterations/i017/ITERATION_17_REPORT.md (measured).
 ##
 ## The tint is drawn by a separate node placed between the water and the land
 ## fill (see `tint`), so it only shows on water. It is a small image with one

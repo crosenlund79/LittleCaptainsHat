@@ -113,7 +113,7 @@ def write_index(rows):
                         sum(r["integration_status"] == "ADAPTER_REQUIRED" for r in rs),
                         sum(r["integration_status"] == "REFERENCE_ONLY" for r in rs)] for f, rs in folders.items()]), "",
              "## The first 25 artwork subjects worth hand-drawing", "",
-             "Ranked by visual prominence, time on screen, emotional importance, uniqueness to Little Captain's Hat, reuse and expected benefit (see SPRITE_WORKSHOP_REPORT.md for the reasoning).", "",
+             "Ranked by visual prominence, time on screen, emotional importance, uniqueness to Little Captain's Hat, reuse and expected benefit (see docs/artwork/SPRITE_WORKSHOP_REPORT.md for the reasoning).", "",
              md_table(["#", "What to draw", "Where it appears", "Complexity", "Display (px)", "2x source (px)", "Views", "Status", "File"],
                       [[r["priority_rank"], r["display_name"], r.get("used_in", ""), r["complexity"],
                         f"{r['display_width']}x{r['display_height']}", f"{r['source_width_2x']}x{r['source_height_2x']}",

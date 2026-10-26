@@ -8,7 +8,7 @@ extends Node2D
 ## All sprites of one scene share one logical canvas (`canvas`, in scene
 ## units, origin = boat centre, bow towards +x): every PNG is drawn on the
 ## full canvas, like layers of one drawing, and placed at the canvas'
-## top-left corner. See ART_PIPELINE.md.
+## top-left corner. See docs/artwork/ART_PIPELINE.md.
 
 ## Logical drawing area in scene units (x forward, y to starboard).
 @export var canvas := Rect2(-560, -200, 1120, 400)

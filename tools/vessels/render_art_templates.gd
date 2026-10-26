@@ -9,7 +9,7 @@ extends Node
 ##
 ## <area> is "deck" or "cabin". Both images cover the vessel's canvas
 ## (VesselVisual.canvas) at SCALE pixels per scene unit, which is the size
-## sprites should be drawn at (see ART_PIPELINE.md). Run with a display:
+## sprites should be drawn at (see docs/artwork/ART_PIPELINE.md). Run with a display:
 ##
 ##   godot --path . --rendering-driver opengl3 res://tools/vessels/render_art_templates.tscn
 ##
