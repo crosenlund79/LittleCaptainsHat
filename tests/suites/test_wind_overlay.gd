@@ -193,20 +193,28 @@ func _test_time_navigator(world: WorldMap, map: MapView) -> void:
 	var position := GameSession.get_vessel_position()
 	var state_before := JSON.stringify(GameSession.get_state_snapshot().to_dict())
 	var seed := GameSession.get_wind_seed()
-	for i in 6:
+	await t.click(world.find_child("WindNext", true, false))
+	await t.frames(2)
+	t.check(is_equal_approx(layer.get_snapshot_time(), (floorf(time / 1800.0) + 2.0) * 1800.0) and label.text.ends_with("(+1 h)"),
+		"[navigator] one step is one hour (Iteration 18; %s)" % label.text)
+	t.check((world.find_child("WindNext", true, false) as Button).text == "1 h ▶" and (world.find_child("WindPrevious", true, false) as Button).text == "◀ 1 h",
+		"[navigator] the buttons say 1 h")
+	for i in 8:
 		await t.click(world.find_child("WindNext", true, false))
 	await t.frames(2)
-	t.check(layer.get_offset_steps() == WindLayer.MAX_OFFSET_STEPS, "[navigator] Next stops at +2 h")
+	t.check(layer.get_offset_steps() == WindLayer.MAX_OFFSET_STEPS and WindLayer.MAX_OFFSET_STEPS == 6, "[navigator] Next stops at +6 h")
 	t.check(label.text.begins_with("FORECAST") and note.visible and (note as Label).text == "Estimated conditions. Actual wind may differ.",
 		"[navigator] future snapshots are labelled FORECAST with the note (%s)" % label.text)
-	t.check(is_equal_approx(layer.get_snapshot_time(), (floorf(time / 1800.0) + 4.0) * 1800.0), "[navigator] the forecast is 4 × 30 minutes ahead")
+	t.check(is_equal_approx(layer.get_snapshot_time(), (floorf(time / 1800.0) + 12.0) * 1800.0) and label.text.ends_with("(+6 h)"),
+		"[navigator] the forecast reaches 6 × 1 hour ahead (%s)" % label.text)
 	t.check(await _complete(map), "[navigator] the forecast snapshot completes")
 	await t.screenshot("17_wind_forecast")
-	for i in 10:
+	await t.screenshot("34_wind_preview_controls_1h_steps")
+	for i in 16:
 		await t.click(world.find_child("WindPrevious", true, false))
 	await t.frames(2)
 	t.check(layer.get_offset_steps() == -WindLayer.MAX_OFFSET_STEPS and label.text.begins_with("PAST MODEL SNAPSHOT") and not note.visible,
-		"[navigator] Previous stops at −2 h, labelled PAST MODEL SNAPSHOT (%s)" % label.text)
+		"[navigator] Previous stops at −6 h, labelled PAST MODEL SNAPSHOT (%s)" % label.text)
 	await t.click(world.find_child("WindNow", true, false))
 	await t.frames(2)
 	t.check(layer.get_offset_steps() == 0 and label.text.begins_with("NOW"), "[navigator] Now returns to the current time")
@@ -217,7 +225,7 @@ func _test_time_navigator(world: WorldMap, map: MapView) -> void:
 	# The forecast only knows weather formed by now, like every forecast.
 	var model := WeatherModel.get_default()
 	var geo := Vector2(10.5, 56.5)
-	var future := (floorf(time / 1800.0) + 4.0) * 1800.0
+	var future := (floorf(time / 1800.0) + 8.0) * 1800.0
 	var expected := model.sample_wind(geo, future, seed, floorf(time / 1800.0) * 1800.0)
 	layer.set_offset_steps(4)
 	await _complete(map)
@@ -227,6 +235,16 @@ func _test_time_navigator(world: WorldMap, map: MapView) -> void:
 	var lattice_geo: Vector2 = key[2]
 	expected = model.sample_wind(lattice_geo, future, seed, floorf(time / 1800.0) * 1800.0)
 	t.check(got.is_equal_approx(expected), "[navigator] forecast arrows come from the forecast query (%s vs %s)" % [got, expected])
+	# Iteration 18: every navigator time stays cached - a second sweep from
+	# −6 h to +6 h samples nothing new.
+	for steps in range(-WindLayer.MAX_OFFSET_STEPS, WindLayer.MAX_OFFSET_STEPS + 1):
+		layer.set_offset_steps(steps)
+		await _complete(map)
+	var sampled := layer.chunks_sampled
+	for steps in range(-WindLayer.MAX_OFFSET_STEPS, WindLayer.MAX_OFFSET_STEPS + 1):
+		layer.set_offset_steps(steps)
+		await _complete(map)
+	t.check_eq(layer.chunks_sampled, sampled, "[navigator] all 13 snapshot times (−6 h to +6 h) stay cached")
 	layer.set_offset_steps(0)
 	await _complete(map)
 

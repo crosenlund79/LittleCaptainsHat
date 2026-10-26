@@ -1036,8 +1036,8 @@ func _build_wind_time_controls() -> void:
 	box.add_child(row)
 	var previous := Button.new()
 	previous.name = "WindPrevious"
-	previous.text = "◀ 30 min"
-	previous.tooltip_text = "Show the wind half an hour earlier (up to two hours)"
+	previous.text = "◀ 1 h"
+	previous.tooltip_text = "Show the wind an hour earlier (up to six hours)"
 	previous.pressed.connect(step_wind_time.bind(-1))
 	row.add_child(previous)
 	var now := Button.new()
@@ -1048,8 +1048,8 @@ func _build_wind_time_controls() -> void:
 	row.add_child(now)
 	var next := Button.new()
 	next.name = "WindNext"
-	next.text = "30 min ▶"
-	next.tooltip_text = "Show the forecast half an hour later (up to two hours)"
+	next.text = "1 h ▶"
+	next.tooltip_text = "Show the forecast an hour later (up to six hours)"
 	next.pressed.connect(step_wind_time.bind(1))
 	row.add_child(next)
 	var label := Label.new()
@@ -1074,7 +1074,7 @@ func _build_wind_time_controls() -> void:
 	_update_wind_time()
 
 
-## Moves the wind snapshot by `steps` half hours (clamped to ±2 h).
+## Moves the wind snapshot by `steps` hours (clamped to ±6 h; Iteration 18).
 func step_wind_time(steps: int) -> void:
 	var layer := _map.wind_layer
 	layer.set_offset_steps(layer.get_offset_steps() + steps)
@@ -1089,7 +1089,7 @@ func _update_wind_time() -> void:
 	var time := GameSession.get_game_time() if offset == 0 else layer.get_snapshot_time()
 	label.text = "%s  ·  %s" % [layer.snapshot_label(), Simulation.format_game_time(time)]
 	if offset != 0:
-		label.text += " (%s%s)" % ["+" if offset > 0 else "−", Simulation.format_duration(absi(offset) * WindLayer.SNAPSHOT_STEP)]
+		label.text += " (%s%s)" % ["+" if offset > 0 else "−", Simulation.format_duration(absi(offset) * WindLayer.OFFSET_STEP)]
 	(_wind_legend.find_child("WindForecastNote", true, false) as Control).visible = offset > 0
 	(_wind_legend.find_child("WindZoomNotice", true, false) as Control).visible = layer.detail_hidden
 	(_wind_legend.find_child("WindPrevious", true, false) as Button).disabled = offset <= -WindLayer.MAX_OFFSET_STEPS

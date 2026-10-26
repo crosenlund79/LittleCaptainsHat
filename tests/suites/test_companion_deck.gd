@@ -218,6 +218,25 @@ func _test_underway_and_anchor() -> void:
 	app.hud.hide_warning()
 	await t.frames(3)
 	await t.screenshot("18_underway_navigation_lights")
+	# All eight orientations: on screen, red stays to port and green to
+	# starboard of the heading, both ahead of the stern light.
+	var white := lamps.filter(func(l: Dictionary) -> bool: return l.colour.is_equal_approx(BoatLighting.NAV_WHITE))
+	var sides_ok := red.size() == 1 and green.size() == 1 and white.size() == 1
+	for k in 8:
+		deck.view_heading_override = k * 45.0
+		await t.wait_until(func() -> bool: return absf(angle_difference((deck.get_node("Camera2D") as Camera2D).rotation, deck.get_target_rotation())) < 0.01, 3.0)
+		await t.frames(2)
+		if not sides_ok:
+			break
+		var to_screen := deck.get_global_transform_with_canvas()
+		var r: Vector2 = to_screen * red[0].at
+		var g: Vector2 = to_screen * green[0].at
+		var w: Vector2 = to_screen * white[0].at
+		var ahead := Vector2(sin(deg_to_rad(k * 45.0)), -cos(deg_to_rad(k * 45.0)))
+		var port := Vector2(ahead.y, -ahead.x)
+		sides_ok = (r - g).dot(port) > 0.0 and (r - w).dot(ahead) > 0.0 and (g - w).dot(ahead) > 0.0
+	deck.view_heading_override = NAN
+	t.check(sides_ok, "[lights] in all eight orientations red is to port, green to starboard, both forward of the stern light")
 	# Waiting at an anchorage (stopped, not anchored): no anchor signals.
 	var voyage := GameSession.get_voyage()
 	voyage.holding_at = -1

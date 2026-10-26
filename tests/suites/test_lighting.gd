@@ -143,12 +143,23 @@ func _test_cabins() -> void:
 		var shadows := cabin.get_node_or_null(^"FixtureShadows")
 		t.check(shadows != null and shadows.outlines.size() >= 3 and cabin.player.has_node(^"ContactShadow"),
 			"[cabin] %s: soft shadows beside %d fixtures, and under the captain" % [id, shadows.outlines.size() if shadows else 0])
+		# Iteration 18: soft shade in the corners, only inside the cabin, and
+		# the lamps make pools (their own tighter light).
+		var shade := cabin.get_node_or_null(^"CornerShade") as Node2D
+		t.check(shade != null and shade.modulate.a > 0.9 and shade.clip.size() >= 3,
+			"[cabin] %s: at night the corners fall into soft shade, kept inside the hull" % id)
+		var pools := cabin.find_children("*", "PointLight2D", true, false).filter(func(l: Node) -> bool:
+			return (l as PointLight2D).texture == BoatLighting.pool_texture())
+		t.check(pools.size() == lighting.get_light_count("dark"), "[cabin] %s: every lamp lights a pool, not a wash (%d)" % [id, pools.size()])
 		await t.screenshot("17_cabin_night_%s" % id)
+		if id == &"starling_33":
+			await t.screenshot("31_cabin_after_lighting_refinement")
 		_set_time(noon)
 		await t.frames(2)
 		var day_colour := lighting.get_ambient_colour()
 		t.check(day_colour.get_luminance() > 0.85 and lighting.get_light_energy("dark") < 0.05 and lighting.get_light_energy("day") > 0.1,
 			"[cabin] %s: by day the ports and hatches light it, the lamps are off" % id)
+		t.check(shade != null and shade.modulate.a < 0.01, "[cabin] %s: by day no corner shade" % id)
 	_board(&"arctic_wanderer_26")
 
 

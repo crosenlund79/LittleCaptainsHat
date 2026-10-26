@@ -31,12 +31,15 @@ const NAV_WHITE := Color(1.0, 0.97, 0.9)
 const QUAY_LAMP := Color(1.0, 0.82, 0.55)
 const SHADOW := Color(0.05, 0.03, 0.02)
 ## Fixture names that carry a lamp in the cabin: name -> [colour, size, strength].
+## Iteration 18: stronger, with a tighter falloff (pool_texture), so each lamp
+## makes a warm pool and the floor between them and the corners stays dim -
+## more light at the saloon table and the galley especially.
 const CABIN_LAMPS := {
-	"SaloonTable": [LAMP_WARM, 2.0, 0.8], "Table": [LAMP_WARM, 2.0, 0.8],
-	"Galley": [LAMP_GALLEY, 1.3, 0.7], "GalleySide": [LAMP_GALLEY, 1.3, 0.7],
-	"NavTable": [LAMP_CHART, 0.9, 0.65], "NavDesk": [LAMP_CHART, 0.9, 0.65],
-	"VBerth": [LAMP_WARM, 1.2, 0.45], "OwnerBerth": [LAMP_WARM, 1.2, 0.45], "GuestBerth": [LAMP_WARM, 1.1, 0.4],
-	"Desk": [LAMP_WARM, 1.0, 0.5], "OwnerSofa": [LAMP_WARM, 1.3, 0.5],
+	"SaloonTable": [LAMP_WARM, 1.9, 1.15], "Table": [LAMP_WARM, 1.9, 1.15],
+	"Galley": [LAMP_GALLEY, 1.35, 1.05], "GalleySide": [LAMP_GALLEY, 1.35, 1.05],
+	"NavTable": [LAMP_CHART, 0.95, 0.9], "NavDesk": [LAMP_CHART, 0.95, 0.9],
+	"VBerth": [LAMP_WARM, 1.1, 0.6], "OwnerBerth": [LAMP_WARM, 1.1, 0.6], "GuestBerth": [LAMP_WARM, 1.0, 0.55],
+	"Desk": [LAMP_WARM, 1.0, 0.7], "OwnerSofa": [LAMP_WARM, 1.2, 0.65],
 }
 ## How quickly the light follows the clock (per second): fast time (Long
 ## Passage at hours per second) shows a gentle swell, never a strobe.
@@ -44,6 +47,7 @@ const FOLLOW_RATE := 2.5
 const WEATHER_REFRESH := 600.0
 
 static var _texture: GradientTexture2D
+static var _pool_texture: GradientTexture2D
 
 var area: BoatArea
 var _modulate: CanvasModulate
@@ -51,6 +55,7 @@ var _modulate: CanvasModulate
 ## "harbour" | "underway" | "anchor"}]
 var _lights: Array[Dictionary] = []
 var _lamps: Lamps
+var _corner_shade: CornerShade
 var _colour := Color.WHITE
 var _darkness := 0.0
 var _overcast := 0.0
@@ -75,6 +80,25 @@ static func light_texture() -> GradientTexture2D:
 	return _texture
 
 
+## The cabin lamps' light (Iteration 18): bright near the lamp, falling off
+## sooner than light_texture(), and soft at the rim - a pool, not a wash.
+static func pool_texture() -> GradientTexture2D:
+	if _pool_texture == null:
+		var gradient := Gradient.new()
+		gradient.set_color(0, Color(1, 1, 1, 1))
+		gradient.set_color(1, Color(1, 1, 1, 0))
+		gradient.add_point(0.3, Color(1, 1, 1, 0.62))
+		gradient.add_point(0.62, Color(1, 1, 1, 0.16))
+		_pool_texture = GradientTexture2D.new()
+		_pool_texture.gradient = gradient
+		_pool_texture.fill = GradientTexture2D.FILL_RADIAL
+		_pool_texture.fill_from = Vector2(0.5, 0.5)
+		_pool_texture.fill_to = Vector2(1.0, 0.5)
+		_pool_texture.width = 256
+		_pool_texture.height = 256
+	return _pool_texture
+
+
 func setup(boat_area: BoatArea) -> void:
 	area = boat_area
 	name = "Lighting"
@@ -90,7 +114,7 @@ func setup(boat_area: BoatArea) -> void:
 				continue
 			var spec: Array = CABIN_LAMPS.get(String(fixture.name), [])
 			if interior and not spec.is_empty():
-				_add_light(fixture.position, spec[0], spec[1], spec[2], "dark")
+				_add_light(fixture.position, spec[0], spec[1], spec[2], "dark").texture = pool_texture()
 			if not interior and String(fixture.name) in ["Wheel", "Tiller", "Pedestal"]:
 				_add_light(fixture.position, INSTRUMENT, 0.7, 0.55, "night")
 	# The companionway (every boat has one): daylight down it into the cabin,
@@ -118,6 +142,8 @@ func setup(boat_area: BoatArea) -> void:
 		_lamps.z_as_relative = false
 		area.add_child(_lamps)
 	_add_shadows(collision)
+	if interior:
+		_add_corner_shade()
 	_add_contact_shadows()
 	update_now()
 
@@ -233,6 +259,26 @@ func _add_shadows(collision: Node) -> void:
 	shadows.queue_redraw()
 
 
+## Iteration 18: the cabin's corners and walls fall into soft shade at night,
+## away from the lamps - a gentle gradient along the floor's edges (deepest
+## where two walls meet), drawn once with the fixture shadows and faded in
+## with the dark. No occlusion, no per-frame work beyond one alpha.
+func _add_corner_shade() -> void:
+	_corner_shade = CornerShade.new()
+	_corner_shade.name = "CornerShade"
+	_corner_shade.bounds = area.walkable_bounds.grow(24.0)
+	# Only inside the cabin's own outline (never over the water or the dark
+	# beyond the hull).
+	var hull := area.get_node_or_null(^"Layout/Collision/Hull/CollisionPolygon2D") as CollisionPolygon2D
+	if hull and hull.polygon.size() >= 3:
+		_corner_shade.clip = (area.global_transform.affine_inverse() * hull.global_transform) * hull.polygon
+	var shadows := area.get_node_or_null(^"FixtureShadows")
+	area.add_child(_corner_shade)
+	if shadows:
+		area.move_child(_corner_shade, shadows.get_index())
+	_corner_shade.modulate.a = 0.0
+
+
 func add_contact_shadows() -> void:
 	_add_contact_shadows()
 
@@ -331,6 +377,8 @@ func _process(delta: float) -> void:
 				strength = smoothstep(0.45, 0.85, _darkness) if anchored else 0.0
 		light.energy = float(entry.energy) * strength
 		light.visible = light.energy > 0.01
+	if _corner_shade:
+		_corner_shade.modulate.a = smoothstep(0.35, 0.9, _darkness)
 	# Highlights and the captain stay readable in the dark.
 	Interactable.light_compensation = Color(1.0 / maxf(_modulate.color.r, 0.3), 1.0 / maxf(_modulate.color.g, 0.3),
 		1.0 / maxf(_modulate.color.b, 0.3))
@@ -384,6 +432,39 @@ class FixtureShadows extends Node2D:
 					if Geometry2D.is_polygon_clockwise(piece):
 						continue  # a hole, not a shadow
 					draw_colored_polygon(piece, Color(SHADOW, 0.17 - layer * 0.05))
+
+
+## Soft shade along the cabin floor's edges (see BoatLighting._add_corner_shade):
+## four bands fading inward from the walls; where two meet, the corner is
+## deepest. Clipped to the cabin's outline; each vertex's shade follows its
+## distance from the band's wall, so clipping keeps the gradient exact.
+class CornerShade extends Node2D:
+	const DEPTH := 0.34
+	const WIDTH := 120.0
+	var bounds := Rect2()
+	var clip := PackedVector2Array()
+
+	func _draw() -> void:
+		var r := bounds
+		var w := minf(WIDTH, minf(r.size.x, r.size.y) * 0.35)
+		var outer := [r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)]
+		var inner := [r.position + Vector2(w, w), Vector2(r.end.x - w, r.position.y + w), r.end - Vector2(w, w), Vector2(r.position.x + w, r.end.y - w)]
+		for i in 4:
+			var j := (i + 1) % 4
+			var band := PackedVector2Array([outer[i], outer[j], inner[j], inner[i]])
+			var pieces: Array[PackedVector2Array] = [band]
+			if clip.size() >= 3:
+				pieces = Geometry2D.intersect_polygons(band, clip)
+			var a: Vector2 = outer[i]
+			var b: Vector2 = outer[j]
+			for piece in pieces:
+				if piece.size() < 3 or Geometry2D.is_polygon_clockwise(piece) != Geometry2D.is_polygon_clockwise(band):
+					continue  # a hole
+				var colours := PackedColorArray()
+				for p in piece:
+					var d := p.distance_to(Geometry2D.get_closest_point_to_segment_uncapped(p, a, b))
+					colours.append(Color(SHADOW, DEPTH * clampf(1.0 - d / w, 0.0, 1.0)))
+				draw_polygon(piece, colours)
 
 
 ## A soft oval under the captain or a companion (drawn behind it).

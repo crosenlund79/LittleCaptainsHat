@@ -8,8 +8,15 @@ extends Node2D
 ##
 ## Iteration 17: a cached snapshot, not a live field.
 ## - Time: the overlay shows one snapshot time, on a SNAPSHOT_STEP grid:
-##   Now (the current half hour) or up to MAX_OFFSET_STEPS steps before or
-##   after it (the read-only wind time navigator). Forecast snapshots only
+##   Now (the current half hour) or up to MAX_OFFSET_STEPS steps of
+##   OFFSET_STEP before or after it (the read-only wind time navigator).
+##   Iteration 18: the navigator moves in hours, up to 6 h either way (it
+##   moved in half hours, 2 h either way): measured over five sailing areas,
+##   half an hour changes the wind 0.2 kn and 0.8° on average and recolours 3%
+##   of the arrows, so steps looked identical; an hour recolours 7%, and six
+##   hours 34% (2.3 kn, 10° on average) - see
+##   tools/weather/measure_wind_variation.gd and ITERATION_18_REPORT.md.
+##   Now itself still follows the clock every half hour. Forecast snapshots only
 ##   include weather already formed at the current time, like every other
 ##   forecast in the game. A new Now snapshot is taken when the clock crosses
 ##   a step, at most once per NOW_MIN_REAL_SECONDS of real time (fast clocks
@@ -40,11 +47,15 @@ signal snapshot_changed
 signal detail_changed(hidden: bool)
 
 const SNAPSHOT_STEP := 1800.0
-const MAX_OFFSET_STEPS := 4
+## The navigator's step and reach (Iteration 18: 1 h, up to 6 h before or after).
+const OFFSET_STEP := 3600.0
+const MAX_OFFSET_STEPS := 6
+const SNAPSHOTS_PER_OFFSET := 2  # OFFSET_STEP / SNAPSHOT_STEP
 const NOW_MIN_REAL_SECONDS := 1.0
 const CHUNK := 8
 const FRAME_BUDGET_USEC := 3000
-const MAX_SNAPSHOTS := 10
+## Every navigator time (13) stays cached, plus the previous Now.
+const MAX_SNAPSHOTS := 14
 const MAX_CHUNKS := 600
 const MAX_LAND_CHUNKS := 8000
 const BASE_SPACING := 8.0  # map units; lattice spacings are BASE_SPACING * 2^(n/2)
@@ -164,7 +175,7 @@ func set_shown(shown: bool) -> void:
 	refresh_view()
 
 
-## Snapshot offset in SNAPSHOT_STEP steps from Now (-MAX_OFFSET_STEPS..MAX_OFFSET_STEPS).
+## Snapshot offset in OFFSET_STEP steps from Now (-MAX_OFFSET_STEPS..MAX_OFFSET_STEPS).
 func set_offset_steps(steps: int) -> void:
 	steps = clampi(steps, -MAX_OFFSET_STEPS, MAX_OFFSET_STEPS)
 	if steps != _offset:
@@ -178,7 +189,7 @@ func get_offset_steps() -> int:
 
 ## The game time of the selected snapshot.
 func get_snapshot_time() -> float:
-	return (_now_step + _offset) * SNAPSHOT_STEP if _now_step != -INF else _now
+	return (_now_step + _offset * SNAPSHOTS_PER_OFFSET) * SNAPSHOT_STEP if _now_step != -INF else _now
 
 
 ## "NOW", "PAST MODEL SNAPSHOT" or "FORECAST".
@@ -195,7 +206,7 @@ func is_complete() -> bool:
 
 func _retarget() -> void:
 	var known := int(_now_step) if _offset > 0 else -1
-	var target := Vector2i(int(_now_step) + _offset, known)
+	var target := Vector2i(int(_now_step) + _offset * SNAPSHOTS_PER_OFFSET, known)
 	if target == _target:
 		return
 	_target = target

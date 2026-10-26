@@ -81,7 +81,9 @@ static func outside_colour(elevation: float, overcast := 0.0) -> Color:
 
 ## The base light in the cabin (before its lamps): daylight through the
 ## hatches and ports by day, dim and a little warm at night, so the lamps'
-## pools stand out without the corners going black.
+## pools stand out without the corners going black. Iteration 18: a little
+## dimmer at night (luminance about 0.36, was 0.40), so the unlit corners
+## fall away from the lamps' pools; still well clear of black.
 static func inside_colour(elevation: float, overcast := 0.0) -> Color:
 	var day := daylight(elevation) * (1.0 - overcast * 0.35)
-	return Color(0.42, 0.39, 0.45).lerp(Color(0.94, 0.92, 0.88), day)
+	return Color(0.385, 0.35, 0.42).lerp(Color(0.94, 0.92, 0.88), day)

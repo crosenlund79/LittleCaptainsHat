@@ -332,7 +332,7 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Chartplotter (Iteration 17) | **P** on deck while underway (or from the action wheel); **+ / –** change its range |
 | Quicksave / quickload (Iteration 17) | **F5** aboard saves to the quicksave (never a manual slot); **F9** loads it (asks first if you would lose progress); also listed under Load Game |
 | Dreamer's Map (Iteration 17) | **E** at the framed world map on the cabin wall: explore the world, read about harbours, *Imagine this voyage*, *Plan it at the chart table* |
-| Wind time (Iteration 17) | on the chart: **◀ 30 min / Now / 30 min ▶** under the wind legend (two hours back or ahead; read-only) |
+| Wind time (Iteration 17, steps changed in Iteration 18) | on the chart: **◀ 1 h / Now / 1 h ▶** under the wind legend (six hours back or ahead; read-only) |
 | Developer test tools | **F10** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |
 
 Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / Space to press).
