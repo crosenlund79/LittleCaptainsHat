@@ -36,7 +36,7 @@ signal save_requested
 
 ## The shortcut strip at the bottom left (Iteration 12): key caps on a dark,
 ## translucent backing so it reads over any deck, pontoon or quay.
-const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["Q", "actions"], ["H", "hat"], ["L", "Captain's Log"],
+const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["Q", "actions"], ["R", "rod"], ["H", "hat"], ["L", "Captain's Log"],
 	["Esc", "menu"]]
 const SHORTCUT_BACKING := Color(0.04, 0.11, 0.15, 0.78)
 const SHORTCUT_TEXT := Color(0.93, 0.92, 0.86)

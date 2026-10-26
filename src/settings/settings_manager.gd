@@ -43,6 +43,9 @@ const DEFAULT_COURSE_VIEW := true
 ## how bright lightning flashes may be (0-100 %; 0 = no flash, thunder only).
 const DEFAULT_REDUCE_FLASHING := false
 const DEFAULT_FLASH_INTENSITY := 100
+## Reduce motion (Iteration 18): small decorative animations stay still (the
+## fish's tail flick and bob); the information never depends on them.
+const DEFAULT_REDUCE_MOTION := false
 
 ## Window size used when (re)entering windowed mode. Clamped to the screen.
 const WINDOWED_SIZE := Vector2i(1600, 900)
@@ -58,6 +61,7 @@ var _art_style: StringName = DEFAULT_ART_STYLE
 var _course_view := DEFAULT_COURSE_VIEW
 var _reduce_flashing := DEFAULT_REDUCE_FLASHING
 var _flash_intensity := DEFAULT_FLASH_INTENSITY
+var _reduce_motion := DEFAULT_REDUCE_MOTION
 
 
 func _ready() -> void:
@@ -145,6 +149,15 @@ func set_reduce_flashing(enabled: bool) -> void:
 	settings_applied.emit()
 
 
+func get_reduce_motion() -> bool:
+	return _reduce_motion
+
+
+func set_reduce_motion(enabled: bool) -> void:
+	_reduce_motion = enabled
+	settings_applied.emit()
+
+
 ## Lightning flash brightness, 0-100 %.
 func get_flash_intensity() -> int:
 	return _flash_intensity
@@ -179,6 +192,7 @@ func snapshot() -> Dictionary:
 		"course_view": _course_view,
 		"reduce_flashing": _reduce_flashing,
 		"flash_intensity": _flash_intensity,
+		"reduce_motion": _reduce_motion,
 	}
 
 
@@ -195,6 +209,7 @@ func restore_snapshot(data: Dictionary) -> void:
 	_course_view = course
 	_reduce_flashing = bool(data.get("reduce_flashing", DEFAULT_REDUCE_FLASHING))
 	_flash_intensity = clampi(int(data.get("flash_intensity", DEFAULT_FLASH_INTENSITY)), 0, 100)
+	_reduce_motion = bool(data.get("reduce_motion", DEFAULT_REDUCE_MOTION))
 	apply_all()
 	if style_changed:
 		art_style_changed.emit(_art_style)
@@ -218,6 +233,7 @@ func save() -> Error:
 	config.set_value("display", "course_view", _course_view)
 	config.set_value("accessibility", "reduce_flashing", _reduce_flashing)
 	config.set_value("accessibility", "flash_intensity", _flash_intensity)
+	config.set_value("accessibility", "reduce_motion", _reduce_motion)
 	var err := config.save(settings_path)
 	if err != OK:
 		push_error("Could not save settings to %s (error %d)" % [settings_path, err])
@@ -251,6 +267,8 @@ func load_settings() -> void:
 	loaded["reduce_flashing"] = reduce if reduce is bool else DEFAULT_REDUCE_FLASHING
 	var flash: Variant = config.get_value("accessibility", "flash_intensity", DEFAULT_FLASH_INTENSITY)
 	loaded["flash_intensity"] = clampi(int(flash), 0, 100) if _is_number(flash) else DEFAULT_FLASH_INTENSITY
+	var motion: Variant = config.get_value("accessibility", "reduce_motion", DEFAULT_REDUCE_MOTION)
+	loaded["reduce_motion"] = motion if motion is bool else DEFAULT_REDUCE_MOTION
 	restore_snapshot(loaded)
 
 

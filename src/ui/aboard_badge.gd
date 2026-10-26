@@ -2,7 +2,7 @@ class_name AboardBadge
 extends VBoxContainer
 ## The HUD's quiet aboard indicators (Iteration 13), under the hat badge, so
 ## nothing depends on hearing a sound:
-##   - "Fish on! Go to the rod  E" while a fish waits on the line (pulsing);
+##   - "Fish on! Reel in  R" while a fish waits on the line (pulsing);
 ##   - "Line out · trolling" while fishing (amber when too fast to troll);
 ##   - "At anchor · Holding well / Fair holding / Poor holding" and, red,
 ##     "Anchor dragging! Go to the windlass";
@@ -34,7 +34,7 @@ func _ready() -> void:
 		var key := Label.new()
 		key.name = "Key"
 		key.theme_type_variation = &"KeyLabel"
-		key.text = "E"
+		key.text = "R"
 		row.add_child(key)
 		panel.hide()
 		add_child(panel)
@@ -52,7 +52,7 @@ static func lines_for_game() -> Dictionary:
 	if not GameSession.is_active():
 		return lines
 	if not GameSession.get_pending_bite().is_empty():
-		lines.bite = ["Fish on! Go to the rod", AMBER, true]
+		lines.bite = ["Fish on! Reel in", AMBER, true]
 	if GameSession.is_anchored():
 		var anchor := GameSession.get_anchor()
 		if anchor.holding == AnchorState.HOLDING_DRAGGING:

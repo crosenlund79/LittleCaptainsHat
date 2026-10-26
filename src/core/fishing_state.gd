@@ -8,6 +8,12 @@ extends RefCounted
 ## kept, released, sold or cooked exactly once. A bite in progress and the
 ## fight with the fish are not saved: a game loaded then simply has the line
 ## out again, waiting.
+##
+## Iteration 18: only kept fish go on the trophy board (a released fish -
+## by the keep preferences, a full cool box, by hand, or a shark - never
+## does), and the captain's keep preferences and Long Passage fishing choice
+## are kept here. They are optional in a save (format 12 unchanged): a save
+## without them gets the defaults (keep everything; stop for every bite).
 
 const MODE_STATIONARY := &"stationary"
 const MODE_TROLLING := &"trolling"
@@ -18,6 +24,10 @@ const HOLD_CAPACITY := 6
 const LARGE_HOLD_CAPACITY := 10
 ## The trophy board shows this many catches.
 const TROPHY_COUNT := 5
+## Long Passage fishing (Iteration 18): see passage_posture.
+const PASSAGE_ALL := &"all"
+const PASSAGE_KEEPERS := &"keepers"
+const PASSAGE_POSTURES: Array[StringName] = [PASSAGE_ALL, PASSAGE_KEEPERS]
 
 ## The basic rod (every captain has one).
 var rod := true
@@ -42,6 +52,17 @@ var trophies: Array[Dictionary] = []
 var total_caught := 0
 var released := 0
 var sold := 0
+## Keep preferences (Iteration 18): a landed fish is kept only if its rarity is
+## at least keep_min_rarity (FishingCatalog.RARITY_ORDER) and its specimen
+## grade at least keep_min_grade (FishingCatalog.GRADES); else it goes back.
+var keep_min_rarity := "common"
+var keep_min_grade: StringName = &""
+## During fast time (Long Passage or 20x): stop for every bite (PASSAGE_ALL),
+## or only for fish of a rarity worth keeping (PASSAGE_KEEPERS; the others
+## nibble and swim off without interrupting).
+var passage_posture: StringName = PASSAGE_ALL
+var sharks_released := 0
+var junk_caught := 0
 
 
 func duplicate_state() -> FishingState:
@@ -62,11 +83,22 @@ func duplicate_state() -> FishingState:
 	copy.total_caught = total_caught
 	copy.released = released
 	copy.sold = sold
+	copy.keep_min_rarity = keep_min_rarity
+	copy.keep_min_grade = keep_min_grade
+	copy.passage_posture = passage_posture
+	copy.sharks_released = sharks_released
+	copy.junk_caught = junk_caught
 	return copy
 
 
 func get_lure_count(lure_id: String) -> int:
 	return int(lures.get(lure_id, 0))
+
+
+## Whether a landed fish of this rarity and grade is one to keep.
+func wants(rarity: String, grade: StringName) -> bool:
+	return FishingCatalog.rarity_index(rarity) >= FishingCatalog.rarity_index(keep_min_rarity) \
+		and FishingCatalog.grade_rank(grade) >= FishingCatalog.grade_rank(keep_min_grade)
 
 
 func find_in_hold(uid: int) -> int:
@@ -82,6 +114,8 @@ func to_dict() -> Dictionary:
 		"line_out": line_out, "line_mode": String(line_mode), "line_since": line_since, "checked_until": checked_until,
 		"hold": hold.duplicate(true), "next_uid": next_uid, "records": records.duplicate(true),
 		"trophies": trophies.duplicate(true), "total_caught": total_caught, "released": released, "sold": sold,
+		"keep_min_rarity": keep_min_rarity, "keep_min_grade": String(keep_min_grade), "passage_posture": String(passage_posture),
+		"sharks_released": sharks_released, "junk_caught": junk_caught,
 	}
 
 
@@ -139,6 +173,15 @@ static func from_dict(data: Variant, errors: Array[String]) -> FishingState:
 	state.total_caught = maxi(int(data.total_caught), 0)
 	state.released = maxi(int(data.released), 0)
 	state.sold = maxi(int(data.sold), 0)
+	# Iteration 18 fields: optional, defaults when absent or unknown.
+	var rarity := str(data.get("keep_min_rarity", "common"))
+	state.keep_min_rarity = rarity if rarity in FishingCatalog.RARITY_ORDER else "common"
+	var grade := StringName(str(data.get("keep_min_grade", "")))
+	state.keep_min_grade = grade if grade in FishingCatalog.GRADES else FishingCatalog.GRADE_NONE
+	var posture := StringName(str(data.get("passage_posture", PASSAGE_ALL)))
+	state.passage_posture = posture if posture in PASSAGE_POSTURES else PASSAGE_ALL
+	state.sharks_released = maxi(int(data.get("sharks_released", 0)) if _is_number(data.get("sharks_released", 0)) else 0, 0)
+	state.junk_caught = maxi(int(data.get("junk_caught", 0)) if _is_number(data.get("junk_caught", 0)) else 0, 0)
 	return state
 
 

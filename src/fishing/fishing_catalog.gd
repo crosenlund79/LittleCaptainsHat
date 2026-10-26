@@ -11,6 +11,32 @@ extends RefCounted
 
 const PATH := "res://data/fishing/fishing.json"
 
+## What came up on the line (Iteration 18): a fish, a shark (always released)
+## or junk (discarded).
+const KIND_FISH := &"fish"
+const KIND_SHARK := &"shark"
+const KIND_JUNK := &"junk"
+## The rarities in order (the data's own names), commonest first.
+const RARITY_ORDER: Array[String] = ["common", "uncommon", "rare", "very_rare"]
+## Specimen grades (Iteration 18) by the fish's weight within its species'
+## range (0 = the smallest possible, 1 = the largest): below Bronze a fish is
+## simply ordinary. Rarity plays no part: a common herring can be Gold.
+const GRADE_NONE := &""
+const GRADE_BRONZE := &"bronze"
+const GRADE_SILVER := &"silver"
+const GRADE_GOLD := &"gold"
+const GRADES: Array[StringName] = [GRADE_NONE, GRADE_BRONZE, GRADE_SILVER, GRADE_GOLD]
+const GRADE_FROM := {GRADE_BRONZE: 0.35, GRADE_SILVER: 0.6, GRADE_GOLD: 0.8}
+## The reel-in challenge by rarity (Iteration 18): successful timing checks
+## needed and the width of the target arc in degrees (narrower when rarer).
+const REEL := {"common": [1, 72.0], "uncommon": [2, 60.0], "rare": [3, 50.0], "very_rare": [4, 42.0]}
+## Junk comes up easily.
+const JUNK_REEL := [1, 84.0]
+## Each Perfect hit moves the fish's weight this share of the way toward the
+## top of its species' range (so three Perfects add at most about a fifth of
+## the remaining range; never beyond it).
+const PERFECT_NUDGE := 0.07
+
 static var _default: FishingCatalog
 
 var bite_chance_per_check := 0.11
@@ -20,6 +46,9 @@ var max_trolling_kn := 7.0
 var lures: Array[Dictionary] = []
 var species: Array[Dictionary] = []
 var rarities := {}
+## Junk items (Iteration 18) and the share of bites that are junk.
+var junk: Array[Dictionary] = []
+var junk_chance := 0.0
 
 
 static func get_default() -> FishingCatalog:
@@ -43,6 +72,9 @@ func _load(path: String) -> void:
 	for fish: Dictionary in data.get("species", []):
 		species.append(fish)
 	rarities = data.get("rarities", {})
+	for item: Dictionary in data.get("junk", []):
+		junk.append(item)
+	junk_chance = float(data.get("junk_chance", 0.0))
 
 
 func get_lure(id: String) -> Dictionary:
@@ -61,7 +93,98 @@ func get_species(id: String) -> Dictionary:
 
 func get_species_name(id: String) -> String:
 	var fish := get_species(id)
+	if fish.is_empty() and not get_junk(id).is_empty():
+		return String(get_junk(id).name)
 	return String(fish.get("name", id.capitalize()))
+
+
+func get_junk(id: String) -> Dictionary:
+	for item in junk:
+		if item.id == id:
+			return item
+	return {}
+
+
+## Fish, shark or junk (Iteration 18).
+func kind_of(id: String) -> StringName:
+	if not get_junk(id).is_empty():
+		return KIND_JUNK
+	return KIND_SHARK if String(get_species(id).get("kind", "fish")) == "shark" else KIND_FISH
+
+
+func is_shark(id: String) -> bool:
+	return kind_of(id) == KIND_SHARK
+
+
+## The species' rarity id ("common" ... "very_rare"; "" for junk).
+func rarity_of(id: String) -> String:
+	if kind_of(id) == KIND_JUNK:
+		return ""
+	return String(get_species(id).get("rarity", "common"))
+
+
+## How a rarity is written for the player.
+static func rarity_label(rarity: String) -> String:
+	return rarity.replace("_", " ").capitalize() if rarity != "" else ""
+
+
+## 0 (common) to 3 (very rare); -1 for none.
+static func rarity_index(rarity: String) -> int:
+	return RARITY_ORDER.find(rarity)
+
+
+## Where `kg` lies in the species' weight range, 0..1.
+func relative_size(species_id: String, kg: float) -> float:
+	var fish := get_species(species_id)
+	if fish.is_empty():
+		return 0.0
+	return clampf(inverse_lerp(float(fish.kg[0]), float(fish.kg[1]), kg), 0.0, 1.0)
+
+
+## The specimen grade of a fish of `kg` (by weight only; see GRADE_FROM).
+func grade(species_id: String, kg: float) -> StringName:
+	if kind_of(species_id) == KIND_JUNK or get_species(species_id).is_empty():
+		return GRADE_NONE
+	var relative := relative_size(species_id, kg)
+	for g in [GRADE_GOLD, GRADE_SILVER, GRADE_BRONZE]:
+		if relative >= float(GRADE_FROM[g]) - 1e-9:
+			return g
+	return GRADE_NONE
+
+
+static func grade_label(g: StringName) -> String:
+	return String(g).capitalize() if g != GRADE_NONE else "Ordinary"
+
+
+## 0 (ordinary) to 3 (gold).
+static func grade_rank(g: StringName) -> int:
+	return maxi(GRADES.find(g), 0)
+
+
+## The reel-in challenge for what is on the line: {"checks", "arc_deg"}.
+func reel_profile(id: String) -> Dictionary:
+	var entry: Array = JUNK_REEL if kind_of(id) == KIND_JUNK else REEL.get(rarity_of(id), REEL.common)
+	return {"checks": int(entry[0]), "arc_deg": float(entry[1])}
+
+
+## The landed weight: the weight the fish had when it bit, nudged toward the
+## top of its range by Perfect hits (never beyond the range; species and
+## rarity never change).
+func landed_kg(species_id: String, kg: float, perfects: int) -> float:
+	var fish := get_species(species_id)
+	if fish.is_empty() or perfects <= 0:
+		return kg
+	var top := float(fish.kg[1])
+	var nudged := kg + (top - kg) * (1.0 - pow(1.0 - PERFECT_NUDGE, perfects))
+	return minf(snappedf(nudged, 0.01), top)
+
+
+## A piece of junk for a bite (Iteration 18): {"species", "kg"} with the junk id.
+func pick_junk(rng: RandomNumberGenerator) -> Dictionary:
+	if junk.is_empty():
+		return {}
+	var item: Dictionary = junk[rng.randi_range(0, junk.size() - 1)]
+	return {"species": String(item.id), "kg": 0.0}
 
 
 func rarity_rank(id: String) -> int:

@@ -1,5 +1,5 @@
 {
-	"note": "Iteration 16 adds four warm-water fish for the international harbours' regions (game values, not catch data). Iteration 13 fishing data. A simplified gameplay model, not science: which fish can be met in which of the harbour catalogue's broad sea areas (PortData.region), how rare they are, how big, and which lures and ways of fishing suit them. Edit freely; see DEV_GUIDES/LIFE_ABOARD.md.",
+	"note": "Iteration 18 adds two sharks (kind \"shark\": always released, never food, sale or trophies) and occasional junk (junk_chance of the bites; discarded). Iteration 16 adds four warm-water fish for the international harbours' regions (game values, not catch data). Iteration 13 fishing data. A simplified gameplay model, not science: which fish can be met in which of the harbour catalogue's broad sea areas (PortData.region), how rare they are, how big, and which lures and ways of fishing suit them. Edit freely; see DEV_GUIDES/LIFE_ABOARD.md.",
 	"bite_chance_per_check": 0.11,
 	"check_interval_s": 300,
 	"coastal_nm": 3.0,
@@ -53,6 +53,18 @@
 			"lures": {"spinner": 0.7, "spoon": 0.8, "soft": 1.3, "jig": 1.2}, "modes": {"stationary": 1.3, "trolling": 0.6}},
 		{"id": "yellowfin", "name": "Yellowfin tuna", "rarity": "very_rare", "kg": [8.0, 40.0], "price_per_kg": 14, "strength": 0.95,
 			"regions": ["atlantic_islands", "caribbean", "pacific"],
-			"lures": {"spinner": 0.6, "spoon": 1.2, "soft": 0.8, "jig": 0.7}, "modes": {"stationary": 0.2, "trolling": 1.7}}
+			"lures": {"spinner": 0.6, "spoon": 1.2, "soft": 0.8, "jig": 0.7}, "modes": {"stationary": 0.2, "trolling": 1.7}},
+		{"id": "blue_shark", "name": "Blue shark", "kind": "shark", "rarity": "rare", "kg": [20.0, 90.0], "price_per_kg": 0, "strength": 0.9,
+			"regions": ["atlantic_islands", "iberia_atlantic", "biscay"],
+			"lures": {"spinner": 0.5, "spoon": 1.0, "soft": 0.6, "jig": 0.8}, "modes": {"stationary": 0.5, "trolling": 1.2}},
+		{"id": "blacktip_reef_shark", "name": "Blacktip reef shark", "kind": "shark", "rarity": "rare", "kg": [8.0, 25.0], "price_per_kg": 0, "strength": 0.8, "coastal": true,
+			"regions": ["caribbean", "central_america", "pacific"],
+			"lures": {"spinner": 0.7, "spoon": 0.9, "soft": 1.0, "jig": 0.9}, "modes": {"stationary": 1.1, "trolling": 0.8}}
+	],
+	"junk_chance": 0.06,
+	"junk": [
+		{"id": "old_boot", "name": "Old boot", "text": "Someone's left boot. Not your size, and full of seaweed."},
+		{"id": "tangled_rope", "name": "Tangled rope", "text": "A knot no sailor would claim. Into the bin with it."},
+		{"id": "rusty_tin", "name": "Rusty tin", "text": "A tin that once held sardines. Long, long ago."}
 	]
 }

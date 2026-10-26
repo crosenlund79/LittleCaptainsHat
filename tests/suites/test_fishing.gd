@@ -1,11 +1,15 @@
 extends RefCounted
 ## Iteration 13, "The Catch": the rod, the lures, regional fish from data,
-## bites on a fixed grid (stationary and trolling), the fair tension fight,
-## keep / release / sell, milestones paid once, the trophy board, and the
-## rod and trophy stations on every boat.
+## bites on a fixed grid (stationary and trolling), keep / release / sell,
+## milestones paid once, the trophy board, and the rod and trophy stations
+## on every boat. Iteration 18 replaced the tension fight with the reel-in
+## dial: its fairness is tested in test_fishing2 (as the fight's was here),
+## and the panel here lands its fish through the dial. Only kept fish are
+## trophies now (a fish that goes back because the cool box is full is not).
 
 const APP_SCENE := preload("res://src/app/app.tscn")
 const W := preload("res://tests/helpers/walkability.gd")
+const Reel := preload("res://tests/helpers/reel.gd")
 const DECK := SessionState.AREA_EXTERIOR
 const CABIN := SessionState.AREA_INTERIOR
 
@@ -18,7 +22,6 @@ func run(runner: Node) -> void:
 	Simulation.auto_advance = false
 	t.use_calm_wind()
 	_test_catalog()
-	_test_fight_is_fair()
 	app = APP_SCENE.instantiate()
 	t.add_child(app)
 	app.router.fade_duration = 0.05
@@ -115,37 +118,6 @@ func _test_catalog() -> void:
 	t.check(catalog.score("cod", 10.0) > catalog.score("cod", 2.0), "[trophies] within a species, bigger ranks higher")
 
 
-## The fight gives a clear warning well before the line can break, a sensible
-## captain lands every fish, and doing nothing never breaks the line.
-func _test_fight_is_fair() -> void:
-	var catalog := FishingCatalog.get_default()
-	var landed_all := true
-	var slowest := 0.0
-	for fish in catalog.species:
-		for kg: float in [float(fish.kg[0]), float(fish.kg[1])]:
-			var fight := FishFight.new(catalog.strength(fish.id, kg), 18.0, 5.0, 0.3)
-			while not fight.is_over():
-				# Reel while the bar is calm; ease off when it turns red.
-				fight.step(1.0 / 30.0, not fight.is_warning())
-			landed_all = landed_all and fight.result == FishFight.RESULT_LANDED
-			slowest = maxf(slowest, fight.elapsed)
-	t.check(landed_all, "[fight] easing off at the red warning lands every species, smallest to biggest")
-	t.check(slowest < 40.0, "[fight] even the biggest fish comes in within %d s (%.1f s)" % [40, slowest])
-	var greedy := FishFight.new(1.0, 30.0, 6.0, 0.0)
-	var warned_at := -1.0
-	while not greedy.is_over():
-		greedy.step(1.0 / 30.0, true)
-		if warned_at < 0.0 and greedy.is_warning():
-			warned_at = greedy.elapsed
-	t.check(greedy.result == FishFight.RESULT_BROKE, "[fight] reeling flat out against the strongest fish breaks the line")
-	t.check(warned_at >= 0.0 and greedy.elapsed - warned_at >= 1.5,
-		"[fight] but the red warning came %.1f s before the line broke (time to react)" % (greedy.elapsed - warned_at))
-	var idle := FishFight.new(0.9, 20.0, 0.0, 0.0)
-	while not idle.is_over():
-		idle.step(1.0 / 30.0, false)
-	t.check(idle.result == FishFight.RESULT_ESCAPED, "[fight] never reeling: the fish slips the hook, the line never breaks")
-
-
 # --- Rules ----------------------------------------------------------------------------
 
 func _test_line_and_bites() -> void:
@@ -204,11 +176,18 @@ func _test_landing_and_records() -> void:
 	t.check(uids.size() == fishing.hold.size() and fishing.hold.size() == FishingState.HOLD_CAPACITY,
 		"[catch] the cool box holds %d fish, each one once" % FishingState.HOLD_CAPACITY)
 	t.check(fishing.released >= 1, "[catch] with the cool box full the fish goes back (released %d)" % fishing.released)
+	var kept := {}
+	for fish in fishing.hold:
+		kept[int(fish.uid)] = true
+	t.check(fishing.trophies.all(func(trophy: Dictionary) -> bool: return kept.has(int(trophy.uid))),
+		"[trophies] a fish that went back (cool box full) is not on the board")
 	t.check(fishing.trophies.size() == FishingState.TROPHY_COUNT, "[trophies] the board shows the five most notable")
 	var sorted := true
 	for i in fishing.trophies.size() - 1:
 		sorted = sorted and float(fishing.trophies[i].score) >= float(fishing.trophies[i + 1].score)
 	t.check(sorted, "[trophies] ranked best first")
+	# Room in the cool box for the next one.
+	GameSession.release_fish(int(GameSession.get_fishing().hold.back().uid))
 	_force_bite("bonito", 4.6)
 	var rare := GameSession.finish_fight(true)
 	t.check(rare.exceptional and GameSession.get_fishing().trophies[0].species == "bonito",
@@ -321,23 +300,16 @@ func _test_fishing_panel() -> void:
 		(menu.find_child("WaitButton", true, false) as Button).pressed.emit()
 		tries += 1
 		await t.frames(1)
-	t.check(menu.is_fighting(), "[panel] waiting at the rod ends in a bite and the fight (%d waits)" % tries)
-	# Reel until the bar turns red, then show it.
-	var guard := 0
-	while menu.is_fighting() and not menu.get_fight().is_warning() and guard < 2000:
-		menu.step_fight(1.0 / 30.0, true)
-		guard += 1
-	t.check(menu.get_fight().is_warning() and (menu.find_child("FightLabel", true, false) as Label).text.contains("Ease off"),
-		"[panel] reeling hard turns the tension bar red with \"Ease off!\"")
+	t.check(menu.is_reeling(), "[panel] waiting at the rod ends in a bite and the reel-in (%d waits)" % tries)
+	var bite := GameSession.get_pending_bite()
+	t.check((menu.find_child("ReelName", true, false) as Label).text == FishingCatalog.get_default().get_species_name(bite.species)
+		and menu.get_reel_portrait().species_id == String(bite.species),
+		"[panel] the reel-in shows what bit, by name and picture (%s)" % bite.species)
 	await t.frames(1)
 	app.toasts.clear()
 	await t.frames(1)
 	await t.screenshot("13_fishing_bite_tension")
-	guard = 0
-	while menu.is_fighting() and guard < 4000:
-		menu.step_fight(1.0 / 30.0, not menu.get_fight().is_warning())
-		guard += 1
-	t.check(menu.get_last_result().get("landed", false), "[panel] easing off at the warning lands the fish")
+	t.check(Reel.land(menu), "[panel] good presses on the dial land the catch")
 	t.check(menu.get_outcome_text().contains("kg") and menu.get_outcome_text().contains("cool box"), "[panel] the catch result (%s)" % menu.get_outcome_text())
 	await t.frames(2)
 	app.toasts.clear()
@@ -356,11 +328,11 @@ func _test_unattended_bite() -> void:
 	t.check(app.get_bite_wait() > 40.0, "[bite] a bite away from the rod gives %d s to get there" % roundi(GameSession.BITE_WAIT_SECONDS))
 	await t.frames(2)
 	var texts: PackedStringArray = app.hud.aboard_badge.get_texts()
-	t.check("Fish on! Go to the rod" in texts, "[bite] the HUD shows \"Fish on!\" (%s)" % [texts])
+	t.check("Fish on! Reel in" in texts, "[bite] the HUD shows \"Fish on!\" (%s)" % [texts])
 	app._update_bite_wait(GameSession.BITE_WAIT_SECONDS + 1.0)
 	t.check(GameSession.get_pending_bite().is_empty() and GameSession.is_line_out(), "[bite] left too long, the fish gets away; the line stays out")
 	await t.frames(1)
-	t.check(not ("Fish on! Go to the rod" in app.hud.aboard_badge.get_texts()), "[bite] and the badge goes")
+	t.check(not ("Fish on! Reel in" in app.hud.aboard_badge.get_texts()), "[bite] and the badge goes")
 	deck.player.position = deck.player.position  # keep the deck in use
 
 

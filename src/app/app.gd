@@ -177,6 +177,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			open_action_wheel()
 		return
+	if event.is_action_pressed(&"reel_in") and not event.is_echo():
+		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
+			get_viewport().set_input_as_handled()
+			open_fishing()
+		return
 	if event.is_action_pressed(&"chartplotter") and not event.is_echo():
 		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
 			get_viewport().set_input_as_handled()
@@ -384,6 +389,9 @@ func get_wheel_actions() -> Array[Dictionary]:
 	var add := func(id: StringName, label: String, action: Callable) -> void:
 		actions.append({"id": id, "label": label, "action": action})
 	var go_label := "Go below" if area.area_id == SessionState.AREA_EXTERIOR else "Go on deck"
+	# A fish on the line comes first (Iteration 18).
+	if not GameSession.get_pending_bite().is_empty():
+		add.call(&"reel_in", "Reel in!", func() -> void: open_fishing.call_deferred())
 	if area.area_id == SessionState.AREA_INTERIOR:
 		add.call(&"sleep", "Sleep", open_sleep_menu)
 		add.call(&"dream_map", "World map", open_dream_map)
@@ -399,6 +407,8 @@ func get_wheel_actions() -> Array[Dictionary]:
 		elif GameSession.get_planned_route() != null:
 			add.call(&"set_sail", "Set sail", request_departure)
 		add.call(&"chart", "Open the chart", open_chart)
+		if GameSession.get_pending_bite().is_empty():
+			add.call(&"fishing", "Fishing rod", func() -> void: open_fishing.call_deferred())
 	add.call(&"go", go_label, func() -> void:
 		if router.current_screen == area and not router.is_busy():
 			area.begin_exit()
@@ -682,7 +692,7 @@ func _on_fish_bite(_bite: Dictionary) -> void:
 	if modals.get_top() is FishingMenu:
 		return
 	_bite_wait = GameSession.BITE_WAIT_SECONDS
-	notify("Fish on! Go to the rod on the stern and press E.")
+	notify("Fish on! Press R to reel in (the rod is on the stern rail).")
 
 
 ## The fish waits a while (real time, while playing) before it gets away.

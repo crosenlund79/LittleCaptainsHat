@@ -1,0 +1,282 @@
+{
+ "art": {
+  "blacktip_reef_shark": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    75.0,
+    114.6,
+    8
+   ],
+   "kind": "shark",
+   "tail_pivot": [
+    390,
+    122.0
+   ]
+  },
+  "blue_shark": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    60.8,
+    116.1,
+    8
+   ],
+   "kind": "shark",
+   "tail_pivot": [
+    392,
+    122.0
+   ]
+  },
+  "bonito": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    94.6,
+    104.8,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    388,
+    122.0
+   ]
+  },
+  "cod": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    104.2,
+    98.1,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    384,
+    122.0
+   ]
+  },
+  "flatfish": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    112.7,
+    81.8,
+    10
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    372,
+    122.0
+   ]
+  },
+  "garfish": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    109.9,
+    115.1,
+    9
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    420,
+    122.0
+   ]
+  },
+  "gilthead_bream": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    113.3,
+    92.3,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    376,
+    122.0
+   ]
+  },
+  "herring": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    105.2,
+    107.3,
+    13
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    390,
+    122.0
+   ]
+  },
+  "mackerel": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    92.8,
+    110.3,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    388,
+    122.0
+   ]
+  },
+  "mahi_mahi": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    107.7,
+    81.2,
+    11
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    384,
+    122.0
+   ]
+  },
+  "old_boot": {
+   "canvas": [
+    512,
+    256
+   ],
+   "kind": "junk"
+  },
+  "perch": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    109.0,
+    95.4,
+    13
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    380,
+    122.0
+   ]
+  },
+  "rusty_tin": {
+   "canvas": [
+    512,
+    256
+   ],
+   "kind": "junk"
+  },
+  "sea_bass": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    101.2,
+    102.6,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    386,
+    122.0
+   ]
+  },
+  "sea_trout": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    101.2,
+    104.4,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    386,
+    122.0
+   ]
+  },
+  "skipjack": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    94.6,
+    103.6,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    388,
+    122.0
+   ]
+  },
+  "snapper": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    95.1,
+    94.4,
+    13
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    382,
+    122.0
+   ]
+  },
+  "tangled_rope": {
+   "canvas": [
+    512,
+    256
+   ],
+   "kind": "junk"
+  },
+  "yellowfin": {
+   "canvas": [
+    512,
+    256
+   ],
+   "eye": [
+    92.8,
+    103.4,
+    12
+   ],
+   "kind": "fish",
+   "tail_pivot": [
+    388,
+    122.0
+   ]
+  }
+ },
+ "note": "Written by tools/fishing/paint_fish.py: the layer canvas, the tail's pivot and the eye (canvas px)."
+}

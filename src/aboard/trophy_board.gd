@@ -2,8 +2,9 @@ class_name TrophyBoard
 extends Node2D
 ## The trophy board on the cabin wall (Iteration 13): five slots for the five
 ## most notable catches (FishingState.trophies, ranked by FishingCatalog.score).
-## A filled slot shows a little painted fish in the species' colour; empty
-## slots are faint outlines. Presentation only: the station beside it opens
+## A filled slot shows the fish's own little picture (FishArt, Iteration 18;
+## before, a fish shape in the species' colour); empty slots are faint
+## outlines. Presentation only: the station beside it opens
 ## the list (TrophyMenu).
 
 const WOOD := Color("#8a5a35")
@@ -40,7 +41,13 @@ func _draw() -> void:
 		var center := Vector2(rect.position.x + SIZE.x * (i + 0.5) / FishingState.TROPHY_COUNT, 2.0)
 		draw_circle(center + Vector2(0, -14), 1.6, BRASS)
 		if i < trophies.size():
-			_draw_fish(center, Color(FISH_COLOURS.get(trophies[i].species, Color("#9fb7c0"))), i == 0)
+			var picture := FishArt.thumbnail(String(trophies[i].species))
+			if picture:
+				draw_texture_rect(picture, Rect2(center - Vector2(13, 7), Vector2(26, 13)), false)
+				if i == 0:
+					draw_circle(center + Vector2(0, 12), 2.4, BRASS)
+			else:
+				_draw_fish(center, Color(FISH_COLOURS.get(trophies[i].species, Color("#9fb7c0"))), i == 0)
 		else:
 			_draw_fish(center, EMPTY, false, true)
 

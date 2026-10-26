@@ -31,6 +31,7 @@ var _art_style: OptionButton
 var _course_view: CheckBox
 var _reduce_flashing: CheckBox
 var _flash: HSlider
+var _reduce_motion: CheckBox
 
 @onready var _audio_grid: GridContainer = %AudioGrid
 @onready var _window_mode: OptionButton = %WindowMode
@@ -180,6 +181,18 @@ func _build_accessibility_rows() -> void:
 		SettingsManager.set_flash_intensity(int(value))
 		_refresh_status())
 	grid.add_child(_flash)
+	var motion_label := Label.new()
+	motion_label.name = "ReduceMotionLabel"
+	motion_label.text = "Motion"
+	grid.add_child(motion_label)
+	_reduce_motion = CheckBox.new()
+	_reduce_motion.name = "ReduceMotion"
+	_reduce_motion.text = "Reduce motion"
+	_reduce_motion.tooltip_text = "Small decorative animations stay still (a landed fish's tail flick and bobbing)."
+	_reduce_motion.toggled.connect(func(pressed: bool) -> void:
+		SettingsManager.set_reduce_motion(pressed)
+		_refresh_status())
+	grid.add_child(_reduce_motion)
 
 
 func _sync_controls() -> void:
@@ -195,6 +208,7 @@ func _sync_controls() -> void:
 	_course_view.set_pressed_no_signal(SettingsManager.get_course_view())
 	_reduce_flashing.set_pressed_no_signal(SettingsManager.get_reduce_flashing())
 	_flash.set_value_no_signal(SettingsManager.get_flash_intensity())
+	_reduce_motion.set_pressed_no_signal(SettingsManager.get_reduce_motion())
 	_refresh_status()
 
 

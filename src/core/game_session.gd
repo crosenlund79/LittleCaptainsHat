@@ -1203,6 +1203,8 @@ const BITE_WAIT_SECONDS := 45.0
 var _pending_bite := {}
 ## "Too fast to troll" was said for this stretch (said once, not every check).
 var _warned_too_fast := false
+## Bites let go quietly in fast time (Iteration 18; not saved).
+var _quiet_nibbles := 0
 
 
 func get_fishing() -> FishingState:
@@ -1286,11 +1288,37 @@ func apply_fish_check(tick: float) -> bool:
 	if rng.randf() >= catalog.bite_chance(_state.vessel_position, mode, fishing.lure, speed, wind.speed_kn):
 		return false
 	var fish := catalog.pick(rng, _state.vessel_position, mode, fishing.lure)
+	# Now and then something else takes the hook (Iteration 18).
+	if not fish.is_empty() and rng.randf() < catalog.junk_chance:
+		fish = catalog.pick_junk(rng)
 	if fish.is_empty():
 		return false
-	_pending_bite = {"species": fish.species, "kg": fish.kg, "time": tick, "mode": String(mode), "lure": fishing.lure}
+	var kind := catalog.kind_of(fish.species)
+	var rarity := catalog.rarity_of(fish.species)
+	# In fast time the captain may only want to be stopped for keepers: the
+	# rest nibble and swim off (no fish is landed, nothing is gained).
+	if is_fast_time() and fishing.passage_posture == FishingState.PASSAGE_KEEPERS \
+			and (kind != FishingCatalog.KIND_FISH or FishingCatalog.rarity_index(rarity) < FishingCatalog.rarity_index(fishing.keep_min_rarity)):
+		_quiet_nibbles += 1
+		return false
+	_pending_bite = {"species": fish.species, "kg": fish.kg, "time": tick, "mode": String(mode), "lure": fishing.lure,
+		"kind": String(kind), "rarity": rarity}
 	fish_bite.emit(_pending_bite.duplicate())
 	return true
+
+
+## Long Passage or the fastest clock (Iteration 18: where a bite's
+## interruption can be spared by the captain's choice).
+func is_fast_time() -> bool:
+	return Simulation.is_passage_running() or (_state != null and _state.time_scale >= 20)
+
+
+## Bites let go in fast time because they were not keepers (since the
+## counter was last read; see take_quiet_nibbles()).
+func take_quiet_nibbles() -> int:
+	var count := _quiet_nibbles
+	_quiet_nibbles = 0
+	return count
 
 
 func get_pending_bite() -> Dictionary:
@@ -1302,19 +1330,31 @@ func expire_bite() -> void:
 	_pending_bite = {}
 
 
-## The fight ended. `landed`: the fish is aboard (into the cool box when
-## there is room) and counted once; otherwise it escaped, and a broken line
-## (`line_broke`) costs the lure. Returns {"landed", "fish", "kept",
-## "first", "new_species", "personal_best", "exceptional", "awards", "text"}.
-func finish_fight(landed: bool, line_broke := false) -> Dictionary:
-	var result := {"landed": false, "fish": {}, "kept": false, "first": false, "new_species": false, "personal_best": false,
-		"exceptional": false, "awards": [], "text": ""}
+## The reel-in ended. `landed`: it is aboard and counted once; otherwise it
+## escaped, and a broken line (`line_broke`) costs the lure. `perfects`:
+## Perfect hits in the reel-in, which nudge the weight within the species'
+## range (Iteration 18). What then happens to it:
+##   - a fish the keep preferences want goes into the cool box (when there is
+##     room) and onto the trophy board if notable enough;
+##   - any other fish goes back ("preferences" or "cool_box_full") and never
+##     onto the trophy board;
+##   - a shark is always released; junk is discarded.
+## Returns {"landed", "fish", "kind", "rarity", "grade", "kept",
+## "released_reason", "first", "new_species", "personal_best", "exceptional",
+## "awards", "text"}.
+func finish_fight(landed: bool, line_broke := false, perfects := 0) -> Dictionary:
+	var result := {"landed": false, "fish": {}, "kind": "", "rarity": "", "grade": "", "kept": false, "released_reason": "",
+		"first": false, "new_species": false, "personal_best": false, "exceptional": false, "awards": [], "text": ""}
 	if _state == null or _pending_bite.is_empty():
 		return result
 	var bite := _pending_bite
 	_pending_bite = {}
 	var fishing := _state.fishing
 	var catalog := FishingCatalog.get_default()
+	var species: String = bite.species
+	var kind := catalog.kind_of(species)
+	result.kind = String(kind)
+	result.rarity = catalog.rarity_of(species)
 	if not landed:
 		if line_broke:
 			fishing.lures[bite.lure] = maxi(fishing.get_lure_count(bite.lure) - 1, 0)
@@ -1326,36 +1366,56 @@ func finish_fight(landed: bool, line_broke := false) -> Dictionary:
 		_has_unsaved_changes = true
 		fishing_changed.emit()
 		return result
-	var species: String = bite.species
-	var kg := float(bite.kg)
+	result.landed = true
+	var name := catalog.get_species_name(species)
+	if kind == FishingCatalog.KIND_JUNK:
+		fishing.junk_caught += 1
+		result.fish = {"species": species, "kg": 0.0}
+		result.released_reason = "junk"
+		result.text = "%s. %s" % [name, String(catalog.get_junk(species).get("text", "Into the bin with it."))]
+		_has_unsaved_changes = true
+		fishing_changed.emit()
+		fish_landed.emit(result.duplicate(true))
+		return result
+	var kg := catalog.landed_kg(species, float(bite.kg), perfects)
+	var grade := catalog.grade(species, kg)
+	result.grade = String(grade)
 	var fish := {"uid": fishing.next_uid, "species": species, "kg": kg, "caught_at": _state.game_time, "where": _fishing_place()}
 	fishing.next_uid += 1
 	fishing.total_caught += 1
 	var record: Dictionary = fishing.records.get(species, {"count": 0, "best_kg": 0.0})
 	result.new_species = int(record.count) == 0
-	result.personal_best = not result.new_species and kg > float(record.best_kg)
 	record.count = int(record.count) + 1
-	record.best_kg = maxf(float(record.best_kg), kg)
-	fishing.records[species] = record
 	result.first = fishing.total_caught == 1
-	result.exceptional = catalog.is_exceptional(species, kg)
-	# The trophy board: the five most notable catches.
-	var trophy := fish.duplicate()
-	trophy["score"] = snappedf(catalog.score(species, kg) + (10.0 if result.personal_best or result.new_species else 0.0), 0.01)
-	fishing.trophies.append(trophy)
-	fishing.trophies.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		return float(a.score) > float(b.score) or (is_equal_approx(float(a.score), float(b.score)) and int(a.uid) < int(b.uid)))
-	fishing.trophies = fishing.trophies.slice(0, FishingState.TROPHY_COUNT)
-	if fishing.hold.size() < get_cool_box_capacity():
-		fishing.hold.append(fish)
+	# Keep it, or let it go.
+	if kind == FishingCatalog.KIND_SHARK:
+		result.released_reason = "shark"
+	elif not fishing.wants(result.rarity, grade):
+		result.released_reason = "preferences"
+	elif fishing.hold.size() >= get_cool_box_capacity():
+		result.released_reason = "cool_box_full"
+	else:
 		result.kept = true
+	if result.kept:
+		fishing.hold.append(fish)
+		# Personal bests, exceptional fish and the trophy board count kept fish only.
+		result.personal_best = not result.new_species and kg > float(record.best_kg)
+		result.exceptional = catalog.is_exceptional(species, kg)
+		record.best_kg = maxf(float(record.best_kg), kg)
+		var trophy := fish.duplicate()
+		trophy["score"] = snappedf(catalog.score(species, kg) + (10.0 if result.personal_best or result.new_species else 0.0), 0.01)
+		fishing.trophies.append(trophy)
+		fishing.trophies.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return float(a.score) > float(b.score) or (is_equal_approx(float(a.score), float(b.score)) and int(a.uid) < int(b.uid)))
+		fishing.trophies = fishing.trophies.slice(0, FishingState.TROPHY_COUNT)
 	else:
 		fishing.released += 1
-	result.landed = true
+		if kind == FishingCatalog.KIND_SHARK:
+			fishing.sharks_released += 1
+	fishing.records[species] = record
 	result.fish = fish
 	# Milestones pay renown once; ordinary fish do not.
 	var awards: Array[Dictionary] = []
-	var name := catalog.get_species_name(species)
 	if result.first:
 		awards.append(_award_once("fish:first", "Your first fish: %s" % name, 3))
 	if result.new_species:
@@ -1366,13 +1426,42 @@ func finish_fight(landed: bool, line_broke := false) -> Dictionary:
 		_state.progress.mark(StringName("fish:best:%s" % species), _state.game_time)
 	awards = awards.filter(func(a: Dictionary) -> bool: return not a.is_empty())
 	result.awards = awards
-	result.text = "%s, %.1f kg%s" % [name, kg, "" if result.kept else ". The cool box is full, so it goes back."]
+	var weight := "%s, %.1f kg" % [name, kg]
+	match result.released_reason:
+		"shark":
+			result.text = "%s. That's quite a catch. Better let this one swim free." % weight
+		"preferences":
+			result.text = "%s. Not one to keep by your preferences, so it goes back." % weight
+		"cool_box_full":
+			result.text = "%s. The cool box is full, so it goes back." % weight
+		_:
+			result.text = weight
 	_has_unsaved_changes = true
 	fishing_changed.emit()
 	fish_landed.emit(result.duplicate(true))
 	if not awards.is_empty():
 		renown_awarded.emit(awards)
 	return result
+
+
+## The captain's keep preferences (Iteration 18): minimum rarity
+## (FishingCatalog.RARITY_ORDER) and minimum specimen grade.
+func set_keep_preferences(min_rarity: String, min_grade: StringName) -> void:
+	if _state == null or not min_rarity in FishingCatalog.RARITY_ORDER or not min_grade in FishingCatalog.GRADES:
+		return
+	_state.fishing.keep_min_rarity = min_rarity
+	_state.fishing.keep_min_grade = min_grade
+	_has_unsaved_changes = true
+	fishing_changed.emit()
+
+
+## Long Passage fishing (Iteration 18): FishingState.PASSAGE_ALL or PASSAGE_KEEPERS.
+func set_passage_posture(posture: StringName) -> void:
+	if _state == null or not posture in FishingState.PASSAGE_POSTURES:
+		return
+	_state.fishing.passage_posture = posture
+	_has_unsaved_changes = true
+	fishing_changed.emit()
 
 
 ## Pays `renown` for milestone `id` the first time only (an existing
@@ -1399,6 +1488,8 @@ func release_fish(uid: int) -> bool:
 		return false
 	_state.fishing.hold.remove_at(index)
 	_state.fishing.released += 1
+	# A released fish is not a trophy (Iteration 18).
+	_state.fishing.trophies = _state.fishing.trophies.filter(func(trophy: Dictionary) -> bool: return int(trophy.uid) != uid)
 	_has_unsaved_changes = true
 	fishing_changed.emit()
 	return true

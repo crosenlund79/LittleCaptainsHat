@@ -6,6 +6,7 @@ extends RefCounted
 ## load on the way. Then the same evening in rough weather.
 
 const APP_SCENE := preload("res://src/app/app.tscn")
+const Reel := preload("res://tests/helpers/reel.gd")
 const W := preload("res://tests/helpers/walkability.gd")
 const DECK := SessionState.AREA_EXTERIOR
 const CABIN := SessionState.AREA_INTERIOR
@@ -61,13 +62,9 @@ func _use(area: BoatArea, station_name: String) -> ModalPanel:
 	return app.modals.get_top()
 
 
-## Fights the fish in the open panel the sensible way: reel, ease off at red.
+## Reels the catch in through the dial (Iteration 18).
 func _land(menu: FishingMenu) -> bool:
-	var guard := 0
-	while menu.is_fighting() and guard < 4000:
-		menu.step_fight(1.0 / 30.0, not menu.get_fight().is_warning())
-		guard += 1
-	return bool(menu.get_last_result().get("landed", false))
+	return Reel.land(menu)
 
 
 func _journey() -> void:
@@ -98,7 +95,7 @@ func _journey() -> void:
 		return
 	t.check(app.get_bite_wait() > 0.0, "[journey] \"Fish on!\": time to go to the rod")
 	rod = await _use(deck, "Fishing") as FishingMenu
-	t.check(rod != null and rod.is_fighting(), "[journey] at the rod the fight is on")
+	t.check(rod != null and rod.is_reeling(), "[journey] at the rod the reel-in is on")
 	t.check(rod != null and _land(rod), "[journey] the fish is landed")
 	var fish := rod.get_last_result().get("fish", {}) as Dictionary
 	(rod.find_child("LineButton", true, false) as Button).pressed.emit()
