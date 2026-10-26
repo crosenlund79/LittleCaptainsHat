@@ -386,10 +386,41 @@ func _setup_lighting() -> void:
 		var weather := WeatherVisuals.new()
 		add_child(weather)
 		weather.setup(self)
+		# The anchor ball, rode and buoy (Iteration 18).
+		var signals := AnchorSignals.new()
+		add_child(signals)
+		signals.setup(self, lighting)
+		_setup_deck_companion()
 
 
 func get_lighting() -> BoatLighting:
 	return get_node_or_null(^"Lighting") as BoatLighting
+
+
+## The companion's deck presence (Iteration 18): safe resting places worked
+## out from this boat's layout, and a ShipCompanion that shows while the
+## companion is up here.
+func _setup_deck_companion() -> void:
+	var spots := DeckCompanionSpots.new()
+	get_node(^"Layout").add_child(spots)
+	spots.setup(self)
+	var companion := ShipCompanion.new()
+	companion.name = "Companion"
+	companion.on_deck = true
+	companion.deck_spots = spots
+	companion.spots_path = ^"../Layout/DeckCompanionSpots"
+	add_child(companion)
+	if get_lighting():
+		get_lighting().add_contact_shadows()
+
+
+func get_deck_companion() -> ShipCompanion:
+	var companion := get_node_or_null(^"Companion") as ShipCompanion
+	return companion if companion and companion.on_deck else null
+
+
+func get_anchor_signals() -> AnchorSignals:
+	return get_node_or_null(^"AnchorSignals") as AnchorSignals
 
 
 func get_weather_visuals() -> WeatherVisuals:

@@ -30,6 +30,8 @@ signal anchorage_reached(waypoint_index: int)
 signal vessel_changed(vessel_id: StringName)
 ## The ship's companion moved to another resting spot (see CompanionState).
 signal companion_moved(spot: StringName)
+## The companion went up on deck or down to the cabin (Iteration 18).
+signal companion_area_changed(area: StringName)
 ## Something the player should be told that is not an error of their action
 ## (e.g. an old save's route had to be dropped).
 signal notice(text: String)
@@ -428,6 +430,42 @@ func get_companion() -> CompanionState:
 	return _state.companion.duplicate_state() if _state else null
 
 
+## Whether the companion may be on deck now (Iteration 18): moored, or at
+## anchor, in reasonable weather (not underway, no gale or rain, not at night
+## in strong wind). Underway it stays below, as before.
+func companion_may_be_on_deck() -> bool:
+	if _state == null or (is_underway() and not is_anchored()):
+		return false
+	var weather := Simulation.get_weather_at_vessel()
+	return weather.speed_kn < COMPANION_DECK_MAX_WIND_KN and WeatherAudio.rain_level(weather) <= 0.0 and not weather.thunder_active
+
+
+## Moves the companion up on deck (to deck resting place `deck_spot`) or down
+## to the cabin. Refused on deck when it may not be there. Returns whether
+## it moved.
+func set_companion_area(area: StringName, deck_spot := 0) -> bool:
+	if _state == null or not area in [CompanionState.AREA_CABIN, CompanionState.AREA_DECK]:
+		return false
+	if area == CompanionState.AREA_DECK and not companion_may_be_on_deck():
+		return false
+	var companion := _state.companion
+	if companion.area == area and (area == CompanionState.AREA_CABIN or companion.deck_spot == deck_spot):
+		return false
+	companion.area = area
+	companion.deck_spot = clampi(deck_spot, 0, 2)
+	_has_unsaved_changes = true
+	SessionLog.write("companion_area", {"area": String(area), "deck_spot": companion.deck_spot})
+	companion_area_changed.emit(area)
+	return true
+
+
+## Brings the companion below when the deck stops being a place for it (the
+## boat sets off, the anchor comes up, the weather turns).
+func _companion_to_cabin_if_needed() -> void:
+	if _state and _state.companion.area == CompanionState.AREA_DECK and not companion_may_be_on_deck():
+		set_companion_area(CompanionState.AREA_CABIN)
+
+
 func get_wind_seed() -> int:
 	return _state.wind_seed if _state else 1
 
@@ -556,6 +594,7 @@ func depart() -> String:
 	_has_unsaved_changes = true
 	route_changed.emit(null)
 	voyage_started.emit()
+	_companion_to_cabin_if_needed()  # casting off: the companion goes below
 	return ""
 
 
@@ -604,6 +643,7 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 	# The companion's resting schedule runs on the same clock (pure function of time).
 	if _state.companion.advance_to(game_time):
 		companion_moved.emit(_state.companion.spot)
+	_companion_to_cabin_if_needed()
 	if _state.voyage:
 		var progress := clampf(progress_nm, 0.0, _state.voyage.get_total_nm())
 		if elapsed > 0.0 and not _state.anchor.active:
@@ -1238,6 +1278,8 @@ const WELL_FED_FOOD_FACTOR := 0.75
 ## the rod before it gets away (App; real time so 20x does not rush it).
 const BITE_WAIT_SECONDS := 45.0
 
+## The companion stays below in more wind than this (Iteration 18).
+const COMPANION_DECK_MAX_WIND_KN := 20.0
 ## A bite waiting for the captain (not saved: after loading the line is just out).
 var _pending_bite := {}
 ## "Too fast to troll" was said for this stretch (said once, not every check).
@@ -1931,6 +1973,7 @@ func raise_anchor() -> String:
 	_state.propulsion = PropulsionState.new()
 	_has_unsaved_changes = true
 	anchor_changed.emit()
+	_companion_to_cabin_if_needed()  # sailing on: the companion goes below
 	return ""
 
 

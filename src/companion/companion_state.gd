@@ -13,6 +13,11 @@ extends RefCounted
 ## interval are picked deterministically from the kind and a move counter, so
 ## the result depends only on game time: the same at 1x, 20x or while
 ## sleeping, and identical after loading.
+##
+## Iteration 18: the companion can come up on deck with the captain while the
+## boat is moored or safely at anchor (`area`, and which of the deck's few
+## resting places, `deck_spot`). Its cabin schedule runs on as before; on deck
+## it rests at its deck spot. Optional in a save: absent means the cabin.
 
 const KIND_CAT := &"cat"
 const KIND_DOG := &"dog"
@@ -42,6 +47,11 @@ var spot: StringName = &""
 var next_move_time := 0.0
 ## How many times it has moved (drives the deterministic choices).
 var moves := 0
+const AREA_CABIN := &"cabin"
+const AREA_DECK := &"deck"
+var area: StringName = AREA_CABIN
+## Which deck resting place (0 aft, 1 amidships, 2 forward); see DeckCompanionSpots.
+var deck_spot := 0
 
 
 static func create(companion_kind: StringName, now: float) -> CompanionState:
@@ -86,11 +96,14 @@ func duplicate_state() -> CompanionState:
 	copy.spot = spot
 	copy.next_move_time = next_move_time
 	copy.moves = moves
+	copy.area = area
+	copy.deck_spot = deck_spot
 	return copy
 
 
 func to_dict() -> Dictionary:
-	return {"kind": String(kind), "spot": String(spot), "next_move_time": next_move_time, "moves": moves}
+	return {"kind": String(kind), "spot": String(spot), "next_move_time": next_move_time, "moves": moves,
+		"area": String(area), "deck_spot": deck_spot}
 
 
 ## Validates saved data. Returns null (with reasons in `errors`) when invalid.
@@ -117,6 +130,10 @@ static func from_dict(data: Variant, errors: Array[String]) -> CompanionState:
 	state.spot = companion_spot
 	state.next_move_time = float(next_move)
 	state.moves = int(move_count)
+	var saved_area := StringName(str(data.get("area", AREA_CABIN)))
+	state.area = saved_area if saved_area in [AREA_CABIN, AREA_DECK] else AREA_CABIN
+	var saved_spot: Variant = data.get("deck_spot", 0)
+	state.deck_spot = clampi(int(saved_spot), 0, 2) if (saved_spot is int or saved_spot is float) else 0
 	return state
 
 

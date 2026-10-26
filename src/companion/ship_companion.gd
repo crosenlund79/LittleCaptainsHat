@@ -22,6 +22,14 @@ extends Node2D
 ## Petting it (E, via its Interactable) plays a short sound on the SFX bus and
 ## a small reaction: the cat purrs and shows a few hearts; the dog pants softly
 ## and wags its tail.
+##
+## Iteration 18: the companion can also be on deck (CompanionState.area). The
+## deck has its own ShipCompanion (`on_deck`, built by BoatArea) resting at
+## the deck's safe places (DeckCompanionSpots); the cabin one shows only while
+## the companion is below. When it changes area while you watch, it walks:
+## up from the companionway to its place, between places, or back to the
+## companionway and below - along paths that stay aboard. Walking is a short
+## glide in its alert pose (no pathfinding every frame).
 
 signal petted(kind: StringName)
 signal pose_changed(pose: StringName)
@@ -70,6 +78,13 @@ var _time := 0.0
 var _reaction := 0.0
 ## Settled at anchor: rest turns into long naps (see advance_behaviour()).
 var settled := false
+## The deck's companion (Iteration 18): rests at DeckCompanionSpots.
+var on_deck := false
+var deck_spots: DeckCompanionSpots
+const WALK_SPEED := 60.0
+var _walk := PackedVector2Array()
+var _walk_index := 0
+var _walking_out := false
 ## How much longer the naps are while settled.
 const SETTLED_SLEEP_FACTOR := 2.5
 
@@ -95,6 +110,7 @@ func _ready() -> void:
 	set_meta(HighlightResolver.META_FOR, &"pet")
 	add_to_group(HighlightResolver.GROUP)
 	_sync()
+	GameSession.companion_area_changed.connect(_on_area_changed)
 	GameSession.companion_moved.connect(_on_companion_moved)
 	GameSession.state_replaced.connect(_sync)
 	GameSession.anchor_life_changed.connect(_on_anchor_life_changed)
@@ -108,6 +124,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	_reaction = maxf(_reaction - delta, 0.0)
+	if is_walking():
+		_advance_walk(delta)
 	if is_sprite_mode():
 		advance_behaviour(delta)
 	queue_redraw()
@@ -148,7 +166,82 @@ func show_kind(companion_kind: StringName) -> void:
 
 
 func _on_companion_moved(_spot: StringName) -> void:
-	_sync()
+	if not is_walking():
+		_sync()
+
+
+## Up on deck, down below, or to another place on deck (Iteration 18).
+func _on_area_changed(area: StringName) -> void:
+	var here := CompanionState.AREA_DECK if on_deck else CompanionState.AREA_CABIN
+	var shown := is_visible_in_tree()
+	if area == here:
+		# Arriving here (or moving to another place here): walk in.
+		var target := _rest_position()
+		var start := position if shown and not _walking_out else _entry_position()
+		visible = true
+		_walking_out = false
+		_start_walk(start, target)
+	elif shown:
+		# Leaving this area: walk to the way out, then go.
+		_walking_out = true
+		_start_walk(position, _entry_position())
+	_update_interactable()
+
+
+func is_walking() -> bool:
+	return _walk_index < _walk.size()
+
+
+func _start_walk(from: Vector2, to: Vector2) -> void:
+	position = from
+	_walk = deck_spots.path(from, to) if on_deck and deck_spots else PackedVector2Array([from, to])
+	_walk_index = 1
+	if is_sprite_mode():
+		set_pose(CompanionVisualSet.POSE_ALERT, 60.0)
+
+
+func _advance_walk(delta: float) -> void:
+	var step := WALK_SPEED * delta
+	while step > 0.0 and is_walking():
+		var target := _walk[_walk_index]
+		var d := position.distance_to(target)
+		if d <= step:
+			position = target
+			step -= d
+			_walk_index += 1
+		else:
+			position += (target - position) / d * step
+			step = 0.0
+	update_highlight()
+	if is_walking():
+		return
+	_walk = PackedVector2Array()
+	_walk_index = 0
+	if _walking_out:
+		_walking_out = false
+		visible = false
+	elif is_sprite_mode():
+		set_pose(CompanionVisualSet.POSE_RESTING)
+	_update_interactable()
+
+
+## Where it comes in and goes out: the companionway.
+func _entry_position() -> Vector2:
+	if on_deck and deck_spots:
+		return deck_spots.get_entry()
+	return get_spot_position(&"companionway")
+
+
+func _rest_position() -> Vector2:
+	var companion := GameSession.get_companion()
+	if on_deck and deck_spots:
+		return deck_spots.get_spot(companion.deck_spot)
+	return get_spot_position(companion.spot)
+
+
+func _update_interactable() -> void:
+	if interactable:
+		interactable.enabled = visible and not _walking_out
 
 
 func is_reacting() -> bool:
@@ -292,10 +385,16 @@ func _sync() -> void:
 		_load_visuals()
 	kind = companion.kind
 	spot = companion.spot
-	position = get_spot_position(spot)
+	var here := CompanionState.AREA_DECK if on_deck else CompanionState.AREA_CABIN
+	visible = companion.area == here
+	_walk = PackedVector2Array()
+	_walk_index = 0
+	_walking_out = false
+	position = _rest_position()
 	_sync_rotation()
 	update_highlight()
 	interactable.prompt = "Pet %s" % CompanionState.display_name(kind)
+	_update_interactable()
 
 
 func _sync_rotation() -> void:

@@ -47,8 +47,10 @@ static var _texture: GradientTexture2D
 
 var area: BoatArea
 var _modulate: CanvasModulate
-## [{"light": PointLight2D, "energy": float, "when": "night" | "day" | "dark"}]
+## [{"light": PointLight2D, "energy": float, "when": "night" | "day" | "dark" |
+## "harbour" | "underway" | "anchor"}]
 var _lights: Array[Dictionary] = []
+var _lamps: Lamps
 var _colour := Color.WHITE
 var _darkness := 0.0
 var _overcast := 0.0
@@ -107,13 +109,20 @@ func setup(boat_area: BoatArea) -> void:
 			_add_light((berth as Node2D).position + Vector2(-20, 0), DAY_HATCH, 1.3, 0.25, "day")
 	else:
 		_add_navigation_lights()
+		_add_anchor_light()
 		_add_harbour_lights()
+		_lamps = Lamps.new()
+		_lamps.name = "Lamps"
+		_lamps.lighting = self
+		_lamps.z_index = 26
+		_lamps.z_as_relative = false
+		area.add_child(_lamps)
 	_add_shadows(collision)
 	_add_contact_shadows()
 	update_now()
 
 
-func _add_light(at: Vector2, colour: Color, size: float, energy: float, when: String, parent: Node = null) -> PointLight2D:
+func _add_light(at: Vector2, colour: Color, size: float, energy: float, when: String, parent: Node = null, lamp := false) -> PointLight2D:
 	var light := PointLight2D.new()
 	light.texture = light_texture()
 	light.texture_scale = size
@@ -122,21 +131,64 @@ func _add_light(at: Vector2, colour: Color, size: float, energy: float, when: St
 	light.position = at
 	light.blend_mode = Light2D.BLEND_MODE_ADD
 	(parent if parent else self).add_child(light)
-	_lights.append({"light": light, "energy": energy, "when": when})
+	_lights.append({"light": light, "energy": energy, "when": when, "lamp": lamp})
 	return light
 
 
-## Red to port, green to starboard near the bow, white at the stern (the
-## boat's bow is +x, port -y), small and only at night.
-func _add_navigation_lights() -> void:
+## The boat's outline on deck (for lights and signals at its edges).
+func boat_bounds() -> Rect2:
 	var bounds := area.walkable_bounds
 	var shore := area.get_shore_access()
 	if shore:
 		bounds = shore.get_boat_bounds()
-	var bow := bounds.end.x - bounds.size.x * 0.12
-	_add_light(Vector2(bow, bounds.position.y + bounds.size.y * 0.3), NAV_RED, 0.32, 0.9, "night")
-	_add_light(Vector2(bow, bounds.end.y - bounds.size.y * 0.3), NAV_GREEN, 0.32, 0.9, "night")
-	_add_light(Vector2(bounds.position.x + 12.0, bounds.get_center().y), NAV_WHITE, 0.36, 0.8, "night")
+	return bounds
+
+
+## Red to port, green to starboard at the bow, white at the stern (the boat's
+## bow is +x, port -y): small, at night, underway only (not moored, not at
+## anchor). Iteration 18: each also shows its little lamp (a bright dot with
+## a small glow), so the lights read as lights over the dark sea, and they
+## sit at the hull's edges.
+func _add_navigation_lights() -> void:
+	var bounds := boat_bounds()
+	var bow := bounds.end.x - bounds.size.x * 0.14
+	var sides := _hull_sides_at(bow)
+	var port := sides.x if is_finite(sides.x) else bounds.position.y + bounds.size.y * 0.16
+	var starboard := sides.y if is_finite(sides.y) else bounds.end.y - bounds.size.y * 0.16
+	_add_light(Vector2(bow, port), NAV_RED, 0.26, 1.0, "underway", null, true)
+	_add_light(Vector2(bow, starboard), NAV_GREEN, 0.26, 1.0, "underway", null, true)
+	_add_light(Vector2(bounds.position.x + 6.0, bounds.get_center().y), NAV_WHITE, 0.3, 0.9, "underway", null, true)
+
+
+## Where the hull's edges are, across the boat at `x` (just inside the
+## lifeline, port and starboard), so the side lights sit on the rail rather
+## than out over the water where the bow narrows. INF when unknown.
+func _hull_sides_at(x: float) -> Vector2:
+	var lifeline := area.get_node_or_null(^"Layout/Collision/Lifeline/CollisionPolygon2D") as CollisionPolygon2D
+	if lifeline == null:
+		return Vector2(INF, INF)
+	var outline := (area.global_transform.affine_inverse() * lifeline.global_transform) * lifeline.polygon
+	var low := INF
+	var high := -INF
+	for i in outline.size():
+		var a := outline[i]
+		var b := outline[(i + 1) % outline.size()]
+		if (a.x - x) * (b.x - x) > 0.0 or is_equal_approx(a.x, b.x):
+			continue
+		var y := lerpf(a.y, b.y, (x - a.x) / (b.x - a.x))
+		low = minf(low, y)
+		high = maxf(high, y)
+	if not is_finite(low) or not is_finite(high):
+		return Vector2(INF, INF)
+	return Vector2(low + 6.0, high - 6.0)
+
+
+## The white all-round anchor light (Iteration 18): at the masthead, at night
+## at anchor only (never with the red and green).
+func _add_anchor_light() -> void:
+	var rig := area.get_node_or_null(^"SailRig") as SailRig
+	var at := rig.mast if rig else boat_bounds().get_center()
+	_add_light(at, NAV_WHITE, 0.55, 1.0, "anchor", null, true)
 
 
 ## The quay's lamps and the pontoon, from the shared harbour dressing (every
@@ -179,6 +231,10 @@ func _add_shadows(collision: Node) -> void:
 			continue
 		shadows.outlines.append(outline)
 	shadows.queue_redraw()
+
+
+func add_contact_shadows() -> void:
+	_add_contact_shadows()
 
 
 func _add_contact_shadows() -> void:
@@ -256,6 +312,7 @@ func _process(delta: float) -> void:
 	_flash = maxf(_flash - delta * 3.5, 0.0)
 	_modulate.color = _colour.lerp(Color(0.95, 0.97, 1.0), _flash * (0.55 if interior else 0.8))
 	var moored := not GameSession.is_underway()
+	var anchored := GameSession.is_anchored()
 	for entry in _lights:
 		var light := entry.light as PointLight2D
 		var strength := 0.0
@@ -268,11 +325,48 @@ func _process(delta: float) -> void:
 				strength = 1.0 - _darkness
 			"harbour":
 				strength = smoothstep(0.45, 0.85, _darkness) if moored else 0.0
+			"underway":
+				strength = smoothstep(0.45, 0.85, _darkness) if not moored and not anchored else 0.0
+			"anchor":
+				strength = smoothstep(0.45, 0.85, _darkness) if anchored else 0.0
 		light.energy = float(entry.energy) * strength
 		light.visible = light.energy > 0.01
 	# Highlights and the captain stay readable in the dark.
 	Interactable.light_compensation = Color(1.0 / maxf(_modulate.color.r, 0.3), 1.0 / maxf(_modulate.color.g, 0.3),
 		1.0 / maxf(_modulate.color.b, 0.3))
+	if _lamps:
+		_lamps.self_modulate = Interactable.light_compensation
+		_lamps.queue_redraw()
+
+
+## The lit lamps (navigation and anchor lights), for tests: [{"colour", "at", "when"}].
+func get_lit_lamps() -> Array[Dictionary]:
+	var lit: Array[Dictionary] = []
+	for entry in _lights:
+		var light := entry.light as PointLight2D
+		if entry.get("lamp", false) and light.visible:
+			lit.append({"colour": light.color, "at": light.position, "when": entry.when})
+	return lit
+
+
+## The lamps themselves: a bright dot with a small soft glow at each lit
+## navigation or anchor light (drawn above the deck; kept bright against the
+## night's tint, like the highlights).
+class Lamps extends Node2D:
+	var lighting: BoatLighting
+
+	func _draw() -> void:
+		for entry in lighting._lights:
+			if not entry.get("lamp", false):
+				continue
+			var light := entry.light as PointLight2D
+			if not light.visible:
+				continue
+			var strength := clampf(light.energy / maxf(float(entry.energy), 0.01), 0.0, 1.0)
+			var c := light.color
+			draw_circle(light.position, 9.0, Color(c, 0.18 * strength))
+			draw_circle(light.position, 5.0, Color(c, 0.45 * strength))
+			draw_circle(light.position, 2.6, Color(c.lerp(Color.WHITE, 0.5), strength))
 
 
 ## Soft shadows beside fixtures (see BoatLighting._add_shadows).

@@ -570,10 +570,12 @@ func _companion() -> ShipCompanion:
 	return area.find_child("Companion", true, false) as ShipCompanion if area else null
 
 
+## Companions shown (since Iteration 18 the deck keeps a hidden companion of its
+## own, which comes up only when the animal follows the captain).
 func _companion_count() -> int:
 	var count := 0
 	for node in t.get_tree().root.find_children("*", "", true, false):
-		if node is ShipCompanion and not (node as ShipCompanion).preview and node.is_inside_tree():
+		if node is ShipCompanion and not (node as ShipCompanion).preview and (node as ShipCompanion).is_visible_in_tree():
 			count += 1
 	return count
 

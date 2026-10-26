@@ -61,6 +61,51 @@ var weather_audio: WeatherAudio
 ## True from a rescue until its dialog is closed: gameplay stays paused (also
 ## while the screen changes to the harbour underneath).
 var _rescue_open := false
+## The companion follows the captain between cabin and deck (Iteration 18):
+## seconds until it goes, where to, and when it next wanders on deck.
+var _follow_left := 0.0
+var _follow_target: StringName = &""
+var _wander_left := 60.0
+const FOLLOW_UP_SECONDS := Vector2(2.5, 5.0)
+const FOLLOW_DOWN_SECONDS := Vector2(4.0, 8.0)
+const WANDER_SECONDS := Vector2(45.0, 100.0)
+
+
+## While moored or safely at anchor, the companion comes up on deck a little
+## after the captain and goes back down a little after them; on deck it
+## moves to another of its places now and then. Underway or in poor weather
+## it stays below (GameSession brings it down by itself).
+func _update_companion_follow(delta: float) -> void:
+	var area := router.current_screen as BoatArea
+	if area == null or not GameSession.is_active() or router.is_busy() or GameSession.is_asleep() or get_tree().paused:
+		return
+	var companion := GameSession.get_companion()
+	if companion == null:
+		return
+	var want := companion.area
+	if area.area_id == SessionState.AREA_EXTERIOR and GameSession.companion_may_be_on_deck():
+		want = CompanionState.AREA_DECK
+	elif area.area_id == SessionState.AREA_INTERIOR:
+		want = CompanionState.AREA_CABIN
+	if want == companion.area:
+		_follow_target = &""
+		if want == CompanionState.AREA_DECK and area.area_id == SessionState.AREA_EXTERIOR and not GameSession.is_settled_at_anchor():
+			_wander_left -= delta
+			if _wander_left <= 0.0:
+				_wander_left = randf_range(WANDER_SECONDS.x, WANDER_SECONDS.y)
+				GameSession.set_companion_area(CompanionState.AREA_DECK, (companion.deck_spot + randi_range(1, 2)) % 3)
+		return
+	if _follow_target != want:
+		_follow_target = want
+		var delay := FOLLOW_UP_SECONDS if want == CompanionState.AREA_DECK else FOLLOW_DOWN_SECONDS
+		_follow_left = randf_range(delay.x, delay.y)
+	_follow_left -= delta
+	if _follow_left <= 0.0:
+		_follow_target = &""
+		_wander_left = randf_range(WANDER_SECONDS.x, WANDER_SECONDS.y)
+		GameSession.set_companion_area(want, randi_range(0, 2))
+
+
 ## An anchorage was reached; its prompt waits for a free moment (Iteration 18).
 var _anchorage_prompt_due := false
 ## Real seconds left for the captain to reach the rod after a bite (counts
@@ -118,6 +163,7 @@ func _process(delta: float) -> void:
 		_weather_audio_timer = WEATHER_AUDIO_INTERVAL
 		update_weather_audio()
 	_update_bite_wait(delta)
+	_update_companion_follow(delta)
 	if _anchorage_prompt_due and is_in_gameplay() and modals.is_empty() and not router.is_busy() and not GameSession.is_asleep():
 		_anchorage_prompt_due = false
 		show_anchorage_prompt()
