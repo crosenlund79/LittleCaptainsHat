@@ -1489,6 +1489,7 @@ func finish_fight(landed: bool, line_broke := false, perfects := 0) -> Dictionar
 	else:
 		result.kept = true
 	if result.kept:
+		fish["prev_best_kg"] = float(record.best_kg)
 		fishing.hold.append(fish)
 		# Personal bests, exceptional fish and the trophy board count kept fish only.
 		result.personal_best = not result.new_species and kg > float(record.best_kg)
@@ -1578,10 +1579,21 @@ func release_fish(uid: int) -> bool:
 	var index := _state.fishing.find_in_hold(uid) if _state else -1
 	if index < 0:
 		return false
+	var fish: Dictionary = _state.fishing.hold[index]
 	_state.fishing.hold.remove_at(index)
 	_state.fishing.released += 1
-	# A released fish is not a trophy (Iteration 18).
+	# A released fish is not a trophy, nor the species' best (Iteration 18):
+	# if it held the record, the record goes back to the best before it (or
+	# the heaviest of that species still kept).
 	_state.fishing.trophies = _state.fishing.trophies.filter(func(trophy: Dictionary) -> bool: return int(trophy.uid) != uid)
+	var species := String(fish.species)
+	var record: Dictionary = _state.fishing.records.get(species, {})
+	if not record.is_empty() and is_equal_approx(float(record.best_kg), float(fish.kg)):
+		var best := float(fish.get("prev_best_kg", 0.0))
+		for other: Dictionary in _state.fishing.hold + _state.fishing.trophies:
+			if String(other.species) == species:
+				best = maxf(best, float(other.kg))
+		record.best_kg = best
 	_has_unsaved_changes = true
 	fishing_changed.emit()
 	return true

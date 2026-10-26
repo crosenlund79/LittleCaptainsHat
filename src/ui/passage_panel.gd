@@ -123,7 +123,7 @@ func _on_interrupted(_reason: StringName, text: String) -> void:
 	# Fish that nibbled and swam off meanwhile (Iteration 18), said once.
 	var nibbles := GameSession.take_quiet_nibbles()
 	if nibbles > 0:
-		_stopped.text += "  (%d %s nibbled and swam off on the way.)" % [nibbles, "fish" if nibbles != 1 else "fish"]
+		_stopped.text += "  (%d fish nibbled and swam off on the way.)" % nibbles
 
 
 func refresh() -> void:

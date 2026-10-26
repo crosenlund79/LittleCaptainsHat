@@ -191,8 +191,13 @@ static func _is_fish(fish: Variant) -> bool:
 
 
 static func _fish(fish: Dictionary) -> Dictionary:
-	return {"uid": int(fish.uid), "species": String(fish.species), "kg": float(fish.kg), "caught_at": float(fish.caught_at),
+	var entry := {"uid": int(fish.uid), "species": String(fish.species), "kg": float(fish.kg), "caught_at": float(fish.caught_at),
 		"where": String(fish.where)}
+	# Iteration 18 (optional): the species' best before this fish was kept, so
+	# releasing it gives the record back (a released fish is no record).
+	if _is_number(fish.get("prev_best_kg")):
+		entry["prev_best_kg"] = maxf(float(fish.prev_best_kg), 0.0)
+	return entry
 
 
 static func _is_number(value: Variant) -> bool:

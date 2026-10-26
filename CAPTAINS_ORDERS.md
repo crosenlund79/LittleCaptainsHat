@@ -228,6 +228,50 @@ The Captain has approved:
 - **Difficulty levels remain deferred.**
 - **Windows acceptance must not be claimed without the Captain's test.**
 
+### Iteration 18, The Joy of the Journey
+
+The Captain has approved (version 0.105a, save format 12 unchanged; new
+fields are optional):
+
+1. **Fishing 2.0 uses a constant-speed circular timing interaction**: a
+   needle sweeps a dial at a steady speed and the captain presses inside a
+   highlighted arc.
+2. **Rarity determines the challenge, not the weight grade** (more
+   successful presses and a narrower arc for rarer fish).
+3. **Perfect hits influence specimen quality modestly** (a small nudge to
+   the landed weight; skill matters, luck is not replaced).
+4. **Each supported fish species needs recognizable illustrated artwork.**
+5. **Prominent fish visuals occasionally blink and flick their tails.**
+6. **Fish art and animation must be lightweight and reusable** (a few small
+   layered images per species; Reduce motion stills them).
+7. **Keep preferences filter by rarity and specimen size** (grade).
+8. **Released fish are excluded from trophy records.**
+9. **Sharks are released** and are not edible or sellable inventory.
+10. **Junk catches are occasional and worthless.**
+11. **Sail Trim is optional and offers modest efficiency benefits**
+    (leaving it to the crew sails as before).
+12. **Long Passage must remain faithful to normal simulation** (fewer
+    interruptions, never different outcomes).
+13. **A waypoint can be marked as an anchorage.**
+14. **Reaching an anchorage stops the route leg and prompts for normal
+    manual anchoring** (the anchor is never set by itself).
+15. **The Captain must never be routed onto land by an anchorage
+    waypoint.**
+16. **A black anchor ball appears at anchor in daylight.**
+17. **The appropriate white anchor light appears at night.**
+18. **A modest buoy or rode makes anchoring visually evident.**
+19. **The pet can join the Captain outside while safely moored or
+    anchored.**
+20. **Pet behaviour must remain safe on all four vessels.**
+21. **The I017 world-route display defect is a required carry-forward
+    fix.**
+22. **Cabin light contrast and exterior navigation lights receive
+    refinements.**
+23. **Wind forecast intervals should be useful, not arbitrarily short.**
+24. **Iterations 19–21 remain separate** (I019 The Captain's Watch, I020 A
+    Boat of Your Own, I021 The Well-Trimmed Ship) and were not started.
+25. **No selectable difficulty mode is introduced.**
+
 ### Iterations and versions
 
 - Iteration numbers are plain sequential integers: no letter suffixes and no
@@ -282,6 +326,9 @@ Phase Two (the wording was again not found in the repository in Iteration 16).
 Iteration 17 (lighting, atmosphere, navigation views) is likewise within the
 Captain's authorization and does not reopen Phase Two; the wording was again
 not found in the repository in Iteration 17.
+Iteration 18 (fishing, sail trim, anchorages, the pet on deck, refinements)
+is likewise within the Captain's authorization and does not reopen Phase
+Two; the wording was again not found in the repository in Iteration 18.
 *Developer note: please add the Phase Two wording here.*
 
 ## Iteration log
@@ -321,3 +368,12 @@ not found in the repository in Iteration 17.
   sailing panel, the action wheel, F5/F9 quicksave, harbours by country and
   the docking arrival; see `ITERATION_17_REPORT.md` and
   `WINDOWS_ACCEPTANCE_17.md`.
+- **Iteration 18, The Joy of the Journey**, version 0.105a, save format 12
+  (unchanged; optional new fields): Fishing 2.0 with the circular reel-in
+  dial, illustrated fish that blink and flick their tails, weight grades,
+  keep preferences, sharks and junk, fishing at anchor; Sail Trim; fewer
+  Long Passage stops; anchorage waypoints with the arrival question; the
+  anchor ball, anchor light, rode and buoy; the companion following the
+  captain on deck; cabin light contrast, navigation lights on the rail and
+  1-hour wind forecast steps; the world-route panning fix; see
+  `ITERATION_18_REPORT.md` and `WINDOWS_ACCEPTANCE_18.md`.

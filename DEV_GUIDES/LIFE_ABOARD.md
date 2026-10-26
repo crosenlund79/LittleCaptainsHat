@@ -49,10 +49,14 @@ A position's sea area is the region of the nearest harbour
 better for a fish, raise its multiplier (keep them between about 0.5 and
 1.5, so lures differ modestly).
 
-The fight (`src/fishing/fish_fight.gd`) is tuned by its constants: the red
-warning at `WARN`, the top of the bar at `TOP`, and `BREAK_SECONDS` at the
-top before the line parts. The tests check that easing off at the red
-warning lands every species, smallest to biggest.
+Landing a catch (Iteration 18; the I013 tension bar is gone) is the reel
+dial, `src/fishing/reel_timing.gd`: `SPEED_DEG` (the needle's one constant
+speed), `LINE_CONTROL` (misses allowed), `PERFECT_SHARE` (the Perfect zone in
+the arc), `DEBOUNCE` and `IDLE_SECONDS`. The checks and arc width per rarity
+are `FishingCatalog.REEL` (and `JUNK_REEL`); the Perfect weight nudge is
+`PERFECT_NUDGE`; the grades are `GRADE_FROM` (share of the species' weight
+range). `test_fishing2` simulates a careful and a sloppy captain over many
+catches and checks the landing rates stay fair: re-run it after tuning.
 
 ## 3. Trophies and milestones
 
@@ -186,3 +190,33 @@ must be some water aboard. The first morning coffee while settled at anchor is
 a Captain's Log moment (+2 renown, once). There is no coffee stat or
 inventory.
 
+## 9. Iteration 18: keeping, sharks and junk, anchorages, the companion on deck
+
+- **Keeping**: `FishingState.keep_min_rarity` / `keep_min_grade` and
+  `wants()`; the release lines are in `FishingMenu._show_result`. Only kept
+  fish become trophies, personal bests or exceptional notes
+  (`GameSession.finish_fight`); `release_fish` takes a fish off the board and
+  gives the species' best back (`prev_best_kg`).
+- **Fast time**: `passage_posture` (stop for every bite / only for keepers)
+  and `GameSession.FAST_BITE_COOLDOWN_S` (the rest after a bite in Long
+  Passage or at 20×). `tests/pacing_18.tscn` counts the stops on an ocean
+  passage.
+- **Sharks and junk**: sharks are species with `"kind": "shark"` in
+  `fishing.json` (always released); junk items are the `junk` list with
+  `junk_chance`. Art: `assets/fishing/README.md`.
+- **Fish art and animation**: `FishPortrait` (`BLINK_*`, `FLICK_*`, `BOB_*`);
+  lists use `FishArt.thumbnail()`.
+- **Sail Trim**: `src/sailing/sail_trim.gd` (best trim, factor, words);
+  applied to the sailing speed only in `PropulsionController`.
+- **Anchorage waypoints**: `PlannedRoute.anchorages`, `Voyage.holding_at` /
+  `anchorages_done`, `Simulation.STOP_ANCHORAGE`; the rule is
+  `GameSession.anchorage_spot()` (the anchoring rule: water, depth, within
+  `AnchorSite.MAX_LAND_NM` of land); the question is `AnchoragePrompt`.
+- **Anchor signals**: `src/boat/anchor_signals.gd` (ball, rode, buoy);
+  the anchor light is the "anchor" light in `BoatLighting`.
+- **The companion on deck**: `DeckCompanionSpots` computes each boat's safe
+  places and walks from its lifeline and fittings (no hand-placed markers);
+  when it follows is `App._update_companion_follow` (`FOLLOW_UP_SECONDS`,
+  `FOLLOW_DOWN_SECONDS`, `WANDER_SECONDS`) and `GameSession.companion_may_be_on_deck()`
+  (moored, or anchored under `COMPANION_DECK_MAX_WIND_KN` without rain).
+  `test_companion_deck` checks every frame of every walk on all four boats.

@@ -336,6 +336,7 @@ func _test_keep_and_trophies() -> void:
 	_force_bite("sea_trout", 1.5)  # rare, but small (ordinary)
 	var small := GameSession.finish_fight(true)
 	t.check(not small.kept and small.released_reason == "preferences", "[keep] a small rare trout is released by the size rule (both must hold)")
+	var best_before := float(GameSession.get_fishing().records.get("sea_trout", {}).get("best_kg", 0.0))
 	_force_bite("sea_trout", 5.6)  # rare and Gold
 	var keeper := GameSession.finish_fight(true)
 	fishing = GameSession.get_fishing()
@@ -348,6 +349,8 @@ func _test_keep_and_trophies() -> void:
 	fishing = GameSession.get_fishing()
 	t.check(not fishing.trophies.any(func(trophy: Dictionary) -> bool: return int(trophy.uid) == int(keeper.fish.uid)),
 		"[release] a released fish leaves the trophy board")
+	t.check(is_equal_approx(float(fishing.records.sea_trout.best_kg), best_before) and best_before < 5.6,
+		"[release] and is no longer the species' best weight (back to %.1f kg)" % best_before)
 	t.check(not GameSession.release_fish(int(keeper.fish.uid)), "[release] and cannot be released twice")
 	t.check_eq(GameSession.finish_fight(true).landed, false, "[integrity] finishing again without a bite lands nothing")
 	GameSession.set_keep_preferences("common", FishingCatalog.GRADE_NONE)

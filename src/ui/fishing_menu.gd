@@ -428,7 +428,9 @@ func press_reel() -> StringName:
 
 
 func _process(delta: float) -> void:
-	if not is_reeling():
+	# Under another window (anything opened on top) the needle waits, as the
+	# presses do.
+	if not is_reeling() or (stack and stack.get_top() != self):
 		return
 	step_reel(delta)
 

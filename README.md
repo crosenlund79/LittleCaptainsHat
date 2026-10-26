@@ -20,7 +20,31 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.103a, Iteration 16: The World Awaits** (see
+Current version: **0.105a, Iteration 18: The Joy of the Journey** (see
+[ITERATION_18_REPORT.md](ITERATION_18_REPORT.md) and the sea-trial checklist
+[WINDOWS_ACCEPTANCE_18.md](WINDOWS_ACCEPTANCE_18.md)). Saves are unchanged
+(format 12):
+- **Fishing 2.0**: reel a fish in on a dial (press as the needle passes the
+  arc; rarer fish need more presses); every species illustrated, blinking
+  and flicking its tail; Bronze, Silver and Gold by weight; choose what to
+  keep; sharks (always released) and the odd old boot;
+- **Sail Trim** (T): trim by hand for a little more speed, or leave it to the
+  crew; fewer Long Passage stops for bites;
+- **anchorage waypoints** (M on the chart): stop for the night on the way,
+  asked once to drop anchor; at anchor the **black ball**, the rode and a
+  buoy by day, the **white anchor light** at night;
+- the **cat or dog follows you up on deck** in harbour and at anchor;
+- warmer pools of lamplight in the cabin, navigation lights on the rail, the
+  wind forecast in 1-hour steps up to 6 hours, and a long route that stays on
+  the chart while you pan round the world.
+
+Version 0.104a, Iteration 17: Let There Be Light (see
+[ITERATION_17_REPORT.md](ITERATION_17_REPORT.md) and
+[WINDOWS_ACCEPTANCE_17.md](WINDOWS_ACCEPTANCE_17.md)): day and night,
+lamplight and weather sound, the cabin world map, the chart table and the
+cockpit chartplotter.
+
+Version 0.103a, Iteration 16: The World Awaits (see
 [ITERATION_16_REPORT.md](ITERATION_16_REPORT.md), the sea-trial checklist
 [WINDOWS_ACCEPTANCE_16.md](WINDOWS_ACCEPTANCE_16.md) and the guides
 [DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) and
@@ -321,7 +345,11 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Sleep dialog: duration | **<** / **>** buttons (or Left / Right): 1–12 hours |
 | Cat beside a station | stand at the station to use it; **face the cat** (the arrow on your token) to pet it |
 | Provisions | **E** at the galley's provisions station (every cabin) |
-| Fishing | **E** at the rod on the stern rail: let the line out, choose a lure, wait for a bite. In the fight **hold E** (or the Reel button) to reel in and let go to ease off |
+| Fishing | **E** at the rod on the stern rail (or **R** aboard): let the line out, choose a lure, set what to keep (rarity, size) and what fast time does with bites, wait for a bite |
+| Reel in (Iteration 18) | when a fish is on ("Fish on! Reel in"), **R** from anywhere aboard opens the reel; press **E**, **Space/Enter** or click the dial as the needle passes the green arc (the gold middle is Perfect); three misses and it gets away; **Esc** lets it go |
+| Sail Trim (Iteration 18) | **T** underway (or the action wheel): **A / D** or arrows ease or sheet in; **Space** leaves it to the crew |
+| Chart: anchorage waypoint (Iteration 18) | select a waypoint and press **M** (or **Anchorage**): mark or unmark it as a place to anchor for the night |
+| Reduce motion (Iteration 18) | Settings: stills the fish's tail and bob and the buoy |
 | Cooking | **E** at the little stove beside the provisions |
 | Anchoring | **E** at the windlass on the foredeck; while setting the anchor press **E** (or *Set it now*) as the marker crosses the green middle |
 | Trophy board | **E** at the board on the cabin wall |

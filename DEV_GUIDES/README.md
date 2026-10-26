@@ -24,7 +24,7 @@ version of each guide.
 | [HARBOURS.md](HARBOURS.md) | give a harbour or take away a service (grocery, boatyard, haul-out, Go Ashore), set its tier, add a harbour, understand the gangplank and shore on every boat, add a Go Ashore event | `data/harbours/facilities/`, `src/harbour/` |
 | [BOAT_CARE.md](BOAT_CARE.md) | tune how the boat wears, the boatyard's services, prices and times, the haul-out, the equipment catalogue and Passage Readiness | `data/boat/`, `src/boat_care/`, `src/ui/boat_care_menu.gd` |
 | [CHART_REGIONS.md](CHART_REGIONS.md) | rebuild the detailed Danish chart from its sources, understand regions and level of detail, add another region | `data/navigation/regions/`, `tools/navigation/build_region.py` |
-| [LIFE_ABOARD.md](LIFE_ABOARD.md) | tune the fish, lures and trophies, the galley's dishes, morning coffee, the anchorage model and life at anchor (evening mood, the settled companion, quiet lines); find the rod, stove, windlass and trophy board | `data/fishing/`, `src/fishing/`, `src/galley/`, `src/anchor/`, `src/aboard/` |
+| [LIFE_ABOARD.md](LIFE_ABOARD.md) | tune the fish, lures and trophies, the reel dial, grades and keeping, sharks and junk, the galley's dishes, morning coffee, the anchorage model, anchorage waypoints, the anchor ball and light, life at anchor and the companion on deck; find the rod, stove, windlass and trophy board | `data/fishing/`, `src/fishing/`, `src/galley/`, `src/anchor/`, `src/aboard/` |
 | [MODDING_FUTURE.md](MODDING_FUTURE.md) | keep the project open for user content later (no mod support exists) | design principles |
 
 ## Where things belong
