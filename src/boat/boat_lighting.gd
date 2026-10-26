@@ -149,9 +149,9 @@ func _add_harbour_lights() -> void:
 	# during the docking arrival.
 	var mooring := dressing.get_parent()
 	for lamp in dressing.get_lamp_positions():
-		_add_light(dressing.position + lamp, QUAY_LAMP, 1.4, 0.8, "harbour", mooring)
+		_add_light(dressing.position + lamp, QUAY_LAMP, 1.1, 0.55, "harbour", mooring)
 	for spot in dressing.get_pontoon_light_positions():
-		_add_light(dressing.position + spot, QUAY_LAMP, 0.8, 0.3, "harbour", mooring)
+		_add_light(dressing.position + spot, QUAY_LAMP, 0.7, 0.22, "harbour", mooring)
 
 
 ## Soft shadows beside the furniture and fittings: the fixture's outline
@@ -282,14 +282,14 @@ class FixtureShadows extends Node2D:
 	func _draw() -> void:
 		for outline in outlines:
 			for layer in 3:
-				var offset := Vector2(3.0 + layer * 2.5, 4.0 + layer * 3.0)
+				var offset := Vector2(4.0 + layer * 3.0, 5.0 + layer * 3.5)
 				var moved := PackedVector2Array()
 				for p in outline:
 					moved.append(p + offset)
 				for piece in Geometry2D.clip_polygons(moved, outline):
 					if Geometry2D.is_polygon_clockwise(piece):
 						continue  # a hole, not a shadow
-					draw_colored_polygon(piece, Color(SHADOW, 0.1 - layer * 0.025))
+					draw_colored_polygon(piece, Color(SHADOW, 0.17 - layer * 0.05))
 
 
 ## A soft oval under the captain or a companion (drawn behind it).
@@ -301,4 +301,4 @@ class ContactShadow extends Node2D:
 			for k in 20:
 				var a := TAU * k / 20.0
 				points.append(Vector2(cos(a) * 15.0 * scale, sin(a) * 9.0 * scale + 6.0))
-			draw_colored_polygon(points, Color(SHADOW, 0.09))
+			draw_colored_polygon(points, Color(SHADOW, 0.12))

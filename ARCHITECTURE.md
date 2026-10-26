@@ -437,7 +437,7 @@ chart is open and no boat scene exists.
   - Enabled only by `DevTools.is_enabled()`: a debug build of the editor binary
     (`OS.has_feature("editor")`), unless started with `-- --no-dev-tools`.
     Exported games never have it.
-  - **F9** (`App.toggle_dev_tests()`) or the pause menu's button (added only
+  - **F10** (`App.toggle_dev_tests()`; F9 until Iteration 16) or the pause menu's button (added only
     when enabled) opens `DevTestPanel`.
   - It acts on the real game through public APIs:
     - weather scenarios are `WeatherFixtures` events in the one `WeatherModel`

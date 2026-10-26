@@ -189,6 +189,45 @@ The Captain has approved:
 - **No visible activation circles**; the **eight-direction view and the
   precise physics are preserved**.
 
+### Iteration 17, Let There Be Light
+
+The Captain has approved:
+
+- **Iteration 17 is Let There Be Light** (version 0.104a, save format 12
+  unchanged). **Cozy lighting is a defining requirement**: day and night
+  change gradually, warm lamps light the cabin, the deck is lit practically
+  and the harbour lights welcome the boat home.
+- **Three navigation experiences are approved**, each with its own purpose:
+  - the **cabin world map** is for exploration and dreaming (voyage
+    daydreams change nothing);
+  - the **navigation station** (the chart table) is for practical regional
+    planning;
+  - the **cockpit chartplotter** is for immediate sailing.
+- **All three use the existing authoritative worldwide navigation system**
+  (the same chart, harbours and router). **Worldwide route distance must
+  never be artificially restricted by the chart display size.**
+- **The world map has no live wind or weather overlay.**
+- **Wind visualization is optimized through profiling, caching and
+  appropriate sampling** (cached model snapshots, zoom-appropriate density,
+  no wind detail at whole-world zoom).
+- **Actual sailing weather remains deterministic and coherent worldwide**;
+  the overlay only displays it.
+- **Wind forecasts are read-only model previews**: previewing never moves
+  the boat or the clock, and forecasts are labelled as estimates.
+- **Save/load underway must keep the Captain aboard**, where they stood.
+- **Boat visuals must reflect the heading while outside** (the deck view
+  turns when the course changes).
+- **The action-wheel shortcut must appear in the bottom help panel.**
+- **Lighting, weather audio and storm presentation are prioritized.**
+- **No giant visible activation circles**; the eight-direction view and the
+  precise physics are preserved.
+- **Iterations 18–21 remain separately scoped** (I018 The Joy of the
+  Journey, I019 The Captain's Watch, I020 A Boat of Your Own, I021 The
+  Well-Trimmed Ship) and were not started. The cabin wall map is authorized
+  as a navigation feature and does not authorize the rest of I020.
+- **Difficulty levels remain deferred.**
+- **Windows acceptance must not be claimed without the Captain's test.**
+
 ### Iterations and versions
 
 - Iteration numbers are plain sequential integers: no letter suffixes and no
@@ -240,6 +279,9 @@ Two. Iteration 14 added one detailed region and boat care as authorized.
 Iteration 16 adds global sailing and international passages, which the
 Captain explicitly authorized; it does not invent Phase Two wording or reopen
 Phase Two (the wording was again not found in the repository in Iteration 16).
+Iteration 17 (lighting, atmosphere, navigation views) is likewise within the
+Captain's authorization and does not reopen Phase Two; the wording was again
+not found in the repository in Iteration 17.
 *Developer note: please add the Phase Two wording here.*
 
 ## Iteration log
@@ -269,3 +311,13 @@ Phase Two (the wording was again not found in the repository in Iteration 16).
   of the voyage abroad; see `ITERATION_16_REPORT.md` and
   `WINDOWS_ACCEPTANCE_16.md`. Iteration 15 (the performance and stability
   pass) was skipped at the Captain's instruction.
+- **Iteration 17, Let There Be Light**, version 0.104a, save format 12
+  (unchanged): day and night lighting with warm cabin lamps, deck and harbour
+  lights and soft shadows; weather sound with thunderstorms and muffled
+  cabin acoustics; the cabin world map with voyage daydreams, the regional
+  navigation station and the cockpit chartplotter; the world-chart rendering
+  fix and the cached wind overlay with time previews; the deck turning with
+  the course, the sail above the captain, fenders stowed underway, the
+  sailing panel, the action wheel, F5/F9 quicksave, harbours by country and
+  the docking arrival; see `ITERATION_17_REPORT.md` and
+  `WINDOWS_ACCEPTANCE_17.md`.

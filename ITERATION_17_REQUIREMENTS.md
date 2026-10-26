@@ -16,7 +16,7 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | MAP-3 | Zoom around Australia/New Zealand; world ↔ regional scale switches | DONE | test_world_chart_render regional sweeps at Australia/Pacific latitudes; screenshot 17_map_australia_regional |  |
 | MAP-4 | Reopen map and select destinations after extensive panning | DONE | test_world_chart_render: harbour picking after long pans |  |
 | MAP-5 | Repeatable automated rendering-coverage regression test | DONE | tests/suites/test_world_chart_render.gd |  |
-| MAP-6 | Rendered before/after evidence | TODO | | |
+| MAP-6 | Rendered before/after evidence | DONE | docs/screenshots/iteration17/32_world_chart_before_after.png (I016 vs I017 after panning west and east); 03, 04 |  |
 | MAP-7 | Worldwide routing and Date Line correctness preserved | TODO | | |
 
 ## WND — Wind and weather performance [§10–§15]
@@ -27,12 +27,12 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | WND-2 | Separation: authoritative sailing weather / forecast-route sampling / chart visualization | DONE | WeatherModel.sample (sailing), Simulation forecasts with known_at (route), WeatherModel.sample_wind + WindLayer snapshot cache (chart) |  |
 | WND-3 | Audit: sailing weather local/on-demand; documented honestly | DONE | Audit: samples are point queries; event list per 15-min bucket ~10 events worldwide, 0.5 ms cold / 2 µs warm; reach boxes skip far events (0.38 events checked per sample near Denmark) | Was already local; no optimisation claimed |
 | WND-4 | Closing the chart stops chart wind work; sailing weather continues | DONE | test_wind_overlay [close]; WindLayer processes only while shown and in the open chart |  |
-| WND-5 | Long passages sample along the travelled path; Long Passage equivalence kept | TODO | | |
+| WND-5 | Long passages sample along the travelled path; Long Passage equivalence kept | DONE | Simulation samples at the boat each step (~6,500 samples per sailed day, benchmark); test_long_passage equivalence (12 h/s vs twenty-minute steps) passes |  |
 | WND-6 | Chart wind as a cached snapshot (spatial, time, resolution; bounded; reuse on small pans; no per-frame rebuild) | DONE | test_wind_overlay [overlay]: no chunks while stationary, small pans reuse, cached snapshot reuse, bounded caches |  |
 | WND-7 | Adaptive density by zoom; thresholds measured; hysteresis; "Zoom in to see wind details." | DONE | test_wind_overlay [zoom]: hidden below 9 px/° (shown again above 11), notice, bounded lattice points |  |
 | WND-8 | Wind snapshot controls: Previous/Next/Now, 30-min steps, ±2 h, NOW / PAST MODEL SNAPSHOT / FORECAST labels, uncertainty note | DONE | test_wind_overlay [navigator]; screenshot 17_wind_forecast |  |
 | WND-9 | Forecast preview is read-only (no time, movement, stores, wear, events, weather, seeds, rewards) | DONE | test_wind_overlay: time, position, seed and whole saved state unchanged after previewing |  |
-| WND-10 | Passage Readiness / cockpit forecasts limited to relevant samples | TODO | | |
+| WND-10 | Passage Readiness / cockpit forecasts limited to relevant samples | DONE | PassageReadiness consults the route forecast only up to FORECAST_HOURS; the sailing panel samples one point on the next leg; no world grid anywhere (report §7–8) |  |
 | WND-11 | Before/after wind performance measured | DONE | docs/benchmarks/iteration17_checkpointB_*.json: forced full re-sample 1051 → 36 ms (Denmark region, headless); in play spread over frames at ≤ 3 ms |  |
 
 ## NAV — Navigation architecture [§4–§8]
@@ -64,7 +64,7 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | SAVE-1 | Save/load underway keeps the Captain aboard (all listed situations), relative positions, safe fallback | DONE | test_sailing_correctness [save]: helm, bow, stern, cabin, after a course change, at anchor, in a gale at night; invalid position falls back to the spawn point | Two-process check in 17I |
 | SAVE-2 | Weather persistence: reload reproduces weather; no rerolling; documented | DONE | test_sailing_correctness [weather]: the same save sailed twice gives identical wind, position and condition for 12 h | Weather is a pure function of (position, time, seed); the seed is saved |
 | SAVE-3 | F5 quicksave / F9 quickload with confirmation, no double-activation, defined policy | DONE | test_sailing_correctness [quick]: F5 once per press, own file, manual slots untouched, refused with a window open, F9 asks then restores exactly, repeated F9 ignored | Developer test panel moved from F9 to F10 |
-| SAVE-4 | Two-process save/load verification (deck, cabin, storm) | TODO | | |
+| SAVE-4 | Two-process save/load verification (deck, cabin, storm) | DONE | tests/restart_17.tscn (write, quit, read): deck near the bow in strong wind (25 kn, gusts 33), cabin, and a third save; PASS | No gale/thunderstorm occurred in an 8-day search, so a saved storm was not tested across processes (covered in-process) |
 | SAVE-5 | Existing saves load; save format decision documented | DONE | Save format stays 12 (no new fields); test_save_manager, test_voyage_persistence pass |  |
 
 ## LGT — Lighting [§16–§21]
@@ -76,7 +76,7 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | LGT-3 | Warm cabin lighting from fixtures, all four boats, personalization-safe | DONE | test_lighting [cabin]: lamps at each boat's own fixtures (by fixture name, personalization-safe), night dim not black, day lamps off with hatch daylight; screenshots 17_cabin_night_* |  |
 | LGT-4 | Deck and cockpit night lighting, restrained; helm and highlights visible | DONE | test_lighting [deck]: cool dim night, helm instrument glow, companionway spill, red/green/white navigation lights; highlights compensated |  |
 | LGT-5 | Harbour lighting via reusable pattern | DONE | test_lighting [harbour]: quay lamps and pontoon lights from the shared HarbourDressing (every harbour), lit at night moored only |  |
-| LGT-6 | Soft shadows and depth; before/after comparison | PARTIAL | Fixture soft shadows and contact shadows (test_lighting); before/after comparison rendered in 17I |  |
+| LGT-6 | Soft shadows and depth; before/after comparison | DONE | Fixture soft shadows and contact shadows (test_lighting); docs/screenshots/iteration17/31_lighting_before_after.png | Soft overlays, not true occlusion |
 
 ## AUD — Audio and storm atmosphere [§22–§25, §39]
 
@@ -110,12 +110,12 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| QA-1 | Long Passage preserved and integrated (lighting, audio, preview, panel) | TODO | | |
+| QA-1 | Long Passage preserved and integrated (lighting, audio, preview, panel) | DONE | test_long_passage passes; test_lighting [fast] (eased light at Long Passage pace); sailing panel and Long Passage panel do not overlap (test_cockpit_ui) |  |
 | QA-2 | Performance profiling and before/after report (headless vs rendered stated) | TODO | | |
 | QA-3 | Full regression | TODO | | |
 | QA-4 | 30 rendered screenshots reviewed | TODO | | |
-| QA-5 | Shipyard Efficiency section with measured timings | TODO | | |
-| QA-6 | CAPTAINS_ORDERS.md updated | TODO | | |
-| QA-7 | ITERATION_17_REPORT.md (40 items), WINDOWS_ACCEPTANCE_17.md | TODO | | |
+| QA-5 | Shipyard Efficiency section with measured timings | DONE | ITERATION_17_REPORT.md §37 (138 logged runs, measured vs estimate separated) |  |
+| QA-6 | CAPTAINS_ORDERS.md updated | DONE | Iteration 17 decisions and log entry; existing decisions preserved; no Phase Two wording invented |  |
+| QA-7 | ITERATION_17_REPORT.md (40 items), WINDOWS_ACCEPTANCE_17.md | DONE | Both written; Windows status: not yet tested |  |
 | QA-8 | Version per policy; push and remote HEAD verified | TODO | | |
-| QA-9 | No I018–I021 scope started | TODO | | |
+| QA-9 | No I018–I021 scope started | DONE | No Fishing 2.0, alarms, shops, personalization or difficulty modes |  |

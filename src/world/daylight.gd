@@ -76,7 +76,7 @@ static func outside_colour(elevation: float, overcast := 0.0) -> Color:
 			break
 		colour = b[1]
 	var grey := Color(colour.get_luminance(), colour.get_luminance(), colour.get_luminance())
-	return colour.lerp(grey, overcast * 0.5) * (1.0 - overcast * 0.22)
+	return colour.lerp(grey, overcast * 0.5) * (1.0 - overcast * 0.3)
 
 
 ## The base light in the cabin (before its lamps): daylight through the

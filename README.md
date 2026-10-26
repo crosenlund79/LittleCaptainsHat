@@ -220,7 +220,7 @@ Iteration 005b adds:
 - **playtest corrections**: a better-proportioned Halcyon 40 cabin with a
   clearly marked exit; the cat no longer blocks stations (face the cat to pet
   it); a fixed-size boatyard panel.
-- **developer test tools** (F9, only when run from the Godot editor): test
+- **developer test tools** (F10 since Iteration 17, only when run from the Godot editor): test
   storms, squalls, condition levels, the real rescue, stores and time, for
   [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md).
 
@@ -328,7 +328,12 @@ godot --headless --path . res://tests/test_runner.tscn   # run the automated tes
 | Captain's hat | **E** at its hook in the cabin: put it on or hang it up. **H** aboard: take it off (under your arm) or put it back on |
 | Captain's Log | **L** (aboard or on the chart), or **Captain's Log** in the pause menu: Log, Harbours and Objectives tabs; *Publish travel update…* |
 | Chart: find a harbour | type in **Find a harbour…** on the Course tab, then click a result (works for harbours hidden at the current zoom) |
-| Developer test tools | **F9** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |
+| Action wheel (Iteration 17) | **Q** aboard: the actions for where you are (helm, cabin, anchor, harbour); arrows or A/D to choose, **E** or Enter to use, **Q** or Esc to close |
+| Chartplotter (Iteration 17) | **P** on deck while underway (or from the action wheel); **+ / –** change its range |
+| Quicksave / quickload (Iteration 17) | **F5** aboard saves to the quicksave (never a manual slot); **F9** loads it (asks first if you would lose progress); also listed under Load Game |
+| Dreamer's Map (Iteration 17) | **E** at the framed world map on the cabin wall: explore the world, read about harbours, *Imagine this voyage*, *Plan it at the chart table* |
+| Wind time (Iteration 17) | on the chart: **◀ 30 min / Now / 30 min ▶** under the wind legend (two hours back or ahead; read-only) |
+| Developer test tools | **F10** (only when run from the Godot editor; see [WINDOWS_ACCEPTANCE_I005.md](WINDOWS_ACCEPTANCE_I005.md)) |
 
 Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / Space to press).
 
@@ -574,7 +579,7 @@ src/core/        game session state and the simulation (game clock, voyages), pr
 src/boat/        boat area logic, collision fixtures, sail rig, visual slots (visuals/)
 src/vessels/     vessel definition and catalog; deck/cabin scenes per vessel (<id>/)
 src/companion/   ship's companion: state (kind, resting spot), the cabin animal, pose art data types
-src/dev/         developer guide index, developer test tools (F9) and weather fixtures
+src/dev/         developer guide index, developer test tools (F10) and weather fixtures
 data/companions/ companion pose sets (cat_visuals.tres: pose -> image, placement, timing)
 Visuals/Cat/     the owner's original cat drawings (used directly by the game)
 DEV_GUIDES/      practical developer guides (sprites, companion, vessel art, audio, modding)

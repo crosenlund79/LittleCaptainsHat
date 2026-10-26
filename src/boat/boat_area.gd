@@ -559,6 +559,10 @@ func play_docking_arrival() -> void:
 		return
 	place_player_at_spawn(&"start")
 	player.set_input_enabled(false)
+	# The harbour view straight away (not still turned to the last course).
+	_update_camera()
+	if _zoom_tween:
+		_zoom_tween.custom_step(ZOOM_TRANSITION_S * 2.0)
 	var rest := mooring.position
 	mooring.position = rest + DOCKING_OFFSET
 	mooring.modulate.a = 0.0
