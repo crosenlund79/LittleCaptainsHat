@@ -742,3 +742,9 @@ built and verified.
   by Patrick Wagesreiter, SIL Open Font License (`assets/fonts/OFL-PatrickHand.txt`). See
   `assets/fonts/README.md`.
 - Logo, UI, scenes, weather data and placeholder sounds were made for this project.
+- Music: the three soundtrack pieces (*Home Upon the Waves*, *The Wind Knows the Way*, *Lanterns
+  Across the Water*) were composed for this project. Their scores are in `tools/music/`, and they were rendered with
+  the [GeneralUser GS](https://www.schristiancollins.com/generaluser) SoundFont v2.0.3 by S. Christian
+  Collins (free for music creation, including commercial use; licence in `tools/music/soundfont/LICENSE.txt`)
+  through [TinySoundFont](https://github.com/schellingb/TinySoundFont) (MIT). See
+  `docs/artwork/ORIGINAL_SOUNDTRACK_REPORT.md`.

@@ -281,7 +281,9 @@ func _refresh_status() -> void:
 func _play_test_sound(bus: StringName) -> void:
 	match bus:
 		&"Music":
-			AudioManager.play_music(music_test_stream, false)
+			# The soundtrack is already the test while it plays.
+			if not MusicDirector.is_playing():
+				AudioManager.play_music(music_test_stream, false)
 		&"Ambience":
 			AudioManager.play_one_shot(ambience_test_stream, AudioManager.BUS_AMBIENCE)
 		&"SFX":
