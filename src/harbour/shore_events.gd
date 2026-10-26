@@ -87,10 +87,49 @@ const BY_HARBOUR := {
 }
 
 
-## Every event offered in `port_id` (generic first, then the harbour's own).
+## Regional flavour for the international harbours (Iteration 16): one
+## gentle moment per region, generic colour that fits any harbour there.
+const BY_REGION := {
+	"atlantic_islands": [
+		{"id": "island_landfall", "icon": "sailor", "title": "Fellow ocean sailors",
+			"text": "The pontoons of {harbour} are full of boats with wind vanes and jerrycans lashed on deck: everyone here is crossing somewhere.",
+			"choices": [
+				{"label": "Compare passage plans", "cost": 0, "minutes": 45, "renown": 4,
+					"outcome": "Charts come out, everyone points at the same patch of ocean, and somebody puts the kettle on."}]}],
+	"caribbean": [
+		{"id": "steel_band", "icon": "basket", "title": "Music by the water",
+			"text": "Somewhere along the waterfront of {harbour} a band is playing, and the stalls are selling fruit you have only read about.",
+			"choices": [
+				{"label": "A fresh coconut", "cost": 3, "minutes": 30, "renown": 3,
+					"outcome": "You drink it straight from the shell while the music drifts over the boats."},
+				{"label": "Just listen", "cost": 0, "minutes": 20, "renown": 2,
+					"outcome": "Your foot starts tapping long before you notice."}]}],
+	"central_america": [
+		{"id": "ships_passing", "icon": "view", "title": "Ships waiting their turn",
+			"text": "Off {harbour} great ships lie at anchor, waiting their turn for the canal. Your boat looks very small and very proud.",
+			"choices": [
+				{"label": "Count the ships", "cost": 0, "minutes": 30, "renown": 3,
+					"outcome": "You lose count somewhere past twenty and decide your boat is the nicest one anyway."}]}],
+	"pacific": [
+		{"id": "lagoon_evening", "icon": "bench", "title": "A warm Pacific evening",
+			"text": "The evening air in {harbour} smells of flowers and the sea. Children are swimming off the quay, shrieking happily.",
+			"choices": [
+				{"label": "Sit and watch the sunset", "cost": 0, "minutes": 40, "renown": 4,
+					"outcome": "The sky goes gold, then pink, then the first stars come out over the masts. A long way from home, and it feels like it."},
+				{"label": "Buy fruit at the stall", "cost": 4, "minutes": 20, "renown": 3,
+					"outcome": "You carry a bag of the sweetest fruit back to the boat, already planning breakfast."}]}],
+}
+
+
+## Every event offered in `port_id` (generic first, then the region's and
+## the harbour's own).
 static func for_port(port_id: StringName) -> Array[Dictionary]:
 	var events: Array[Dictionary] = []
 	events.append_array(GENERIC)
+	var port := PortCatalog.get_default().get_port(port_id)
+	if port:
+		for event: Dictionary in BY_REGION.get(port.region, []):
+			events.append(event)
 	for event: Dictionary in BY_HARBOUR.get(String(port_id), []):
 		events.append(event)
 	return events

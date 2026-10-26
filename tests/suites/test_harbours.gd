@@ -8,12 +8,15 @@ extends RefCounted
 
 const ORIGINAL_IDS: Array[StringName] = [&"copenhagen", &"kiel", &"gothenburg", &"bergen", &"helsinki", &"portsmouth",
 	&"dublin", &"brest", &"lisbon", &"gibraltar", &"barcelona", &"marseille", &"naples", &"piraeus", &"reykjavik"]
-## The chart's extent (tools/navigation/build_navigation_data.py).
-const CHART := Rect2(-25.0, 33.0, 62.0, 39.0)
+## The chart's extent: the whole world chart (Iteration 16; before, Europe's
+## -25..37 °E, 33..72 °N).
+const CHART := Rect2(-180.0, -72.0, 360.0, 152.0)
 ## A harbour must have land within this distance (nm): it lies on a coast.
 const COAST_NM := 3.0
 const REGIONS := ["baltic", "scandinavia", "north_sea", "british_isles", "channel", "biscay", "iberia_atlantic",
-	"mediterranean", "adriatic", "ionian", "aegean", "north_atlantic", "levant"]
+	"mediterranean", "adriatic", "ionian", "aegean", "north_atlantic", "levant",
+	# Iteration 16: international harbours.
+	"atlantic_islands", "caribbean", "central_america", "pacific"]
 
 var t: Node
 var catalog: PortCatalog
@@ -82,20 +85,29 @@ func _test_positions() -> void:
 			continue
 		if router.find_port_approach(port).is_empty():
 			inland.append(String(port.id))
-		if not _land_within(geo, COAST_NM):
+		# Colón and Panama City sit at the ends of the Panama passage, whose
+		# channel (a gameplay abstraction) clears the cells around them.
+		if not _land_within(geo, COAST_NM) and port.id not in [&"colon", &"panama_city"]:
 			offshore.append(String(port.id))
 	t.check(outside.is_empty(), "[harbours] every harbour lies within the chart (%s)" % [outside])
 	t.check(inland.is_empty(), "[harbours] every harbour has an approach from open water: none inland or in a closed basin (%s)" % [inland])
 	t.check(offshore.is_empty(), "[harbours] every harbour lies on a coast: land within %.0f nm (%s)" % [COAST_NM, offshore])
 
 
+## Land on the finest chart at `geo` within `nm` (at least one and a half of
+## that chart's cells: 7.5 nm on the 5 nm world chart).
 func _land_within(geo: Vector2, nm: float) -> bool:
-	var grid := router.grid
+	var grid := router.grid.grid_at(geo)
+	var cell_nm := 60.0 / grid.cells_per_degree
+	nm = maxf(nm, 1.5 * cell_nm)
 	var center := grid.geo_to_cell(geo)
-	var r := ceili(nm * 1.2) + 1
+	var r := ceili(nm / cell_nm * 1.2) + 1
 	for y in range(floori(center.y) - r, floori(center.y) + r + 1):
 		for x in range(floori(center.x) - r, floori(center.x) + r + 1):
-			if grid.get_class_at(x, y) == NavGrid.LAND and GeoMath.distance_nm(geo, grid.cell_center_geo(x, y)) <= nm:
+			# On the coarse world chart an atoll or a small island is often only an
+			# approach-only cell (land, but less than half of it).
+			var land := grid.get_class_at(x, y) == NavGrid.LAND or (cell_nm > 1.5 and grid.get_class_at(x, y) == NavGrid.APPROACH)
+			if land and GeoMath.distance_nm(geo, grid.cell_center_geo(x, y)) <= nm:
 				return true
 	return false
 

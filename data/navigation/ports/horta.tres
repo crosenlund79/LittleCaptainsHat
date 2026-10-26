@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"horta"
+display_name = "Horta"
+country = "Portugal"
+latitude = 38.5333
+longitude = -28.6333
+description = "Horta on Faial in the Azores, a famous mid-Atlantic stop for sailors."
+importance = 2
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE PT HOR 3832N 02838W (UNECE code list), Iteration 16"

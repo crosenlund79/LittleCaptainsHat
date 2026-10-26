@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"papeete"
+display_name = "Papeete"
+country = "French Polynesia"
+latitude = -17.5333
+longitude = -149.5667
+description = "Papeete, the harbour town of Tahiti."
+importance = 1
+region = "pacific"
+island = true
+source = "UN/LOCODE PF PPT 1732S 14934W (UNECE code list), Iteration 16"

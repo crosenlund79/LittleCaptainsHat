@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"bequia"
+display_name = "Port Elizabeth"
+country = "Saint Vincent and the Grenadines"
+latitude = 13.0000
+longitude = -61.2167
+description = "Port Elizabeth on Bequia, in the Grenadines."
+importance = 3
+region = "caribbean"
+island = true
+source = "UN/LOCODE VC BQU 1300N 06113W (UNECE code list), Iteration 16"

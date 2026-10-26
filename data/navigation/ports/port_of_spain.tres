@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"port_of_spain"
+display_name = "Port of Spain"
+country = "Trinidad and Tobago"
+latitude = 10.6500
+longitude = -61.5167
+description = "Port of Spain, Trinidad, at the southern end of the Antilles."
+importance = 3
+region = "caribbean"
+island = true
+source = "UN/LOCODE TT POS 1039N 06131W (UNECE code list), Iteration 16"

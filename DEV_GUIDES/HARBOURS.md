@@ -71,6 +71,29 @@ the detailed Danish chart, then writes each harbour's facility file from its
 tier. It needs the same source files as the region build (see
 [CHART_REGIONS.md](CHART_REGIONS.md)).
 
+### International harbours (Iteration 16)
+
+The 36 harbours abroad (regions `atlantic_islands`, `caribbean`,
+`central_america`, `pacific`) were added with
+`tools/navigation/add_world_harbours.py path/to/code-list.csv`. It reads the
+**UN/LOCODE** code list (UNECE; the position column, to the arc-minute) and
+writes each harbour's row with that position **unchanged**, its source
+(`UN/LOCODE PF PPT 1732S 14934W …`) and its facility file from a tier (small:
+no boatyard; larger: a boatyard; major: haul-outs too). Every one has a grocery
+store, so no crew is ever stranded without food and water.
+
+On the coarse world chart (5 nm cells) a town position is often a cell or two
+inland; the harbour approach allows for that (`SeaRouter.approach_radius_nm`:
+six cells abroad, 10 nm in Europe). A harbour whose position is further from
+open water than that is left out and named in the script (Opua, deep in the
+Bay of Islands). The tiers and descriptions are gameplay, not claims about real
+businesses.
+
+To add one: add a row to `HARBOURS` in the script (id, name, country, the
+UN/LOCODE country and location codes, importance, region, island flag, tier,
+a one-line description), run it, run `build_harbours.py`, then the harbour and
+routing tests.
+
 ## 2. The gangplank and the shore
 
 Nothing per boat is needed. `ShoreAccess` (`src/harbour/shore_access.gd`)
@@ -91,6 +114,8 @@ reachable again. The plank is 68 units wide (the player is 40 across).
 Events live in `src/harbour/shore_events.gd`:
 
 - `GENERIC`: offered in every harbour;
+- `BY_REGION`: extras for every harbour of a region (Iteration 16: one gentle
+  moment each for the Atlantic islands, the Caribbean, Panama and the Pacific);
 - `BY_HARBOUR`: extras for one harbour, by port id.
 
 An event:

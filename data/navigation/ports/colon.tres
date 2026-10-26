@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"colon"
+display_name = "Colón"
+country = "Panama"
+latitude = 9.3500
+longitude = -79.8667
+description = "Colón, at the Caribbean end of the Panama Canal."
+importance = 1
+region = "central_america"
+island = false
+source = "UN/LOCODE PA ONX 0921N 07952W (UNECE code list), Iteration 16"

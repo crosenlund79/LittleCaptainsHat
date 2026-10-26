@@ -14,6 +14,7 @@ const FISH_COLOURS := {
 	"herring": Color("#9fb7c0"), "mackerel": Color("#4f8a8b"), "flatfish": Color("#a68b62"), "cod": Color("#9a8f6a"),
 	"perch": Color("#7ba05b"), "garfish": Color("#6fa3a8"), "gilthead_bream": Color("#c0c4b8"), "sea_trout": Color("#b39a7a"),
 	"sea_bass": Color("#a9b4b8"), "bonito": Color("#3f6f8f"),
+	"mahi_mahi": Color("#9fbf4f"), "skipjack": Color("#4a6f99"), "snapper": Color("#c8705a"), "yellowfin": Color("#d9b84a"),
 }
 const SIZE := Vector2(132, 46)
 

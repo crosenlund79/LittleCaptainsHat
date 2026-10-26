@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"st_george_bermuda"
+display_name = "St. George's"
+country = "Bermuda"
+latitude = 32.3833
+longitude = -64.6833
+description = "St. George's, the old harbour town of Bermuda, alone in the western Atlantic."
+importance = 1
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE BM SGE 3223N 06441W (UNECE code list), Iteration 16"

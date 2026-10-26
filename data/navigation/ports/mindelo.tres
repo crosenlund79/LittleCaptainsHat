@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"mindelo"
+display_name = "Mindelo"
+country = "Cape Verde"
+latitude = 16.8833
+longitude = -25.0000
+description = "Mindelo on São Vicente, Cape Verde: a last stop before the trade winds."
+importance = 1
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE CV MIN 1653N 02500W (UNECE code list), Iteration 16"

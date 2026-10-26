@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"fort_de_france"
+display_name = "Fort-de-France"
+country = "Martinique"
+latitude = 14.6000
+longitude = -61.0500
+description = "Fort-de-France, the capital of Martinique, on its wide bay."
+importance = 3
+region = "caribbean"
+island = true
+source = "UN/LOCODE MQ FDF 1436N 06103W (UNECE code list), Iteration 16"

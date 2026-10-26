@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"funchal"
+display_name = "Funchal"
+country = "Portugal"
+latitude = 32.6333
+longitude = -16.9000
+description = "Funchal, the harbour of Madeira, at the foot of green mountains."
+importance = 1
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE PT FNC 3238N 01654W (UNECE code list), Iteration 16"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"whangarei"
+display_name = "Whangarei"
+country = "New Zealand"
+latitude = -35.8333
+longitude = 174.4833
+description = "Whangarei, up its harbour in Northland, New Zealand."
+importance = 3
+region = "pacific"
+island = true
+source = "UN/LOCODE NZ WRE 3550S 17429E (UNECE code list), Iteration 16"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"le_marin"
+display_name = "Le Marin"
+country = "Martinique"
+latitude = 14.4667
+longitude = -60.8667
+description = "Le Marin in the south of Martinique, a sheltered bay full of yachts."
+importance = 2
+region = "caribbean"
+island = true
+source = "UN/LOCODE MQ QMR 1428N 06052W (UNECE code list), Iteration 16"

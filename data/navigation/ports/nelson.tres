@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"nelson"
+display_name = "Nelson"
+country = "New Zealand"
+latitude = -41.2500
+longitude = 173.2667
+description = "Nelson, at the top of New Zealand's South Island."
+importance = 3
+region = "pacific"
+island = true
+source = "UN/LOCODE NZ NSN 4115S 17316E (UNECE code list), Iteration 16"

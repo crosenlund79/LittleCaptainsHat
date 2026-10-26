@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"falmouth_antigua"
+display_name = "Falmouth Harbour"
+country = "Antigua and Barbuda"
+latitude = 17.0167
+longitude = -61.7833
+description = "Falmouth Harbour on the south coast of Antigua."
+importance = 2
+region = "caribbean"
+island = true
+source = "UN/LOCODE AG FAM 1701N 06147W (UNECE code list), Iteration 16"

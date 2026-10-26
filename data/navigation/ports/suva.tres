@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"suva"
+display_name = "Suva"
+country = "Fiji"
+latitude = -18.1333
+longitude = 178.4500
+description = "Suva, the capital of Fiji, on Viti Levu."
+importance = 1
+region = "pacific"
+island = true
+source = "UN/LOCODE FJ SUV 1808S 17827E (UNECE code list), Iteration 16"

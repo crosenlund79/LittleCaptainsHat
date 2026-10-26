@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"raiatea"
+display_name = "Uturoa"
+country = "French Polynesia"
+latitude = -16.7333
+longitude = -151.4667
+description = "Uturoa on Raiatea, in the Society Islands."
+importance = 3
+region = "pacific"
+island = true
+source = "UN/LOCODE PF RFP 1644S 15128W (UNECE code list), Iteration 16"

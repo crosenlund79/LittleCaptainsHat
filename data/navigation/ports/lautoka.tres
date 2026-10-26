@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"lautoka"
+display_name = "Lautoka"
+country = "Fiji"
+latitude = -17.6167
+longitude = 177.4500
+description = "Lautoka on the west coast of Viti Levu, Fiji."
+importance = 3
+region = "pacific"
+island = true
+source = "UN/LOCODE FJ LTK 1737S 17727E (UNECE code list), Iteration 16"

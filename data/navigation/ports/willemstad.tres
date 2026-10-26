@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"willemstad"
+display_name = "Willemstad"
+country = "Curaçao"
+latitude = 12.1000
+longitude = -68.9167
+description = "Willemstad, Curaçao, behind its colourful waterfront."
+importance = 2
+region = "caribbean"
+island = true
+source = "UN/LOCODE CW WIL 1206N 06855W (UNECE code list), Iteration 16"

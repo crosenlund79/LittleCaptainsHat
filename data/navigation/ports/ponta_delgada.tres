@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"ponta_delgada"
+display_name = "Ponta Delgada"
+country = "Portugal"
+latitude = 37.7333
+longitude = -25.6667
+description = "Ponta Delgada on São Miguel, the largest harbour of the Azores."
+importance = 1
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE PT PDL 3744N 02540W (UNECE code list), Iteration 16"

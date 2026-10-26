@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"puerto_ayora"
+display_name = "Puerto Ayora"
+country = "Ecuador"
+latitude = -0.7500
+longitude = -90.3167
+description = "Puerto Ayora on Santa Cruz, in the Galápagos Islands."
+importance = 2
+region = "pacific"
+island = true
+source = "UN/LOCODE EC AYO 0045S 09019W (UNECE code list), Iteration 16"

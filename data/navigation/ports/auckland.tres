@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"auckland"
+display_name = "Auckland"
+country = "New Zealand"
+latitude = -36.8333
+longitude = 174.8000
+description = "Auckland, the City of Sails, on the Hauraki Gulf."
+importance = 1
+region = "pacific"
+island = true
+source = "UN/LOCODE NZ AKL 3650S 17448E (UNECE code list), Iteration 16"

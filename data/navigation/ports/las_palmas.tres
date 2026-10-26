@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"las_palmas"
+display_name = "Las Palmas"
+country = "Spain"
+latitude = 28.1000
+longitude = -15.4167
+description = "Las Palmas de Gran Canaria, where many Atlantic crossings begin."
+importance = 1
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE ES LPA 2806N 01525W (UNECE code list), Iteration 16"

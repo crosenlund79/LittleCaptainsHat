@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"fakarava"
+display_name = "Fakarava"
+country = "French Polynesia"
+latitude = -16.0500
+longitude = -145.6667
+description = "Fakarava, a coral atoll of the Tuamotu."
+importance = 3
+region = "pacific"
+island = true
+source = "UN/LOCODE PF FAV 1603S 14540W (UNECE code list), Iteration 16"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"san_juan"
+display_name = "San Juan"
+country = "Puerto Rico"
+latitude = 18.4500
+longitude = -66.0833
+description = "San Juan, Puerto Rico, under the old fortress walls."
+importance = 2
+region = "caribbean"
+island = true
+source = "UN/LOCODE PR SJU 1827N 06605W (UNECE code list), Iteration 16"

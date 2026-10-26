@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"honolulu"
+display_name = "Honolulu"
+country = "United States"
+latitude = 21.3000
+longitude = -157.8500
+description = "Honolulu on O'ahu, in the middle of the North Pacific."
+importance = 1
+region = "pacific"
+island = true
+source = "UN/LOCODE US HNL 2118N 15751W (UNECE code list), Iteration 16"

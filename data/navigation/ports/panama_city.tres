@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"panama_city"
+display_name = "Panama City"
+country = "Panama"
+latitude = 8.9667
+longitude = -79.5333
+description = "Panama City, at the Pacific end of the Panama Canal."
+importance = 1
+region = "central_america"
+island = false
+source = "UN/LOCODE PA PTY 0858N 07932W (UNECE code list), Iteration 16"

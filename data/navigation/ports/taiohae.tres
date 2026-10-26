@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"taiohae"
+display_name = "Taiohae"
+country = "French Polynesia"
+latitude = -8.9000
+longitude = -140.1000
+description = "Taiohae on Nuku Hiva, the landfall in the Marquesas after the long Pacific crossing."
+importance = 2
+region = "pacific"
+island = true
+source = "UN/LOCODE PF TAI 0854S 14006W (UNECE code list), Iteration 16"

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"arrecife"
+display_name = "Arrecife"
+country = "Spain"
+latitude = 28.9667
+longitude = -13.5333
+description = "Arrecife on Lanzarote, the easternmost of the Canary Islands."
+importance = 3
+region = "atlantic_islands"
+island = true
+source = "UN/LOCODE ES ACE 2858N 01332W (UNECE code list), Iteration 16"

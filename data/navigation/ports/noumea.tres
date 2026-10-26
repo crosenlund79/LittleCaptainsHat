@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"noumea"
+display_name = "Nouméa"
+country = "New Caledonia"
+latitude = -22.2667
+longitude = 166.4500
+description = "Nouméa, New Caledonia, inside the great lagoon."
+importance = 2
+region = "pacific"
+island = true
+source = "UN/LOCODE NC NOU 2216S 16627E (UNECE code list), Iteration 16"

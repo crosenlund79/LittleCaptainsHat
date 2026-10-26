@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"castries"
+display_name = "Castries"
+country = "Saint Lucia"
+latitude = 14.0167
+longitude = -60.9667
+description = "Castries, the harbour of Saint Lucia in the Windward Islands."
+importance = 1
+region = "caribbean"
+island = true
+source = "UN/LOCODE LC CAS 1401N 06058W (UNECE code list), Iteration 16"

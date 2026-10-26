@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"avarua"
+display_name = "Avarua"
+country = "Cook Islands"
+latitude = -21.1833
+longitude = -159.7667
+description = "Avarua on Rarotonga, in the Cook Islands."
+importance = 2
+region = "pacific"
+island = true
+source = "UN/LOCODE CK AVA 2111S 15946W (UNECE code list), Iteration 16"

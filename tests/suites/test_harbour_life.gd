@@ -82,10 +82,13 @@ func _test_facility_data() -> void:
 			without.append(port.id)
 		haul_outs += 1 if facilities.has(HarbourFacilities.HAUL_OUT) else 0
 	var small: Array[StringName] = [&"lohals", &"gilleleje", &"dragor", &"rodvig", &"stege", &"nysted", &"kerteminde",
-		&"aeroskobing", &"juelsminde", &"ebeltoft"]
+		&"aeroskobing", &"juelsminde", &"ebeltoft",
+		# Iteration 16: the small island harbours abroad.
+		&"arrecife", &"bequia", &"puerto_ayora", &"taiohae", &"atuona", &"fakarava", &"bora_bora", &"avarua", &"pago_pago",
+		&"nukualofa", &"lautoka"]
 	without.sort()
 	small.sort()
-	t.check(without == small, "[facilities] only Lohals and the small Danish harbours lack a boatyard (%s)" % [without])
+	t.check(without == small, "[facilities] only Lohals and the small Danish and island harbours lack a boatyard (%s)" % [without])
 	t.check(haul_outs > 0 and haul_outs < PortCatalog.get_default().ports.size() / 2,
 		"[facilities] only some harbours can haul out (%d of %d)" % [haul_outs, PortCatalog.get_default().ports.size()])
 	t.check(copenhagen.has(HarbourFacilities.HAUL_OUT) and copenhagen.get_tier() == HarbourFacilities.TIER_MAJOR,

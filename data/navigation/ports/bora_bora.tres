@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"bora_bora"
+display_name = "Bora Bora"
+country = "French Polynesia"
+latitude = -16.4500
+longitude = -151.7500
+description = "Bora Bora, its lagoon under the peak of Otemanu."
+importance = 2
+region = "pacific"
+island = true
+source = "UN/LOCODE PF BOB 1627S 15145W (UNECE code list), Iteration 16"

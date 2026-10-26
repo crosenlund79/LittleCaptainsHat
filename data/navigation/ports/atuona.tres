@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PortData" format=3]
+
+[ext_resource type="Script" path="res://src/navigation/port_data.gd" id="1_port"]
+
+[resource]
+script = ExtResource("1_port")
+id = &"atuona"
+display_name = "Atuona"
+country = "French Polynesia"
+latitude = -9.8000
+longitude = -139.0333
+description = "Atuona on Hiva Oa in the Marquesas."
+importance = 3
+region = "pacific"
+island = true
+source = "UN/LOCODE PF AUQ 0948S 13902W (UNECE code list), Iteration 16"
