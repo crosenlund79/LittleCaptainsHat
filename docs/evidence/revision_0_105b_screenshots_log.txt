@@ -1,0 +1,14 @@
+SHOTS105B ok   9: the normal anchor down off Antigua (about 9 m, game_estimate)
+SHOTS105B shot rb_22_international_normal_anchorage_antigua
+SHOTS105B ok   10: a deep coastal spot off Madeira where only the Magic Anchor reaches ((-16.91, 32.63))
+SHOTS105B ok   10: the Magic Anchor holds on the steep coast (about 30 m, 0.7 nm from land)
+SHOTS105B shot rb_23_international_magic_anchorage_madeira
+SHOTS105B ok   16: still at anchor after nightfall
+SHOTS105B shot rb_24_anchored_at_night
+SHOTS105B ok   23: (before removal) the replacement buoy is in use
+SHOTS105B ok   23: the PNG removed: the original buoy is drawn again
+SHOTS105B shot rb_25_replacement_removed_fallback
+SHOTS105B ok   24: a wrongly shaped PNG is refused; one warning
+SHOTS105B shot rb_26_incorrect_replacement_message
+SHOTS105B ok   nothing left installed
+SHOTS105B PASS

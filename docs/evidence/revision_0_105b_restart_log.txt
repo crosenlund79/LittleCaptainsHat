@@ -1,0 +1,28 @@
+RESTART105B ok   A(write): an anchorage off Antigua
+RESTART105B ok   A(write): motoring in
+RESTART105B ok   A(write): the normal anchor down, engine stopped, depth a GAME ESTIMATE ()
+RESTART105B ok   A(write): saved
+RESTART105B ok   B(write): the Magic Anchor fitted at the Copenhagen boatyard
+RESTART105B ok   B(write): too deep for the normal anchor; the Magic Anchor may go down
+RESTART105B ok   B(write): the Magic Anchor holds offshore ()
+RESTART105B ok   B(write): saved
+RESTART105B write phase done (all set up)
+RESTART105B ok   A: at anchor off Antigua as saved (kind normal, depth and source kept)
+RESTART105B ok   A: the engine stays off at anchor
+RESTART105B ok   A: no anchorage prompt after loading
+RESTART105B ok   A: an hour at anchor goes exactly as in the first process
+RESTART105B ok   A: anchor up; the engine is not started
+RESTART105B ok   B: the Magic Anchor holds where it was saved, with its depth and bonus
+RESTART105B ok   B: still aboard after the restart
+RESTART105B ok   B: engine off, no prompt
+RESTART105B ok   B: the blow drags it exactly as in the first process (dragging)
+RESTART105B PASS
+RESTART105B ok   C(install): res://art_replacements/02_pets/snovs_cat/resting.png written
+RESTART105B art_install done
+RESTART105B ok   C: after Godot's import the PNG is an imported resource (the editor workflow)
+RESTART105B ok   C: a new process shows Snøvs with the replacement, no warnings
+RESTART105B ok   C: the replacement and its import file removed
+RESTART105B art_read PASS
+RESTART105B ok   C: the next process is back to Snøvs's own picture
+RESTART105B ok   C: nothing left installed, no warnings
+RESTART105B art_after PASS
