@@ -1172,6 +1172,44 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
 
+## The World Awaits (Iteration 16, 0.103a)
+
+How-tos: [DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) (world
+chart, Date Line, rebuilding, adding regions),
+[DEV_GUIDES/HARBOURS.md](DEV_GUIDES/HARBOURS.md) (international harbours),
+[DEV_GUIDES/WEATHER.md](DEV_GUIDES/WEATHER.md) (global wind).
+
+- **One nested chart** (`NavGrid.load_world`): the world raster (12 cells per
+  Mercator degree, wrapping columns) holds Europe as a region (factor 5), which
+  holds Denmark (factor 6). `grid_at` / `child_at` / `all_grids` walk it;
+  line checks cut at region edges and continue across the Date Line.
+- **Routing** (`SeaRouter.load_world`): the world, Europe and Denmark graphs
+  are merged recursively (`_merge`); A* runs on 3-D points on a sphere, so
+  there is no seam or antipode. Approach limits scale with the cell size
+  (`berth_radius_nm`, `approach_radius_nm`). `get_loaded()` answers without
+  loading. Paths keep longitudes within ±180°; `GeoMath.wrap_delta`
+  makes every distance, bearing and interpolation take the short way;
+  `Voyage.position_at` returns normalized positions.
+- **Drawing** (`MapView`): below 9 px per degree the world overview layer, above
+  it Europe's own land plus the regional world layer; each 10° world tile is
+  one triangle array and one line batch, shown only when in view; land, Europe
+  and region shapes are prepared once and kept in static caches. Land near
+  ±180° is drawn again one world-width away; markers, labels, courses and
+  weather use the copy nearest the view. `land.res` (`WorldLand`) is the
+  binary form of the world land.
+- **Weather**: `WindField` adds a wrapping global lattice (latitude belts and
+  regional anchors) and cross-fades its waves near the Date Line;
+  `WeatherModel` keeps per-bucket reach boxes so a sample only looks at
+  nearby events.
+- **Long Passage** (`Simulation.start_passage`, `PassagePanel`): the same
+  `advance()` in event-stopping chunks of `passage_rate` × frame time;
+  `passage_interrupted(reason, text)` when it stops. Not saved.
+- **Passage stores**: `VesselDefinition.passage_stores_days`;
+  `GameSession.buy_provisions(target)`; `Provisions` validates up to
+  `MAX_STORE_DAYS`. Save format 12 unchanged.
+- **Captain's Log firsts**: `GameSession._award_world_firsts` in
+  `complete_voyage`, each paid once through `_award_once`.
+
 ## A bigger world, a better boat (Iteration 14, 0.102a)
 
 Detailed regional charts (Denmark first) and boat care. How-tos:

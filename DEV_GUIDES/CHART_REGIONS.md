@@ -54,7 +54,7 @@ as they were: outside the regions the game is unchanged.
 | Extent | All longitudes (the raster's columns wrap at ±180°); latitudes 72° S to 80° N. Beyond that the chart is not sailable: the polar limit is documented in `world.json` and kept by the raster. |
 | Resolution | 12 cells per Mercator degree, about 5 nautical miles at the equator: an **ocean** chart, deliberately coarser than Europe (1 nm) and Denmark (175 m). Narrow passages smaller than a few cells are closed at this scale. |
 | Panama | A **gameplay abstraction**: a straight two-cell channel between the UN/LOCODE positions of Colón (PA ONX) and Panama City (PA PTY), so the Pacific can be reached. Not the canal's geometry, locks or rules. |
-| Drawn land | Simplified per zoom: an overview (0.05°) for the whole world and a regional layer (0.02°) once zoomed in; small islands below the drawing's limit are shown as islet dots. Europe draws its own land from 9 px per degree on. |
+| Drawn land | Simplified per zoom: an overview (0.08°, shown below 9 px per degree, where it is under a pixel) for the whole world and a regional layer (0.02°) once zoomed in; small islands below the drawing's limit are shown as islet dots. Europe draws its own land from 9 px per degree on. |
 
 **Not in the data**: depths, reefs, shoals, currents, ice, shipping lanes,
 harbour layouts. Harbours abroad are UN/LOCODE town positions. Not for

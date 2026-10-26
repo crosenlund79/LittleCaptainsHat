@@ -20,7 +20,35 @@ dangerous, and every mishap can be recovered from.
 [ITERATION_006_REPORT.md](ITERATION_006_REPORT.md) are historical documents
 and keep the old name. Saves from Next Harbor can be imported (see *Saves*).
 
-Current version: **0.102b, revision build "Life at Anchor"** (see
+Current version: **0.103a, Iteration 16: The World Awaits** (see
+[ITERATION_16_REPORT.md](ITERATION_16_REPORT.md), the sea-trial checklist
+[WINDOWS_ACCEPTANCE_16.md](WINDOWS_ACCEPTANCE_16.md) and the guides
+[DEV_GUIDES/CHART_REGIONS.md](DEV_GUIDES/CHART_REGIONS.md) and
+[DEV_GUIDES/HARBOURS.md](DEV_GUIDES/HARBOURS.md)). The chart now covers the
+whole world:
+- **a world chart**: press **Whole world** and zoom out to the planet; zoom in
+  and Europe, then Denmark, appear in their familiar detail. The world chart is
+  a coarser ocean chart from OpenStreetMap coastlines; it wraps round at the
+  Date Line, so the Pacific is one ocean;
+- **36 harbours abroad**: Madeira, the Azores, the Canaries, Cape Verde and
+  Bermuda; the Caribbean from Antigua to Curaçao; Colón and Panama City at the
+  ends of the Panama passage; the Galápagos, the Marquesas, Tahiti and the
+  Society Islands, the Cook Islands, Samoa, Tonga, Fiji, New Caledonia,
+  Hawaii and New Zealand;
+- **worldwide courses** that stay off the land, cross the Date Line the
+  short way and go through Panama (a gameplay passage, not the real canal);
+- **Long Passage time**: on a long voyage a panel on deck shows where you
+  are, the distance and ETA, the wind and outlook, the stores and the boat,
+  and lets 1, 4 or 12 hours pass each second. It stops by itself for
+  arrivals, weather, a bite, the hat, low stores or a boat-care notice;
+- **passage stores**: stock up at the grocery store for 32 to 45 days
+  depending on the boat; Passage Readiness says when the forecast does not
+  reach the whole passage;
+- wind and weather for every ocean, warm-water fish, a gentle Go Ashore
+  moment in each new region, and seven new Captain's Log firsts on the way to
+  Paradise. Saves are unchanged (format 12).
+
+Version 0.102b, revision build "Life at Anchor" (see
 [REVISION_0_102B_REPORT.md](REVISION_0_102B_REPORT.md) and the quick check
 [WINDOWS_SMOKE_0_102B.md](WINDOWS_SMOKE_0_102B.md)): a small cozy pass. Drop
 anchor somewhere sheltered and the boat settles: the evening light goes warm,
@@ -407,8 +435,10 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
   boats' sailing data. Changing boats is free and keeps the time, the harbour, the
   companion and your progress; you step aboard on deck. Underway the boatyard is
   closed.
-- **European chart** (Iceland to Cyprus, North Cape to North Africa) from Natural Earth
-  coastlines. It has zoom, pan, "All Europe", "Find boat", a cursor coordinate readout
+- **World chart** (Iteration 16): the whole world from OpenStreetMap coastlines,
+  wrapping at the Date Line; zoomed in, the **European chart** (Iceland to Cyprus,
+  North Cape to North Africa, Natural Earth coastlines) and detailed Denmark take
+  over. It has zoom, pan, "Whole world", "Find boat", a cursor coordinate readout
   and **163 harbours** from the Arctic to Cyprus (Iteration 006). Major harbours are
   shown at every zoom; smaller ones appear as you zoom in, and names never overlap.
   Every harbour can be found with the search on the Course tab.
@@ -585,6 +615,12 @@ built and verified.
 
 ## Known limitations
 
+- The world chart (Iteration 16) is a coarse ocean chart (about 5 nm cells):
+  narrow channels, lagoons and harbour entrances abroad are not charted, and a
+  harbour abroad is reached through an approach of up to 30 nm. Detailed
+  regions exist only for Denmark. The Panama passage is an abstraction, not
+  the canal. The chart stops at 72° S and 80° N. Harbours abroad have no
+  harbour-specific scenery.
 - The wind and weather are synthetic, not real weather and not a forecast. Sailing is simplified:
   - there is no manual sail or engine control (the helm only asks for a fresh
     check), no tacking (a head-to-wind leg is motored), and no fuel;
@@ -640,6 +676,9 @@ built and verified.
 - Coastlines: [Natural Earth](https://www.naturalearthdata.com/) 1:10m land, public domain.
   Clipped, simplified and rasterised by `tools/navigation/build_navigation_data.py`,
   **not for navigation**.
+- World chart coastlines (Iteration 16): map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
+  contributors, ODbL 1.0, via geo-maps earth-lands-100m 0.6.0; international harbour positions
+  from the UN/LOCODE code list (UNECE).
 - Detailed Danish coastlines (Iteration 14): map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
   contributors, available under the Open Database License (ODbL 1.0), from the OSM land polygons
   as packaged by geo-maps *earth-lands-100m* 0.6.0 (code MIT). The region files in
