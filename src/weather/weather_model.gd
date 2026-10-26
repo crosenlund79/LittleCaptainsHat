@@ -11,7 +11,8 @@ extends RefCounted
 ## 1. Background wind: WindField (the Iteration 003 climatology with slow
 ##    deterministic weather waves), unchanged.
 ## 2. Weather events (WeatherEvent), formed from data/weather/weather_events.json:
-##    - strong-wind / gale areas in the European sea areas, more in winter;
+##    - strong-wind / gale areas in the European sea areas, more in winter
+##      (Iteration 16: and in the open oceans' westerlies, by hemisphere);
 ##    - areas of thunderstorm risk (more in summer), inside which thunderstorm
 ##      cells form, live a few hours (developing, active, dissipating) and
 ##      bring outflow winds and episodes of squalls;
@@ -156,6 +157,7 @@ static func wind_hazard(sustained_kn: float, gust_kn: float) -> int:
 ## already formed by then are included (a forecast made at `known_at`: storms
 ## that form later cannot be foreseen).
 func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSample:
+	geo = GeoMath.normalize(geo)  # paths continuous across the Date Line may pass |lon| > 180
 	var field := WindField.get_default()
 	var background := field.sample(geo, time, seed)
 	var result := WeatherSample.new()
@@ -459,7 +461,7 @@ func _make_risk(zone: Dictionary, index: int, slot: int, rng: RandomNumberGenera
 	event.start_time = slot_start + rng.randf() * RISK_SLOT
 	event.lifetime = _range(rng, c.life_h) * 3600.0
 	event.origin = _point_in(rng, zone.area)
-	event.heading_deg = _range(rng, c.heading)
+	event.heading_deg = _range(rng, zone.get("heading", c.heading))
 	event.speed_kn = _range(rng, c.speed_kn)
 	event.radius_nm = _range(rng, c.radius_nm)
 	event.shape = _random_shape(rng, 0.28)

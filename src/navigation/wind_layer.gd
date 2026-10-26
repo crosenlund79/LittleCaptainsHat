@@ -97,7 +97,7 @@ func _point(key: Vector3i, map_point: Vector2) -> Array:
 	if entry.is_empty():
 		if _cache.size() > 20000:
 			_cache.clear()
-		var geo := map_view.projection.map_to_geo(map_point)
+		var geo := GeoMath.normalize(map_view.projection.map_to_geo(map_point))
 		var sea := _grid == null or _grid.cell_class_at_geo(geo) != NavGrid.LAND
 		entry = [WeatherModel.get_default().sample(geo, _time, GameSession.get_wind_seed()), sea]
 		_cache[key] = entry

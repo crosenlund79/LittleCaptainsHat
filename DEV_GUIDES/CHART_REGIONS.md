@@ -1,19 +1,24 @@
-# Chart regions: detailed coastlines (geographic data preparation)
+# Chart regions: the world chart and detailed coastlines (geographic data preparation)
 
-Iteration 14. How the chart gets a detailed region (Denmark is the first),
-where the data comes from, how to rebuild it, and how to add another region.
+Iteration 14 added the first detailed region (Denmark); Iteration 16 put the
+whole world underneath. How the charts fit together, where the data comes
+from, how to rebuild it, and how to add another region.
 
 ## 1. How it fits together
 
-The game has one chart of Europe, in geographic coordinates (longitude,
-latitude, WGS 84) with a Mercator raster for navigation:
+The game has **one** chart, in geographic coordinates (longitude, latitude,
+WGS 84) with Mercator rasters for navigation, nested three deep:
 
 | Layer | Files | Detail |
 |---|---|---|
+| World (Iteration 16) | `data/navigation/world/` — `world.json`, `navmask.png`, `graph.json`, `europe_link.json`, `land.res` | 12 cells per Mercator degree (about 5 nautical miles); OpenStreetMap coastlines; wraps round at the Date Line; latitudes 72° S to 80° N |
 | Base chart | `data/navigation/europe_navmask.png`, `data/navigation/europe_navmask.json`, `data/navigation/europe_route_graph.json`, `data/navigation/europe_land.json` | 60 cells per Mercator degree (about 1 nautical mile); Natural Earth 10m coastlines |
 | Regions | `data/navigation/regions.json` lists them; each has a folder such as `data/navigation/regions/denmark/` | finer (Denmark: 6 times, about 175 m cells); OpenStreetMap coastlines |
 
-A region is a rectangle of the base chart, its edges on base raster cells, with
+Europe is a region of the world chart (one world cell is 5 × 5 European
+cells) and Denmark is a region of Europe (one European cell is 6 × 6 Danish
+cells).
+A region is a rectangle of its parent chart, its edges on parent raster cells, with
 its own raster, route graph and drawing, in the **same coordinates**. Nothing
 about positions, saves or projections changes, and the base files stay exactly
 as they were: outside the regions the game is unchanged.
@@ -39,7 +44,49 @@ as they were: outside the regions the game is unchanged.
   loaded, and the course is re-planned from there (`GameSession._recover_location`).
   The vessel is never stranded or erased; a notice tells the player.
 
-## 2. The Danish data
+## 2. The world chart (Iteration 16)
+
+| | |
+|---|---|
+| Land | The same OpenStreetMap land polygons as the Danish region (geo-maps *earth-lands-100m* 0.6.0, below), the whole world. Retrieved 2026-10-25. |
+| Licence | Map data © OpenStreetMap contributors, **ODbL 1.0**. The world raster, graph and land are derived databases and are ODbL too. |
+| Coordinates | WGS 84 longitude/latitude (EPSG:4326); raster rows in Mercator, aligned cell for cell with the European chart (one world cell = 5 × 5 European cells). |
+| Extent | All longitudes (the raster's columns wrap at ±180°); latitudes 72° S to 80° N. Beyond that the chart is not sailable: the polar limit is documented in `world.json` and kept by the raster. |
+| Resolution | 12 cells per Mercator degree, about 5 nautical miles at the equator: an **ocean** chart, deliberately coarser than Europe (1 nm) and Denmark (175 m). Narrow passages smaller than a few cells are closed at this scale. |
+| Panama | A **gameplay abstraction**: a straight two-cell channel between the UN/LOCODE positions of Colón (PA ONX) and Panama City (PA PTY), so the Pacific can be reached. Not the canal's geometry, locks or rules. |
+| Drawn land | Simplified per zoom: an overview (0.05°) for the whole world and a regional layer (0.02°) once zoomed in; small islands below the drawing's limit are shown as islet dots. Europe draws its own land from 9 px per degree on. |
+
+**Not in the data**: depths, reefs, shoals, currents, ice, shipping lanes,
+harbour layouts. Harbours abroad are UN/LOCODE town positions. Not for
+navigation.
+
+### Date Line and wrapping
+
+- Positions are stored with longitudes in −180..180. A route path is a list of
+  such points; a segment whose ends differ by more than 180° crosses the Date
+  Line and is sailed **the short way** (`GeoMath.wrap_delta`, used by every
+  distance, bearing and interpolation). Saved paths may also carry longitudes up
+  to ±540° (continuous paths); waypoints stay within ±180°.
+- The raster's columns wrap (`NavGrid.wraps`): line checks across the Date Line
+  continue on the other side. The router plans on a sphere (A* on 3-D unit
+  vectors), so there is no seam and no antipode problem.
+- The chart draws the land again one world-width east and west near the edges,
+  and markers, labels, courses and the wind at the copy nearest the view, so the
+  Pacific looks continuous.
+
+### Routing
+
+- The world graph is a coarse lattice plus channel centre lines, built against
+  the world raster and (inside Europe) the European raster. Europe's own graph
+  (and Denmark's) replace the world nodes inside them; seam edges join them.
+- Every edge is validated by the same line check the game uses, at build time
+  and in `tests/suites/test_routing.gd`.
+- Harbour approaches scale with the chart's cell size: 10 nm in Europe, six
+  world cells (30 nm) abroad (`SeaRouter.approach_radius_nm`).
+- A route that cannot be found fails with a message (`SeaRouter.plan_route`),
+  never a straight line over land.
+
+## 3. The Danish data
 
 | | |
 |---|---|
@@ -63,7 +110,24 @@ the raster.
 tides or harbour layouts. Harbours are gameplay positions near their towns.
 The chart is for a cozy game, not for navigation.
 
-## 3. Rebuilding the region
+## 4. Rebuilding the world chart
+
+```
+python3 tools/navigation/build_world.py path/to/map.geo.json
+godot --headless --path . --script tools/navigation/world_land_to_res.gd
+```
+
+The first writes `world.json`, `navmask.png`, `graph.json`, `europe_link.json`
+and `land.json` into `data/navigation/world/` (about 80 seconds); the second
+turns `land.json` into the binary `land.res` the chart loads. `land.json`
+(about 13 MB) is not kept in the repository; `land.res` is. Both steps are
+deterministic. The Europe chart must exist first (the world build reads
+`europe_navmask.png` and `europe_route_graph.json` for the seams). The world
+harbours are added with `tools/navigation/add_world_harbours.py` (UN/LOCODE
+code list) and `tools/navigation/build_harbours.py`, see
+[HARBOURS.md](HARBOURS.md).
+
+## 5. Rebuilding the Danish region
 
 You need python3 with numpy, scipy, shapely 2, pillow and scikit-image, and the
 two source files (they are not kept in the repository):
@@ -84,7 +148,11 @@ tests (`tests/suites/test_routing.gd`, `tests/suites/test_regions.gd`,
 `tests/suites/test_harbours.gd`); they check that every graph edge is clear,
 that routes stay off the drawn land, and that every harbour has an approach.
 
-## 4. Adding another region
+## 6. Adding another region
+
+A detailed region (for example Sweden, New Zealand or French Polynesia) is a
+rectangle of its parent chart: a European region (like Denmark) inside the
+Europe rectangle, any other region directly in the world chart.
 
 1. Add an entry to `REGIONS` in `tools/navigation/build_region.py`: a name, the
    bounds, the detail factor (6 for Denmark; keep the fine raster below about
@@ -94,12 +162,18 @@ that routes stay off the drawn land, and that every harbour has an approach.
    record in the region's `region.json` (the script writes the source and
    licence fields; change them if your source differs).
 3. Add the folder to `data/navigation/regions.json`.
-4. Regions must not overlap. A region outside the base chart's extent needs
-   the base chart extended first (a separate, larger job).
+4. Regions must not overlap. A region outside Europe becomes a region of the
+   world chart: its edges on world cells (12 per Mercator degree) and its
+   factor relative to the world (for example 12 for one-mile cells). Charts
+   nest recursively in the code (`NavGrid.grid_at`, `SeaRouter._merge`), but
+   today `NavGrid.load_world` attaches only Europe to the world: a world-level
+   region needs a regions list for the world there (and `build_region.py`
+   taught to align to world cells). That is the first step of the work, not
+   done yet.
 5. Run the tests. Add harbours for the region as described in
    [HARBOURS.md](HARBOURS.md).
 
-## 5. Performance
+## 7. Performance
 
 Measured by `tests/suites/test_regions.gd` (headless; see the Iteration 14
 report for the figures): navigation with the region loads in well under a
@@ -107,3 +181,9 @@ second, a route through Danish waters plans in a few milliseconds, and the
 chart switches between the overview and the detailed layer in a fraction of a
 millisecond. The detailed coastline is drawn in 0.5° tiles so that only the
 visible ones cost anything.
+
+The world chart (Iteration 16, see `docs/benchmarks/`): the worldwide router
+loads in under a second (about 54,000 nodes with Europe and Denmark merged), a
+route from Copenhagen to Tahiti plans in well under 100 ms, the chart draws the
+world in 10° tiles shown only when in view, and the drawn land is loaded once
+from the binary `land.res` and cached.

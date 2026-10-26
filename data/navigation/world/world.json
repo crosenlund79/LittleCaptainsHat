@@ -1,0 +1,48 @@
+{
+ "id": "world",
+ "name": "The world",
+ "source": "OpenStreetMap land polygons via geo-maps earth-lands-100m 0.6.0 (npm @geo-maps/earth-lands-100m, about 100 m accuracy). Map data (c) OpenStreetMap contributors, ODbL 1.0, openstreetmap.org/copyright. Package code MIT.",
+ "retrieved": "2026-10-25",
+ "licence": "ODbL 1.0 (derived database: the world raster, graph and land are ODbL too)",
+ "canal": {
+  "note": "Panama Canal abstraction: a straight two-cell navigable channel between the UN/LOCODE positions of Colon (PA ONX) and Panama City (PA PTY), not the canal's geometry. UN/LOCODE: UNECE.",
+  "ends": [
+   [
+    -79.8667,
+    9.35
+   ],
+   [
+    -79.5333,
+    8.9667
+   ]
+  ]
+ },
+ "crs": "WGS 84 longitude/latitude (EPSG:4326); raster in Mercator rows aligned to the European chart",
+ "processing": "4x4 subsamples per cell; land if any subsample is land, approach-only if land covers at most half the cell; holes filled; latitudes -72..80; drawn land simplified 0.050 deg (overview) and 0.020 deg (regional). Not for navigation.",
+ "columns": 4320,
+ "rows": 2943,
+ "cells_per_mercator_degree": 12,
+ "bounds": {
+  "west": -180.0,
+  "east": 180.0,
+  "south": -72.0,
+  "north": 80.0
+ },
+ "mercator_north": 139.66398710370282,
+ "wraps": true,
+ "europe": {
+  "base_cells": {
+   "column": 1860,
+   "row": 409,
+   "columns": 744,
+   "rows": 847
+  },
+  "factor": 5
+ },
+ "europe_detail_from_px_per_degree": 9.0,
+ "graph": {
+  "nodes": 20886,
+  "edges": 87086,
+  "europe_seams": 403
+ }
+}

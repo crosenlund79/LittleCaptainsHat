@@ -288,7 +288,7 @@ text = "Using the chart"
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 theme_override_font_sizes/font_size = 17
-text = "Click a port, then Plot course. Drag the course line to add a waypoint, drag waypoints to move them, right-click or Delete to remove. Drag the chart to pan; scroll, + / - or the toolbar to zoom. All Europe shows the whole chart; Find boat centres on the boat. The Wind switch shows or hides the wind arrows. Esc returns to the boat."
+text = "Click a port, then Plot course. Drag the course line to add a waypoint, drag waypoints to move them, right-click or Delete to remove. Drag the chart to pan; scroll, + / - or the toolbar to zoom. Whole world shows the whole chart (zoom in for Europe and the detailed Danish waters); Find boat centres on the boat. The Wind switch shows or hides the wind arrows. Esc returns to the boat."
 autowrap_mode = 3
 
 [node name="Sep4" type="HSeparator" parent="Ui/Root/SidePanel/VBox/Tabs/Details/VBox"]
@@ -394,7 +394,7 @@ text = "-"
 [node name="ResetViewButton" type="Button" parent="Ui/Root/Toolbar/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "All Europe"
+text = "Whole world"
 
 [node name="CenterBoatButton" type="Button" parent="Ui/Root/Toolbar/HBox"]
 unique_name_in_owner = true

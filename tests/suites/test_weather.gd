@@ -12,6 +12,8 @@ const DAY := 86400.0
 ## The European chart region (the wind climatology's area, a little larger
 ## than the chart's sea area).
 const EUROPE := Rect2(-27.0, 31.0, 66.0, 42.0)
+## Gale zones listed first in weather_events.json, all European.
+const EUROPEAN_GALE_ZONES := 6
 ## On the Copenhagen -> Kiel course (where Iteration 002's demo area was).
 const ROUTE_POINT := Vector2(12.2, 54.78)
 
@@ -135,10 +137,19 @@ func _test_generated_areas() -> void:
 	var just_outside := model.sample(gale.ring(mid, 1.15, 8)[0], mid, 1)
 	t.check(inside.speed_kn > just_outside.speed_kn or inside.speed_kn >= gale.peak_kn * 0.95,
 		"[areas] the wind is strongest in the core (%.0f kn) and back to normal outside (%.0f kn)" % [inside.speed_kn, just_outside.speed_kn])
+	# The first EUROPEAN_GALE_ZONES zones are Europe's; the rest (Iteration 16)
+	# are the open oceans' westerlies.
 	var european := 0
+	var from_europe := 0
+	var oceans := 0
 	for event: WeatherEvent in gales.values():
-		european += 1 if EUROPE.has_point(event.origin) else 0
-	t.check_eq(european, gales.size(), "[areas] strong-wind areas form in the European sea areas")
+		if int(String(event.id).split("-")[1]) < EUROPEAN_GALE_ZONES:
+			from_europe += 1
+			european += 1 if EUROPE.has_point(event.origin) else 0
+		else:
+			oceans += 1
+	t.check_eq(european, from_europe, "[areas] strong-wind areas of the European zones form in the European sea areas")
+	t.check(oceans > 0, "[areas] the open oceans have strong-wind areas too (%d in a year)" % oceans)
 
 
 func _test_generated_thunderstorms() -> void:

@@ -20,6 +20,13 @@ extends RefCounted
 ## line crossing a region's edge is split there and each part is checked in
 ## its own grid. Cell-index queries (get_class_at, is_line_clear) work on one
 ## grid; use grid_at() to pick the right one.
+##
+## The world (Iteration 16): the root grid is the whole planet at 12 cells
+## per degree (data/navigation/world/, tools/navigation/build_world.py). Its
+## columns wrap at ±180° (`wraps`), so lines may cross the Date Line with
+## continuous longitudes. Europe is a region of the world (factor 5) and
+## Denmark a region of Europe (factor 6): the lookups recurse through the
+## levels. One coordinate system everywhere.
 
 const NAVIGABLE := 255
 const APPROACH := 128
@@ -28,6 +35,8 @@ const LAND := 0
 const DEFAULT_MASK := "res://data/navigation/europe_navmask.png"
 const DEFAULT_META := "res://data/navigation/europe_navmask.json"
 const REGIONS_INDEX := "res://data/navigation/regions.json"
+const WORLD_MASK := "res://data/navigation/world/navmask.png"
+const WORLD_META := "res://data/navigation/world/world.json"
 ## How far (cells) a line's part is nudged off a region edge, so each part
 ## is checked only in its own grid.
 const SEAM_NUDGE := 0.01
@@ -48,6 +57,10 @@ var region_name := ""
 var base_cell := Vector2i.ZERO
 var base_size := Vector2i.ZERO
 var factor := 1
+## True for the world grid: column -1 is column columns-1 (Date Line).
+var wraps := false
+## Map units: the world's metadata (bounds etc.) for the chart, if any.
+var meta := {}
 
 
 static func load_from(mask_path: String, meta_path: String) -> NavGrid:
@@ -68,10 +81,33 @@ static func load_from(mask_path: String, meta_path: String) -> NavGrid:
 	grid.west = float(meta.bounds.west)
 	grid.mercator_north = float(meta.mercator_north)
 	grid._cells = image.get_data()
+	grid.meta = meta
 	if grid.columns != int(meta.columns) or grid.rows != int(meta.rows):
 		push_error("Navigation mask size does not match its metadata.")
 		return null
 	return grid
+
+
+## The whole hierarchy: the world grid, Europe as its region, and Europe's
+## own regions (Denmark). Null when the world data is missing.
+static func load_world(world_mask := WORLD_MASK, world_meta := WORLD_META, europe_mask := DEFAULT_MASK,
+		europe_meta := DEFAULT_META, regions_index := REGIONS_INDEX) -> NavGrid:
+	var world := NavGrid.load_from(world_mask, world_meta)
+	if world == null:
+		return null
+	world.wraps = bool(world.meta.get("wraps", false))
+	world.region_id = "world"
+	var europe := NavGrid.load_from(europe_mask, europe_meta)
+	var link: Dictionary = world.meta.get("europe", {})
+	if europe and not link.is_empty():
+		europe.region_id = "europe"
+		europe.region_name = "Europe"
+		europe.factor = int(link.factor)
+		europe.base_cell = Vector2i(int(link.base_cells.column), int(link.base_cells.row))
+		europe.base_size = Vector2i(int(link.base_cells.columns), int(link.base_cells.rows))
+		europe.load_regions(regions_index)
+		world.regions = [europe]
+	return world
 
 
 ## Loads the regional grids listed in `index_path` (missing index: none).
@@ -123,15 +159,39 @@ func get_base_rect() -> Rect2:
 	return Rect2(Vector2(base_cell), Vector2(base_size))
 
 
-## The grid that holds the detail at `geo`: a region covering it, or this one.
+## The grid that holds the detail at `geo`: the finest region covering it
+## (through every level), or this one.
 func grid_at(geo: Vector2) -> NavGrid:
 	if regions.is_empty():
 		return self
-	var cell := geo_to_cell(geo)
+	var cell := _wrapped(geo_to_cell(geo))
+	for region in regions:
+		if region.get_base_rect().has_point(cell):
+			return region.grid_at(geo)
+	return self
+
+
+## The region of this grid (one level down) covering `geo`, or this grid.
+func child_at(geo: Vector2) -> NavGrid:
+	var cell := _wrapped(geo_to_cell(geo))
 	for region in regions:
 		if region.get_base_rect().has_point(cell):
 			return region
 	return self
+
+
+## Every grid of the hierarchy, this one first.
+func all_grids() -> Array[NavGrid]:
+	var result: Array[NavGrid] = [self]
+	for region in regions:
+		result.append_array(region.all_grids())
+	return result
+
+
+func _wrapped(cell: Vector2) -> Vector2:
+	if wraps:
+		cell.x = fposmod(cell.x, columns)
+	return cell
 
 
 ## The region (id) covering `geo`, or "" in the base chart.
@@ -161,6 +221,8 @@ func cell_center_geo(column: int, row: int) -> Vector2:
 # --- Queries ------------------------------------------------------------------------------
 
 func get_class_at(column: int, row: int) -> int:
+	if wraps:
+		column = posmod(column, columns)
 	if column < 0 or row < 0 or column >= columns or row >= rows:
 		return LAND
 	return _cells[row * columns + column]
@@ -223,6 +285,18 @@ func is_line_clear(from: Vector2, to: Vector2, min_class := NAVIGABLE) -> bool:
 func is_geo_line_clear(from: Vector2, to: Vector2, min_class := NAVIGABLE) -> bool:
 	var a := geo_to_cell(from)
 	var b := geo_to_cell(to)
+	if wraps:
+		# Continuous across the Date Line; the start is taken in the main copy
+		# so the region rectangles are found without wrapping.
+		b.x = a.x + fposmod(b.x - a.x + columns * 0.5, columns) - columns * 0.5
+		var shift := floorf(a.x / columns) * columns
+		a.x -= shift
+		b.x -= shift
+	return _line_clear_cells(a, b, min_class)
+
+
+## is_geo_line_clear in this grid's cell coordinates, through the regions.
+func _line_clear_cells(a: Vector2, b: Vector2, min_class: int) -> bool:
 	for region in regions:
 		var clip := _clip(a, b, region.get_base_rect())
 		if clip.is_empty() or clip[1] - clip[0] <= 1e-12:
@@ -238,7 +312,7 @@ func is_geo_line_clear(from: Vector2, to: Vector2, min_class := NAVIGABLE) -> bo
 			return false
 		var f0 := region.from_base_cell(p0 + direction * SEAM_NUDGE / region.factor)
 		var f1 := region.from_base_cell(p1 - direction * SEAM_NUDGE / region.factor)
-		return region.is_line_clear(f0, f1, min_class)
+		return region._line_clear_cells(f0, f1, min_class)
 	return is_line_clear(a, b, min_class)
 
 

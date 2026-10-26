@@ -58,8 +58,17 @@ func _test_wide_zoom(world: WorldMap, map: MapView) -> void:
 	var shown := map.get_shown_port_ids()
 	var minor_shown := shown.filter(func(id: StringName) -> bool: return catalog.get_port(id).importance > 1 and id != &"copenhagen")
 	var majors := catalog.ports.filter(func(p: PortData) -> bool: return p.importance == 1).size()
-	t.check(minor_shown.is_empty() and shown.size() >= majors - 2 and shown.size() <= majors + 1,
-		"[chart] whole Europe (%.0f px/°): only the %d major harbours get a marker of %d (%d shown)" % [map.get_px_per_degree(), majors, catalog.ports.size(), shown.size()])
+	# Iteration 16: the whole view is now the world; major harbours too close
+	# to a more important one are left out until zooming in.
+	var spots: Array[Vector2] = []
+	for id in shown:
+		spots.append(map.get_port_screen_position(id))
+	var apart := true
+	for i in spots.size():
+		for j in range(i + 1, spots.size()):
+			apart = apart and spots[i].distance_to(spots[j]) >= MapView.DECLUTTER_PX
+	t.check(minor_shown.is_empty() and shown.size() >= 10 and shown.size() <= majors + 1 and apart,
+		"[chart] whole world (%.0f px/°): only major harbours, none on top of another (%d of %d majors shown)" % [map.get_px_per_degree(), shown.size(), majors])
 	var labels := map.get_port_label_rects()
 	t.check(_no_overlap(labels) and labels.size() >= shown.size() / 2, "[chart] no two harbour names overlap (%d of %d named)" % [labels.size(), shown.size()])
 	t.check(map.pick_port(map.get_port_screen_position(&"paros")) != &"paros", "[chart] a hidden harbour's marker cannot be clicked (Paros at wide zoom)")

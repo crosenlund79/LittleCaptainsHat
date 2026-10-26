@@ -21,3 +21,6 @@ Thumbs.db
 .idea/
 __pycache__/
 build_info.json
+
+# Iteration 16: generated from land.json by tools/navigation/world_land_to_res.gd (land.res is kept)
+data/navigation/world/land.json

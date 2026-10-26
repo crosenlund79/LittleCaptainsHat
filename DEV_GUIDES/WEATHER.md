@@ -23,6 +23,32 @@ that moment, and from then on everything about it is a formula of game time.
 So the same seed always gives the same weather, in any order and at any speed,
 and loading a save brings the same storms back.
 
+## The wind around the world (Iteration 16)
+
+The European anchors of `data/weather/wind_climate.json` cover Europe (their
+lattice runs from 27° W to 39° E and 31° N to 73° N) and are unchanged there.
+Everywhere else the wind comes from a **synthetic global climatology** for the
+same season (northern summer), in the same file:
+
+- `global_belts`: a typical wind by latitude, from pole to pole (polar
+  easterlies, westerlies, horse latitudes, north-east and south-east trades,
+  the doldrums), interpolated between the listed latitudes;
+- `global_anchors`: a few regional winds blended in by distance
+  (`global_influence_deg`): the Canary and Caribbean trades, the Pacific trades
+  of the Marquesas and the Society Islands, New Zealand's westerlies, the Indian
+  monsoon and others;
+- the European anchors fade into it over `europe_blend_deg` just outside their
+  lattice.
+
+It is computed once on a 2.5° lattice that wraps at the Date Line. The slow
+weather waves are cross-faded over the last 30° before the Date Line so the
+wind is continuous all the way round. Gale and thunderstorm zones for the open
+oceans follow the European ones in `weather_events.json` (Southern-hemisphere
+seasons run the other way; a convective zone may set its own storm heading).
+Tropical cyclone basins were already global. All of it is game-oriented: not
+real data and not a forecast. Everything stays a pure function of position,
+time and seed.
+
 ## Tune where and how often weather forms
 
 Edit `data/weather/weather_events.json`. Each gale zone looks like this:

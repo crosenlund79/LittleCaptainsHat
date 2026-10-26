@@ -10,13 +10,47 @@ extends RefCounted
 
 const EARTH_RADIUS_NM := 3440.065
 
+## Worldwide chart (Iteration 16): longitudes are normally kept in
+## [-180, 180). A route's path may run past ±180 (e.g. 185 = 175° W) so that
+## it is continuous across the Date Line; every difference of longitudes here
+## is taken the short way round (wrap_delta), so both forms give the same
+## distances and bearings.
+
+
+## `lon` in [-180, 180).
+static func normalize_lon(lon: float) -> float:
+	return fposmod(lon + 180.0, 360.0) - 180.0
+
+
+static func normalize(geo: Vector2) -> Vector2:
+	return Vector2(normalize_lon(geo.x), geo.y)
+
+
+## The difference `to_lon - from_lon` taken the short way round (-180..180).
+static func wrap_delta(from_lon: float, to_lon: float) -> float:
+	return fposmod(to_lon - from_lon + 180.0, 360.0) - 180.0
+
+
+## True when two positions are the same place (longitudes compared round the globe).
+static func same_position(a: Vector2, b: Vector2, tolerance := 1e-5) -> bool:
+	return absf(a.y - b.y) <= tolerance and absf(wrap_delta(a.x, b.x)) <= tolerance
+
+
+## A copy of `path` whose longitudes change continuously (each point the short
+## way round from the one before), starting from the first point as it is.
+static func unwrap_path(path: PackedVector2Array) -> PackedVector2Array:
+	var result := path.duplicate()
+	for i in range(1, result.size()):
+		result[i].x = result[i - 1].x + wrap_delta(result[i - 1].x, result[i].x)
+	return result
+
 
 ## Great-circle distance in nautical miles (haversine formula).
 static func distance_nm(from: Vector2, to: Vector2) -> float:
 	var lat1 := deg_to_rad(from.y)
 	var lat2 := deg_to_rad(to.y)
 	var d_lat := lat2 - lat1
-	var d_lon := deg_to_rad(to.x - from.x)
+	var d_lon := deg_to_rad(wrap_delta(from.x, to.x))
 	var a := sin(d_lat / 2.0) ** 2 + cos(lat1) * cos(lat2) * sin(d_lon / 2.0) ** 2
 	return 2.0 * EARTH_RADIUS_NM * asin(sqrt(a))
 
@@ -26,7 +60,7 @@ static func rhumb_distance_nm(from: Vector2, to: Vector2) -> float:
 	var lat1 := deg_to_rad(from.y)
 	var lat2 := deg_to_rad(to.y)
 	var d_lat := lat2 - lat1
-	var d_lon := deg_to_rad(to.x - from.x)
+	var d_lon := deg_to_rad(wrap_delta(from.x, to.x))
 	var d_psi := _psi(lat2) - _psi(lat1)
 	# Along a constant-latitude line the stretched Mercator ratio is cos(lat).
 	var q := d_lat / d_psi if absf(d_psi) > 1e-12 else cos(lat1)
@@ -40,18 +74,19 @@ static func rhumb_interpolate(from: Vector2, to: Vector2, fraction: float) -> Ve
 	var lat1 := deg_to_rad(from.y)
 	var lat2 := deg_to_rad(to.y)
 	var d_lat := lat2 - lat1
+	var d_lon := wrap_delta(from.x, to.x)
 	if absf(d_lat) < 1e-12:
-		return Vector2(lerpf(from.x, to.x, fraction), from.y)
+		return Vector2(from.x + d_lon * fraction, from.y)
 	var lat := lat1 + d_lat * fraction
 	var share := (_psi(lat) - _psi(lat1)) / (_psi(lat2) - _psi(lat1))
-	return Vector2(from.x + (to.x - from.x) * share, rad_to_deg(lat))
+	return Vector2(from.x + d_lon * share, rad_to_deg(lat))
 
 
 ## Constant compass bearing (degrees true, 0 = north, 90 = east) of the
 ## rhumb line from `from` to `to`.
 static func rhumb_bearing(from: Vector2, to: Vector2) -> float:
 	var d_psi := _psi(deg_to_rad(to.y)) - _psi(deg_to_rad(from.y))
-	var d_lon := deg_to_rad(to.x - from.x)
+	var d_lon := deg_to_rad(wrap_delta(from.x, to.x))
 	return fposmod(rad_to_deg(atan2(d_lon, d_psi)), 360.0)
 
 
@@ -101,7 +136,7 @@ static func _psi(lat: float) -> float:
 
 
 static func format_position(geo: Vector2) -> String:
-	return "%s  %s" % [_format_angle(geo.y, "N", "S"), _format_angle(geo.x, "E", "W")]
+	return "%s  %s" % [_format_angle(geo.y, "N", "S"), _format_angle(normalize_lon(geo.x), "E", "W")]
 
 
 static func _format_angle(value: float, positive: String, negative: String) -> String:
