@@ -11,6 +11,9 @@ extends Node2D
 ## brass mechanism at the bow fitting, a brass-tinted line kept short and
 ## stylised (whatever the depth: no rope drawn across the sea to suggest
 ## hundreds of metres), and a brass band on the buoy.
+## Sprite Workshop (0.105b): the buoy and the ball can be replaced by drawn
+## PNGs (BUOY_ID, BALL_ID; centred on the same spot, drawn BUOY_SIZE and
+## BALL_SIZE across); the procedural drawing is the fallback.
 ## Only at anchor: not moored, not underway, not while merely waiting at an
 ## anchorage. At night the white anchor light (BoatLighting, "anchor") shows
 ## too; the ball stays in place but the light is what is seen.
@@ -27,10 +30,16 @@ const BRASS := Color("#d9a441")
 const BRASS_DARK := Color("#7a5a22")
 ## The Magic Anchor's line, drawn this long whatever the scope or depth.
 const MAGIC_LINE := 64.0
+const BUOY_ID := &"equipment.anchor.buoy"
+const BALL_ID := &"equipment.anchor.ball_day"
+const BUOY_SIZE := 24.0
+const BALL_SIZE := 26.0
 
 var bow := Vector2.ZERO
 var mast := Vector2.ZERO
 var _clock := 0.0
+var _buoy_art: Texture2D
+var _ball_art: Texture2D
 
 
 func setup(boat_area: BoatArea, lighting: BoatLighting) -> void:
@@ -41,6 +50,8 @@ func setup(boat_area: BoatArea, lighting: BoatLighting) -> void:
 	bow = Vector2(bounds.end.x - 4.0, bounds.get_center().y)
 	var rig := boat_area.get_node_or_null(^"SailRig") as SailRig
 	mast = rig.mast if rig else bounds.get_center()
+	_buoy_art = ArtworkResolver.get_artwork(BUOY_ID)
+	_ball_art = ArtworkResolver.get_artwork(BALL_ID)
 	GameSession.anchor_changed.connect(_refresh)
 	GameSession.state_replaced.connect(_refresh)
 	_refresh()
@@ -75,6 +86,15 @@ func get_buoy_position() -> Vector2:
 	return bow + Vector2.from_angle(deg_to_rad(40.0)) * length + bob
 
 
+## Where the buoy's picture is drawn (boat coordinates; centred on the buoy).
+func get_buoy_rect() -> Rect2:
+	return Rect2(get_buoy_position() - Vector2.ONE * BUOY_SIZE / 2.0, Vector2.ONE * BUOY_SIZE)
+
+
+func uses_buoy_replacement() -> bool:
+	return _buoy_art != null
+
+
 func _draw() -> void:
 	if not visible:
 		return
@@ -94,14 +114,20 @@ func _draw() -> void:
 		draw_line(points[i - 1], points[i], Color(rope, 0.95 - f * 0.7), 2.4, true)
 	# The buoy: a small round float with a pale band and a ring of ripples.
 	draw_arc(buoy, 12.0 + sin(_clock * BOB_SPEED * 1.6) * 1.2, 0.0, TAU, 24, Color(1, 1, 1, 0.22), 1.6, true)
-	draw_circle(buoy, 9.0, BUOY)
-	draw_arc(buoy, 9.0, 0.0, TAU, 20, Color("#3a2a1e"), 1.6, true)
-	draw_line(buoy + Vector2(-8.0, 0), buoy + Vector2(8.0, 0), BRASS if magic else BUOY_BAND, 2.8, true)
+	if _buoy_art:
+		draw_texture_rect(_buoy_art, get_buoy_rect(), false)
+	else:
+		draw_circle(buoy, 9.0, BUOY)
+		draw_arc(buoy, 9.0, 0.0, TAU, 20, Color("#3a2a1e"), 1.6, true)
+		draw_line(buoy + Vector2(-8.0, 0), buoy + Vector2(8.0, 0), BRASS if magic else BUOY_BAND, 2.8, true)
 	if magic:
 		_draw_brass_mechanism()
 	# The black ball, hoisted on the forestay.
 	var ball := get_ball_position()
 	draw_circle(ball + Vector2(2.0, 3.0), BALL_RADIUS, Color(0, 0, 0, 0.25))
+	if _ball_art:
+		draw_texture_rect(_ball_art, Rect2(ball - Vector2.ONE * BALL_SIZE / 2.0, Vector2.ONE * BALL_SIZE), false)
+		return
 	draw_circle(ball, BALL_RADIUS, BALL)
 	draw_arc(ball, BALL_RADIUS, 0.0, TAU, 28, Color("#5a5a5e"), 1.6, true)
 	draw_circle(ball + Vector2(-3.5, -3.5), 3.0, Color(1, 1, 1, 0.25))

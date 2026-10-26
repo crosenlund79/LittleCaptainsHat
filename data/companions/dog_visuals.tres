@@ -26,5 +26,6 @@ image_path = "res://assets/companions/dog/stretching.png"
 [resource]
 script = ExtResource("1_set")
 kind = &"dog"
+workshop_id = "pet.dog"
 display_size = 116.0
 poses = Array[ExtResource("2_pose")]([SubResource("Pose_resting"), SubResource("Pose_sleeping"), SubResource("Pose_alert"), SubResource("Pose_stretching")])

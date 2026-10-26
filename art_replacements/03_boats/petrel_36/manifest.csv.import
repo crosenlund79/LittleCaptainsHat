@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://rs202b6f5bv8"
+
+[deps]
+
+files=["res://art_replacements/03_boats/petrel_36/manifest.filename.translation", "res://art_replacements/03_boats/petrel_36/manifest.display.translation", "res://art_replacements/03_boats/petrel_36/manifest.description.translation", "res://art_replacements/03_boats/petrel_36/manifest.category.translation", "res://art_replacements/03_boats/petrel_36/manifest.current.translation", "res://art_replacements/03_boats/petrel_36/manifest.display.translation", "res://art_replacements/03_boats/petrel_36/manifest.display.translation", "res://art_replacements/03_boats/petrel_36/manifest.source.translation", "res://art_replacements/03_boats/petrel_36/manifest.source.translation", "res://art_replacements/03_boats/petrel_36/manifest.complexity.translation", "res://art_replacements/03_boats/petrel_36/manifest.hand.translation", "res://art_replacements/03_boats/petrel_36/manifest.priority.translation", "res://art_replacements/03_boats/petrel_36/manifest.view.translation", "res://art_replacements/03_boats/petrel_36/manifest.view.translation", "res://art_replacements/03_boats/petrel_36/manifest.transparent.translation", "res://art_replacements/03_boats/petrel_36/manifest.pivot.translation", "res://art_replacements/03_boats/petrel_36/manifest.replacement.translation", "res://art_replacements/03_boats/petrel_36/manifest.integration.translation", "res://art_replacements/03_boats/petrel_36/manifest.notes.translation", "res://art_replacements/03_boats/petrel_36/manifest.renderer.translation", "res://art_replacements/03_boats/petrel_36/manifest.used.translation", "res://art_replacements/03_boats/petrel_36/manifest.design.translation", "res://art_replacements/03_boats/petrel_36/manifest.set.translation", "res://art_replacements/03_boats/petrel_36/manifest.set.translation", "res://art_replacements/03_boats/petrel_36/manifest.set.translation"]
+
+source_file="res://art_replacements/03_boats/petrel_36/manifest.csv"
+dest_files=["res://art_replacements/03_boats/petrel_36/manifest.filename.translation", "res://art_replacements/03_boats/petrel_36/manifest.display.translation", "res://art_replacements/03_boats/petrel_36/manifest.description.translation", "res://art_replacements/03_boats/petrel_36/manifest.category.translation", "res://art_replacements/03_boats/petrel_36/manifest.current.translation", "res://art_replacements/03_boats/petrel_36/manifest.display.translation", "res://art_replacements/03_boats/petrel_36/manifest.display.translation", "res://art_replacements/03_boats/petrel_36/manifest.source.translation", "res://art_replacements/03_boats/petrel_36/manifest.source.translation", "res://art_replacements/03_boats/petrel_36/manifest.complexity.translation", "res://art_replacements/03_boats/petrel_36/manifest.hand.translation", "res://art_replacements/03_boats/petrel_36/manifest.priority.translation", "res://art_replacements/03_boats/petrel_36/manifest.view.translation", "res://art_replacements/03_boats/petrel_36/manifest.view.translation", "res://art_replacements/03_boats/petrel_36/manifest.transparent.translation", "res://art_replacements/03_boats/petrel_36/manifest.pivot.translation", "res://art_replacements/03_boats/petrel_36/manifest.replacement.translation", "res://art_replacements/03_boats/petrel_36/manifest.integration.translation", "res://art_replacements/03_boats/petrel_36/manifest.notes.translation", "res://art_replacements/03_boats/petrel_36/manifest.renderer.translation", "res://art_replacements/03_boats/petrel_36/manifest.used.translation", "res://art_replacements/03_boats/petrel_36/manifest.design.translation", "res://art_replacements/03_boats/petrel_36/manifest.set.translation", "res://art_replacements/03_boats/petrel_36/manifest.set.translation", "res://art_replacements/03_boats/petrel_36/manifest.set.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

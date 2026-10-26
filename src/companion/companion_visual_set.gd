@@ -27,6 +27,10 @@ const POSE_ALERT := &"alert"
 const POSE_STRETCHING := &"stretching"
 
 @export var kind: StringName
+## Sprite Workshop id prefix for this companion's poses (0.105b): a valid PNG
+## for "<workshop_id>.<pose>" in art_replacements is used instead of the pose's
+## own image (e.g. pet.snovs.resting). Empty: no replacements.
+@export var workshop_id := ""
 @export var poses: Array[CompanionPoseArt] = []
 
 @export_group("Placement")
@@ -96,6 +100,13 @@ func get_texture(pose: StringName) -> Texture2D:
 	var art := get_pose_art(pose)
 	if art == null or art.image_path.is_empty():
 		return null
+	if workshop_id != "":
+		var replacement := ArtworkResolver.get_artwork(StringName("%s.%s" % [workshop_id, pose]))
+		if replacement:
+			var replaced_key := "workshop|%s.%s" % [workshop_id, pose]
+			if not _cache.has(replaced_key):
+				_cache[replaced_key] = ImageTexture.create_from_image(prepare_image(replacement.get_image()))
+			return _cache[replaced_key]
 	var key := "%s|%d|%s|%.3f" % [art.image_path, max_texture_size, remove_background, background_tolerance]
 	if _cache.has(key):
 		return _cache[key]

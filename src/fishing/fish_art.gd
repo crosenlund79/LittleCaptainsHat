@@ -52,10 +52,12 @@ static func is_animated(id: String) -> bool:
 	return String(get_info(id).get("kind", "junk")) != "junk"
 
 
-## A layer ("body", "tail", "lid"; "art" for junk), or null.
+## A layer ("body", "tail", "lid"; "art" for junk), or null. A Sprite
+## Workshop replacement (fish.<id>.<layer>, same canvas) wins (0.105b).
 static func layer(id: String, layer_name: String) -> Texture2D:
 	var path := "%s/%s/%s.png" % [ART_DIR, id, layer_name]
-	return load(path) as Texture2D if ResourceLoader.exists(path) else null
+	var original := load(path) as Texture2D if ResourceLoader.exists(path) else null
+	return ArtworkResolver.get_artwork(StringName("fish.%s.%s" % [id, layer_name]), original)
 
 
 ## The small static picture for lists and trophies.

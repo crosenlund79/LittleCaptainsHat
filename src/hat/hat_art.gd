@@ -52,7 +52,9 @@ func get_texture(slot: StringName) -> Texture2D:
 	if assigned:
 		return assigned
 	var path := "%s/hat_%s.png" % [art_folder, slot]
-	return load(path) as Texture2D if ResourceLoader.exists(path) else null
+	var own := load(path) as Texture2D if ResourceLoader.exists(path) else null
+	# Sprite Workshop (0.105b): character.captain.hat_<slot> wins when drawn.
+	return ArtworkResolver.get_artwork(StringName("character.captain.hat_%s" % slot), own)
 
 
 func get_size(slot: StringName) -> float:

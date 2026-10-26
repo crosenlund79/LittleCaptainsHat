@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://5s51oca7bqyw"
+
+[deps]
+
+files=["res://art_replacements/02_pets/snovs_cat/manifest.filename.translation", "res://art_replacements/02_pets/snovs_cat/manifest.display.translation", "res://art_replacements/02_pets/snovs_cat/manifest.description.translation", "res://art_replacements/02_pets/snovs_cat/manifest.category.translation", "res://art_replacements/02_pets/snovs_cat/manifest.current.translation", "res://art_replacements/02_pets/snovs_cat/manifest.display.translation", "res://art_replacements/02_pets/snovs_cat/manifest.display.translation", "res://art_replacements/02_pets/snovs_cat/manifest.source.translation", "res://art_replacements/02_pets/snovs_cat/manifest.source.translation", "res://art_replacements/02_pets/snovs_cat/manifest.complexity.translation", "res://art_replacements/02_pets/snovs_cat/manifest.hand.translation", "res://art_replacements/02_pets/snovs_cat/manifest.priority.translation", "res://art_replacements/02_pets/snovs_cat/manifest.view.translation", "res://art_replacements/02_pets/snovs_cat/manifest.view.translation", "res://art_replacements/02_pets/snovs_cat/manifest.transparent.translation", "res://art_replacements/02_pets/snovs_cat/manifest.pivot.translation", "res://art_replacements/02_pets/snovs_cat/manifest.replacement.translation", "res://art_replacements/02_pets/snovs_cat/manifest.integration.translation", "res://art_replacements/02_pets/snovs_cat/manifest.notes.translation", "res://art_replacements/02_pets/snovs_cat/manifest.renderer.translation", "res://art_replacements/02_pets/snovs_cat/manifest.used.translation", "res://art_replacements/02_pets/snovs_cat/manifest.design.translation", "res://art_replacements/02_pets/snovs_cat/manifest.set.translation", "res://art_replacements/02_pets/snovs_cat/manifest.set.translation", "res://art_replacements/02_pets/snovs_cat/manifest.set.translation"]
+
+source_file="res://art_replacements/02_pets/snovs_cat/manifest.csv"
+dest_files=["res://art_replacements/02_pets/snovs_cat/manifest.filename.translation", "res://art_replacements/02_pets/snovs_cat/manifest.display.translation", "res://art_replacements/02_pets/snovs_cat/manifest.description.translation", "res://art_replacements/02_pets/snovs_cat/manifest.category.translation", "res://art_replacements/02_pets/snovs_cat/manifest.current.translation", "res://art_replacements/02_pets/snovs_cat/manifest.display.translation", "res://art_replacements/02_pets/snovs_cat/manifest.display.translation", "res://art_replacements/02_pets/snovs_cat/manifest.source.translation", "res://art_replacements/02_pets/snovs_cat/manifest.source.translation", "res://art_replacements/02_pets/snovs_cat/manifest.complexity.translation", "res://art_replacements/02_pets/snovs_cat/manifest.hand.translation", "res://art_replacements/02_pets/snovs_cat/manifest.priority.translation", "res://art_replacements/02_pets/snovs_cat/manifest.view.translation", "res://art_replacements/02_pets/snovs_cat/manifest.view.translation", "res://art_replacements/02_pets/snovs_cat/manifest.transparent.translation", "res://art_replacements/02_pets/snovs_cat/manifest.pivot.translation", "res://art_replacements/02_pets/snovs_cat/manifest.replacement.translation", "res://art_replacements/02_pets/snovs_cat/manifest.integration.translation", "res://art_replacements/02_pets/snovs_cat/manifest.notes.translation", "res://art_replacements/02_pets/snovs_cat/manifest.renderer.translation", "res://art_replacements/02_pets/snovs_cat/manifest.used.translation", "res://art_replacements/02_pets/snovs_cat/manifest.design.translation", "res://art_replacements/02_pets/snovs_cat/manifest.set.translation", "res://art_replacements/02_pets/snovs_cat/manifest.set.translation", "res://art_replacements/02_pets/snovs_cat/manifest.set.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

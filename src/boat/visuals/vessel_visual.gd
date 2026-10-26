@@ -19,10 +19,14 @@ var profile: VesselVisualProfile
 
 
 ## Shows sprites where the profile has them and procedural art elsewhere.
+## A Sprite Workshop replacement (ArtworkResolver, id from workshop_id())
+## takes the place of the profile's picture for that layer.
 func apply(visual_profile: VesselVisualProfile) -> void:
 	profile = visual_profile
 	for slot in get_slots():
 		var texture := visual_profile.get_texture(slot.slot) if visual_profile else null
+		if visual_profile and not visual_profile.procedural_only:
+			texture = ArtworkResolver.get_artwork(workshop_id(slot.slot), texture)
 		if texture:
 			slot.show_sprite(texture, canvas)
 		else:
@@ -47,6 +51,17 @@ func _apply_solar_panels() -> void:
 
 func get_solar_panels() -> SolarPanels:
 	return get_node_or_null(^"SolarPanels") as SolarPanels
+
+
+## The Sprite Workshop id of a layer, e.g. boat.arctic_wanderer_26.deck.coachroof
+## (the vessel and deck/cabin from this scene's file, the layer from the
+## profile's file names).
+func workshop_id(slot_name: StringName) -> StringName:
+	var file := scene_file_path
+	var vessel := file.get_base_dir().get_file()
+	var area := "cabin" if file.get_file().begins_with("cabin") else "deck"
+	var layer: String = VesselVisualProfile.SLOT_FILES[slot_name][0] if VesselVisualProfile.SLOT_FILES.has(slot_name) else String(slot_name).to_snake_case()
+	return StringName("boat.%s.%s.%s" % [vessel, area, layer])
 
 
 func get_slots() -> Array[VisualSlot]:

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c1bnpjcer0kdr"
+
+[deps]
+
+files=["res://art_replacements/02_pets/dog/manifest.filename.translation", "res://art_replacements/02_pets/dog/manifest.display.translation", "res://art_replacements/02_pets/dog/manifest.description.translation", "res://art_replacements/02_pets/dog/manifest.category.translation", "res://art_replacements/02_pets/dog/manifest.current.translation", "res://art_replacements/02_pets/dog/manifest.display.translation", "res://art_replacements/02_pets/dog/manifest.display.translation", "res://art_replacements/02_pets/dog/manifest.source.translation", "res://art_replacements/02_pets/dog/manifest.source.translation", "res://art_replacements/02_pets/dog/manifest.complexity.translation", "res://art_replacements/02_pets/dog/manifest.hand.translation", "res://art_replacements/02_pets/dog/manifest.priority.translation", "res://art_replacements/02_pets/dog/manifest.view.translation", "res://art_replacements/02_pets/dog/manifest.view.translation", "res://art_replacements/02_pets/dog/manifest.transparent.translation", "res://art_replacements/02_pets/dog/manifest.pivot.translation", "res://art_replacements/02_pets/dog/manifest.replacement.translation", "res://art_replacements/02_pets/dog/manifest.integration.translation", "res://art_replacements/02_pets/dog/manifest.notes.translation", "res://art_replacements/02_pets/dog/manifest.renderer.translation", "res://art_replacements/02_pets/dog/manifest.used.translation", "res://art_replacements/02_pets/dog/manifest.design.translation", "res://art_replacements/02_pets/dog/manifest.set.translation", "res://art_replacements/02_pets/dog/manifest.set.translation", "res://art_replacements/02_pets/dog/manifest.set.translation"]
+
+source_file="res://art_replacements/02_pets/dog/manifest.csv"
+dest_files=["res://art_replacements/02_pets/dog/manifest.filename.translation", "res://art_replacements/02_pets/dog/manifest.display.translation", "res://art_replacements/02_pets/dog/manifest.description.translation", "res://art_replacements/02_pets/dog/manifest.category.translation", "res://art_replacements/02_pets/dog/manifest.current.translation", "res://art_replacements/02_pets/dog/manifest.display.translation", "res://art_replacements/02_pets/dog/manifest.display.translation", "res://art_replacements/02_pets/dog/manifest.source.translation", "res://art_replacements/02_pets/dog/manifest.source.translation", "res://art_replacements/02_pets/dog/manifest.complexity.translation", "res://art_replacements/02_pets/dog/manifest.hand.translation", "res://art_replacements/02_pets/dog/manifest.priority.translation", "res://art_replacements/02_pets/dog/manifest.view.translation", "res://art_replacements/02_pets/dog/manifest.view.translation", "res://art_replacements/02_pets/dog/manifest.transparent.translation", "res://art_replacements/02_pets/dog/manifest.pivot.translation", "res://art_replacements/02_pets/dog/manifest.replacement.translation", "res://art_replacements/02_pets/dog/manifest.integration.translation", "res://art_replacements/02_pets/dog/manifest.notes.translation", "res://art_replacements/02_pets/dog/manifest.renderer.translation", "res://art_replacements/02_pets/dog/manifest.used.translation", "res://art_replacements/02_pets/dog/manifest.design.translation", "res://art_replacements/02_pets/dog/manifest.set.translation", "res://art_replacements/02_pets/dog/manifest.set.translation", "res://art_replacements/02_pets/dog/manifest.set.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
