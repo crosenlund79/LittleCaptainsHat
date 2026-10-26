@@ -62,7 +62,8 @@ suites, and the two-process restart test (29).
 | `d592d7b` | G: anchor ball, light, rode and buoy; companion follows on deck |
 | `c10cb8d` | H: cabin light and shadow, navigation lights on the rail, wind preview in 1 h steps |
 | `f8d68ed` | I (in progress): 0.105a, combined-journey and restart tests, screenshots, report draft, checklist, orders |
-| (next) | I: final report with the regression results; then a last commit recording the push check (33) |
+| `666b5a1` | I: final regression, report, restart and screenshot results |
+| (this) | I: record the push check (33) |
 
 ## The I017 carry-forward
 
@@ -592,6 +593,8 @@ NOT TESTED and space for observations). Nothing is marked accepted.
 ### 33. Git commit and push verification
 
 Pushed with `git push -u origin claude/friendly-fermat-dey23f` after each
-checkpoint (normal pushes; no force). The final verification (remote branch
-head equal to the local head) is recorded in the commit that follows this
-report, and in the delivery message.
+checkpoint (normal pushes; no force). Verified after pushing `666b5a1`:
+`git fetch origin claude/friendly-fermat-dey23f` then
+`git rev-parse origin/claude/friendly-fermat-dey23f` = `666b5a1…` = local
+`HEAD`; working tree clean. This record is the one commit after it, pushed
+and checked the same way.
