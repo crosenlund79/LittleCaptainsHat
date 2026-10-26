@@ -25,9 +25,18 @@ extends Node
 ## are pure functions of (seed, time); nothing here changes the weather.
 ##
 ## The node is pausable: when the game is paused (menus), time stops.
+##
+## Long Passage (Iteration 16): on a long voyage the player can let whole hours
+## pass per second (passage_rate). It is the same timeline and the same
+## advance(), in chunks of one frame each that stop at the first event (as
+## sleeping does), so the voyage, weather, stores and wear come out exactly as
+## at 1×. It ends by itself when something wants the captain: arrival, a
+## weather warning, a bite, the hat, low stores, a boat-care notice.
 
 signal weather_warning(warning: Dictionary)
 signal arrived(port_id: StringName)
+## Long Passage time stopped by itself (Iteration 16): why, for the player.
+signal passage_interrupted(reason: StringName, text: String)
 
 ## Real seconds to game seconds at 1× (1 real second = 1 game minute).
 const DEFAULT_GAME_SECONDS_PER_REAL_SECOND := 60.0
@@ -56,6 +65,13 @@ const STOP_RESCUE := &"rescue"
 ## A fish took the lure, or the anchor needs the captain (Iteration 13).
 const STOP_BITE := &"bite"
 const STOP_ANCHOR := &"anchor"
+## Long Passage speeds: game seconds per real second (1, 4 and 12 hours).
+const PASSAGE_RATES: Array[float] = [3600.0, 14400.0, 43200.0]
+## Why Long Passage time stopped (besides the STOP_* reasons of advance()).
+const STOP_STORES := &"stores"
+const STOP_CARE := &"care"
+const STOP_HAT := &"hat"
+const STOP_ENDED := &"ended"
 
 ## Tunable for balancing (and for tests).
 var game_seconds_per_real_second := DEFAULT_GAME_SECONDS_PER_REAL_SECOND
@@ -66,6 +82,11 @@ var _eta_key := ""
 var _eta_seconds := 0.0
 ## While sleeping or working the player is below deck: the hat is not at risk.
 var _hat_sheltered := false
+## Long Passage time (game seconds per real second), 0 when off. Not saved:
+## loading a game or arriving always returns to normal time.
+var passage_rate := 0.0
+## A stores or boat-care notice arrived during Long Passage time.
+var _passage_notice := {}
 
 
 ## Outcome of an advance() call.
@@ -93,6 +114,12 @@ func _ready() -> void:
 	GameSession.state_replaced.connect(_on_state_replaced)
 	GameSession.vessel_changed.connect(_on_vessel_changed)
 	GameSession.rescued.connect(func(_info: Dictionary) -> void: invalidate_estimates())
+	GameSession.provisions_warning.connect(func(_level: int, text: String) -> void:
+		if passage_rate > 0.0:
+			_passage_notice = {"reason": STOP_STORES, "text": text})
+	GameSession.notice.connect(func(text: String) -> void:
+		if passage_rate > 0.0 and text.begins_with("Boat care:"):
+			_passage_notice = {"reason": STOP_CARE, "text": text})
 
 
 func _process(delta: float) -> void:
@@ -109,12 +136,84 @@ func _process(delta: float) -> void:
 func tick(real_seconds: float) -> void:
 	if not GameSession.is_active() or GameSession.is_paused():
 		return
+	if passage_rate > 0.0:
+		_passage_tick(real_seconds)
+		return
 	var result := advance(real_seconds * game_seconds_per_real_second * GameSession.get_time_scale())
 	# Accelerated time drops back to normal speed when something needs the
 	# player's attention, so nothing actionable flies past at 20×.
 	if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "") \
 			and GameSession.get_time_scale() > 1:
 		GameSession.set_time_scale(1)
+
+
+## Starts Long Passage time at `rate` (one of PASSAGE_RATES). Only underway,
+## under sail or engine (not at anchor). Returns "" or why not.
+func start_passage(rate: float) -> String:
+	if not GameSession.is_underway():
+		return "Long Passage time is for voyages: set sail first."
+	if GameSession.is_anchored():
+		return "Raise the anchor first: at anchor the voyage is paused."
+	if rate not in PASSAGE_RATES:
+		return "Unknown passage speed."
+	var was := passage_rate
+	passage_rate = rate
+	_passage_notice = {}
+	if GameSession.is_paused():
+		GameSession.set_paused(false)
+	if was <= 0.0:
+		SessionLog.write("long_passage_start", {"rate_h": rate / 3600.0, "remaining_nm": snappedf(GameSession.get_voyage_remaining_nm(), 0.1)})
+	return ""
+
+
+## Back to normal time (the player's choice).
+func stop_passage() -> void:
+	if passage_rate > 0.0:
+		passage_rate = 0.0
+		SessionLog.write("long_passage_stop", {"remaining_nm": snappedf(GameSession.get_voyage_remaining_nm(), 0.1)})
+
+
+func is_passage_running() -> bool:
+	return passage_rate > 0.0
+
+
+## One frame of Long Passage time: a chunk of passage_rate × real seconds,
+## stopping at the first event. Then back to normal time when something
+## needs the captain.
+func _passage_tick(real_seconds: float) -> void:
+	if not GameSession.is_underway() or GameSession.is_anchored():
+		_interrupt_passage(STOP_ENDED, "The passage is over.")
+		return
+	var result := advance(minf(real_seconds, 0.1) * passage_rate, true)
+	var reason: StringName = result.stopped_by
+	var text := ""
+	match reason:
+		STOP_ARRIVAL:
+			text = "Land ho! You have arrived at %s." % PortCatalog.get_default().get_display_name(result.arrived_at)
+		STOP_WARNING:
+			text = "Weather ahead: %s" % (String(result.warnings[0].get("text", "")) if not result.warnings.is_empty() else "a warning.")
+		STOP_BITE:
+			text = "A fish is on the line!"
+		STOP_RESCUE:
+			text = "The voyage ended with a rescue."
+		STOP_ANCHOR:
+			text = "The anchor alarm went."
+	if reason == STOP_NONE and result.hat_warned:
+		reason = STOP_HAT
+		text = "Hold on to your hat: the wind is getting up."
+	if reason == STOP_NONE and not _passage_notice.is_empty():
+		reason = _passage_notice.reason
+		text = _passage_notice.text
+	if reason != STOP_NONE:
+		_interrupt_passage(reason, text)
+
+
+func _interrupt_passage(reason: StringName, text: String) -> void:
+	passage_rate = 0.0
+	_passage_notice = {}
+	GameSession.set_time_scale(1)
+	SessionLog.write("long_passage_interrupted", {"reason": String(reason), "remaining_nm": snappedf(GameSession.get_voyage_remaining_nm(), 0.1)})
+	passage_interrupted.emit(reason, text)
 
 
 ## Advances the game by `seconds` of game time. With `stop_at_events`, it stops
@@ -306,6 +405,8 @@ func _on_vessel_changed(_vessel_id: StringName) -> void:
 
 
 func _on_state_replaced() -> void:
+	passage_rate = 0.0
+	_passage_notice = {}
 	invalidate_estimates()
 	# Loaded voyages keep their saved controller state; only a migrated (never
 	# evaluated) one is evaluated straight away.

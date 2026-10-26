@@ -40,7 +40,7 @@ func refresh() -> void:
 	_endurance.text = Provisions.format_days(provisions.endurance_days())
 	var harbour := GameSession.is_moored_in_harbour()
 	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
-	_grocery.disabled = not store or provisions.is_full()
+	_grocery.disabled = not store or provisions.is_full(GameSession.get_passage_store_days())
 	_grocery.visible = not harbour or store
 	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
 		if not provisions.is_full() else "Grocery store…"

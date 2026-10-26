@@ -9,6 +9,10 @@ extends RefCounted
 ## length and the boat itself (a small boat is happier waiting out rough
 ## weather). Each finding has a level: OK (nothing to do), NOTE (worth
 ## knowing) or CONSIDER (worth a second thought).
+##
+## Iteration 16, ocean passages: the forecast only reaches FORECAST_HOURS,
+## and the readiness says so instead of promising fair weather for weeks; the
+## stores are weighed against what the boat can stow for a long passage.
 
 const OK := 0
 const NOTE := 1
@@ -21,6 +25,8 @@ const STORES_COMFORT_DAYS := 2.0
 ## A passage longer than this runs through a night (hours).
 const OVERNIGHT_HOURS := 14.0
 const LONG_PASSAGE_HOURS := 48.0
+## An ocean passage: a week or more at sea (hours).
+const OCEAN_PASSAGE_HOURS := 168.0
 ## Boats this short (ft) count as small for rough weather.
 const SMALL_BOAT_FT := 28.0
 ## How far ahead the forecast is consulted (hours, at most the passage).
@@ -99,6 +105,15 @@ static func _stores(items: Array[Dictionary], hours: float) -> void:
 	if days < needed + STORES_MARGIN_DAYS:
 		items.append({"topic": "stores", "level": CONSIDER, "text": "Food or water may run short: %s aboard for a passage of about %s." % [
 			Provisions.format_days(days), Simulation.format_duration(hours * 3600.0)]})
+		var capacity := GameSession.get_passage_store_days()
+		if capacity >= needed + STORES_MARGIN_DAYS and days < capacity:
+			items.append({"topic": "stores_capacity", "level": NOTE,
+				"text": "At the grocery store you can stock up for a long passage: the %s stows up to %d days." % [
+					GameSession.get_vessel_definition().display_name, roundi(capacity)]})
+		elif capacity < needed + STORES_MARGIN_DAYS:
+			items.append({"topic": "stores_capacity", "level": CONSIDER,
+				"text": "This passage is longer than the %s can stow food and water for (%d days). A stop at a harbour on the way would break it up." % [
+					GameSession.get_vessel_definition().display_name, roundi(capacity)]})
 	elif days < needed + STORES_COMFORT_DAYS:
 		items.append({"topic": "stores", "level": NOTE, "text": "Enough food and water for the passage, with little to spare (%s)." % Provisions.format_days(days)})
 	else:
@@ -108,6 +123,7 @@ static func _stores(items: Array[Dictionary], hours: float) -> void:
 ## Adds the weather finding; returns the worst hazard level foreseen.
 static func _weather(items: Array[Dictionary], path: PackedVector2Array, hours: float) -> int:
 	var hazards := Simulation.route_hazards(path, 0.0, clampf(hours, 1.0, FORECAST_HOURS))
+	var beyond := hours > FORECAST_HOURS
 	var worst := WeatherModel.HAZARD_NORMAL
 	var strongest := 0.0
 	var label := ""
@@ -124,13 +140,20 @@ static func _weather(items: Array[Dictionary], path: PackedVector2Array, hours: 
 	elif worst >= WeatherModel.HAZARD_CAUTION:
 		items.append({"topic": "weather", "level": NOTE, "text": "A fresh to strong breeze on the way (up to %d kn) %s." % [
 			roundi(strongest), Simulation.describe_when(when)]})
+	elif beyond:
+		items.append({"topic": "weather", "level": OK, "text": "No rough weather foreseen in the next %d hours." % roundi(FORECAST_HOURS)})
 	else:
 		items.append({"topic": "weather", "level": OK, "text": "No rough weather foreseen on the route."})
+	if beyond:
+		items.append({"topic": "forecast", "level": NOTE,
+			"text": "The forecast reaches %d hours ahead; the weather further along the passage is not yet known." % roundi(FORECAST_HOURS)})
 	return worst
 
 
 static func _length(items: Array[Dictionary], hours: float) -> void:
-	if hours > LONG_PASSAGE_HOURS:
+	if hours > OCEAN_PASSAGE_HOURS:
+		items.append({"topic": "length", "level": NOTE, "text": "An ocean passage of about %s. Long Passage time on deck lets the days go by." % Simulation.format_duration(hours * 3600.0)})
+	elif hours > LONG_PASSAGE_HOURS:
 		items.append({"topic": "length", "level": NOTE, "text": "A passage of several days (about %s): the weather can change on the way." % Simulation.format_duration(hours * 3600.0)})
 	elif hours > OVERNIGHT_HOURS:
 		items.append({"topic": "length", "level": NOTE, "text": "An overnight passage (about %s). A rest before setting out helps." % Simulation.format_duration(hours * 3600.0)})

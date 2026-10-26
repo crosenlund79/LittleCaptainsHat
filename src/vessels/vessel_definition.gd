@@ -30,6 +30,10 @@ const HULL_TRIMARAN := &"trimaran"
 ## of visual_profile while the Artwork setting is "illustrated". Null would fall
 ## back to visual_profile (every boat has one since 0.100b).
 @export var illustrated_visual_profile: VesselVisualProfile
+## Days of food and water the boat can stow for a long passage (Iteration 16;
+## everyday stores are Provisions.CAPACITY_DAYS). Small boats carry less but
+## can still cross an ocean by way of the island harbours.
+@export_range(14.0, 60.0, 1.0) var passage_stores_days := 32.0
 
 
 ## The art to show now: the illustrated prototype when the player's Artwork

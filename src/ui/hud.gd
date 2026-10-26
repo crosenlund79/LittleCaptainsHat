@@ -13,6 +13,8 @@ extends Control
 
 signal menu_requested
 signal chart_requested
+## The Long Passage panel's Save button (Iteration 16).
+signal save_requested
 
 @onready var _area: Label = %AreaLabel
 @onready var _location: Label = %LocationLabel
@@ -41,6 +43,8 @@ const SHORTCUT_TEXT := Color(0.93, 0.92, 0.86)
 var hat_badge: HatBadge
 ## Fishing, anchor and galley indicators (Iteration 13), under the hat badge.
 var aboard_badge: AboardBadge
+## Long Passage (Iteration 16): bottom right, underway on long voyages.
+var passage_panel: PassagePanel
 var _planned_key := ""
 var _planned_estimated_at := -INF
 var _planned_seconds := 0.0
@@ -63,6 +67,17 @@ func _ready() -> void:
 	aboard_badge = AboardBadge.new()
 	aboard_badge.name = "AboardBadge"
 	add_child(aboard_badge)
+	passage_panel = PassagePanel.new()
+	passage_panel.theme_type_variation = &"HudPanel"
+	passage_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT, Control.PRESET_MODE_MINSIZE)
+	passage_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	passage_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	passage_panel.offset_right = -24.0
+	passage_panel.offset_bottom = -18.0
+	passage_panel.visible = false
+	passage_panel.chart_requested.connect(chart_requested.emit)
+	passage_panel.save_requested.connect(save_requested.emit)
+	add_child(passage_panel)
 
 
 func _build_controls() -> void:
@@ -121,11 +136,11 @@ var _warning_pending := false
 ## warning that arrives meanwhile is shown again on returning to the boat.
 func set_chart_mode(enabled: bool) -> void:
 	_chart_mode = enabled
-	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge", "AboardBadge"]:
+	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge", "AboardBadge", "PassagePanel"]:
 		var node := get_node_or_null(node_name) as Control
 		if node == null:
 			continue
-		if node_name in ["HatBadge", "AboardBadge"]:
+		if node_name in ["HatBadge", "AboardBadge", "PassagePanel"]:
 			node.process_mode = Node.PROCESS_MODE_DISABLED if enabled else Node.PROCESS_MODE_INHERIT
 			if enabled:
 				node.hide()

@@ -84,6 +84,7 @@ func _ready() -> void:
 	modals.notification_requested.connect(notify)
 	hud.menu_requested.connect(open_pause_menu)
 	hud.chart_requested.connect(open_chart_from_warning)
+	hud.save_requested.connect(open_save_menu)
 	GameSession.notice.connect(notify)
 	Simulation.weather_warning.connect(_on_weather_warning)
 	Simulation.arrived.connect(_on_arrived)

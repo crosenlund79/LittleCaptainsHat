@@ -134,7 +134,10 @@ func _test_provisions_station() -> void:
 	var before := menu.get_values()
 	t.check(before.food == "14.0 days" and before.water == "14.0 days" and before.endurance == "14.0 days" and before.food_level == "Full",
 		"[provisions] it shows food, water and endurance in days (%s)" % [before])
-	t.check((menu.find_child("GroceryButton", true, false) as Button).disabled, "[provisions] full stores: nothing to buy")
+	# Iteration 16: with the everyday stores full the grocery still offers the
+	# long-passage stock-up (up to the boat's passage stores).
+	t.check(not (menu.find_child("GroceryButton", true, false) as Button).disabled and GameSession.get_provisions_price() == 0,
+		"[provisions] everyday stores full: nothing more to buy for them; the grocery still offers a long-passage stock-up")
 	t.check(t.get_tree().paused, "[provisions] the game is paused while it is open")
 	await t.screenshot("89_provisions_before_sleep")
 	menu.close()

@@ -9,11 +9,16 @@ extends SimplePanel
 ## Its counter also sells a replacement captain's hat (Visual Identity V01),
 ## in its own row with its own price, so the provisions figures above are
 ## exactly as before.
+##
+## Iteration 16: "Stock up for a long passage" fills both beyond the everyday
+## 14 days, up to what this boat can stow (its passage stores).
 
 var _stores: Label
 var _price: Label
 var _note: Label
 var _buy: Button
+var _stock_up: Button
+var _stock_note: Label
 var _hat_info: Label
 var _buy_hat: Button
 ## Fishing tackle and the catch (Iteration 13).
@@ -31,6 +36,21 @@ func _ready() -> void:
 	_stores = _label("Stores", "")
 	_price = _label("Price", "", &"HeaderLabel")
 	_note = _label("Note", "")
+	var stock_row := HBoxContainer.new()
+	stock_row.name = "StockUpRow"
+	stock_row.add_theme_constant_override("separation", 14)
+	_box.add_child(stock_row)
+	_stock_note = Label.new()
+	_stock_note.name = "StockUpNote"
+	_stock_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_stock_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_stock_note.custom_minimum_size = Vector2(300, 0)
+	stock_row.add_child(_stock_note)
+	_stock_up = Button.new()
+	_stock_up.name = "StockUpButton"
+	_stock_up.custom_minimum_size = Vector2(240, 0)
+	_stock_up.pressed.connect(_on_stock_up)
+	stock_row.add_child(_stock_up)
 	_box.add_child(HSeparator.new())
 	var hat_row := HBoxContainer.new()
 	hat_row.name = "HatRow"
@@ -113,8 +133,23 @@ func refresh() -> void:
 			GameSession.format_money(price), GameSession.format_money(GameSession.REMOTE_WORK_PAY_PER_HOUR)]
 	else:
 		_note.text = "Food and water will be full (%d days each)." % roundi(Provisions.CAPACITY_DAYS)
+	_refresh_stock_up(harbour, funds)
 	_refresh_hat(harbour, funds)
 	_refresh_tackle(harbour)
+
+
+## Passage stores (Iteration 16): up to what this boat can stow.
+func _refresh_stock_up(harbour: bool, funds: int) -> void:
+	var days := GameSession.get_passage_store_days()
+	var price := GameSession.get_provisions_price(days)
+	var full := GameSession.get_provisions().is_full(days)
+	_stock_up.text = "Stock up (%s)" % GameSession.format_money(price)
+	_stock_up.disabled = not harbour or full or price > funds
+	var vessel := GameSession.get_vessel_definition().display_name
+	if full:
+		_stock_note.text = "Long passage: the %s is stocked for %d days, all she can stow." % [vessel, roundi(days)]
+	else:
+		_stock_note.text = "Long passage: stow food and water for %d days each, all the %s can carry." % [roundi(days), vessel]
 
 
 func _refresh_tackle(harbour: bool) -> void:
@@ -185,6 +220,19 @@ func _on_buy() -> void:
 	var error := GameSession.buy_provisions()
 	notify(error if not error.is_empty() else "Bought food and water for %s. Stores full: %s each." % [
 		GameSession.format_money(price), Provisions.format_days(Provisions.CAPACITY_DAYS)])
+	refresh()
+
+
+func get_stock_up_button() -> Button:
+	return _stock_up
+
+
+func _on_stock_up() -> void:
+	var days := GameSession.get_passage_store_days()
+	var price := GameSession.get_provisions_price(days)
+	var error := GameSession.buy_provisions(days)
+	notify(error if not error.is_empty() else "Stocked up for a long passage for %s: %s of food and water." % [
+		GameSession.format_money(price), Provisions.format_days(days)])
 	refresh()
 
 

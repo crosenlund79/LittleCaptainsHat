@@ -106,7 +106,7 @@ func _update_services() -> void:
 	_care.disabled = not GameSession.is_moored_in_harbour()
 	_care.text = "Boat care…" if level in [BoatCare.LEVEL_GOOD, BoatCare.LEVEL_COSMETIC] else "Boat care (%s)…" % BoatCare.LEVEL_NAMES[level].to_lower()
 	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
-	_grocery.disabled = not store or provisions.is_full()
+	_grocery.disabled = not store or provisions.is_full(GameSession.get_passage_store_days())
 	_grocery.visible = store
 	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
 		if not provisions.is_full() else "Grocery store…"

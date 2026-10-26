@@ -5,9 +5,15 @@ extends RefCounted
 ## consumed per 24 hours of game time, wherever the boat is (GameSession.
 ## apply_simulation_step), so pausing stops consumption and sleeping consumes.
 ## Running out does not hurt anyone; it only blocks the next departure.
+##
+## Iteration 16: the everyday stores are 14 days; for a long passage a boat can
+## stow more, up to its own passage stores (VesselDefinition.
+## passage_stores_days, 32 to 45 days). Saves keep the same two numbers.
 
-## Full stores (a new game starts with these).
+## Full everyday stores (a new game starts with these).
 const CAPACITY_DAYS := 14.0
+## The most any boat can stow (validation of saved stores).
+const MAX_STORE_DAYS := 60.0
 ## Warning thresholds (days left of the scarcer supply).
 const LOW_DAYS := 3.0
 const CRITICAL_DAYS := 1.0
@@ -50,16 +56,17 @@ func take_food(days: float) -> bool:
 	return true
 
 
-## Adds `days` of food (cooked catch), up to the capacity. Returns what fitted.
-func add_food(days: float) -> float:
-	var added := clampf(days, 0.0, CAPACITY_DAYS - food_days)
+## Adds `days` of food (cooked catch), up to `capacity`. Returns what fitted.
+func add_food(days: float, capacity := CAPACITY_DAYS) -> float:
+	var added := clampf(days, 0.0, maxf(capacity - food_days, 0.0))
 	food_days += added
 	return added
 
 
-func restock() -> void:
-	food_days = CAPACITY_DAYS
-	water_days = CAPACITY_DAYS
+## Fills food and water to `days` each (never takes any away).
+func restock(days := CAPACITY_DAYS) -> void:
+	food_days = maxf(food_days, days)
+	water_days = maxf(water_days, days)
 	warning_level = WARN_NONE
 
 
@@ -72,8 +79,8 @@ func is_empty() -> bool:
 	return food_days <= 0.0 or water_days <= 0.0
 
 
-func is_full() -> bool:
-	return food_days >= CAPACITY_DAYS and water_days >= CAPACITY_DAYS
+func is_full(capacity := CAPACITY_DAYS) -> bool:
+	return food_days >= capacity and water_days >= capacity
 
 
 ## The warning level the current stores call for.
@@ -128,8 +135,8 @@ static func from_dict(data: Variant, errors: Array[String]) -> Provisions:
 		errors.append("invalid provisions")
 		return null
 	var provisions := Provisions.new()
-	provisions.food_days = clampf(float(food), 0.0, CAPACITY_DAYS)
-	provisions.water_days = clampf(float(water), 0.0, CAPACITY_DAYS)
+	provisions.food_days = clampf(float(food), 0.0, MAX_STORE_DAYS)
+	provisions.water_days = clampf(float(water), 0.0, MAX_STORE_DAYS)
 	provisions.warning_level = clampi(int(warned), WARN_NONE, WARN_EMPTY)
 	return provisions
 
