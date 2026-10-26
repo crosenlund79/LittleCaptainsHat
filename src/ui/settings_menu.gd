@@ -29,6 +29,8 @@ var _volume_sliders := {}
 var _volume_labels := {}
 var _art_style: OptionButton
 var _course_view: CheckBox
+var _reduce_flashing: CheckBox
+var _flash: HSlider
 
 @onready var _audio_grid: GridContainer = %AudioGrid
 @onready var _window_mode: OptionButton = %WindowMode
@@ -55,6 +57,7 @@ func _ready() -> void:
 	_ui_scale.value_changed.connect(_on_ui_scale_value_changed)
 	_build_art_style_row()
 	_build_course_view_row()
+	_build_accessibility_rows()
 	var logs := Button.new()
 	logs.name = "LogsButton"
 	logs.text = "Diagnostic logs…"
@@ -146,6 +149,39 @@ func _build_course_view_row() -> void:
 	grid.add_child(_course_view)
 
 
+## Accessibility (Iteration 17): gentler highlights, and how bright
+## lightning may flash (0 %: thunder only, no flash).
+func _build_accessibility_rows() -> void:
+	var grid := _ui_scale.get_parent().get_parent() as GridContainer
+	var label := Label.new()
+	label.name = "ReduceFlashingLabel"
+	label.text = "Flashing"
+	grid.add_child(label)
+	_reduce_flashing = CheckBox.new()
+	_reduce_flashing.name = "ReduceFlashing"
+	_reduce_flashing.text = "Reduce flashing"
+	_reduce_flashing.tooltip_text = "Lightning shows as one soft glow, and highlights pulse once gently instead of blinking."
+	_reduce_flashing.toggled.connect(func(pressed: bool) -> void:
+		SettingsManager.set_reduce_flashing(pressed)
+		_refresh_status())
+	grid.add_child(_reduce_flashing)
+	var flash_label := Label.new()
+	flash_label.name = "FlashIntensityLabel"
+	flash_label.text = "Lightning flash"
+	grid.add_child(flash_label)
+	_flash = HSlider.new()
+	_flash.name = "FlashIntensity"
+	_flash.min_value = 0
+	_flash.max_value = 100
+	_flash.step = 10
+	_flash.custom_minimum_size = Vector2(240, 32)
+	_flash.tooltip_text = "How bright lightning flashes are (0 %: thunder only)."
+	_flash.value_changed.connect(func(value: float) -> void:
+		SettingsManager.set_flash_intensity(int(value))
+		_refresh_status())
+	grid.add_child(_flash)
+
+
 func _sync_controls() -> void:
 	for bus: StringName in SettingsManager.AUDIO_BUSES:
 		var percent := SettingsManager.get_volume(bus)
@@ -157,6 +193,8 @@ func _sync_controls() -> void:
 	_ui_scale_value.text = "%d%%" % roundi(_ui_scale.value)
 	_art_style.select(SettingsManager.ART_STYLES.find(SettingsManager.get_art_style()))
 	_course_view.set_pressed_no_signal(SettingsManager.get_course_view())
+	_reduce_flashing.set_pressed_no_signal(SettingsManager.get_reduce_flashing())
+	_flash.set_value_no_signal(SettingsManager.get_flash_intensity())
 	_refresh_status()
 
 

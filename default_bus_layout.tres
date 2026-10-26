@@ -1,4 +1,8 @@
-[gd_resource type="AudioBusLayout" format=3]
+[gd_resource type="AudioBusLayout" load_steps=2 format=3]
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_outside"]
+resource_name = "LowPassFilter"
+cutoff_hz = 20000.0
 
 [resource]
 bus/1/name = &"Music"
@@ -25,3 +29,11 @@ bus/4/mute = false
 bus/4/bypass_fx = false
 bus/4/volume_db = 0.0
 bus/4/send = &"Master"
+bus/5/name = &"Outside"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 0.0
+bus/5/send = &"Ambience"
+bus/5/effect/0/effect = SubResource("AudioEffectLowPassFilter_outside")
+bus/5/effect/0/enabled = true

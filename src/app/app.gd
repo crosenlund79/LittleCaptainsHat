@@ -27,9 +27,6 @@ extends Node
 ## Engine loops (SFX bus): open air on deck, muffled below deck and at the chart.
 @export var engine_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum.wav")
 @export var engine_muffled_sound: AudioStream = preload("res://assets/audio/placeholder/engine_hum_muffled.wav")
-## Hazardous weather (Ambience bus): strong wind loop and occasional thunder.
-@export var storm_wind_sound: AudioStream = preload("res://assets/audio/placeholder/storm_wind.wav")
-@export var thunder_sound: AudioStream = preload("res://assets/audio/placeholder/thunder.wav")
 ## Secret achievement found (a soft chime), and a hat blowing away (a short
 ## sour little note). SFX bus, quiet.
 @export var achievement_sound: AudioStream = preload("res://assets/audio/placeholder/achievement_chime.wav")
@@ -43,11 +40,8 @@ const ENGINE_MUFFLED_LOOP := &"engine_muffled"
 const ENGINE_OUTSIDE_DB := -6.0
 const ENGINE_INSIDE_DB := -16.0
 const ENGINE_FADE_SECONDS := 1.5
-const STORM_LOOP := &"storm_wind"
-## The storm wind is heard from this sustained wind (knots) and is loudest at
-## STORM_FULL_KN; quieter below deck. Checked once per real second.
-const STORM_AUDIBLE_KN := 20.0
-const STORM_FULL_KN := 45.0
+const STORM_LOOP := WeatherAudio.STORM_LOOP
+## Weather audio is checked once per real second (WeatherAudio).
 const WEATHER_AUDIO_INTERVAL := 1.0
 ## Loudness of the achievement chime and the hat's sour note (SFX bus).
 const ACHIEVEMENT_DB := -9.0
@@ -62,8 +56,8 @@ const HAT_LOST_DB := -10.0
 
 var _toast_offsets := Vector2.ZERO
 var _weather_audio_timer := 0.0
-var _thunder_timer := 0.0
-var _thunder_rng := RandomNumberGenerator.new()  # cosmetic only (sound timing)
+## Wind, water, rain, thunder and lightning aboard (Iteration 17).
+var weather_audio: WeatherAudio
 ## True from a rescue until its dialog is closed: gameplay stays paused (also
 ## while the screen changes to the harbour underneath).
 var _rescue_open := false
@@ -103,6 +97,12 @@ func _ready() -> void:
 	GameSession.session_ended.connect(DevTools.on_session_changed)
 	GameSession.provisions_warning.connect(func(_level: int, text: String) -> void: notify(text))
 	router.screen_changed.connect(_on_screen_changed)
+	weather_audio = WeatherAudio.new()
+	weather_audio.name = "WeatherAudio"
+	weather_audio.lighting_provider = func() -> BoatLighting:
+		var area := router.current_screen as BoatArea
+		return area.get_lighting() if area else null
+	add_child(weather_audio)
 	GameSession.propulsion_changed.connect(func(_mode: StringName) -> void: update_engine_audio())
 	GameSession.state_replaced.connect(update_engine_audio)
 	_hud_layer.hide()
@@ -115,35 +115,23 @@ func _process(delta: float) -> void:
 		_weather_audio_timer = WEATHER_AUDIO_INTERVAL
 		update_weather_audio()
 	_update_bite_wait(delta)
-	if _thunder_timer > 0.0 and not get_tree().paused:
-		_thunder_timer -= delta
-		if _thunder_timer <= 0.0:
-			AudioManager.play_one_shot(thunder_sound, AudioManager.BUS_AMBIENCE, -4.0 if _is_on_deck() else -10.0)
 
 
 ## Weather sounds follow the weather at the boat (the same weather model as
-## everything else): a strong-wind loop rising with the sustained wind, and
-## thunder now and then while a thunderstorm is active at or near the boat.
-## Only in the boat's cabin or on deck; quieter below deck. Volumes follow
-## the Ambience and Master settings (their bus).
+## everything else): see WeatherAudio. Aboard (deck, cabin) and at the chart
+## (inside); nothing in the menus.
 func update_weather_audio() -> void:
 	var area := router.current_screen as BoatArea
-	if not GameSession.is_active() or area == null:
-		AudioManager.stop_loop(STORM_LOOP, ENGINE_FADE_SECONDS)
-		_thunder_timer = 0.0
+	var place := ""
+	if GameSession.is_active() and area != null:
+		place = "deck" if area.area_id == SessionState.AREA_EXTERIOR else "inside"
+	elif GameSession.is_active() and router.current_screen is WorldMap:
+		place = "inside"
+	if place.is_empty():
+		weather_audio.update(null, "", false, [])
 		return
-	var here := Simulation.get_weather_at_vessel()
-	var level := inverse_lerp(STORM_AUDIBLE_KN, STORM_FULL_KN, here.speed_kn)
-	if level <= 0.0:
-		AudioManager.stop_loop(STORM_LOOP, ENGINE_FADE_SECONDS * 2.0)
-	else:
-		var volume := lerpf(-30.0, -6.0, clampf(level, 0.0, 1.0)) - (0.0 if _is_on_deck() else 10.0)
-		AudioManager.play_loop(STORM_LOOP, storm_wind_sound, volume, ENGINE_FADE_SECONDS * 2.0, AudioManager.BUS_AMBIENCE)
-	var thunder_near := here.thunder_active or (GameSession.is_underway() and not Simulation.get_storms_near(GameSession.get_vessel_position()).is_empty())
-	if thunder_near and _thunder_timer <= 0.0:
-		_thunder_timer = _thunder_rng.randf_range(8.0, 25.0)
-	elif not thunder_near:
-		_thunder_timer = 0.0
+	var storms: Array = Simulation.get_storms_near(GameSession.get_vessel_position()) if GameSession.is_underway() else []
+	weather_audio.update(Simulation.get_weather_at_vessel(), place, GameSession.is_underway(), storms)
 
 
 func is_storm_audio_playing() -> bool:

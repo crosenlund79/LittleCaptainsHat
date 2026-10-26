@@ -82,12 +82,12 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| AUD-1 | Wind sound by actual wind; water ambience; rain | TODO | | |
-| AUD-2 | Lightning and thunder in thunderstorms, distant/near, cabin light response, no harsh strobe | TODO | | |
-| AUD-3 | Cabin vs deck acoustics (muffling), buses ready for I019 alarms | TODO | | |
-| AUD-4 | Boat-local visual wind cues agree with actual wind | TODO | | |
-| AUD-5 | Assets local, licensed and recorded | TODO | | |
-| AUD-6 | Accessibility: ambient/effects volume, flash intensity, UI flashing | TODO | | |
+| AUD-1 | Wind sound by actual wind; water ambience; rain | DONE | test_atmosphere [loops]: breeze and water loops by wind and speed, rain by the systems that bring it, strong-wind loop above 20 kn; src/audio/weather_audio.gd | No rain field in the weather model: rain is derived (documented) |
+| AUD-2 | Lightning and thunder in thunderstorms, distant/near, cabin light response, no harsh strobe | DONE | test_atmosphere [lightning]/[thunder]: flash pattern through the lighting, brief, cabin lights a little, thunder delayed by distance, near/far variants |  |
+| AUD-3 | Cabin vs deck acoustics (muffling), buses ready for I019 alarms | DONE | test_atmosphere [muffle]/[buses]: Outside bus low-pass closes below deck, SFX bus unfiltered for I019 alarms |  |
+| AUD-4 | Boat-local visual wind cues agree with actual wind | DONE | test_atmosphere [cues]: wind streaks boat-relative to the actual wind, rain on deck in a gale; screenshot 17_deck_rain_and_wind |  |
+| AUD-5 | Assets local, licensed and recorded | DONE | assets/audio/weather/README.md; tools/generate_weather_audio.py (original, generated, deterministic) | Synthetic sounds, not recordings |
+| AUD-6 | Accessibility: ambient/effects volume, flash intensity, UI flashing | DONE | Settings: Ambience/SFX volumes (existing), Reduce flashing, Lightning flash 0–100 %; test_atmosphere [access] |  |
 
 ## HUD — Cockpit and action wheel [§29–§31]
 

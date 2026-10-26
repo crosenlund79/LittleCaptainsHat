@@ -347,10 +347,18 @@ func _setup_lighting() -> void:
 	add_child(lighting)
 	lighting.setup(self)
 	GameSession.state_replaced.connect(lighting.update_now)
+	if area_id == SessionState.AREA_EXTERIOR:
+		var weather := WeatherVisuals.new()
+		add_child(weather)
+		weather.setup(self)
 
 
 func get_lighting() -> BoatLighting:
 	return get_node_or_null(^"Lighting") as BoatLighting
+
+
+func get_weather_visuals() -> WeatherVisuals:
+	return get_node_or_null(^"WeatherVisuals") as WeatherVisuals
 
 
 func get_harbour_dressing() -> HarbourDressing:
