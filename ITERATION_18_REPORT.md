@@ -61,7 +61,8 @@ suites, and the two-process restart test (29).
 | `beb0124` | F: anchorage waypoints |
 | `d592d7b` | G: anchor ball, light, rode and buoy; companion follows on deck |
 | `c10cb8d` | H: cabin light and shadow, navigation lights on the rail, wind preview in 1 h steps |
-| «FINAL_COMMIT» | I: 0.105a, combined-journey test, restart test, screenshots, report, checklist, orders |
+| `f8d68ed` | I (in progress): 0.105a, combined-journey and restart tests, screenshots, report draft, checklist, orders |
+| (next) | I: final report with the regression results; then a last commit recording the push check (33) |
 
 ## The I017 carry-forward
 
@@ -134,10 +135,16 @@ reel (portrait, dial, feedback) and result.
 | very rare | 4 | 42° |
 | junk | 1 | 84° |
 
-Fairness, simulated in `test_fishing2` over many catches with a press timing
-error of ±0.6 × (careful) and ±1.5 × (sloppy) half an arc: «FAIRNESS».
-The longest reel-in for a very rare fish is a few seconds (each check needs
-at most one turn of the dial, 1.8 s).
+Fairness, simulated in `test_fishing2` over many catches, a careful captain
+(presses within 0.6 of half the arc from its middle) and a sloppy one (1.5):
+
+| Landed | common | uncommon | rare | very rare |
+|---|---|---|---|---|
+| careful | 100 % | 100 % | 100 % | 100 % |
+| sloppy | 98 % | 89.5 % | 79 % | 64.5 % |
+
+A careful captain lands a very rare fish (four checks) in 4.7 s; each check
+needs at most one turn of the dial (1.8 s).
 
 ### 9. Perfect-hit behaviour
 
@@ -172,8 +179,9 @@ when hidden or closed. **Reduce motion** (Settings) stills the tail and the
 bob (the blink stays). Lists and the trophy board use static thumbnails
 (`FishArt.thumbnail`). The same art is used on the reel, the result card,
 the cool box, the trophy menu and the trophy board on the cabin wall.
-Evidence (not a still): `fish_animation_frames_mackerel.png` — 24 frames,
-0.1 s apart, of the running animation cut from the screen; and the posed
+Evidence (not a still): `fish_animation_frames_mackerel.png` — 48 frames,
+0.15 s apart, of the running animation cut from the screen (the eye closed in
+one, the tail turned in two); and the posed
 frames 11–14. `test_fishing2` checks the blink and flick happen over time,
 end, and stop with Reduce motion and when hidden.
 
@@ -411,7 +419,34 @@ time (ms):
 
 ### 27. Automated test results
 
-«TESTS»
+**Final full regression** (headless, every suite including the worldwide
+all-pairs routing test), on the final code (`f8d68ed`): **4184 checks
+passed, 0 failed**, exit code 0, 1046 s, 58 suites. Skipped by design: the
+window-mode checks need a real display (reported as skipped by the runner).
+(An earlier full run on the code before the last changes: 4155 passed, 1
+failed — a developer guide still naming the removed `fish_fight.gd`; fixed,
+and the guide suite re-run: 82/82.)
+
+New suites: `test_route_wrap` (103 rendered / 87 headless), `test_fishing2`
+(88), `test_sail_trim` (28), `test_anchorage` (54), `test_companion_deck` (52),
+`test_joy_journey` (26: the section 23 scenario played in order — anchorage
+waypoint, sailing, trim, trolling, bite, dial, release, arrival, Long
+Passage stop, anchor, ball, coffee, deck, the companion joins, save, load,
+anchor up, resume — with no duplicate prompt, result, walk or log entry
+after the reload). Separate harnesses: `restart_18` (17 checks, section 29),
+`screenshots_18`, `benchmark_18`, `cabin_light_18`, `pacing_18` and
+`tools/weather/measure_wind_variation.gd`.
+
+Existing tests changed, without weakening them: the I013 fishing tests now
+land fish with the dial instead of the tension bar (same expectations:
+landed, stored once, trophies); the version checks say 0.105a; the wind
+navigator test expects 1-hour steps and ±6 h (and checks more: one step is one
+hour, the button labels, all 13 times cached); `test_life_aboard` counts the
+companions **shown** (the deck now always has a hidden companion node, so
+"no companion on deck while it is below" is checked by visibility); the
+lighting test adds the corner shade and lamp pools. Rendered runs per
+checkpoint (`test_route_wrap`, `test_companion_deck`, `test_lighting`,
+`test_wind_overlay`, `test_anchorage`, `test_sail_trim`) passed.
 
 ### 28. Rendered visual review
 
@@ -428,6 +463,7 @@ reviewed by eye:
 | 9 | Shark (art; and landed and released: `09b_…`) | `09_illustrated_shark.png` |
 | 10 | Junk | `10_junk_catch_artwork.png` |
 | 11–14 | Eyes open / closed, tail neutral / flick | `11_…`–`14_…`; real frames: `fish_animation_frames_mackerel.png` |
+| — | Every species and junk item | `fish_art_sheet_all_species.png` |
 | 15 | Result with weight and grade | `15_catch_result_weight_grade.png` |
 | 16 | Automatic release | `16_automatic_release_by_preferences.png` |
 | 17 | Manual release | `17_manual_release.png` |
@@ -436,7 +472,7 @@ reviewed by eye:
 | 20 | Fishing preferences | `20_fishing_preferences.png` |
 | 21–22 | Sail Trim, well / badly trimmed | `21_sail_trim_control_well_trimmed.png`, `22_sail_trim_too_loose.png` |
 | 23 | Anchorage waypoint icon | `23_anchorage_waypoint_icon.png` |
-| 24 | Dragging an anchorage waypoint | `24_dragging_anchorage_waypoint.png` |
+| 24 | Dragging an anchorage waypoint (and onto land: refused, `24b_…`) | `24_dragging_anchorage_waypoint.png` |
 | 25 | Arrival prompt | `25_anchorage_arrival_prompt.png` |
 | 26, 27, 30 | At anchor by day: ball, rode, buoy, companion on deck | `26_27_30_anchored_day_ball_buoy_pet.png` |
 | 28 | At anchor at night: anchor light | `28_anchored_night_light.png` |
@@ -450,13 +486,34 @@ Found and fixed by reviewing renders: the rode and buoy ran off screen under
 the clock and the ball was too small (shorter rode at an angle, bigger ball);
 the side lights floated over the water at the narrowing bow (moved onto the
 rail); a corner-shade rectangle showed over the water (clipped to the hull);
-leftover toasts in a screenshot; the wind buttons still said "30 min".
-«REVIEW_NOTES»
+leftover toasts in a screenshot; the wind buttons still said "30 min"; the
+first animation strip (2.4 s) was too short to catch a tail flick (now 7.2 s).
+Fishing scenes and the anchorage drag come from `tests/screenshots_18.tscn`;
+the others from their suites (see its header).
 
 ### 29. Two-process restart tests
 
 `tests/restart_18.tscn`, run as **two separate processes** (write, quit; then
-read in a new process): «RESTART»
+read in a new process). A fixed fair wind is set in both processes so the
+scenarios do not depend on the season; the weather model's own events still
+run and are compared. **PASS, 17 of 17 checks** (write 9 s, read 5 s):
+
+- **A — Fishing**: preferences Uncommon+ / Silver+; a cod (9.4 kg, Silver)
+  landed through the dial and kept, a herring landed and let go by the
+  preferences, a sea trout kept then released by hand; after the restart the
+  hold (the cod only), trophies, records, preferences and counts are exactly
+  as saved, no trophy for a released fish.
+- **B — Anchorage**: course Copenhagen → Gothenburg with an anchorage at
+  55°58.6′N 12°38.0′E marked on the chart; sailed there, anchored, the
+  companion up on deck; after the restart: same position and time, at anchor
+  as saved, the anchorage done (no question again), course and remaining way
+  as saved, the companion on deck at its place and shown; anchor up and the
+  voyage reaches Gothenburg at the same game time as in the first process.
+- **C — Sailing**: trimmed by hand (factor 0.90 at that wind: a poor trim,
+  kept as the captain set it), six hours toward Las Palmas; after the
+  restart: trim, factor, speed (4.82 kn), weather, position, course,
+  progress and stores (13.75 / 13.75 days) as saved; six more hours end
+  where the first process got, in the same weather, with the same stores.
 
 ### 30. Shipyard Efficiency — Where the Time Went
 
@@ -503,7 +560,11 @@ baseline worktree for before/after benchmarks instead of re-checking out.
 **Recommendations**: seed every random choice a test depends on; repeat a
 suspicious suite at most twice, then debug; run the parse check first; keep
 rendered benchmarks to one pair (before/after) unless the spread matters.
-«FINAL_RUNS»
+
+**Checkpoint I** (after the table above; measured): 9 more runs, 2209 s —
+two full regressions (1062 s and 1046 s), the restart test (9 s + 5 s), the
+screenshot harness (25 s, twice) and focused suites. **Whole iteration:
+146 logged runs, 114 minutes of Godot time.**
 
 ### 31. Known limitations
 
@@ -530,4 +591,7 @@ NOT TESTED and space for observations). Nothing is marked accepted.
 
 ### 33. Git commit and push verification
 
-«PUSH»
+Pushed with `git push -u origin claude/friendly-fermat-dey23f` after each
+checkpoint (normal pushes; no force). The final verification (remote branch
+head equal to the local head) is recorded in the commit that follows this
+report, and in the delivery message.
