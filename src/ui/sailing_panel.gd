@@ -11,14 +11,13 @@ extends PanelContainer
 ##   weather that has formed by now; labelled as an estimate).
 ## - Next course change: time and distance to the next turn, or a clear
 ##   "no more turns" before the destination; nothing invented.
-## - Remaining distance and ETA (estimate), when not collapsed.
+## - Remaining distance and ETA (estimate): kept for tests and diagnostics but
+##   not shown, since the route panel right above already says it.
 ## A course change of more than COURSE_CHANGE_DEG gets a short, restrained
 ## highlight of the new course (one gentle pulse with Reduce flashing on).
 ## Collapsible (its header button); reads state only.
 
 const COURSE_CHANGE_DEG := 5.0
-const ACCENT := Color("#E8C27A")
-const MUTED := Color(0.75, 0.82, 0.84)
 ## Kept for the game run (not saved): collapsed or full.
 static var collapsed := false
 
@@ -161,8 +160,7 @@ func refresh() -> void:
 			if speed > 0.3 else "%.1f nm ahead" % float(turn.nm)
 		_show_row("turn", "%s  →  %03d°" % [eta_turn, roundi(turn.next_course)])
 	var remaining := GameSession.get_voyage_remaining_nm()
-	_show_row("remaining", "%d nm  ·  ETA %s (estimate)" % [roundi(remaining), _short_time(Simulation.get_eta())],
-		not collapsed)
+	_show_row("remaining", "%d nm  ·  ETA %s (estimate)" % [roundi(remaining), _short_time(Simulation.get_eta())], false)
 
 
 ## "Thu 21 May, 07:25" (the year and zone are in the clock bar).
@@ -227,6 +225,11 @@ func pulse_heading() -> void:
 	_pulse = create_tween()
 	var gentle := SettingsManager.get_reduce_flashing()
 	var times := 1 if gentle else 2
+	# The theme's highlight colour (rust by day, amber by night) and back to ink.
+	var ink := UiTheme.color(&"ink")
+	var accent := UiTheme.color(&"focus")
+	var tint := func(c: Color) -> void: value.add_theme_color_override(&"font_color", c)
 	for i in times:
-		_pulse.tween_property(value, "modulate", ACCENT * 1.15, 0.35 if not gentle else 0.8)
-		_pulse.tween_property(value, "modulate", Color.WHITE, 0.45 if not gentle else 1.2)
+		_pulse.tween_method(tint, ink, accent, 0.35 if not gentle else 0.8)
+		_pulse.tween_method(tint, accent, ink, 0.45 if not gentle else 1.2)
+	_pulse.tween_callback(value.remove_theme_color_override.bind(&"font_color"))

@@ -252,6 +252,12 @@ func _build() -> void:
 	_button_states(&"OptionButton", &"button", &"button_hover", &"button_text")
 	_button_states(&"BigButton", &"action", &"action_hover", &"action_text", Vector4(24, 12, 24, 12))
 	_col(&"Button", &"icon_normal_color", &"button_text")
+	# Small map and tool controls (the chart's toolbar): quieter, compact.
+	_button_states(&"MapButton", &"button", &"button_hover", &"button_text", Vector4(10, 3, 10, 3))
+	theme.set_type_variation(&"MapButton", &"Button")
+	theme.set_font_size(&"font_size", &"MapButton", 17)
+	theme.set_type_variation(&"MapToggle", &"CheckButton")
+	theme.set_font_size(&"font_size", &"MapToggle", 17)
 	# Check boxes and switches: no box, text in ink.
 	for type: StringName in [&"CheckBox", &"CheckButton"]:
 		for state: StringName in [&"font_color", &"font_focus_color", &"font_hover_color", &"font_pressed_color", &"font_hover_pressed_color"]:
@@ -293,6 +299,14 @@ func _build() -> void:
 	_style(&"ToastPanel", &"panel", _box(&"surface_hud", &"border", 1, 10, Vector4(16, 8, 16, 8), 4))
 	_style(&"WarningPanel", &"panel", _box(&"warning_surface", &"warning", 2, 10, Vector4(16, 10, 16, 10), 4))
 	theme.set_type_variation(&"WarningPanel", &"PanelContainer")
+	# The shortcut strip: a slim, quiet bar.
+	_style(&"KeyBar", &"panel", _box(&"surface_hud", &"border_soft", 1, 8, Vector4(10, 3, 10, 3), 2, 0.85))
+	theme.set_type_variation(&"KeyBar", &"PanelContainer")
+	# Text that needs attention (low stores, a worn hull) or reports good news.
+	_col(&"WarningLabel", &"font_color", &"warning")
+	theme.set_type_variation(&"WarningLabel", &"Label")
+	_col(&"SuccessLabel", &"font_color", &"success")
+	theme.set_type_variation(&"SuccessLabel", &"Label")
 	_style(&"TooltipPanel", &"panel", _box(&"tooltip", &"border", 1, 6, Vector4(10, 6, 10, 6), 3))
 	_col(&"TooltipLabel", &"font_color", &"ink")
 	_style(&"PopupMenu", &"panel", _box(&"surface_raised", &"border", 1, 8, Vector4(6, 6, 6, 6), 4))

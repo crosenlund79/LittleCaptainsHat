@@ -9,6 +9,11 @@ extends PanelContainer
 ##
 ## Reads GameSession and Simulation every frame; only the buttons change
 ## anything. Shown underway on voyages of at least LONG_VOYAGE_NM.
+##
+## Captain's Chartroom: the distance, ETA and progress are in the route panel
+## and the speed and wind on the sailing panel, so those lines are kept (tests,
+## diagnostics) but not shown here; the boat line shows only when the boat
+## wants care, and tight stores are shown in the warning colour.
 
 signal chart_requested
 signal save_requested
@@ -46,11 +51,13 @@ func _ready() -> void:
 		label.add_theme_font_size_override(&"font_size", 17)
 		box.add_child(label)
 		_lines[key] = label
+		label.visible = key not in ["distance", "wind"]
 		if key == "distance":
 			_progress = ProgressBar.new()
 			_progress.name = "Progress"
 			_progress.show_percentage = false
 			_progress.custom_minimum_size = Vector2(0, 10)
+			_progress.visible = false
 			box.add_child(_progress)
 	_stopped = Label.new()
 	_stopped.name = "Stopped"
@@ -147,8 +154,12 @@ func refresh() -> void:
 	var days_left := maxf(eta - GameSession.get_game_time(), 0.0) / 86400.0
 	_lines.stores.text = "Stores %s  ·  about %s of sailing left%s" % [Provisions.format_days(stores), Provisions.format_days(days_left),
 		"" if stores >= days_left + 2.0 else ("  ·  tight" if stores >= days_left else "  ·  not enough")]
-	_lines.stores.modulate = Color(1.0, 0.72, 0.55) if stores < days_left + 2.0 else Color.WHITE
-	_lines.boat.text = "Boat: hull %s%s" % [VesselCondition.describe(GameSession.get_condition()), _care_note()]
+	var stores_style := &"WarningLabel" if stores < days_left + 2.0 else &""
+	if _lines.stores.theme_type_variation != stores_style:
+		_lines.stores.theme_type_variation = stores_style
+	var care := _care_note()
+	_lines.boat.text = "Boat: hull %s%s" % [VesselCondition.describe(GameSession.get_condition()), care]
+	_lines.boat.visible = care != "" or GameSession.get_condition() <= 60.0
 	var running := Simulation.passage_rate
 	_normal.set_pressed_no_signal(running <= 0.0)
 	for i in _rate_buttons.size():

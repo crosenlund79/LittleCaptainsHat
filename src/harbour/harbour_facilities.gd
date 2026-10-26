@@ -124,11 +124,13 @@ const PREVIEW := [
 
 ## "Major service harbour: Groceries (food and water) · Boatyard (…) · …",
 ## from the harbour's own data (Iteration 17: chart and Dreamer's Map).
-static func describe_services(port_id: StringName) -> String:
+## `brief` leaves out the explanations in brackets (the chart's compact
+## destination summary; the full text is in its tooltip).
+static func describe_services(port_id: StringName, brief := false) -> String:
 	var facilities := for_port(port_id)
 	var parts := PackedStringArray()
 	for entry: Array in PREVIEW:
 		if facilities.has(entry[0]):
-			parts.append(entry[1] if String(entry[2]).is_empty() else "%s (%s)" % [entry[1], entry[2]])
+			parts.append(entry[1] if brief or String(entry[2]).is_empty() else "%s (%s)" % [entry[1], entry[2]])
 	var services := "  ·  ".join(parts) if not parts.is_empty() else "no services"
 	return "%s: %s" % [TIER_NAMES[facilities.get_tier()], services]

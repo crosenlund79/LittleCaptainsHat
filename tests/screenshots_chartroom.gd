@@ -115,6 +115,27 @@ func _mood(mood: String) -> void:
 	await _frames(6)
 	await _shot("05_boat_care_%s" % mood)
 	app.modals.clear()
+	# Harbour: the chandlery, the boatyard, going ashore; the log; sleep.
+	for pair in [["open_grocery", "15_grocery"], ["open_boatyard", "16_boatyard"], ["open_go_ashore", "17_go_ashore"],
+			["open_captains_log", "18_captains_log"], ["open_sleep_menu", "19_sleep"], ["open_cooking", "20_galley"]]:
+		app.call(pair[0])
+		await _idle()
+		await _frames(8)
+		await _shot("%s_%s" % [pair[1], mood])
+		app.modals.clear()
+		await _idle()
+	# A weather warning and a tooltip on deck.
+	await _show(SessionState.AREA_EXTERIOR)
+	app.hud.show_warning("Gale expected in about 6 hours along your course. Consider a sheltered harbour.")
+	await _frames(4)
+	var menu := app.hud.find_child("MenuButton", true, false) as Control
+	var motion := InputEventMouseMotion.new()
+	motion.position = menu.get_global_transform_with_canvas() * (menu.size / 2.0)
+	motion.global_position = motion.position
+	get_viewport().push_input(motion)
+	await get_tree().create_timer(1.2).timeout
+	await _shot("21_warning_and_tooltip_%s" % mood)
+	app.hud.hide_warning()
 	# Navigation chart with a course to Kiel.
 	GameSession.plan_route_to(&"kiel")
 	app.open_chart()
@@ -129,6 +150,10 @@ func _mood(mood: String) -> void:
 	_set_local_hour(hour)
 	deck = await _show(SessionState.AREA_EXTERIOR)
 	await _shot("07_deck_underway_%s" % mood)
+	app.open_sail_trim()
+	await _frames(8)
+	await _shot("22_sail_trim_%s" % mood)
+	app.modals.clear()
 	var catalog := FishingCatalog.get_default()
 	GameSession.expire_bite()
 	GameSession._pending_bite = {"species": "cod", "kg": 4.2, "time": GameSession.get_game_time(), "mode": "trolling",

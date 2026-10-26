@@ -34,12 +34,11 @@ signal save_requested
 @onready var _warning_text: Label = %WarningText
 
 
-## The shortcut strip at the bottom left (Iteration 12): key caps on a dark,
-## translucent backing so it reads over any deck, pontoon or quay.
+## The shortcut strip at the bottom left (Iteration 12): key caps on a slim,
+## translucent bar (the theme's KeyBar, day or night) so it reads over any
+## deck, pontoon or quay.
 const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["Q", "actions"], ["R", "rod"], ["H", "hat"], ["L", "Captain's Log"],
 	["Esc", "menu"]]
-const SHORTCUT_BACKING := Color(0.04, 0.11, 0.15, 0.78)
-const SHORTCUT_TEXT := Color(0.93, 0.92, 0.86)
 
 var hat_badge: HatBadge
 ## Fishing, anchor and galley indicators (Iteration 13), under the hat badge.
@@ -101,14 +100,7 @@ func _ready() -> void:
 
 func _build_controls() -> void:
 	var strip := $Controls as PanelContainer
-	var style := StyleBoxFlat.new()
-	style.bg_color = SHORTCUT_BACKING
-	style.set_corner_radius_all(10)
-	style.content_margin_left = 14.0
-	style.content_margin_right = 14.0
-	style.content_margin_top = 6.0
-	style.content_margin_bottom = 6.0
-	strip.add_theme_stylebox_override(&"panel", style)
+	strip.theme_type_variation = &"KeyBar"
 	var row := HBoxContainer.new()
 	row.name = "Row"
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -117,7 +109,7 @@ func _build_controls() -> void:
 	for i in SHORTCUTS.size():
 		if i > 0:
 			var gap := Control.new()
-			gap.custom_minimum_size.x = 10
+			gap.custom_minimum_size.x = 6
 			row.add_child(gap)
 		var key := Label.new()
 		key.theme_type_variation = &"KeyLabel"
@@ -125,8 +117,7 @@ func _build_controls() -> void:
 		row.add_child(key)
 		var what := Label.new()
 		what.text = SHORTCUTS[i][1]
-		what.add_theme_color_override(&"font_color", SHORTCUT_TEXT)
-		what.add_theme_font_size_override(&"font_size", 18)
+		what.add_theme_font_size_override(&"font_size", 17)
 		row.add_child(what)
 
 
@@ -219,8 +210,11 @@ func refresh() -> void:
 	var catalog := PortCatalog.get_default()
 	_clock.text = Simulation.format_game_time(GameSession.get_game_time())
 	_paused_badge.visible = GameSession.is_paused()
-	# The warning sits just below the route panel, whose height depends on its lines.
+	# The warning sits just below the route panel, whose height depends on its
+	# lines (it shrinks again when lines are hidden).
 	var route_panel := $RoutePanel as Control
+	if route_panel.size.y > route_panel.get_combined_minimum_size().y + 0.5:
+		route_panel.offset_bottom = route_panel.offset_top
 	var warning_top := route_panel.offset_top + route_panel.size.y + 12.0
 	if not is_equal_approx(_warning_panel.offset_top, warning_top):
 		_warning_panel.offset_top = warning_top
@@ -233,7 +227,9 @@ func refresh() -> void:
 	aboard_badge.position = hat_badge.position + Vector2(0.0, (hat_badge.size.y + 8.0) if hat_badge.visible else 0.0)
 	_status.text = describe_status()
 	var alarm := GameSession.get_condition() <= 40.0 or GameSession.get_provisions().endurance_days() <= Provisions.LOW_DAYS
-	_status.modulate = Color(1.0, 0.72, 0.55) if alarm else Color.WHITE
+	var status_style := &"WarningLabel" if alarm else &"MutedLabel"
+	if _status.theme_type_variation != status_style:
+		_status.theme_type_variation = status_style
 	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
 	_wind.text = describe_wind(wind)
 	if GameSession.is_underway():
@@ -247,7 +243,11 @@ func refresh() -> void:
 		_route.text = "To %s  ·  %d nm to go" % [destination, roundi(remaining)]
 		_route_detail.text = "ETA about %s (estimate)" % Simulation.format_game_time(Simulation.get_eta())
 		_propulsion.text = propulsion.describe()
-		_propulsion.visible = true
+		# Speed, sails and wind are on the sailing panel underway: the route
+		# panel keeps to the voyage (and the holding, at anchor).
+		_propulsion.visible = GameSession.is_anchored()
+		_wind.visible = false
+		_set_route_lines(true)
 		if GameSession.is_holding_at_anchorage():
 			_route_caption.text = "At the anchorage  ·  0.0 kn"
 			_route_detail.text = "Drop the anchor, or sail on (Q)"
@@ -280,6 +280,24 @@ func refresh() -> void:
 			_route_detail.text = "Plot a course at the chart table"
 		_propulsion.visible = false
 		_progress.visible = false
+		# No course planned: no empty route panel, just the wind and the menu.
+		_set_route_lines(planned != null and planned.has_path())
+		_wind.visible = true
+
+
+## Width of the route panel with a voyage or a planned course; without one
+## it shrinks to the wind and the menu button.
+const ROUTE_PANEL_WIDTH := 536.0
+const ROUTE_PANEL_COMPACT := 300.0
+
+
+func _set_route_lines(shown: bool) -> void:
+	if _route.visible != shown:
+		_route_caption.visible = shown
+		_route.visible = shown
+		_route_detail.visible = shown
+		var panel := $RoutePanel as Control
+		panel.offset_left = panel.offset_right - (ROUTE_PANEL_WIDTH if shown else ROUTE_PANEL_COMPACT)
 
 
 ## The boat's condition, money and stores in one compact line:

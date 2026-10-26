@@ -106,6 +106,7 @@ var _hazards: Array[Dictionary] = []
 @onready var _cursor_label: Label = %CursorLabel
 @onready var _wind_toggle: CheckButton = %WindToggle
 @onready var _wind_legend: Control = %WindLegend
+@onready var _edit_help: Control = $Ui/Root/SidePanel/VBox/Tabs/Course/VBox/EditHelp
 
 ## Whether the wind overlay is shown (kept while the game runs).
 static var wind_shown := true
@@ -155,6 +156,12 @@ func _ready() -> void:
 	_wind_toggle.toggled.connect(set_wind_shown)
 	set_wind_shown(wind_shown)
 	_build_anchorage_controls()
+	# Captain's Chartroom: small, quiet map controls.
+	for control in %ZoomInButton.get_parent().get_children():
+		if control is CheckButton:
+			control.theme_type_variation = &"MapToggle"
+		elif control is Button:
+			control.theme_type_variation = &"MapButton"
 	GameSession.route_changed.connect(_on_committed_changed)
 	GameSession.voyage_started.connect(_on_committed_changed)
 	GameSession.voyage_course_changed.connect(_on_committed_changed)
@@ -653,7 +660,7 @@ func _build_anchorage_buttons() -> void:
 	var row := _remove_button.get_parent()
 	_anchorage_button = Button.new()
 	_anchorage_button.name = "AnchorageButton"
-	_anchorage_button.text = "Mark as anchorage"
+	_anchorage_button.text = "Anchorage (M)"
 	_anchorage_button.tooltip_text = "Make the selected waypoint tonight's anchorage (M): the boat stops there and asks you to drop the anchor."
 	_anchorage_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_anchorage_button.clip_text = true
@@ -856,9 +863,13 @@ func _refresh() -> void:
 		_plot_button.text = "Plot course"
 	else:
 		_set_text(_selection_title, "%s, %s" % [selected.display_name, selected.country])
-		_set_text(_selection_details, "%s\n%s\n%s  ·  %d nm in a straight line" % [selected.description,
-			HarbourFacilities.describe_services(selected.id), GeoMath.format_position(selected.get_geo_position()),
-			roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))])
+		# Captain's Chartroom: a compact summary (the services by name and the
+		# distance); the explanations and the coordinates are in the tooltip.
+		var away := roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))
+		_set_text(_selection_details, "%s\n%s\n%d nm away in a straight line" % [selected.description,
+			HarbourFacilities.describe_services(selected.id, true), away])
+		_selection_details.tooltip_text = "%s\n%s  ·  %d nm in a straight line" % [HarbourFacilities.describe_services(selected.id),
+			GeoMath.format_position(selected.get_geo_position()), away]
 		var here := location != null and selected.id == location.id and not GameSession.is_underway()
 		_plot_button.disabled = here
 		_plot_button.text = "You are here" if here else "Plot course to %s" % selected.display_name
@@ -897,13 +908,14 @@ func _refresh() -> void:
 	if not _feedback_hint.is_empty():
 		course_status += "\n" + _feedback_hint
 	_set_text(_course_status, course_status)
+	_edit_help.visible = not _draft_destination.is_empty() and mode == MODE_STATION
 	_update_readiness(valid)
 	_apply_button.text = "Change course" if GameSession.is_underway() else "Apply course"
 	_apply_button.disabled = not _draft_dirty or _draft_route == null
 	_discard_button.disabled = not _draft_dirty
 	_remove_button.disabled = _selected_waypoint < 0
 	_anchorage_button.disabled = _selected_waypoint < 0
-	_anchorage_button.text = "Unmark anchorage" if is_anchorage(_selected_waypoint) else "Mark as anchorage"
+	_anchorage_button.text = "Unmark (M)" if is_anchorage(_selected_waypoint) else "Anchorage (M)"
 	_suggestion_button.visible = _anchorage_suggestion != Vector2.INF
 	_clear_button.disabled = GameSession.is_underway() or GameSession.get_planned_route() == null
 	# Always in the footer; disabled (not hidden) when it cannot be used.
@@ -932,8 +944,10 @@ func _update_readiness(valid: bool) -> void:
 		return
 	_readiness_key = key
 	readiness = PassageReadiness.assess(path)
-	_set_text(_readiness_label, "Passage readiness: " + PassageReadiness.describe(readiness, 3))
-	_readiness_label.modulate = [Color(0.75, 0.92, 0.7), Color(0.93, 0.92, 0.86), Color(1.0, 0.86, 0.62)][int(readiness.level)]
+	# The headline and the most important note; the rest in the tooltip.
+	_set_text(_readiness_label, "Passage readiness: " + PassageReadiness.describe(readiness, 1))
+	_readiness_label.tooltip_text = "Passage readiness: " + PassageReadiness.describe(readiness, 3)
+	_readiness_label.theme_type_variation = [&"SuccessLabel", &"", &"WarningLabel"][int(readiness.level)]
 
 
 ## The last Passage Readiness shown (tests).

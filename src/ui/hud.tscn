@@ -98,7 +98,7 @@ anchor_right = 1.0
 offset_left = -560.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 120.0
+offset_bottom = 24.0
 grow_horizontal = 0
 theme_type_variation = &"HudPanel"
 
@@ -171,7 +171,7 @@ offset_top = 136.0
 offset_right = -24.0
 offset_bottom = 260.0
 grow_horizontal = 0
-theme_type_variation = &"PromptPanel"
+theme_type_variation = &"WarningPanel"
 
 [node name="VBox" type="VBoxContainer" parent="WarningPanel"]
 layout_mode = 2
