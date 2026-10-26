@@ -193,7 +193,11 @@ All 46 screenshots are rendered at 1600×900, in [docs/screenshots/chartroom_ui/
 
 After the final document-colour and easing changes, `dev_guides` and `chartroom_ui` were run again: 117 checks, 0 failed.
 
-**Full regression run.** The full run on the final code is reported in the delivery message: whether it ran to completion, and its result. This report does not claim it.
+**Full regression run** (headless, on the final code). **4427 checks passed and 2 failed**, so it is **not** a clean pass:
+- `test_lighting`: "at Long Passage pace the light swells gently, no strobe". The largest frame step was 0.140.
+- `test_living_world`: "walking swings the arms". The arm swing measured 0.00–0.59.
+
+Both suites passed in full when run again on their own straight afterwards (96 checks, 0 failed: step 0.120, swing 0.00–0.68). Both checks measure motion frame by frame under a software renderer, and both values are near their limits. Neither involves code this pass changed (world lighting and the sailor's walk). They are reported here as timing-sensitive, not as fixed.
 
 **The twelve requested checks**
 
