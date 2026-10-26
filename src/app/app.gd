@@ -793,6 +793,33 @@ func _on_weather_warning(warning: Dictionary) -> void:
 func _on_arrived(port_id: StringName) -> void:
 	hud.hide_warning()
 	notify("Arrived in %s." % PortCatalog.get_default().get_display_name(port_id))
+	# Sleeping through the arrival, the captain wakes in the cabin as always.
+	if not GameSession.is_asleep():
+		show_docking_arrival.call_deferred()
+
+
+## The short docking arrival (Iteration 17): aboard and with no window open,
+## the deck is shown (from the cabin too) with the captain at the helm while
+## the boat comes alongside, the engine running. Otherwise nothing extra.
+func show_docking_arrival() -> void:
+	if not is_in_gameplay() or not modals.is_empty() or router.is_busy() or not GameSession.is_moored_in_harbour():
+		return
+	var area := router.current_screen as BoatArea
+	if area.area_id != SessionState.AREA_EXTERIOR:
+		GameSession.enter_boat_area(SessionState.AREA_EXTERIOR, &"start")
+		router.change_screen(GameSession.get_vessel_definition().get_area_scene(SessionState.AREA_EXTERIOR), func(deck: BoatArea) -> void:
+			_connect_boat_area(deck)
+			deck.ready.connect(_start_docking.bind(deck), CONNECT_ONE_SHOT | CONNECT_DEFERRED))
+		return
+	_start_docking(area)
+
+
+func _start_docking(deck: BoatArea) -> void:
+	if not is_instance_valid(deck):
+		return
+	AudioManager.play_loop(ENGINE_LOOP, engine_sound, ENGINE_OUTSIDE_DB, 0.3)
+	deck.docking_finished.connect(update_engine_audio, CONNECT_ONE_SHOT)
+	deck.play_docking_arrival()
 
 
 ## A first visit is noted in the Captain's Log (one short message).

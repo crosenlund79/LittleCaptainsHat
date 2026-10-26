@@ -346,7 +346,28 @@ func _test_log_panel() -> void:
 	t.check(kiel != null and kiel.text.contains("Kiel, Germany") and kiel.text.contains("1 arrival"), "[log ui] Harbours: Kiel, first visit and 1 arrival")
 	var start: Label = menu.find_child("Harbour_copenhagen", true, false)
 	t.check(start != null and start.text.contains("start harbour"), "[log ui] Copenhagen is the start harbour")
-	t.check(not (menu.find_child("Unvisited", true, false) as Label).text.contains("Kiel"), "[log ui] visited harbours are not under 'Not yet visited'")
+	# Iteration 17: grouped by country, with All / Visited / Not visited filters.
+	menu.set_harbour_filter(CaptainsLogMenu.FILTER_NOT_VISITED)
+	await t.frames(2)
+	t.check(menu.find_child("Harbour_kiel", true, false) == null and menu.find_child("Harbour_helsingor", true, false) != null,
+		"[log ui] visited harbours are not under 'Not visited'")
+	menu.set_harbour_filter(CaptainsLogMenu.FILTER_VISITED)
+	await t.frames(2)
+	var listed := 0
+	for label in menu.find_children("Harbour_*", "Label", true, false):
+		listed += 1
+	t.check(listed == GameSession.get_captains_log().get_distinct_harbours() and menu.find_child("Harbour_kiel", true, false) != null,
+		"[log ui] 'Visited' lists exactly the %d harbours visited" % GameSession.get_captains_log().get_distinct_harbours())
+	var germany := menu.find_child("Country_Germany", true, false) as Button
+	t.check(germany != null and "1 of" in germany.text, "[log ui] countries show how many of their harbours were visited (%s)" % (germany.text if germany else "-"))
+	menu.set_harbour_filter(CaptainsLogMenu.FILTER_ALL)
+	await t.frames(2)
+	var group := menu.find_child("Harbours_Germany", true, false) as Control
+	var was := group.visible
+	(menu.find_child("Country_Germany", true, false) as Button).pressed.emit()
+	await t.frames(1)
+	t.check(group.visible != was, "[log ui] a country opens and closes")
+	(menu.find_child("Country_Germany", true, false) as Button).pressed.emit()
 	await t.screenshot("109_captains_log_harbours")
 	var size_before: Vector2 = menu.find_child("Panel", true, false).size
 	menu.show_tab(CaptainsLogMenu.TAB_LOG)

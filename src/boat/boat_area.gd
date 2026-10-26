@@ -122,6 +122,7 @@ func _ready() -> void:
 	_setup_anchor_ambience()
 	_setup_camera()
 	_setup_lighting()
+	_setup_overhead()
 	_setup_hat_hook()
 	_update_hat_station()
 	_resolve_highlights.call_deferred()
@@ -139,6 +140,19 @@ func apply_visual_profile(profile: VesselVisualProfile) -> void:
 	var rig := get_node_or_null("SailRig") as SailRig
 	if rig:
 		rig.apply_profile(profile)
+	update_fenders()
+
+
+## Fenders out in harbour, stowed underway (Iteration 17, FenderStowage).
+## Returns how many fenders the deck art shows when they are out.
+func update_fenders() -> int:
+	if area_id != SessionState.AREA_EXTERIOR or not is_inside_tree():
+		return 0
+	return FenderStowage.apply(get_node_or_null("Visual") as VesselVisual, not GameSession.is_underway())
+
+
+func are_fenders_out() -> bool:
+	return not GameSession.is_underway()
 
 
 ## The illustrated harbour (art only) on the deck's mooring, if it has one.
@@ -341,6 +355,27 @@ func _update_camera() -> void:
 		SessionLog.write("view_octant", {"heading": snappedf(get_view_heading(), 0.1), "octant": OCTANT_NAMES[_logged_octant]})
 
 
+## What is above head height on deck (Iteration 17): the rigging, boom and
+## sails are drawn above the captain (z OVERHEAD_Z) instead of under them; the
+## sail rig turns see-through while the captain is under it (SailRig).
+const OVERHEAD_Z := 20
+const OVERHEAD_NODES := ["Visual/RiggingVisual", "Visual/BoomVisual", "Visual/MainSailVisual", "Visual/HeadSailVisual",
+	"Visual/SpinnakerVisual", "SailRig"]
+
+
+func _setup_overhead() -> void:
+	if area_id != SessionState.AREA_EXTERIOR:
+		return
+	for path: String in OVERHEAD_NODES:
+		var node := get_node_or_null(NodePath(path)) as CanvasItem
+		if node:
+			node.z_as_relative = false
+			node.z_index = OVERHEAD_Z
+	var rig := get_node_or_null(^"SailRig") as SailRig
+	if rig:
+		rig.see_through = player
+
+
 ## Day and night, lamps and soft shadows (Iteration 17, BoatLighting).
 func _setup_lighting() -> void:
 	var lighting := BoatLighting.new()
@@ -501,6 +536,61 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 				push_warning("Interactable '%s' has no behaviour." % interactable.interaction_id)
 
 
+# --- Docking arrival (Iteration 17) -----------------------------------------------------
+# A short presentation after the simulation has already moored the boat: the
+# pontoon and harbour glide in alongside while the engine runs, the captain at
+# the helm; then harbour play resumes. Presentation only: nothing in the game
+# state changes during it (no second arrival, rewards, stores or route
+# changes), and any key skips it.
+
+const DOCKING_SECONDS := 2.4
+const DOCKING_OFFSET := Vector2(-420.0, 240.0)
+signal docking_finished
+var _docking: Tween
+
+
+func is_docking() -> bool:
+	return _docking != null and _docking.is_running()
+
+
+func play_docking_arrival() -> void:
+	if mooring == null or area_id != SessionState.AREA_EXTERIOR or not GameSession.is_moored_in_harbour():
+		docking_finished.emit()
+		return
+	place_player_at_spawn(&"start")
+	player.set_input_enabled(false)
+	var rest := mooring.position
+	mooring.position = rest + DOCKING_OFFSET
+	mooring.modulate.a = 0.0
+	if _shore:
+		_shore.visible = false
+	_docking = create_tween().set_parallel()
+	_docking.tween_property(mooring, "position", rest, DOCKING_SECONDS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	_docking.tween_property(mooring, "modulate:a", 1.0, DOCKING_SECONDS * 0.35)
+	_docking.chain().tween_callback(_finish_docking.bind(rest))
+
+
+func skip_docking() -> void:
+	if is_docking():
+		_docking.custom_step(DOCKING_SECONDS * 2.0)
+
+
+func _finish_docking(rest: Vector2) -> void:
+	mooring.position = rest
+	mooring.modulate.a = 1.0
+	if _shore:
+		_shore.visible = _shore.is_active()
+	if not _leaving:
+		player.set_input_enabled(true)
+	docking_finished.emit()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if is_docking() and (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed():
+		get_viewport().set_input_as_handled()
+		skip_docking()
+
+
 func _on_voyage_arrived(_port: StringName) -> void:
 	_update_mooring()
 	var life := get_water_life()
@@ -527,6 +617,7 @@ func _update_mooring() -> void:
 		interaction_prompt_changed.emit(player.get_focused_interactable().prompt)
 	if mooring:
 		mooring.visible = not GameSession.is_underway()
+	update_fenders()
 	if mooring_label and GameSession.get_location():
 		mooring_label.text = "GUEST PONTOON · %s" % GameSession.get_location().display_name.to_upper()
 

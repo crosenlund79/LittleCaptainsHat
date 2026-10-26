@@ -113,7 +113,7 @@ func setup(boat_area: BoatArea) -> void:
 	update_now()
 
 
-func _add_light(at: Vector2, colour: Color, size: float, energy: float, when: String) -> PointLight2D:
+func _add_light(at: Vector2, colour: Color, size: float, energy: float, when: String, parent: Node = null) -> PointLight2D:
 	var light := PointLight2D.new()
 	light.texture = light_texture()
 	light.texture_scale = size
@@ -121,7 +121,7 @@ func _add_light(at: Vector2, colour: Color, size: float, energy: float, when: St
 	light.energy = 0.0
 	light.position = at
 	light.blend_mode = Light2D.BLEND_MODE_ADD
-	add_child(light)
+	(parent if parent else self).add_child(light)
 	_lights.append({"light": light, "energy": energy, "when": when})
 	return light
 
@@ -145,10 +145,13 @@ func _add_harbour_lights() -> void:
 	var dressing := area.get_harbour_dressing()
 	if dressing == null:
 		return
+	# In the mooring (beside the dressing): they move with the harbour
+	# during the docking arrival.
+	var mooring := dressing.get_parent()
 	for lamp in dressing.get_lamp_positions():
-		_add_light(area.to_local(dressing.to_global(lamp)), QUAY_LAMP, 1.4, 0.8, "harbour")
+		_add_light(dressing.position + lamp, QUAY_LAMP, 1.4, 0.8, "harbour", mooring)
 	for spot in dressing.get_pontoon_light_positions():
-		_add_light(area.to_local(dressing.to_global(spot)), QUAY_LAMP, 0.8, 0.3, "harbour")
+		_add_light(dressing.position + spot, QUAY_LAMP, 0.8, 0.3, "harbour", mooring)
 
 
 ## Soft shadows beside the furniture and fittings: the fixture's outline

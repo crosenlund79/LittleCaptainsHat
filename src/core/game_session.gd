@@ -2438,6 +2438,11 @@ func begin_sleep() -> void:
 	_asleep = true
 
 
+## True while the captain sleeps (between begin_sleep and end_sleep).
+func is_asleep() -> bool:
+	return _asleep
+
+
 func end_sleep(slept_seconds: float) -> String:
 	_asleep = false
 	if _state == null:

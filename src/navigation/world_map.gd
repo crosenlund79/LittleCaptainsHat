@@ -459,7 +459,8 @@ func _refresh_dream() -> void:
 		return
 	_set_text(_selection_title, "%s, %s" % [selected.display_name, selected.country])
 	var visited := "Visited" if log.has_visited(selected.id) else "Not visited yet"
-	_set_text(_selection_details, "%s\n%s  ·  %s  ·  %d nm in a straight line" % [selected.description, visited,
+	_set_text(_selection_details, "%s\n%s\n%s  ·  %s  ·  %d nm in a straight line" % [selected.description,
+		HarbourFacilities.describe_services(selected.id), visited,
 		GeoMath.format_position(selected.get_geo_position()),
 		roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))])
 	_imagine_button.disabled = false
@@ -694,8 +695,8 @@ func _refresh() -> void:
 		_plot_button.text = "Plot course"
 	else:
 		_set_text(_selection_title, "%s, %s" % [selected.display_name, selected.country])
-		_set_text(_selection_details, "%s\n%s  ·  %d nm in a straight line" % [selected.description,
-			GeoMath.format_position(selected.get_geo_position()),
+		_set_text(_selection_details, "%s\n%s\n%s  ·  %d nm in a straight line" % [selected.description,
+			HarbourFacilities.describe_services(selected.id), GeoMath.format_position(selected.get_geo_position()),
 			roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))])
 		var here := location != null and selected.id == location.id and not GameSession.is_underway()
 		_plot_button.disabled = here

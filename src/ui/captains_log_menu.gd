@@ -167,27 +167,109 @@ func _build_harbours_tab() -> Control:
 	var catalog := PortCatalog.get_default()
 	_add_text(list, "HarbourSummary", "You have visited %d of the %d harbours on the chart. A harbour counts once you arrive and moor there." % [
 		log.get_distinct_harbours(), catalog.ports.size()], &"MutedLabel")
-	_add_text(list, "VisitedTitle", "Visited", HEADING)
-	var visited := VBoxContainer.new()
-	visited.name = "Visited"
-	list.add_child(visited)
-	for id in log.get_visited_ids():
-		var entry: Dictionary = log.visited[String(id)]
-		var port := catalog.get_port(id)
-		var place := "%s, %s" % [port.display_name, port.country] if port else String(id)
-		var first: float = entry.first
-		var when := "before the log was kept" if first < 0.0 else "first %s" % Simulation.format_game_time(first, false)
-		var arrivals := int(entry.arrivals)
-		var visits := "start harbour" if arrivals == 0 and first >= 0.0 else "%d arrival%s" % [arrivals, "" if arrivals == 1 else "s"]
-		_add_text(visited, "Harbour_%s" % id, "%s  ·  %s  ·  %s" % [place, when, visits])
-	_add_text(list, "UnvisitedTitle", "Not yet visited", HEADING)
-	var names: Array[String] = []
-	for port in catalog.ports:
-		if not log.has_visited(port.id):
-			names.append(port.display_name)
-	names.sort()
-	_add_text(list, "Unvisited", ", ".join(names) if not names.is_empty() else "None: you have been everywhere on the chart.", &"MutedLabel")
+	# Iteration 17: by country, collapsible, with All / Visited / Not visited.
+	var filters := HBoxContainer.new()
+	filters.name = "HarbourFilters"
+	filters.add_theme_constant_override("separation", 6)
+	list.add_child(filters)
+	var group := ButtonGroup.new()
+	for spec in [[FILTER_ALL, "All"], [FILTER_VISITED, "Visited"], [FILTER_NOT_VISITED, "Not visited"]]:
+		var button := Button.new()
+		button.name = "Filter_%s" % spec[0]
+		button.text = spec[1]
+		button.toggle_mode = true
+		button.button_group = group
+		button.button_pressed = spec[0] == harbour_filter
+		button.pressed.connect(set_harbour_filter.bind(spec[0]))
+		filters.add_child(button)
+	var countries := VBoxContainer.new()
+	countries.name = "Countries"
+	countries.add_theme_constant_override("separation", 6)
+	list.add_child(countries)
+	_fill_harbours(countries)
 	return list.get_parent()
+
+
+const FILTER_ALL := &"all"
+const FILTER_VISITED := &"visited"
+const FILTER_NOT_VISITED := &"not_visited"
+## The harbour list's filter (kept while the game runs).
+static var harbour_filter := FILTER_ALL
+## Countries opened or closed by the player (country -> open), for the run.
+static var _country_open := {}
+
+
+func set_harbour_filter(filter: StringName) -> void:
+	harbour_filter = filter
+	var countries := find_child("Countries", true, false) as VBoxContainer
+	if countries:
+		_fill_harbours(countries)
+
+
+## One group per country (alphabetical): a header with the visit count that
+## opens and closes it, then its harbours (visited ones with their first
+## visit and arrivals). Countries with nothing to show under the filter are
+## left out; an empty filter says so.
+func _fill_harbours(countries: VBoxContainer) -> void:
+	for child in countries.get_children():
+		countries.remove_child(child)
+		child.queue_free()
+	var log := GameSession.get_captains_log()
+	var by_country := {}
+	for port in PortCatalog.get_default().ports:
+		var country := port.country if not port.country.is_empty() else "Other"
+		if not by_country.has(country):
+			by_country[country] = []
+		by_country[country].append(port)
+	var names := by_country.keys()
+	names.sort()
+	var shown := 0
+	for country: String in names:
+		var ports: Array = by_country[country]
+		ports.sort_custom(func(a: PortData, b: PortData) -> bool: return a.display_name < b.display_name)
+		var visited := 0
+		var rows: Array[PortData] = []
+		for port: PortData in ports:
+			var has := log.has_visited(port.id)
+			visited += 1 if has else 0
+			if harbour_filter == FILTER_ALL or (harbour_filter == FILTER_VISITED) == has:
+				rows.append(port)
+		if rows.is_empty():
+			continue
+		shown += rows.size()
+		var key := country.replace(" ", "_")
+		var open: bool = _country_open.get(country, visited > 0 or harbour_filter != FILTER_ALL)
+		var header := Button.new()
+		header.name = "Country_%s" % key
+		header.flat = true
+		header.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		header.text = "%s %s  ·  %d of %d visited" % ["▾" if open else "▸", country, visited, ports.size()]
+		countries.add_child(header)
+		var box := VBoxContainer.new()
+		box.name = "Harbours_%s" % key
+		box.visible = open
+		countries.add_child(box)
+		header.pressed.connect(func() -> void:
+			_country_open[country] = not box.visible
+			box.visible = not box.visible
+			header.text = "%s%s" % ["▾" if box.visible else "▸", header.text.substr(1)])
+		for port in rows:
+			_add_text(box, "Harbour_%s" % port.id, _describe_harbour(port, log), &"" if log.has_visited(port.id) else &"MutedLabel")
+	if shown == 0:
+		_add_text(countries, "NoHarbours", "No harbours visited yet: arrive and moor somewhere new." if harbour_filter == FILTER_VISITED
+			else "None: you have been everywhere on the chart.", &"MutedLabel")
+
+
+static func _describe_harbour(port: PortData, log: CaptainsLog) -> String:
+	var place := "%s, %s" % [port.display_name, port.country]
+	if not log.has_visited(port.id):
+		return "%s  ·  not visited yet" % place
+	var entry: Dictionary = log.visited[String(port.id)]
+	var first: float = entry.first
+	var when := "before the log was kept" if first < 0.0 else "first %s" % Simulation.format_game_time(first, false)
+	var arrivals := int(entry.arrivals)
+	var visits := "start harbour" if arrivals == 0 and first >= 0.0 else "%d arrival%s" % [arrivals, "" if arrivals == 1 else "s"]
+	return "%s  ·  %s  ·  %s" % [place, when, visits]
 
 
 # --- Objectives tab -----------------------------------------------------------------

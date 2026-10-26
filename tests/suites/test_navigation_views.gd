@@ -115,8 +115,8 @@ func _test_dream_map(dream: WorldMap) -> void:
 		map._clamp_camera()
 		await t.frames(1)
 	var per_frame := (WeatherModel.get_default().sample_count - samples) / 30.0
-	t.check(map.wind_layer.chunks_sampled == chunks and per_frame <= 1.0,
-		"[dream] panning the world samples no wind field (%.1f point queries per frame: the boat's own readout)" % per_frame)
+	t.check(map.wind_layer.chunks_sampled == chunks and per_frame <= 2.0,
+		"[dream] panning the world samples no wind field (%.2f point queries per frame: the boat's own readouts)" % per_frame)
 	t.check(map.is_world_land_drawn_at(map.projection.geo_to_map(Vector2(134.2, -25.3)))
 		or not Rect2(Vector2.ZERO, map._free_view_size()).has_point(map.geo_to_screen(Vector2(134.2, -25.3))),
 		"[dream] after panning across the Date Line the land is still drawn")

@@ -54,8 +54,8 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
 | BOAT-1 | Boat visually turns with heading while the Captain is on deck (all listed scenarios) | DONE | test_sailing_correctness [orientation]: autopilot turns at waypoints with the captain amidships/bow/stern, successive turns, cabin round trip, after load; fails without the fix | Root cause: the deck camera re-turned only on route edits/voyage start |
-| BOAT-2 | Player/sail and rigging depth order correct | TODO | | |
-| BOAT-3 | White side objects identified; fenders shown moored, stowed underway, correct after save/load | TODO | | |
+| BOAT-2 | Player/sail and rigging depth order correct | DONE | test_presentation [rig]: rigging, boom and sails above the captain (z 20 vs 10); see-through while under the sail/boom; all boats share the rule |  |
+| BOAT-3 | White side objects identified; fenders shown moored, stowed underway, correct after save/load | DONE | Identified as fenders painted in each boat's deck art (2–3 per boat); test_presentation [fenders]: out moored, stowed underway, out on arrival and after load; art files unchanged (MD5) | Stowing uses a runtime copy of the texture with the fenders cleared |
 
 ## SAVE — Persistence [§32–§34, §44]
 
@@ -102,9 +102,9 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| PORT-1 | Harbour facilities in destination preview from authoritative data; extensible | TODO | | |
-| PORT-2 | Visited harbours grouped by country, collapsible, All/Visited/Not visited | TODO | | |
-| PORT-3 | Short docking arrival presentation, skippable, no duplication | TODO | | |
+| PORT-1 | Harbour facilities in destination preview from authoritative data; extensible | DONE | HarbourFacilities.describe_services (tier, groceries, boatyard, haul-out, go ashore) on the working chart and Dreamer's Map; test_presentation [preview] checks all 223 harbours against their data | No fuel (not in the game) |
+| PORT-2 | Visited harbours grouped by country, collapsible, All/Visited/Not visited | DONE | Captain's Log harbours by country, collapsible, counts, All/Visited/Not visited; test_captains_log [log ui] |  |
+| PORT-3 | Short docking arrival presentation, skippable, no duplication | DONE | test_presentation [docking]: deck, captain at the helm, harbour glides in, engine on, skippable, one arrival, nothing consumed; skipped when asleep (wakes in the cabin as before) |  |
 
 ## QA — Testing and delivery [§38, §40–§53]
 

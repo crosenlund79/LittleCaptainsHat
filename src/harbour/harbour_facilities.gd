@@ -108,3 +108,27 @@ func get_ids() -> Array[StringName]:
 static func describe(facility: StringName) -> String:
 	return {GROCERY: "grocery store", BOATYARD: "boatyard", GO_ASHORE: "place to go ashore",
 		HAUL_OUT: "yard that can haul boats out"}.get(facility, String(facility))
+
+
+## How each service is shown in a destination preview (Iteration 17), in
+## order. Only services the game has (no fuel: boats are not refuelled in
+## the game). New services (I020's chandlery, sailmaker, fishmonger) are
+## added here and in has(), and appear in every preview.
+const PREVIEW := [
+	[GROCERY, "Groceries", "food and water"],
+	[BOATYARD, "Boatyard", "repairs, care, other boats"],
+	[HAUL_OUT, "Haul-out", "bottom cleaning, hard coating"],
+	[GO_ASHORE, "Go ashore", ""],
+]
+
+
+## "Major service harbour: Groceries (food and water) · Boatyard (…) · …",
+## from the harbour's own data (Iteration 17: chart and Dreamer's Map).
+static func describe_services(port_id: StringName) -> String:
+	var facilities := for_port(port_id)
+	var parts := PackedStringArray()
+	for entry: Array in PREVIEW:
+		if facilities.has(entry[0]):
+			parts.append(entry[1] if String(entry[2]).is_empty() else "%s (%s)" % [entry[1], entry[2]])
+	var services := "  ·  ".join(parts) if not parts.is_empty() else "no services"
+	return "%s: %s" % [TIER_NAMES[facilities.get_tier()], services]

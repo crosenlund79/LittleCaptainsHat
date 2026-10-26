@@ -136,7 +136,33 @@ func apply_profile(profile: VesselVisualProfile) -> void:
 	queue_redraw()
 
 
+## Iteration 17: the rig is drawn above the captain (it is overhead). While
+## `see_through` (the captain) is under a sail or the boom, the rig fades to
+## SEE_THROUGH_ALPHA so the captain stays in view.
+const SEE_THROUGH_ALPHA := 0.45
+var see_through: Node2D
+
+
+## Whether a deck point is under a set sail or the boom (boat frame).
+func covers(point: Vector2) -> bool:
+	var shape := get_shape()
+	if set_amount > 0.05:
+		var main: PackedVector2Array = (shape.main.leech as PackedVector2Array).duplicate()
+		main.append(mast)
+		if Geometry2D.is_point_in_polygon(point, main):
+			return true
+		if spinnaker_amount < 0.95:
+			var jib: PackedVector2Array = (shape.jib.leech as PackedVector2Array).duplicate()
+			if Geometry2D.is_point_in_polygon(point, jib):
+				return true
+	var clew: Vector2 = shape.main.clew
+	return Geometry2D.get_closest_point_to_segment(point, mast, clew).distance_to(point) < 18.0
+
+
 func _process(delta: float) -> void:
+	if see_through:
+		var under := covers(see_through.position)
+		modulate.a = move_toward(modulate.a, SEE_THROUGH_ALPHA if under else 1.0, delta * 3.0)
 	var target := _target()
 	var k := 1.0 - exp(-TRIM_RATE * delta)
 	main_angle_deg = lerpf(main_angle_deg, target.main, k)
