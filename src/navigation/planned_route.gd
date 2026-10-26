@@ -102,7 +102,9 @@ static func from_dict(data: Variant, catalog: PortCatalog, errors: Array[String]
 			errors.append("route %s are not a list" % key)
 			return null
 		for item: Variant in list:
-			var point: Variant = _point_from(item)
+			# Waypoints are chart positions (within ±180°); path points may run on
+			# past the Date Line.
+			var point: Variant = _point_from(item, 180.0 if key == "waypoints" else 540.0)
 			if point == null:
 				errors.append("route contains an invalid %s point" % key.trim_suffix("s"))
 				return null
@@ -140,13 +142,15 @@ static func _point_to_dict(point: Vector2) -> Dictionary:
 
 
 ## Vector2(lon, lat) from {"lon": .., "lat": ..}, or null if invalid.
-static func _point_from(value: Variant) -> Variant:
+static func _point_from(value: Variant, max_lon := 540.0) -> Variant:
 	if not value is Dictionary:
 		return null
 	var lon: Variant = value.get("lon")
 	var lat: Variant = value.get("lat")
 	if not (lon is int or lon is float) or not (lat is int or lat is float):
 		return null
-	if not is_finite(float(lon)) or not is_finite(float(lat)) or absf(lon) > 180.0 or absf(lat) > 90.0:
+	# Longitudes beyond ±180 occur in paths continuous across the Date Line
+	# (Iteration 16); anything beyond one extra turn is invalid.
+	if not is_finite(float(lon)) or not is_finite(float(lat)) or absf(lon) > max_lon or absf(lat) > 90.0:
 		return null
 	return Vector2(float(lon), float(lat))

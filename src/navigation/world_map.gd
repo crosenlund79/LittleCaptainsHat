@@ -360,6 +360,11 @@ func _recalculate() -> void:
 		_draft_waypoints, _draft_destination)
 	_draft_route = result.route
 	_draft_error = result.error
+	if result.is_ok():
+		SessionLog.write("route_completed", {"to": String(_draft_destination), "nm": snappedf(result.route.get_distance_nm(), 0.1),
+			"waypoints": _draft_waypoints.size()})
+	else:
+		SessionLog.write("route_refused", {"to": String(_draft_destination), "error": result.error})
 	_draft_estimate_seconds = Simulation.estimate_route_seconds(_draft_route.path) if _draft_route else 0.0
 	_draft_legs.clear()
 	var stops: Array[Vector2] = [GameSession.get_vessel_position()]

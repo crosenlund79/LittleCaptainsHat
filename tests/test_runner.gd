@@ -51,6 +51,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_galley_and_anchor.gd"),
 	preload("res://tests/suites/test_eight_directions.gd"),
 	preload("res://tests/suites/test_catch_and_cove_journey.gd"),
+	preload("res://tests/suites/test_world_voyage.gd"),
 	preload("res://tests/suites/test_diagnostics.gd"),
 	preload("res://tests/suites/test_gameplay_flow.gd"),
 ]
@@ -64,6 +65,8 @@ var current_suite := ""
 var screenshot_dir := ""
 ## Run only suites whose file name contains this (--only=vessels).
 var only := ""
+## Skip suites whose file name contains any of these (--skip=routing,harbours).
+var skip := PackedStringArray()
 var _failures: PackedStringArray = []
 
 
@@ -74,6 +77,8 @@ func _ready() -> void:
 			screenshot_dir = arg.trim_prefix("--screenshots=")
 		elif arg.begins_with("--only="):
 			only = arg.trim_prefix("--only=")
+		elif arg.begins_with("--skip="):
+			skip = arg.trim_prefix("--skip=").split(",", false)
 	_run.call_deferred()
 
 
@@ -92,6 +97,8 @@ func _run() -> void:
 	SettingsManager.settings_path = TEST_SETTINGS_PATH
 	SettingsManager.load_settings()
 	for script in SUITES:
+		if Array(skip).any(func(part: String) -> bool: return script.resource_path.get_file().contains(part)):
+			continue
 		if not only.is_empty() and not script.resource_path.get_file().contains(only):
 			continue
 		use_calm_wind()

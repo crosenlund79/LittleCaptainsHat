@@ -4,6 +4,18 @@ extends RefCounted
 ##
 ## Besides the router's own raster validation, every route segment is checked
 ## independently against the *vector* coastline polygons the chart draws.
+##
+## Iteration 16: the worldwide chart. Representative international passages
+## (Atlantic stepping stones, the Panama passage, the Pacific, a Date Line
+## crossing, the Denmark region boundary), every international harbour reached
+## from Copenhagen, land crossings checked against the world land as drawn.
+
+## Harbour regions outside Europe (Iteration 16).
+const WORLD_REGIONS := ["atlantic_islands", "caribbean", "central_america", "pacific"]
+
+## The Panama Canal as the chart abstracts it: a channel across the isthmus
+## between Colón and Panama City (tools/navigation/build_world.py).
+const PANAMA_PASSAGE := Rect2(-80.3, 8.5, 1.2, 1.3)
 
 var t: Node
 var router: SeaRouter
@@ -11,6 +23,7 @@ var catalog: PortCatalog
 var _land_polygons: Array[PackedVector2Array] = []  # projected (Mercator) rings
 var _land_boxes: Array[Rect2] = []
 var _projection := MapProjection.new(160.0)
+var _world_width := 360.0 * 160.0
 
 
 func run(runner: Node) -> void:
@@ -18,7 +31,7 @@ func run(runner: Node) -> void:
 	var started := Time.get_ticks_msec()
 	router = SeaRouter.get_default()
 	catalog = PortCatalog.get_default()
-	t.check(router != null and router.get_node_count() > 1000, "router loads the European sea graph (%d nodes, %d ms)" % [
+	t.check(router != null and router.get_node_count() > 1000, "router loads the worldwide sea graph (%d nodes, %d ms)" % [
 		router.get_node_count() if router else 0, Time.get_ticks_msec() - started])
 	_load_land()
 
@@ -30,6 +43,9 @@ func run(runner: Node) -> void:
 	_test_all_port_pairs()
 	_test_waypoints()
 	_test_failures()
+	_test_world_routes()
+	_test_dateline()
+	_test_world_failures()
 
 
 func _test_graph_consistency() -> void:
@@ -44,9 +60,12 @@ func _test_graph_consistency() -> void:
 func _test_ports() -> void:
 	t.check(catalog.ports.size() >= 150, "about 150 harbours in the catalogue (Iteration 006)")
 	for port in catalog.ports:
+		# The limit scales with the chart's resolution there (10 nm on the
+		# European chart, six cells on the coarser world chart).
 		var approach := router.find_port_approach(port)
-		t.check(approach.size() >= 1 and GeoMath.path_length_nm(approach) <= SeaRouter.MAX_APPROACH_NM,
-			"%s has a bounded harbour approach (%.1f nm)" % [port.display_name, GeoMath.path_length_nm(approach)])
+		var limit := router.approach_radius_nm(port.get_geo_position())
+		t.check(approach.size() >= 1 and GeoMath.path_length_nm(approach) <= limit,
+			"%s has a bounded harbour approach (%.1f of %.0f nm)" % [port.display_name, GeoMath.path_length_nm(approach), limit])
 
 
 func _test_copenhagen_kiel() -> void:
@@ -101,20 +120,32 @@ func _test_straits() -> void:
 	_check_crossing(great_belt, "y", 55.35, 10.75, 11.25, "Kiel -> Gothenburg uses the Great Belt")
 
 
+## Every pair of European harbours, and every international harbour from
+## Copenhagen (all pairs worldwide would be ~25,000 long routes).
 func _test_all_port_pairs() -> void:
 	var failures := PackedStringArray()
 	var count := 0
 	var started := Time.get_ticks_msec()
-	for a in catalog.ports:
-		for b in catalog.ports:
+	var europe := catalog.ports.filter(func(p: PortData) -> bool: return p.region not in WORLD_REGIONS)
+	for a: PortData in europe:
+		for b: PortData in europe:
 			if a.id >= b.id:
 				continue
 			count += 1
 			var route := _plan(a.id, b.id)
 			if route == null or not router.validate_route(route).is_empty():
 				failures.append("%s-%s" % [a.id, b.id])
-	t.check(failures.is_empty(), "all %d port pairs have a valid sea route (%d ms)%s" % [count, Time.get_ticks_msec() - started,
+	t.check(failures.is_empty(), "all %d European port pairs have a valid sea route (%d ms)%s" % [count, Time.get_ticks_msec() - started,
 		"" if failures.is_empty() else ": failed " + ", ".join(failures)])
+	failures.clear()
+	started = Time.get_ticks_msec()
+	var world := catalog.ports.filter(func(p: PortData) -> bool: return p.region in WORLD_REGIONS)
+	for port: PortData in world:
+		var route := _plan(&"copenhagen", port.id)
+		if route == null or not router.validate_route(route).is_empty():
+			failures.append(String(port.id))
+	t.check(world.size() >= 30 and failures.is_empty(), "all %d international harbours have a valid sea route from Copenhagen (%d ms)%s" % [
+		world.size(), Time.get_ticks_msec() - started, "" if failures.is_empty() else ": failed " + ", ".join(failures)])
 
 
 func _test_waypoints() -> void:
@@ -164,6 +195,86 @@ func _test_failures() -> void:
 	t.check(Time.get_ticks_msec() - started < 3000, "failed routes return quickly (%d ms)" % (Time.get_ticks_msec() - started))
 
 
+## The passages a voyage from Denmark to the South Pacific is made of.
+func _test_world_routes() -> void:
+	var legs := [
+		[&"copenhagen", &"portsmouth", "Copenhagen -> Britain"], [&"copenhagen", &"lisbon", "Copenhagen -> Iberia"],
+		[&"lisbon", &"las_palmas", "Iberia -> Canaries"], [&"lisbon", &"funchal", "Iberia -> Madeira"],
+		[&"las_palmas", &"castries", "Canaries -> Caribbean (Atlantic crossing)"], [&"las_palmas", &"mindelo", "Canaries -> Cape Verde"],
+		[&"castries", &"panama_city", "Caribbean -> Pacific (Panama)"], [&"panama_city", &"puerto_ayora", "Panama -> Galapagos"],
+		[&"puerto_ayora", &"taiohae", "Galapagos -> Marquesas (Pacific crossing)"], [&"taiohae", &"papeete", "Marquesas -> Tahiti"],
+		[&"papeete", &"auckland", "French Polynesia -> New Zealand"], [&"svendborg", &"las_palmas", "detailed Denmark -> the world chart"],
+		[&"ponta_delgada", &"st_george_bermuda", "Azores -> Bermuda"], [&"honolulu", &"papeete", "Hawaii -> Tahiti"],
+	]
+	for leg: Array in legs:
+		var started := Time.get_ticks_msec()
+		var route := _plan(leg[0], leg[1])
+		var elapsed := Time.get_ticks_msec() - started
+		var name: String = leg[2]
+		if not t.check(route != null, "%s: route found" % name):
+			continue
+		t.check_eq(router.validate_route(route), "", "%s: passes route validation" % name)
+		var crossing := _first_land_crossing(route)
+		t.check(crossing < 0, "%s: no segment crosses the drawn coastline%s" % [name, "" if crossing < 0 else " (segment %d at %s)" % [
+			crossing, route.path[crossing]]])
+		var straight := GeoMath.distance_nm(catalog.get_port(leg[0]).get_geo_position(), catalog.get_port(leg[1]).get_geo_position())
+		var distance := route.get_distance_nm()
+		t.check(distance >= straight * 0.98 and distance <= straight * 1.6 + 60.0,
+			"%s: %d nm, a sensible distance for %d nm as the crow flies" % [name, roundi(distance), roundi(straight)])
+		t.check(elapsed < 1500, "%s: calculated in %d ms" % [name, elapsed])
+	# The Caribbean -> Pacific route uses the Panama passage (it crosses the
+	# isthmus between Colón and Panama City, nowhere else).
+	_check_crossing(_plan(&"castries", &"panama_city"), "y", 9.1, -80.1, -79.3, "Caribbean -> Pacific uses the Panama passage")
+	var long_way := _plan(&"copenhagen", &"papeete")
+	var started := Time.get_ticks_msec()
+	long_way = _plan(&"copenhagen", &"papeete")
+	t.check(long_way != null and router.validate_route(long_way).is_empty(),
+		"Copenhagen -> Papeete in one go: %d nm, %d ms" % [roundi(long_way.get_distance_nm()) if long_way else 0, Time.get_ticks_msec() - started])
+
+
+## Crossing the Date Line: the short way, never round the world.
+func _test_dateline() -> void:
+	for pair: Array in [[&"suva", &"avarua"], [&"papeete", &"auckland"], [&"nukualofa", &"lautoka"]]:
+		var route := _plan(pair[0], pair[1])
+		var name := "%s -> %s" % pair
+		if not t.check(route != null, "%s (across the Date Line): route found" % name):
+			continue
+		var longest := 0.0
+		var crossed := false
+		for i in range(1, route.path.size()):
+			# Paths keep longitudes within ±180°: a segment across the Date Line
+			# jumps sign, and is sailed the short way (GeoMath.wrap_delta).
+			var a := route.path[i - 1]
+			var b := route.path[i]
+			longest = maxf(longest, absf(GeoMath.wrap_delta(a.x, b.x)))
+			crossed = crossed or absf(a.x - b.x) > 180.0
+		var straight := GeoMath.distance_nm(catalog.get_port(pair[0]).get_geo_position(), catalog.get_port(pair[1]).get_geo_position())
+		t.check(crossed and longest < 90.0 and route.get_distance_nm() < straight * 1.5 + 60.0,
+			"%s crosses the Date Line the short way: %d nm (%d as the crow flies), no segment longer than %.1f° of longitude" % [
+				name, roundi(route.get_distance_nm()), roundi(straight), longest])
+		t.check_eq(router.validate_route(route), "", "%s: passes route validation" % name)
+		t.check(_first_land_crossing(route) < 0, "%s: no segment crosses the drawn coastline" % name)
+
+
+func _test_world_failures() -> void:
+	var started := Time.get_ticks_msec()
+	var papeete := catalog.get_port(&"papeete").get_geo_position()
+	var caspian := router.plan_route(&"", Vector2(50.5, 42.0), [] as Array[Vector2], &"papeete")
+	t.check(not caspian.is_ok() and not caspian.error.is_empty(),
+		"Caspian Sea -> Papeete fails safely (water not connected to the ocean): %s" % caspian.error)
+	var sahara := Vector2(10.0, 22.0)
+	t.check(not router.is_point_navigable(sahara), "the Sahara is not navigable")
+	var through := router.plan_route(&"las_palmas", catalog.get_port(&"las_palmas").get_geo_position(), [sahara] as Array[Vector2], &"castries")
+	t.check(not through.is_ok() and "Waypoint 1" in through.error, "a waypoint in the Sahara is rejected: %s" % through.error)
+	var straight := PlannedRoute.new()
+	straight.origin_port_id = &"castries"
+	straight.origin_position = catalog.get_port(&"castries").get_geo_position()
+	straight.destination_port_id = &"papeete"
+	straight.path = PackedVector2Array([straight.origin_position, papeete])
+	t.check(not router.validate_route(straight).is_empty(), "a straight line from the Caribbean to Tahiti (across Central America) fails validation")
+	t.check(Time.get_ticks_msec() - started < 3000, "failed world routes return quickly (%d ms)" % (Time.get_ticks_msec() - started))
+
+
 # --- Helpers ------------------------------------------------------------------------------
 
 func _plan(origin_id: StringName, destination_id: StringName) -> PlannedRoute:
@@ -211,6 +322,12 @@ func _load_land() -> void:
 			pieces = next
 		for piece in pieces:
 			_add_land(piece)
+	# The world's land outside Europe (Iteration 16), as the chart draws it at
+	# regional zoom (the same map space: 160 units per degree).
+	var world_land := load("res://data/navigation/world/land.res") as WorldLand
+	if world_land:
+		for ring in world_land.regional_fill:
+			_add_land(ring)
 
 
 func _project(ring: Array) -> PackedVector2Array:
@@ -239,8 +356,19 @@ func _polygon_containing(geo: Vector2) -> int:
 
 
 func _segment_hits_polygon(a_geo: Vector2, b_geo: Vector2, index: int) -> bool:
+	b_geo.x = a_geo.x + GeoMath.wrap_delta(a_geo.x, b_geo.x)  # the short way across the Date Line
 	var a := _projection.geo_to_map(a_geo)
 	var b := _projection.geo_to_map(b_geo)
+	# A segment continuing past the Date Line is also checked one world round
+	# back, where the land on the other side is.
+	var past := maxf(absf(a_geo.x), absf(b_geo.x)) > 180.0
+	if past and _segment_hits_map(a - Vector2(signf(a_geo.x + b_geo.x) * _world_width, 0.0),
+			b - Vector2(signf(a_geo.x + b_geo.x) * _world_width, 0.0), index):
+		return true
+	return _segment_hits_map(a, b, index)
+
+
+func _segment_hits_map(a: Vector2, b: Vector2, index: int) -> bool:
 	if not _land_boxes[index].intersects(Rect2(a, Vector2.ZERO).expand(b).grow(0.01)):
 		return false
 	var polygon := _land_polygons[index]
@@ -253,7 +381,7 @@ func _segment_hits_polygon(a_geo: Vector2, b_geo: Vector2, index: int) -> bool:
 
 
 ## Index of the first segment that touches a land polygon, ignoring harbour
-## approach segments (within MAX_APPROACH_NM of the route's ports), or -1.
+## approach segments (within the approach radius of the route's ports), or -1.
 func _first_land_crossing(route: PlannedRoute) -> int:
 	var ports: Array[Vector2] = [catalog.get_port(route.destination_port_id).get_geo_position()]
 	if not route.origin_port_id.is_empty():
@@ -263,10 +391,11 @@ func _first_land_crossing(route: PlannedRoute) -> int:
 		var b := route.path[i]
 		var near_port := false
 		for port in ports:
-			if GeoMath.rhumb_distance_nm(port, a) <= SeaRouter.MAX_APPROACH_NM and GeoMath.rhumb_distance_nm(port, b) <= SeaRouter.MAX_APPROACH_NM:
+			var limit := router.approach_radius_nm(port)
+			if GeoMath.rhumb_distance_nm(port, a) <= limit and GeoMath.rhumb_distance_nm(port, b) <= limit:
 				near_port = true
-		if near_port:
-			continue
+		if near_port or (PANAMA_PASSAGE.has_point(a) and PANAMA_PASSAGE.has_point(b)):
+			continue  # harbour approaches; the Panama passage cuts through the isthmus by design
 		for p in _land_polygons.size():
 			if _segment_hits_polygon(a, b, p):
 				return i

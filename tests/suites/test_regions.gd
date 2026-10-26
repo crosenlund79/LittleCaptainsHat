@@ -56,9 +56,11 @@ func run(runner: Node) -> void:
 
 
 func _test_region_loaded() -> void:
-	t.check(router.grid.regions.size() >= 1, "[region] the regional charts are loaded (%d)" % router.grid.regions.size())
+	# Iteration 16: the charts nest (the world, Europe in it, Denmark in Europe).
+	var grids := router.grid.all_grids()
+	t.check(grids.size() >= 2, "[region] the regional charts are loaded (%d)" % (grids.size() - 1))
 	var denmark: NavGrid = null
-	for region in router.grid.regions:
+	for region in grids:
 		if region.region_id == "denmark":
 			denmark = region
 	if not t.check(denmark != null, "[region] Denmark is one of them"):
@@ -66,9 +68,11 @@ func _test_region_loaded() -> void:
 	t.check(denmark.factor == 6 and denmark.cells_per_degree == 360.0,
 		"[region] six times finer than the base chart (%d, %.0f cells per degree)" % [denmark.factor, denmark.cells_per_degree])
 	t.check_eq(router.grid.region_id_at(catalog.get_port(&"copenhagen").get_geo_position()), "denmark", "[region] Copenhagen lies in it")
-	t.check_eq(router.grid.region_id_at(catalog.get_port(&"bergen").get_geo_position()), "", "[region] Bergen does not (base chart)")
-	t.check(router.grid.grid_at(ODENSE) == denmark and router.grid.grid_at(catalog.get_port(&"lisbon").get_geo_position()) == router.grid,
-		"[region] grid_at() picks the finest chart for a position")
+	t.check_eq(router.grid.region_id_at(catalog.get_port(&"bergen").get_geo_position()), "europe", "[region] Bergen does not (the European chart)")
+	var europe := router.grid.child_at(ODENSE)
+	t.check(router.grid.grid_at(ODENSE) == denmark and router.grid.grid_at(catalog.get_port(&"lisbon").get_geo_position()) == europe
+		and europe.region_id == "europe" and router.grid.grid_at(catalog.get_port(&"papeete").get_geo_position()) == router.grid,
+		"[region] grid_at() picks the finest chart for a position (Denmark, Europe, the world)")
 	var meta: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/navigation/regions/denmark/region.json"))
 	t.check(meta is Dictionary and String(meta.get("licence", "")).contains("ODbL") and meta.has("source") and meta.has("crs"),
 		"[region] region.json documents its sources, licence and CRS")
