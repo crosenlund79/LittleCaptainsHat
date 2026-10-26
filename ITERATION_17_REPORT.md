@@ -132,14 +132,14 @@ Headless, the same machine and benchmark (`tests/benchmark_17.gd`;
 
 | Measure (headless) | Before (I016) | After Checkpoint B | Final |
 |---|---|---|---|
-| Forced full wind re-sample, Denmark region | 1051 ms | 36 ms | @@DK@@ |
-| Forced full wind re-sample, coastal | 1178 ms | 63 ms | @@CO@@ |
-| Forced full wind re-sample, continental | 493 ms | 31 ms | @@CN@@ |
-| Forced full wind re-sample, whole world | 158 ms | 7 ms (no wind drawn) | @@WO@@ |
-| Chart reopen (mean of 8) | ~471 ms | ~199 ms | @@RE@@ |
-| Chart first open | 2209 ms | 1802 ms | @@FO@@ |
-| Pan with wind on, Denmark region, ms/frame | 11.3 | 7.1 | @@PD@@ |
-| Sailing simulation, ms per sailed day | 499 | 481 | @@SS@@ |
+| Forced full wind re-sample, Denmark region | 1051 ms | 36 ms | 36 ms |
+| Forced full wind re-sample, coastal | 1178 ms | 63 ms | 66 ms |
+| Forced full wind re-sample, continental | 493 ms | 31 ms | 33 ms |
+| Forced full wind re-sample, whole world | 158 ms | 7 ms (no wind drawn) | 7 ms (no wind drawn) |
+| Chart reopen (mean of 8) | ~471 ms | ~199 ms | ~205 ms |
+| Chart first open | 2209 ms | 1802 ms | 2019 ms |
+| Pan with wind on, Denmark region, ms/frame | 11.3 | 7.1 | 6.9 |
+| Sailing simulation, ms per sailed day | 499 | 481 | 514 (runs vary 514–534) |
 
 In play the re-sample is not done in one frame at all: it is spread over
 frames within a **3 ms budget**, so the forced figure is the worst case. The
@@ -395,7 +395,23 @@ Sleeping through an arrival is unchanged (you wake in the cabin). Screenshot
 
 ### 33. Automated test results
 
-@@REGRESSION@@
+**Full regression** (headless, every suite including the all-pairs routing
+test), run on the final code before the last two changes below:
+**3838 checks passed, 0 failed**, exit code 0, 870 s.
+
+After it, two things changed and their suites were run again:
+
+- the late lighting tuning (quay and pontoon lamps, fixture shadows,
+  overcast factor): `test_lighting` 37/37, `test_presentation` 55/55,
+  `test_atmosphere` 19/19;
+- the chartplotter now loads the navigation grid on first use instead of at
+  start-up (section 36): `test_cockpit_ui` 32/32.
+
+Rendered suites (Xvfb, software OpenGL) were run per checkpoint
+(`test_world_chart_render`, `test_wind_overlay`, `test_navigation_views`,
+`test_cockpit_ui`, `test_lighting`, `test_atmosphere`, `test_presentation`)
+and passed. Skipped by design: the window-mode checks need a real display
+(reported as skipped by the runner).
 
 New suites: `test_world_chart_render`, `test_wind_overlay`,
 `test_sailing_correctness`, `test_navigation_views`, `test_cockpit_ui`,
@@ -413,7 +429,27 @@ for all four boats, 09 and 11 in one image (the panel and the help strip
 together), 23 as a before/after pair, and 31/32 the lighting and chart
 before/after comparisons. Each was looked at:
 
-@@REVIEW@@
+- **Navigation (01–07, 27, 30, 32)**: the frame hangs in each of the four
+  cabins; the Dreamer's Map shows complete land after 26 pans, across the
+  Date Line, with Papeete's details and a dashed daydream route; the station
+  chart opens regionally around Copenhagen; Skagen's services; the wind
+  navigator on FORECAST with the uncertainty note.
+- **Cockpit (08–10)**: the chartplotter, the Sailing panel beside the Long
+  Passage panel without overlap, "Q actions" in the help strip, the wheel.
+- **Light (12–18, 31)**: noon bright, dusk warm, night with warm pools and
+  dark corners; the deck at night cool with red/green lights and the helm
+  glow; the harbour with quay lamps. The before/after shows the change is
+  lighting, not repainting: the art reads as itself.
+- **Weather (19–22)**: rain streaks and wind streaks on deck in severe
+  squalls, the cabin dimmed. In stills the lightning flash is hard to see
+  (it lasts a fraction of a second and the shot catches its decay); the
+  flash itself is verified by `test_atmosphere`.
+- **Boat (23a/b, 24–26, 29)**: the deck before and after an autopilot turn;
+  the captain visible under the boom and sail; fenders out moored, gone
+  underway; the docking arrival with the harbour alongside.
+- **Noticed**: in the Wing 33 cabin the cat's ear just overlaps the lower
+  corner of the map frame (the cat sits below it). Left as is; worth a look
+  in the acceptance test (3A).
 
 ### 35. Two-process restart
 
@@ -433,11 +469,143 @@ in-process by `test_sailing_correctness` (a gale at night) and
 
 ### 36. Performance and memory
 
-@@PERF@@
+Benchmarks: `tests/benchmark_17.gd`, the same scenarios before (I016 code,
+`iteration17_before_*.json`) and after (`iteration17_after_*.json`), on the
+same container. **Headless** measures the game's CPU work (frames are capped
+at about 6.9 ms there, so frame times at that value mean "no extra work").
+**Rendered** uses software OpenGL (llvmpipe) under Xvfb: every frame is
+drawn by the CPU, so absolute frame times are far higher than on any GPU,
+and runs vary by ±10 %.
+
+Headless, measured:
+
+| | Before | After |
+|---|---|---|
+| App start-up to the menu | 115 ms | 176 ms |
+| Chart first open | 2209 ms | 2019 ms |
+| Chart reopen (mean of 8) | 472 ms | 205 ms |
+| Forced wind re-sample, Denmark region | 1051 ms | 36 ms |
+| Chart frames, all views, wind on/off | 6.9–12.1 ms | 6.9–9.7 ms |
+| Deck underway, ms/frame | 8.5 | 9.0 |
+| Sailing simulation, ms per day | 499 | 514 |
+| Long Passage, ms per game day | 462 | 474 |
+| Save / load | 1.1 / 5.1 ms | 1.1 / 3.4 ms |
+| Memory at the end | 198 MB | 208 MB |
+
+Rendered (software OpenGL), measured:
+
+| | Before | After |
+|---|---|---|
+| Forced wind re-sample, Denmark region | 787 ms | 92 ms |
+| Chart reopen (mean of 8) | 607 ms | 382 ms |
+| Chart frames | 41–101 ms | 45–106 ms (within run-to-run variation) |
+| Deck underway (the benchmark's moment is at night) | 35 ms | 80 ms |
+| Memory at the end | 188 MB | 198 MB |
+
+Findings:
+
+- **Start-up**: the first after-run measured 892 ms: the chartplotter
+  loaded the worldwide navigation grid when the HUD was built. It now loads
+  it on first use (the chart's first open needs it anyway); start-up is
+  176 ms. The remaining ~60 ms are the new HUD panels and audio set-up
+  (*estimate*, from timing the components separately).
+- **Night deck under software rendering**: a probe on the same deck at 13:00
+  and 23:00 found the night lamps cost about 22 ms per frame on llvmpipe
+  (57 → 33 ms with them hidden; the I016 code measures 31–33 ms there). No
+  single lamp is responsible; it is the 2D renderer's light pass. By day
+  frames are unchanged (35 ms both). On a GPU five small additive lights are
+  normally cheap, but this is **not verified**; the Windows check 14A asks
+  for the frame rate on deck at night.
+- **Memory**: +10 MB (new sounds, light textures, wind caches; all bounded).
+- Sailing and Long Passage differ by a few percent, within the run-to-run
+  spread (three after-runs: 534, 525, 514 ms per sailed day).
 
 ### 37. Shipyard Efficiency — Where the Time Went
 
-@@EFFICIENCY@@
+Every Godot run in this build went through one wrapper that logs its wall
+time and exit code (`i17_timing.log`, kept outside the repository), so the
+numbers below are **measured** unless marked *estimate*. The log is from the
+start of I017 (03:16 UTC) to the start of the final regression; the final
+regression, benchmarks and screenshot runs of Checkpoint I are listed in
+sections 33, 36 and 34.
+
+**Measured totals**: 138 logged Godot runs, **47.1 minutes** of Godot wall
+time. (Two rendered baseline benchmark runs of 137 s and 169 s at 03:35–03:39
+were logged without an exit code and are not in the 138.)
+
+**1. Major phases** (Godot time per checkpoint; measured):
+
+| Checkpoint | Runs | Godot time | Share | Note |
+|---|---|---|---|---|
+| A: chart fix and baseline | 13 | 390 s | 14 % | includes one 300 s hang (below) |
+| B: wind overlay | 16 | 316 s | 11 % | one rendered benchmark, 150 s |
+| C: navigation views | 23 | 284 s | 10 % | |
+| D: sailing correctness | 24 | 530 s | 19 % | the gameplay_flow flake hunt (below) |
+| E: lighting | 19 | 296 s | 10 % | |
+| F: atmosphere | 9 | 116 s | 4 % | |
+| G: cockpit and wheel | 15 | 198 s | 7 % | |
+| H: presentation | 13 | 547 s | 19 % | the regression without routing, 388 s |
+| I: delivery (so far) | 6 | 152 s | 5 % | screenshots ×2, restart test |
+
+Wall-clock from start to Checkpoint H was about 2 h 07 min (03:16 → 05:23,
+from commit times); Godot runs were therefore roughly a third of it
+(*estimate*: the rest was reading, writing code and documentation, which is
+not timed).
+
+**2. Measured command durations**: a single suite run headless takes 3–26 s
+(most 7–12 s, much of it start-up and loading the world chart); a rendered
+suite run under Xvfb 14–19 s; the screenshot run 64–66 s; the rendered
+benchmark 137–169 s; the headless regression without routing 388 s.
+
+**3. Expensive tests** (measured, per run): `test_eight_directions` 51 s,
+`test_world_voyage` 50 s, `test_harbour_life` 41 s, `test_gameplay_flow`
+24–26 s. `test_routing` (every pair of harbours) dominates the full
+regression and was therefore left to the final run (section 33).
+
+**4. Expensive rendering and screenshot steps**: the 30-shot screenshot run
+(64–66 s, run twice: the second time after the deck-shadow and harbour-light
+tuning); rendered benchmarks (137–169 s each, three runs); rendered visual
+suites 15–19 s each, 44 rendered runs in all.
+
+**5. Repeated geography and data generation**: none was regenerated in I017
+(the world and Denmark data from I016 were reused as committed). Each
+Godot start does load the world chart and the routing graph again; that
+start-up is part of every run above (*estimate*: 3–5 s of each headless run,
+judging by the shortest runs at 3–4 s).
+
+**6. Caching opportunities**: the land-class cache for the wind overlay and
+the per-destination daydream cache are in the game already. In the shipyard:
+a persistent import cache is already used; the world chart and routing graph
+could be loaded once per test process rather than once per suite.
+
+**7. Unnecessary repeated work** (measured):
+
+- **One 300 s hang** (A, "repro render after fix", killed by its timeout):
+  a rendered reproduction script never quit and ran until its 300 s timeout;
+  the next run of the same script finished in 10 s. 300 s, 11 % of all Godot
+  time, for nothing.
+- **Iterating new tests**: 30 runs (441 s) were early versions of the new
+  suites (v1, v2, debug) failing on the test itself rather than the game.
+- **5 fail-fast aborts** (a parse error caught within 3 s and the run
+  killed): the wrapper saved the full timeout each time.
+- **The gameplay_flow flake**: about 4 runs (~100 s) in D chasing a failure
+  that turned out to be pre-existing (it fails 1 run in 4 on the I016 code
+  too, checked on a separate worktree).
+- `test_eight_directions` and `test_harbour_life` were each run in both D and
+  E (184 s) because both checkpoints touched the deck.
+
+**8. Recommended improvements** (up to five):
+
+1. Give every rendered helper script a short timeout (≤ 120 s) and a
+   "first frame drawn" guard, so a hang costs seconds, not five minutes.
+2. Load the world chart and routing graph once per test process (a shared
+   fixture) to cut a few seconds from every suite run.
+3. Split `test_routing`'s all-pairs check into a fast sample for checkpoint
+   runs and the full set for the final regression.
+4. Tag suites by subsystem so a checkpoint reruns only the suites its files
+   touch (D and E would not both have run the deck suites).
+5. Fix flaky checks when first seen on the baseline (as done here) rather
+   than re-running them.
 
 ### 38. Known limitations
 
@@ -451,6 +619,9 @@ in-process by `test_sailing_correctness` (a gale at night) and
 - **Synthetic sounds**: the weather sounds are generated, not recordings.
 - **Software renderer**: rendered frame times measure llvmpipe; the GPU
   figures will differ.
+- **Night lamps and frame time**: under software rendering the night lamps
+  add about 22 ms per frame on deck (section 36); expected to be minor on a
+  graphics card but not verified (Windows check 14A2).
 - **No saved thunderstorm across processes** (section 35).
 - **Shadows are soft overlays**, not true light occlusion: lamps light through
   furniture, and the deck light on the coachroof is a pool, not a shaped

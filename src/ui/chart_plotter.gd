@@ -83,8 +83,6 @@ func _ready() -> void:
 	_image = Image.create(RASTER, RASTER, false, Image.FORMAT_RGBA8)
 	_image.fill(WATER)
 	_texture = ImageTexture.create_from_image(_image)
-	var router := SeaRouter.get_default()
-	_grid = router.grid if router else null
 	visible = false
 
 
@@ -130,6 +128,9 @@ func _process(_delta: float) -> void:
 
 ## A few raster rows per frame (land from the navigation grid).
 func _build_rows() -> void:
+	if _grid == null:  # loaded on first use, not at start-up (the router's graph is large)
+		var router := SeaRouter.get_default()
+		_grid = router.grid if router else null
 	var end := mini(_build_row + ROWS_PER_FRAME, RASTER)
 	for y in range(_build_row, end):
 		for x in RASTER:

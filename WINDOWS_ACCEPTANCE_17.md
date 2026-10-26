@@ -154,6 +154,7 @@ moved to **F10** (editor runs only).
 | ID | Check | Result | Comments |
 |---|---|---|---|
 | 14A | Chart with Wind on at regional zoom: smooth on your machine (note the frame rate if you can). | | |
+| 14A2 | On deck **at night underway** (lamps and navigation lights on): still smooth? (The Linux software renderer slowed here; a real graphics card should not.) | | |
 | 14B | Opening the chart: about how long? | | |
 | 14C | No crash or freeze in an hour of play. | | |
 

@@ -17,7 +17,7 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | MAP-4 | Reopen map and select destinations after extensive panning | DONE | test_world_chart_render: harbour picking after long pans |  |
 | MAP-5 | Repeatable automated rendering-coverage regression test | DONE | tests/suites/test_world_chart_render.gd |  |
 | MAP-6 | Rendered before/after evidence | DONE | docs/screenshots/iteration17/32_world_chart_before_after.png (I016 vs I017 after panning west and east); 03, 04 |  |
-| MAP-7 | Worldwide routing and Date Line correctness preserved | TODO | | |
+| MAP-7 | Worldwide routing and Date Line correctness preserved | DONE | Full regression: test_routing (all pairs), test_world_voyage (Copenhagen → Papeete across the Date Line), test_long_passage Date Line save, test_world_chart_render |  |
 
 ## WND — Wind and weather performance [§10–§15]
 
@@ -111,11 +111,11 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
 | QA-1 | Long Passage preserved and integrated (lighting, audio, preview, panel) | DONE | test_long_passage passes; test_lighting [fast] (eased light at Long Passage pace); sailing panel and Long Passage panel do not overlap (test_cockpit_ui) |  |
-| QA-2 | Performance profiling and before/after report (headless vs rendered stated) | TODO | | |
-| QA-3 | Full regression | TODO | | |
-| QA-4 | 30 rendered screenshots reviewed | TODO | | |
+| QA-2 | Performance profiling and before/after report (headless vs rendered stated) | DONE | docs/benchmarks/iteration17_{before,checkpointB,after}_{headless,rendered}.json; report §9, §36; start-up regression found and fixed (lazy navigation grid) | Night lamps cost ~22 ms/frame under software GL; GPU not verified (Windows 14A2) |
+| QA-3 | Full regression | DONE | 3838 checks passed, 0 failed (870 s); lighting/presentation/atmosphere/cockpit suites rerun after the last changes |  |
+| QA-4 | 30 rendered screenshots reviewed | DONE | docs/screenshots/iteration17/ (33 shots + 2 before/after); review notes in report §34 | Lightning flash hard to see in stills |
 | QA-5 | Shipyard Efficiency section with measured timings | DONE | ITERATION_17_REPORT.md §37 (138 logged runs, measured vs estimate separated) |  |
 | QA-6 | CAPTAINS_ORDERS.md updated | DONE | Iteration 17 decisions and log entry; existing decisions preserved; no Phase Two wording invented |  |
 | QA-7 | ITERATION_17_REPORT.md (40 items), WINDOWS_ACCEPTANCE_17.md | DONE | Both written; Windows status: not yet tested |  |
-| QA-8 | Version per policy; push and remote HEAD verified | TODO | | |
+| QA-8 | Version per policy; push and remote HEAD verified | DONE | 0.104a (MACHINE 0.104.1), save format 12; remote HEAD checked with git ls-remote (report §40) |  |
 | QA-9 | No I018–I021 scope started | DONE | No Fishing 2.0, alarms, shops, personalization or difficulty modes |  |

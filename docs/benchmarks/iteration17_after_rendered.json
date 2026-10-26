@@ -1,0 +1,167 @@
+{
+  "app_startup_ms": 247.68,
+  "chart_first_open_ms": 2181.51,
+  "chart_frames": {
+    "coastal|wind_off|pan": {
+      "ms_per_frame": 50.97,
+      "weather_samples_per_frame": 1.3
+    },
+    "coastal|wind_off|stationary": {
+      "ms_per_frame": 57.85,
+      "weather_samples_per_frame": 1.3
+    },
+    "coastal|wind_off|zoom": {
+      "ms_per_frame": 67.74,
+      "weather_samples_per_frame": 1.3
+    },
+    "coastal|wind_on|pan": {
+      "ms_per_frame": 57.78,
+      "weather_samples_per_frame": 13.8
+    },
+    "coastal|wind_on|stationary": {
+      "ms_per_frame": 70.79,
+      "weather_samples_per_frame": 19.1
+    },
+    "coastal|wind_on|zoom": {
+      "ms_per_frame": 77.65,
+      "weather_samples_per_frame": 1.3
+    },
+    "continental|wind_off|pan": {
+      "ms_per_frame": 67.78,
+      "weather_samples_per_frame": 1.3
+    },
+    "continental|wind_off|stationary": {
+      "ms_per_frame": 86.5,
+      "weather_samples_per_frame": 1.4
+    },
+    "continental|wind_off|zoom": {
+      "ms_per_frame": 97.3,
+      "weather_samples_per_frame": 1.4
+    },
+    "continental|wind_on|pan": {
+      "ms_per_frame": 79.4,
+      "weather_samples_per_frame": 7.2
+    },
+    "continental|wind_on|stationary": {
+      "ms_per_frame": 92.85,
+      "weather_samples_per_frame": 3.5
+    },
+    "continental|wind_on|zoom": {
+      "ms_per_frame": 105.95,
+      "weather_samples_per_frame": 18.1
+    },
+    "denmark_region|wind_off|pan": {
+      "ms_per_frame": 44.72,
+      "weather_samples_per_frame": 1.2
+    },
+    "denmark_region|wind_off|stationary": {
+      "ms_per_frame": 47.12,
+      "weather_samples_per_frame": 1.2
+    },
+    "denmark_region|wind_off|zoom": {
+      "ms_per_frame": 56.78,
+      "weather_samples_per_frame": 1.3
+    },
+    "denmark_region|wind_on|pan": {
+      "ms_per_frame": 55.97,
+      "weather_samples_per_frame": 1.4
+    },
+    "denmark_region|wind_on|stationary": {
+      "ms_per_frame": 57.88,
+      "weather_samples_per_frame": 7.9
+    },
+    "denmark_region|wind_on|zoom": {
+      "ms_per_frame": 63.73,
+      "weather_samples_per_frame": 1.3
+    },
+    "world|wind_off|pan": {
+      "ms_per_frame": 88.26,
+      "weather_samples_per_frame": 1.4
+    },
+    "world|wind_off|stationary": {
+      "ms_per_frame": 73.12,
+      "weather_samples_per_frame": 1.4
+    },
+    "world|wind_off|zoom": {
+      "ms_per_frame": 85.51,
+      "weather_samples_per_frame": 1.4
+    },
+    "world|wind_on|pan": {
+      "ms_per_frame": 82.61,
+      "weather_samples_per_frame": 1.4
+    },
+    "world|wind_on|stationary": {
+      "ms_per_frame": 73.42,
+      "weather_samples_per_frame": 1.3
+    },
+    "world|wind_on|zoom": {
+      "ms_per_frame": 91.33,
+      "weather_samples_per_frame": 1.4
+    }
+  },
+  "chart_reopen_memory_mb": [
+    194.1,
+    194.1,
+    194.1,
+    194.1,
+    194.1,
+    194.1,
+    194.1,
+    194.1
+  ],
+  "chart_reopen_ms": [
+    334.51,
+    334.23,
+    350.29,
+    391.68,
+    370.23,
+    413.59,
+    422.01,
+    438.05
+  ],
+  "chart_stationary_clock_20x_wind_on": {
+    "coastal": {
+      "ms_per_frame": 68.23,
+      "weather_samples_per_frame": 36.2
+    },
+    "continental": {
+      "ms_per_frame": 95.09,
+      "weather_samples_per_frame": 28.9
+    },
+    "denmark_region": {
+      "ms_per_frame": 62.21,
+      "weather_samples_per_frame": 27.9
+    },
+    "world": {
+      "ms_per_frame": 78.74,
+      "weather_samples_per_frame": 1.4
+    }
+  },
+  "deck_underway_ms_per_frame": 79.88,
+  "load_ms": 3.69,
+  "long_passage_ms_per_game_day": 452.9,
+  "memory_end_mb": 197.9,
+  "renderer": "X11",
+  "sail_sim_ms_per_day": 512.4,
+  "sail_weather_samples_per_day": 6433,
+  "save_ms": 1.53,
+  "version": "0.104a",
+  "wind_rebuild": {
+    "coastal": {
+      "ms_per_rebuild_frame": 158.86,
+      "weather_samples_per_rebuild": 1682
+    },
+    "continental": {
+      "ms_per_rebuild_frame": 124.15,
+      "weather_samples_per_rebuild": 825
+    },
+    "denmark_region": {
+      "ms_per_rebuild_frame": 92.49,
+      "weather_samples_per_rebuild": 998
+    },
+    "world": {
+      "ms_per_rebuild_frame": 93.08,
+      "weather_samples_per_rebuild": 1
+    }
+  }
+}
