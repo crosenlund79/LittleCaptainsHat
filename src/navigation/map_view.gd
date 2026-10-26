@@ -82,7 +82,9 @@ const WORLD_LAND_RES := "res://data/navigation/world/land.res"
 const DECLUTTER_PX := 16.0
 const ISLET_COLOUR := Color("#B8AA88")
 
-enum Press { NONE, PENDING, PAN, WAYPOINT, REMOVE }
+## ROUTE: pressed on a course line; it becomes a new waypoint only when dragged
+## (Cozy Polish: a plain click on the line no longer drops a waypoint).
+enum Press { NONE, PENDING, PAN, WAYPOINT, REMOVE, ROUTE }
 
 var projection: MapProjection
 var catalog: PortCatalog
@@ -130,6 +132,7 @@ var _port_layout_key := ""
 var _press := Press.NONE
 var _press_position := Vector2.ZERO
 var _press_waypoint := -1
+var _press_leg := -1
 var _moved := false
 
 ## The world (Iteration 16): true when the world chart data is present.
@@ -176,6 +179,10 @@ func _ready() -> void:
 	_land.add_child(anchorage_layer)
 	_land.move_child(anchorage_layer, 2)
 	reset_view()
+	# A window of another shape (stretch "expand") changes the smallest zoom.
+	get_viewport().size_changed.connect(func() -> void:
+		_set_zoom(camera.zoom.x)
+		_clamp_camera())
 
 
 # --- Public API ------------------------------------------------------------------------
@@ -197,6 +204,15 @@ func set_display(display: Dictionary) -> void:
 	editing_enabled = display.get("editing_enabled", false)
 	next_waypoint_geo = display.get("next_waypoint_geo", Vector2.INF)
 	_overlay.queue_redraw()
+
+
+## The smallest zoom allowed now (the whole chart, never past its data).
+func get_min_zoom() -> float:
+	var current := camera.zoom.x
+	_set_zoom(0.0)
+	var smallest := camera.zoom.x
+	_set_zoom(current)
+	return smallest
 
 
 ## Shows the whole region in the visible chart area.
@@ -425,7 +441,8 @@ func _begin_left_press(position: Vector2) -> void:
 	if pick_port(position).is_empty():
 		var leg := pick_route_leg(position)
 		if leg >= 0:
-			route_pressed.emit(leg, screen_to_geo(position))
+			_press = Press.ROUTE
+			_press_leg = leg
 
 
 func _end_left_press(position: Vector2) -> void:
@@ -433,7 +450,7 @@ func _end_left_press(position: Vector2) -> void:
 		Press.WAYPOINT:
 			if _moved:
 				waypoint_released.emit(_press_waypoint, screen_to_geo(position))
-		Press.PENDING:
+		Press.PENDING, Press.ROUTE:
 			var port := pick_port(position)
 			if not port.is_empty():
 				port_clicked.emit(port)
@@ -445,7 +462,11 @@ func _end_left_press(position: Vector2) -> void:
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	if _press != Press.NONE and not _moved and event.position.distance_to(_press_position) > CLICK_SLOP_PX:
 		_moved = true
-		if _press == Press.PENDING or _press == Press.REMOVE:
+		if _press == Press.ROUTE:
+			# Dragging the course line: a new waypoint where it was pressed,
+			# dragged from there (route_pressed starts the waypoint drag).
+			route_pressed.emit(_press_leg, screen_to_geo(_press_position))
+		elif _press == Press.PENDING or _press == Press.REMOVE:
 			_press = Press.PAN
 	match _press:
 		Press.PAN:
@@ -1156,8 +1177,9 @@ func _set_zoom(value: float) -> void:
 	var whole_region := minf(free.x / _map_bounds.size.x, free.y / _map_bounds.size.y) * 0.8
 	if _has_world:
 		# The wrapping world chart: at most one world wide, so no land and no
-		# harbour is ever shown twice side by side.
-		whole_region = free.x / _world_width
+		# harbour is ever shown twice side by side; and never less than the
+		# chart's height, so the view never shows past its north or south edge.
+		whole_region = maxf(free.x / _world_width, free.y / _map_bounds.size.y)
 	var zoom := clampf(value, maxf(min_zoom, whole_region), max_zoom)
 	camera.zoom = Vector2(zoom, zoom)
 	_update_region_detail()
@@ -1179,7 +1201,11 @@ func _clamp_camera() -> void:
 	if _has_world:
 		# East-west the world wraps: the camera stays in the main copy.
 		camera.position.x = fposmod(camera.position.x - _map_bounds.position.x, _world_width) + _map_bounds.position.x
-		camera.position.y = clampf(camera.position.y, _map_bounds.position.y, _map_bounds.end.y)
+		# North-south the view stays on the chart: its edges, not its centre, stop at the data's edge.
+		var half := _free_view_size().y / 2.0 / camera.zoom.y
+		var top := _map_bounds.position.y + half
+		var bottom := _map_bounds.end.y - half
+		camera.position.y = clampf(camera.position.y, top, bottom) if top <= bottom else _map_bounds.get_center().y
 		return
 	camera.position = camera.position.clamp(_map_bounds.position, _map_bounds.end)
 
@@ -1343,6 +1369,7 @@ func _draw_overlay() -> void:
 		_draw_text(label.text, _near_view(label.position), float(label.size) * s, LABEL_SEA if label.sea else LABEL_COUNTRY, true)
 	if show_weather:
 		_draw_weather(s)
+	_draw_canals(s)
 	_draw_courses(s)
 	_update_port_layout()
 	for i in range(_shown_ports.size() - 1, -1, -1):  # most important drawn last (on top)
@@ -1431,6 +1458,17 @@ func _draw_weather(s: float) -> void:
 			_overlay.draw_set_transform(Vector2.ZERO)
 
 
+## The canal links routes may use (data/navigation/canals.json): a thin
+## water-coloured line along each, so a course through one follows a visible
+## waterway (not on the Dreamer's Map, whose look is its own).
+func _draw_canals(s: float) -> void:
+	if _dream_tint != null or SeaRouter.get_loaded() == null:
+		return
+	for canal in SeaRouter.get_loaded().canals:
+		for points in _path_copies(canal.points):
+			_overlay.draw_polyline(points, Color(SEAFOAM, 0.85), 2.0 * s, true)
+
+
 func _draw_courses(s: float) -> void:
 	if travelled_path.size() >= 2:
 		for points in _path_copies(travelled_path):
@@ -1451,7 +1489,8 @@ func _draw_courses(s: float) -> void:
 				var r := 9.0 * s
 				_overlay.draw_line(mid + Vector2(-r, -r), mid + Vector2(r, r), INVALID, 4.0 * s, true)
 				_overlay.draw_line(mid + Vector2(-r, r), mid + Vector2(r, -r), INVALID, 4.0 * s, true)
-				_draw_text("BLOCKED", mid + Vector2(14, -10) * s, 15 * s, INVALID, false, true)
+				# A draft only: the course in use is unchanged until Apply.
+				_draw_text("BLOCKED (not applied)", mid + Vector2(14, -10) * s, 15 * s, INVALID, false, true)
 				continue
 			var color := SEAFOAM if draft_is_proposal else BRASS
 			for i in range(1, points.size()):

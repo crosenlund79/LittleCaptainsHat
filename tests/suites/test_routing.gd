@@ -52,7 +52,10 @@ func _test_graph_consistency() -> void:
 	var edges := router.get_edges()
 	var bad := 0
 	for i in range(0, edges.size(), 2):
-		if not router.is_segment_navigable(router.get_node_geo(edges[i]), router.get_node_geo(edges[i + 1])):
+		var a := router.get_node_geo(edges[i])
+		var b := router.get_node_geo(edges[i + 1])
+		# Canal links follow their canal on purpose (data/navigation/canals.json).
+		if not router.is_segment_navigable(a, b) and not router.is_canal_segment(a, b):
 			bad += 1
 	t.check_eq(bad, 0, "all %d precomputed graph edges pass the runtime land check" % (edges.size() / 2))
 
@@ -394,8 +397,8 @@ func _first_land_crossing(route: PlannedRoute) -> int:
 			var limit := router.approach_radius_nm(port)
 			if GeoMath.rhumb_distance_nm(port, a) <= limit and GeoMath.rhumb_distance_nm(port, b) <= limit:
 				near_port = true
-		if near_port or (PANAMA_PASSAGE.has_point(a) and PANAMA_PASSAGE.has_point(b)):
-			continue  # harbour approaches; the Panama passage cuts through the isthmus by design
+		if near_port or (PANAMA_PASSAGE.has_point(a) and PANAMA_PASSAGE.has_point(b)) or router.is_canal_segment(a, b):
+			continue  # harbour approaches; the Panama passage and the canal links (data/navigation/canals.json) cross land by design
 		for p in _land_polygons.size():
 			if _segment_hits_polygon(a, b, p):
 				return i

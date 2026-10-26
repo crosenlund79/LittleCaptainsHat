@@ -1,0 +1,194 @@
+{
+ "note": "Ship canals and narrow straits the routing charts cannot represent as connected water (they are narrower than a chart cell). Each is a gameplay abstraction: a navigable link along approximate real centreline points through real water, from an open-water entrance on one side to one on the other. The points are approximate (place names given); locks, rules, tolls and traffic are not modelled. The Panama Canal is carved into the world chart instead (see data/navigation/world/world.json, 'canal'). Not for navigation.",
+ "canals": [
+  {
+   "id": "kiel",
+   "name": "Kiel Canal",
+   "description": "The Kiel Canal (Nord-Ostsee-Kanal) from Kiel-Holtenau on the Baltic to Brunsbuettel on the Elbe and the North Sea.",
+   "points": [
+    [
+     10.17,
+     54.38,
+     "Kiel Fjord, off the Holtenau locks"
+    ],
+    [
+     10.139,
+     54.366,
+     "Kiel-Holtenau locks"
+    ],
+    [
+     10.06,
+     54.358,
+     "Levensau"
+    ],
+    [
+     9.98,
+     54.345,
+     "Landwehr"
+    ],
+    [
+     9.818,
+     54.367,
+     "Sehestedt"
+    ],
+    [
+     9.712,
+     54.318,
+     "Schacht-Audorf"
+    ],
+    [
+     9.663,
+     54.3,
+     "Rendsburg"
+    ],
+    [
+     9.528,
+     54.218,
+     "Breiholz"
+    ],
+    [
+     9.42,
+     54.15,
+     "Oldenbuettel"
+    ],
+    [
+     9.27,
+     54.03,
+     "Hochdonn"
+    ],
+    [
+     9.19,
+     53.96,
+     "Burg (Dithmarschen)"
+    ],
+    [
+     9.143,
+     53.892,
+     "Brunsbuettel locks"
+    ],
+    [
+     9.1,
+     53.88,
+     "the Elbe, off Brunsbuettel"
+    ]
+   ],
+   "kind": "canal"
+  },
+  {
+   "id": "suez",
+   "name": "Suez Canal",
+   "description": "The Suez Canal from Port Said on the Mediterranean to Port Tewfik (Suez), continued down the Gulf of Suez past the Strait of Gubal into the open Red Sea: on the world chart the Gulf of Suez is a strip of water not connected at Gubal.",
+   "points": [
+    [
+     32.33,
+     31.35,
+     "the Mediterranean, off Port Said"
+    ],
+    [
+     32.312,
+     31.255,
+     "Port Said"
+    ],
+    [
+     32.318,
+     31.0,
+     "Ras el Esh"
+    ],
+    [
+     32.318,
+     30.86,
+     "El Qantara"
+    ],
+    [
+     32.31,
+     30.77,
+     "Ballah"
+    ],
+    [
+     32.295,
+     30.59,
+     "Lake Timsah (Ismailia)"
+    ],
+    [
+     32.35,
+     30.42,
+     "Deversoir"
+    ],
+    [
+     32.39,
+     30.33,
+     "Great Bitter Lake"
+    ],
+    [
+     32.47,
+     30.23,
+     "Great Bitter Lake, south"
+    ],
+    [
+     32.54,
+     30.1,
+     "Little Bitter Lake"
+    ],
+    [
+     32.565,
+     29.96,
+     "Port Tewfik (Suez)"
+    ],
+    [
+     32.56,
+     29.8,
+     "the Gulf of Suez, off Suez"
+    ],
+    [
+     32.8,
+     29.3,
+     "the Gulf of Suez"
+    ],
+    [
+     33.1,
+     28.75,
+     "the Gulf of Suez, off Ras Gharib"
+    ],
+    [
+     33.45,
+     28.2,
+     "the Gulf of Suez"
+    ],
+    [
+     33.8,
+     27.75,
+     "the Strait of Gubal"
+    ],
+    [
+     34.2,
+     27.3,
+     "the Red Sea, beyond the Strait of Gubal"
+    ]
+   ],
+   "kind": "canal"
+  },
+  {
+   "id": "bab_el_mandeb",
+   "name": "Bab-el-Mandeb",
+   "kind": "strait",
+   "description": "The strait between the Red Sea and the Gulf of Aden, through its western channel past Perim island. On the world chart it is narrower than a cell, so the Red Sea would otherwise be closed.",
+   "points": [
+    [
+     43.05,
+     13.1,
+     "the Red Sea, north of the strait"
+    ],
+    [
+     43.3,
+     12.62,
+     "Bab-el-Mandeb, west of Perim"
+    ],
+    [
+     43.55,
+     12.4,
+     "the Gulf of Aden"
+    ]
+   ]
+  }
+ ]
+}

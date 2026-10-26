@@ -47,6 +47,8 @@ var mode := MODE_STATION
 
 ## Width of the side panel plus its margin, in unscaled UI pixels.
 const SIDE_PANEL_WIDTH := 544.0
+## How far (nm) a waypoint let go on land may move to reach open water.
+const WAYPOINT_SNAP_NM := 15.0
 ## Minimum real time between route recalculations while dragging a waypoint.
 const DRAG_RECALC_INTERVAL := 0.1
 const LIVE_REFRESH_INTERVAL := 0.25
@@ -626,7 +628,24 @@ func _on_waypoint_dragged(index: int, geo: Vector2) -> void:
 func _on_waypoint_released(index: int, geo: Vector2) -> void:
 	_dragging_waypoint = -1
 	_pending_drag_geo = Vector2.INF
-	_move_waypoint(index, geo)
+	place_waypoint(index, geo)
+
+
+## A waypoint let go on land or too near the coast moves to the nearest water
+## a course may use (within WAYPOINT_SNAP_NM); with none near, it is taken
+## away again with a word why, instead of leaving a blocked leg on the chart.
+func place_waypoint(index: int, geo: Vector2) -> void:
+	var router := SeaRouter.get_default()
+	if router.is_point_reachable(geo):
+		_move_waypoint(index, geo)
+		return
+	var water := router.nearest_navigable(geo, WAYPOINT_SNAP_NM)
+	if water != Vector2.INF:
+		_move_waypoint(index, water)
+		_set_feedback("Waypoint %d was on land: moved to the nearest open water." % (index + 1))
+		return
+	remove_waypoint(index)
+	_set_feedback("That spot is on land, far from open water: no waypoint added there.")
 
 
 func _on_committed_changed(_value: Variant = null) -> void:

@@ -23,10 +23,20 @@ extends RefCounted
 ## distances are right everywhere and the Date Line is no edge at all. Paths
 ## keep normalized longitudes; every line and distance takes the short way
 ## round (GeoMath.wrap_delta), and the chart draws them continuously.
+##
+## Ship canals (Cozy Polish injection): the Kiel and Suez canals are narrower
+## than any chart cell, so they are navigable links (data/navigation/canals.json):
+## a chain of graph points along approximate real centreline points, joined
+## to the sea graph at an open-water entrance at each end. Routes may follow
+## them; validate_route() accepts their segments and a boat in a canal is
+## afloat. Nothing else may cross land. (Panama is carved into the world chart.)
 
 const DEFAULT_GRAPH := "res://data/navigation/europe_route_graph.json"
 const WORLD_GRAPH := "res://data/navigation/world/graph.json"
 const WORLD_EUROPE_LINK := "res://data/navigation/world/europe_link.json"
+const CANALS := "res://data/navigation/canals.json"
+## How far (nm) a position may lie from a canal's centreline and still be in it.
+const CANAL_WIDTH_NM := 0.3
 
 ## A port's coordinate may lie on (generalised) land. Its "berth link" may
 ## start anywhere within this distance of the port, in approach-class water.
@@ -65,6 +75,8 @@ var _bucket_columns := 0
 var _next_temp_id := 0
 var _approach_cache := {}
 var _leg_cache := {}
+## Loaded canals: [{"id", "name", "points": PackedVector2Array, "nodes": PackedInt32Array}].
+var canals: Array[Dictionary] = []
 
 
 ## One route leg between two stops, or the reason it failed.
@@ -117,6 +129,7 @@ static func load_world() -> SeaRouter:
 		push_error("World route graph missing: %s" % WORLD_GRAPH)
 		return null
 	router._load_graph(graph.nodes, graph.edges)
+	router._add_canals()
 	return router
 
 
@@ -133,6 +146,7 @@ static func load_from(mask_path: String, meta_path: String, graph_path: String) 
 	if mask_path == NavGrid.DEFAULT_MASK:
 		router.grid.load_regions()
 	router._load_graph(graph.nodes, graph.edges)
+	router._add_canals()
 	return router
 
 
@@ -176,7 +190,7 @@ func is_point_reachable(geo: Vector2) -> bool:
 ## A position a boat may lie at (0.105b): routing water or water on the fine
 ## coastal raster (where an approach brought it).
 func is_afloat(geo: Vector2) -> bool:
-	return is_point_navigable(geo) or CoastalGeography.get_default().is_water(geo)
+	return is_point_navigable(geo) or CoastalGeography.get_default().is_water(geo) or not canal_at(geo).is_empty()
 
 
 ## Checks every segment of a route. Returns "" when valid, otherwise the reason.
@@ -211,6 +225,8 @@ func validate_route(route: PlannedRoute) -> String:
 
 func _is_segment_allowed(a: Vector2, b: Vector2, ports: Array[Vector2]) -> bool:
 	if grid.is_geo_line_clear(a, b, NavGrid.NAVIGABLE):
+		return true
+	if is_canal_segment(a, b):
 		return true
 	# A near-shore approach (0.105b): short, and clear water all the way on the
 	# fine coastal raster (never over land, never through a narrow entrance).
@@ -563,6 +579,71 @@ func _add_temp_point(point: Vector2, neighbours: PackedInt32Array) -> int:
 	for node in neighbours:
 		_astar.connect_points(id, node)
 	return id
+
+
+# --- Canals --------------------------------------------------------------------------------
+
+## Adds the canals as chains of graph points, joined to the sea graph at both
+## entrances. A canal whose entrance is not open water here is left out.
+func _add_canals() -> void:
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(CANALS))
+	if not data is Dictionary:
+		return
+	for entry: Dictionary in data.get("canals", []):
+		var points := PackedVector2Array()
+		for p: Array in entry.points:
+			points.append(Vector2(float(p[0]), float(p[1])))
+		if points.size() < 2 or not is_point_navigable(points[0]) or not is_point_navigable(points[points.size() - 1]):
+			continue
+		var head := _visible_nodes(points[0])
+		var tail := _visible_nodes(points[points.size() - 1])
+		if head.is_empty() or tail.is_empty():
+			push_warning("Canal %s: an entrance does not reach the sea graph." % entry.id)
+			continue
+		var ids := PackedInt32Array()
+		for p in points:
+			var id := _node_geo.size()
+			_node_geo.append(p)
+			_node_cell.append(grid.geo_to_cell(p))
+			_node_component.append(_node_component[head[0]])
+			_astar.add_point(id, _project(p))
+			if not ids.is_empty():
+				_astar.connect_points(ids[ids.size() - 1], id)
+			ids.append(id)
+		for node in head:
+			_astar.connect_points(ids[0], node)
+		for node in tail:
+			_astar.connect_points(ids[ids.size() - 1], node)
+		# The two seas are one piece of water now.
+		var a := _node_component[head[0]]
+		var b := _node_component[tail[0]]
+		if a != b:
+			var merged: int = _component_size.get(a, 0) + _component_size.get(b, 0)
+			_component_size[a] = merged
+			_component_size[b] = merged
+		canals.append({"id": StringName(entry.id), "name": String(entry.name), "points": points, "nodes": ids})
+
+
+## The canal (its entry, see `canals`) a position lies in, or {} when none.
+func canal_at(geo: Vector2) -> Dictionary:
+	for canal in canals:
+		var points: PackedVector2Array = canal.points
+		for i in range(1, points.size()):
+			if GeoMath.distance_to_segment_nm(geo, points[i - 1], points[i]) <= CANAL_WIDTH_NM:
+				return canal
+	return {}
+
+
+## True for a straight piece of a course that runs along one canal: both ends
+## on the same reach of its centreline (a reach joins two of its points).
+func is_canal_segment(a: Vector2, b: Vector2) -> bool:
+	for canal in canals:
+		var points: PackedVector2Array = canal.points
+		for i in range(1, points.size()):
+			if GeoMath.distance_to_segment_nm(a, points[i - 1], points[i]) <= CANAL_WIDTH_NM \
+					and GeoMath.distance_to_segment_nm(b, points[i - 1], points[i]) <= CANAL_WIDTH_NM:
+				return true
+	return false
 
 
 func _load_graph(nodes: Array, edges: Array) -> void:

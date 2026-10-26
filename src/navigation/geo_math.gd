@@ -55,6 +55,16 @@ static func distance_nm(from: Vector2, to: Vector2) -> float:
 	return 2.0 * EARTH_RADIUS_NM * asin(sqrt(a))
 
 
+## Distance in nautical miles from `point` to the segment a-b, on a local flat
+## projection around a (good for the short reaches of a canal or a harbour).
+static func distance_to_segment_nm(point: Vector2, a: Vector2, b: Vector2) -> float:
+	var k := cos(deg_to_rad(a.y)) * 60.0
+	var p := Vector2(wrap_delta(a.x, point.x) * k, (point.y - a.y) * 60.0)
+	var q := Vector2(wrap_delta(a.x, b.x) * k, (b.y - a.y) * 60.0)
+	var t := clampf(p.dot(q) / maxf(q.length_squared(), 1e-12), 0.0, 1.0)
+	return p.distance_to(q * t)
+
+
 ## Length of the rhumb line between two points, in nautical miles.
 static func rhumb_distance_nm(from: Vector2, to: Vector2) -> float:
 	var lat1 := deg_to_rad(from.y)
