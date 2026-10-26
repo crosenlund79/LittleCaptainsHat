@@ -1,0 +1,4 @@
+# The SoundFont is downloaded by get_soundfont.sh (32 MB; not kept in git).
+soundfont/*.sf2
+work/
+__pycache__/
