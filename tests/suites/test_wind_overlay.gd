@@ -98,6 +98,24 @@ func _test_snapshot_cache(world: WorldMap, map: MapView) -> void:
 	await t.frames(2)
 	t.check(await _complete(map), "[overlay] the regional snapshot completes")
 	t.check(not layer.detail_hidden, "[overlay] regional zoom shows wind detail")
+	# Arrows only at sea: every lattice point drawn as an arrow is navigable water.
+	var grid := SeaRouter.get_default().grid
+	var lattice := layer._lattice()
+	var arrows := 0
+	var on_land := 0
+	for key: Vector3i in WindLayer._land:
+		if key.x != lattice.level:
+			continue
+		var classes: PackedByteArray = WindLayer._land[key]
+		for j in WindLayer.CHUNK:
+			for i in WindLayer.CHUNK:
+				if classes[j * WindLayer.CHUNK + i] != WindLayer.SEA:
+					continue
+				arrows += 1
+				var geo := GeoMath.normalize(map.projection.map_to_geo(WindLayer._point_at(key.y * WindLayer.CHUNK + i, key.z * WindLayer.CHUNK + j, lattice.spacing)))
+				if grid.cell_class_at_geo(geo) == NavGrid.LAND:
+					on_land += 1
+	t.check(arrows > 50 and on_land == 0, "[overlay] no arrow is drawn on land (%d arrows at sea, %d on land)" % [arrows, on_land])
 	var before := layer.chunks_sampled
 	var samples := model.sample_count
 	var clock := Time.get_ticks_msec()

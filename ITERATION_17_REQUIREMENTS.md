@@ -39,15 +39,15 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| NAV-1 | Three interfaces share one geography, router, catalogue, vessel, voyage, weather, save | TODO | | |
-| NAV-2 | Framed world map object in every cabin; contextual interaction; no circle | TODO | | |
-| NAV-3 | Cabin world map: whole world, pan, zoom, names, harbours by zoom, search, select, name/country/description, visited, return | TODO | | |
-| NAV-4 | Cabin map has no wind/weather overlay; static/cached | TODO | | |
-| NAV-5 | Voyage daydreams: real route, distance, 2–3 real intermediate places, modest template variety, no invented names, read-only, cached | TODO | | |
-| NAV-6 | Navigation station: regional working chart (~300–500 nm, latitude-aware), boat, coast, harbours, route segment, waypoints, next waypoint, heading, distance/course, weather, wind | TODO | | |
-| NAV-7 | Global destinations still plannable from the station | TODO | | |
+| NAV-1 | Three interfaces share one geography, router, catalogue, vessel, voyage, weather, save | PARTIAL | Dreamer's Map and working chart are two modes of WorldMap (one MapView, SeaRouter, PortCatalog, voyage); test_navigation_views "same router: the same route" | Chartplotter: Checkpoint G |
+| NAV-2 | Framed world map object in every cabin; contextual interaction; no circle | DONE | test_navigation_views [cabin]: all four boats, focusable, frame highlighted (no circle); screenshots cabin_world_map_* |  |
+| NAV-3 | Cabin world map: whole world, pan, zoom, names, harbours by zoom, search, select, name/country/description, visited, return | DONE | test_navigation_views [dream]: world, pan across the Date Line, search, name/country/story, visited / not visited, back to the cabin |  |
+| NAV-4 | Cabin map has no wind/weather overlay; static/cached | DONE | test_navigation_views [dream]: no wind layer, no weather areas, no wind sampling while panning |  |
+| NAV-5 | Voyage daydreams: real route, distance, 2–3 real intermediate places, modest template variety, no invented names, read-only, cached | DONE | test_navigation_views [daydream]: real route, real harbours near it in order, cached, nothing changed, short hop, tones; src/navigation/voyage_daydream.gd |  |
+| NAV-6 | Navigation station: regional working chart (~300–500 nm, latitude-aware), boat, coast, harbours, route segment, waypoints, next waypoint, heading, distance/course, weather, wind | DONE | test_navigation_views [station]: opens ~400 nm across at Copenhagen and Papeete (latitude-aware); next turn ring and "Steering … next turn" line; wind arrows only at sea | Weather/wind use the B overlay |
+| NAV-7 | Global destinations still plannable from the station | DONE | test_navigation_views: "Plan it at the chart table" → working chart with the harbour selected; plotting uses the global router |  |
 | NAV-8 | Cockpit chartplotter: lightweight, bounded, boat, heading, coast, route, next waypoint and distance, planned course, local wind; toggle from action wheel and a key | TODO | | |
-| NAV-9 | Same route in station, vessel, chartplotter and readiness | TODO | | |
+| NAV-9 | Same route in station, vessel, chartplotter and readiness | PARTIAL | Next turn on the chart = voyage path point = Simulation heading (test_navigation_views) | Chartplotter and panel: Checkpoint G |
 
 ## BOAT — Vessel graphics and movement [§26–§28]
 

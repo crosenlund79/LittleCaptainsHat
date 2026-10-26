@@ -18,6 +18,8 @@ extends Node2D
 
 signal area_change_requested(area: StringName, spawn_point: StringName)
 signal chart_requested
+## The framed world map in the cabin: the Dreamer's Map (Iteration 17).
+signal world_map_requested
 signal sleep_requested
 signal helm_requested
 signal boatyard_requested
@@ -439,6 +441,9 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 		&"nav_table":
 			begin_exit()
 			chart_requested.emit()
+		&"world_map":
+			begin_exit()
+			world_map_requested.emit()
 		&"bed":
 			sleep_requested.emit()
 		&"helm":

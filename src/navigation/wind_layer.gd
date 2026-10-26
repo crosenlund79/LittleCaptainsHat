@@ -84,6 +84,8 @@ var map_view: MapView
 var detail_hidden := false
 ## Chunks sampled so far (profiling and tests).
 var chunks_sampled := 0
+## Map positions of the arrows in the last draw (tests).
+var drawn_points := PackedVector2Array()
 
 ## The authoritative clock as last given (update_time) and the step offset
 ## the player selected (0 = Now).
@@ -340,6 +342,29 @@ func _land_of(key: Vector3i, spacing: float) -> PackedByteArray:
 	return classes
 
 
+## Tests: Vector2i(arrows drawn in view, of which over land by the navigation
+## raster) for the current view.
+func count_arrows_on_land() -> Vector2i:
+	var result := Vector2i.ZERO
+	var lattice := _lattice()
+	for cy in range(lattice.chunk_from.y, lattice.chunk_to.y):
+		for cx in range(lattice.chunk_from.x, lattice.chunk_to.x):
+			var key := Vector3i(lattice.level, cx, cy)
+			var classes: PackedByteArray = _land.get(key, PackedByteArray())
+			if classes.is_empty() or _chunk_data(key).is_empty():
+				continue
+			for j in CHUNK:
+				for i in CHUNK:
+					if classes[j * CHUNK + i] != SEA:
+						continue
+					result.x += 1
+					var at := _point_at(cx * CHUNK + i, cy * CHUNK + j, lattice.spacing)
+					var geo := GeoMath.normalize(map_view.projection.map_to_geo(at))
+					if _grid and _grid.cell_class_at_geo(geo) == NavGrid.LAND:
+						result.y += 1
+	return result
+
+
 static func _point_at(ix: int, iy: int, spacing: float) -> Vector2:
 	return Vector2((ix + 0.5) * spacing, (iy + 0.5) * spacing)
 
@@ -404,6 +429,7 @@ func _chunk_data(key: Vector3i) -> PackedFloat32Array:
 ## All arrows are batched into four draw calls (shaft outlines, shafts, head
 ## outlines, heads), which keeps redraws cheap while panning.
 func _draw() -> void:
+	drawn_points.clear()
 	if map_view == null or detail_hidden:
 		return
 	var lattice := _lattice()
@@ -437,6 +463,7 @@ func _draw() -> void:
 					if ix < from.x or ix >= to.x or classes.is_empty() or classes[index] != SEA:
 						continue
 					var at := _point_at(ix, iy, spacing)
+					drawn_points.append(at)
 					var speed := data[index * 2 + 1]
 					var color := color_for(speed)
 					if speed < CALM_KN:

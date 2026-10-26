@@ -104,6 +104,10 @@ var invalid_waypoints := PackedInt32Array()
 var selected_waypoint := -1
 ## Course legs and waypoints react to the mouse only when editing is enabled.
 var editing_enabled := false
+## Weather areas drawn (off on the cabin's Dreamer's Map, Iteration 17).
+var show_weather := true
+## The next turn of the course being sailed (a ring), or Vector2.INF.
+var next_waypoint_geo := Vector2.INF
 
 var _geo_bounds := Rect2()
 var _map_bounds := Rect2()
@@ -173,6 +177,7 @@ func set_display(display: Dictionary) -> void:
 	invalid_waypoints = display.get("invalid_waypoints", PackedInt32Array())
 	selected_waypoint = display.get("selected_waypoint", -1)
 	editing_enabled = display.get("editing_enabled", false)
+	next_waypoint_geo = display.get("next_waypoint_geo", Vector2.INF)
 	_overlay.queue_redraw()
 
 
@@ -415,7 +420,7 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 
 
 func _process(delta: float) -> void:
-	if GameSession.is_active():
+	if GameSession.is_active() and show_weather:
 		var shown := floorf(GameSession.get_game_time() / WEATHER_REFRESH_SECONDS) * WEATHER_REFRESH_SECONDS
 		if weather_time < 0.0 or shown != weather_time:
 			set_weather_time(shown)
@@ -1232,12 +1237,17 @@ func _draw_overlay() -> void:
 		if px < float(label.min_px) or px > float(label.get("max_px", INF)):
 			continue
 		_draw_text(label.text, _near_view(label.position), float(label.size) * s, LABEL_SEA if label.sea else LABEL_COUNTRY, true)
-	_draw_weather(s)
+	if show_weather:
+		_draw_weather(s)
 	_draw_courses(s)
 	_update_port_layout()
 	for i in range(_shown_ports.size() - 1, -1, -1):  # most important drawn last (on top)
 		_draw_port(_shown_ports[i], s, _labelled_ports.has(_shown_ports[i].id))
 	_draw_waypoints(s)
+	if next_waypoint_geo != Vector2.INF:
+		var turn := _near_view(projection.geo_to_map(next_waypoint_geo))
+		_overlay.draw_arc(turn, 11.0 * s, 0.0, TAU, 24, BRASS, 2.5 * s)
+		_overlay.draw_arc(turn, 15.0 * s, 0.0, TAU, 24, Color(PORT_RIM, 0.7), 1.5 * s)
 	if vessel_geo != Vector2.INF:
 		var at := _near_view(projection.geo_to_map(vessel_geo))
 		if not boat_port_id.is_empty():

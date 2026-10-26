@@ -367,6 +367,24 @@ func open_chart() -> void:
 	router.change_screen(world_map_scene, _connect_world_map)
 
 
+## The cabin's framed world map: the Dreamer's Map (WorldMap.MODE_DREAM).
+func open_dream_map() -> void:
+	router.change_screen(world_map_scene, func(map: WorldMap) -> void:
+		map.mode = WorldMap.MODE_DREAM
+		_connect_world_map(map)
+		map.plan_requested.connect(open_chart_for_port))
+
+
+## From the Dreamer's Map to the navigation station's chart, with the harbour
+## selected there (the course is planned with the same router as always).
+func open_chart_for_port(port_id: StringName) -> void:
+	if router.is_busy():
+		return
+	router.change_screen(world_map_scene, func(map: WorldMap) -> void:
+		_connect_world_map(map)
+		map.select_port.call_deferred(port_id))
+
+
 func open_chart_from_warning() -> void:
 	if is_in_gameplay() and modals.is_empty() and not router.is_busy():
 		router.change_screen(world_map_scene, func(map: WorldMap) -> void:
@@ -993,6 +1011,7 @@ func _connect_main_menu(menu: MainMenu) -> void:
 func _connect_boat_area(area: BoatArea) -> void:
 	area.area_change_requested.connect(_on_area_change_requested)
 	area.chart_requested.connect(open_chart)
+	area.world_map_requested.connect(open_dream_map)
 	area.sleep_requested.connect(open_sleep_menu)
 	area.helm_requested.connect(_on_helm_requested)
 	area.message_requested.connect(notify)

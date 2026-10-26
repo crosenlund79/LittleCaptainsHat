@@ -24,6 +24,26 @@ extends Node2D
 signal close_requested
 signal depart_requested
 signal sleep_requested
+## Dreamer's Map: the player wants to plan the voyage to this harbour at the
+## chart table.
+signal plan_requested(port_id: StringName)
+
+## Iteration 17: the three navigation views share one chart, router,
+## catalogue, boat and voyage; this scene is two of them.
+## - MODE_STATION: the navigation station's working chart. Opens on the
+##   region around the boat (about STATION_SPAN_NM across, latitude-aware),
+##   shows the course, its next turn and the weather, and plans courses to
+##   anywhere in the world (zoom out or search).
+## - MODE_DREAM: the cabin's Dreamer's Map. The whole world to explore, the
+##   harbours, their stories and which were visited, and "Imagine this
+##   voyage". No wind, no weather areas, no course editing: nothing here
+##   samples the weather or changes the game.
+const MODE_STATION := 0
+const MODE_DREAM := 1
+## The working chart's opening view: this many nautical miles across the
+## shorter side of the chart area.
+const STATION_SPAN_NM := 400.0
+var mode := MODE_STATION
 
 ## Width of the side panel plus its margin, in unscaled UI pixels.
 const SIDE_PANEL_WIDTH := 544.0
@@ -129,8 +149,26 @@ func _ready() -> void:
 	GameSession.voyage_arrived.connect(_on_committed_changed)
 	_load_committed()
 	_selected_port_id = _draft_destination
+	if mode == MODE_DREAM:
+		_setup_dream()
 	_refresh()
 	center_on_vessel()
+	if mode == MODE_STATION:
+		_map.center_on_geo(GameSession.get_vessel_position(), get_station_zoom())
+	else:
+		_map.reset_view()
+		_map.camera.position.x = _map.projection.geo_to_map(GameSession.get_vessel_position()).x
+		_map._clamp_camera()
+
+
+## The working chart's opening zoom: STATION_SPAN_NM across the shorter side
+## of the free chart area at the boat's latitude (Mercator stretches a
+## nautical mile by 1 / cos(latitude)).
+func get_station_zoom() -> float:
+	var free := _map._free_view_size()
+	var lat := clampf(GameSession.get_vessel_position().y, -75.0, 75.0)
+	var units := STATION_SPAN_NM / 60.0 * _map.units_per_degree / cos(deg_to_rad(lat))
+	return minf(free.x, free.y) / units
 
 
 func _process(delta: float) -> void:
@@ -309,6 +347,126 @@ func get_map_view() -> MapView:
 	return _map
 
 
+## The next turn of the course being sailed: {"geo", "nm" (to go), "course"
+## (now, degrees), "next_course" (after it, or -1 at the destination)}, or {}
+## in harbour. The same voyage the boat sails, the HUD and the chartplotter use.
+static func get_next_turn() -> Dictionary:
+	var voyage := GameSession.get_voyage()
+	if voyage == null or voyage.route == null or voyage.route.path.size() < 2:
+		return {}
+	var path := voyage.route.path
+	var cumulative := voyage.get_cumulative()
+	var i := GeoMath.segment_index_at(cumulative, voyage.progress_nm)
+	var next_course := -1.0
+	if i + 1 < path.size():
+		next_course = GeoMath.rhumb_bearing(path[i], path[i + 1])
+	return {"geo": path[i], "nm": maxf(cumulative[i] - voyage.progress_nm, 0.0),
+		"course": GeoMath.rhumb_bearing(path[i - 1], path[i]), "next_course": next_course}
+
+
+# --- Dreamer's Map (MODE_DREAM) ---------------------------------------------------------------
+
+var _daydream_label: Label
+var _imagine_button: Button
+var _plan_here_button: Button
+var _daydream := {}
+var _daydream_port := &""
+
+
+## A node of the side panel by name (those without a unique name).
+func _ui(node_name: String) -> Node:
+	return $Ui/Root/SidePanel.find_child(node_name, true, false)
+
+
+func _setup_dream() -> void:
+	_map.show_weather = false
+	_map.wind_layer.set_shown(false)
+	_wind_toggle.visible = false
+	_wind_legend.visible = false
+	(_ui("Title") as Label).text = "Dreamer's Map"
+	%BackButton.text = "Back to the cabin (Esc)"
+	_tabs.set_tab_hidden(TAB_WEATHER, true)
+	_tabs.set_tab_title(TAB_COURSE, "Harbours")
+	for node in [_plot_button, _course_label, _course_status, _readiness_label, _ui("CourseHeader"), _ui("Sep1"),
+			_ui("WaypointButtons"), _ui("EditHelp"), _ui("CourseButtons"), _ui("ActionRow"), _voyage_bar]:
+		(node as CanvasItem).visible = false
+	(_ui("DestinationHeader") as Label).text = "Where shall I dream of?"
+	_imagine_button = Button.new()
+	_imagine_button.name = "ImagineButton"
+	_imagine_button.text = "Imagine this voyage"
+	_imagine_button.pressed.connect(func() -> void: imagine_voyage(_selected_port_id))
+	_plot_button.add_sibling(_imagine_button)
+	_daydream_label = Label.new()
+	_daydream_label.name = "DaydreamLabel"
+	_daydream_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_daydream_label.custom_minimum_size = Vector2(440, 0)
+	_daydream_label.add_theme_font_size_override(&"font_size", 19)
+	_imagine_button.add_sibling(_daydream_label)
+	_plan_here_button = Button.new()
+	_plan_here_button.name = "PlanAtChartTableButton"
+	_plan_here_button.text = "Plan it at the chart table"
+	_plan_here_button.tooltip_text = "Open the navigation station's chart with this harbour selected"
+	_plan_here_button.pressed.connect(func() -> void: plan_requested.emit(_selected_port_id))
+	_daydream_label.add_sibling(_plan_here_button)
+	_map.map_clicked.disconnect(_map.map_clicked.get_connections()[0].callable)
+	_map.route_pressed.disconnect(_on_route_pressed)
+
+
+## Imagines the voyage to `port_id` (VoyageDaydream; read-only, cached).
+func imagine_voyage(port_id: StringName) -> Dictionary:
+	if port_id.is_empty():
+		return {}
+	_daydream = VoyageDaydream.imagine(port_id)
+	_daydream_port = port_id
+	if _daydream.get("ok", false) and (_daydream.path as PackedVector2Array).size() >= 2:
+		_map.frame_geo_points(_daydream.path)
+	_refresh()
+	return _daydream
+
+
+func get_daydream_text() -> String:
+	return _daydream_label.text if _daydream_label else ""
+
+
+func _refresh_dream() -> void:
+	var catalog := PortCatalog.get_default()
+	var display := {
+		"boat_port_id": GameSession.get_location_id(),
+		"selected_port_id": _selected_port_id,
+		"vessel_geo": GameSession.get_vessel_position(),
+		"draft_is_proposal": true,
+		"editing_enabled": false,
+	}
+	if _daydream_port == _selected_port_id and _daydream.get("ok", false):
+		display["draft_legs"] = [{"path": _daydream.path, "ok": true}] as Array[Dictionary]
+		display["destination_port_id"] = _selected_port_id
+	_map.set_display(display)
+	var location := GameSession.get_location()
+	if GameSession.is_underway():
+		_set_text(_status, "At sea, dreaming of other harbours")
+	elif location:
+		_set_text(_status, "In the cabin at %s, %s" % [location.display_name, location.country])
+	_set_text(_position, GeoMath.format_position(GameSession.get_vessel_position()))
+	var log := GameSession.get_captains_log()
+	_set_text(_voyage_label, "%d harbour%s visited so far" % [log.get_distinct_harbours(), "" if log.get_distinct_harbours() == 1 else "s"])
+	var selected := catalog.get_port(_selected_port_id)
+	if selected == null:
+		_set_text(_selection_title, "No harbour selected")
+		_set_text(_selection_details, "Click a harbour on the map, or find one by name.")
+		_imagine_button.disabled = true
+		_plan_here_button.disabled = true
+		_daydream_label.text = ""
+		return
+	_set_text(_selection_title, "%s, %s" % [selected.display_name, selected.country])
+	var visited := "Visited" if log.has_visited(selected.id) else "Not visited yet"
+	_set_text(_selection_details, "%s\n%s  ·  %s  ·  %d nm in a straight line" % [selected.description, visited,
+		GeoMath.format_position(selected.get_geo_position()),
+		roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))])
+	_imagine_button.disabled = false
+	_plan_here_button.disabled = false
+	_daydream_label.text = _daydream.get("text", "") if _daydream_port == _selected_port_id else ""
+
+
 func get_draft_route() -> PlannedRoute:
 	return _draft_route
 
@@ -479,6 +637,9 @@ func _refresh_map_only() -> void:
 		display["travelled_path"] = travelled
 		if _draft_dirty:
 			display["active_path"] = voyage.get_remaining_path()
+		var turn := get_next_turn()
+		if not turn.is_empty():
+			display["next_waypoint_geo"] = turn.geo
 	_map.set_display(display)
 
 
@@ -491,6 +652,9 @@ static func _set_text(label: Label, text: String) -> void:
 
 
 func _refresh() -> void:
+	if mode == MODE_DREAM:
+		_refresh_dream()
+		return
 	_refresh_map_only()
 	var catalog := PortCatalog.get_default()
 	var speed := GameSession.get_vessel_speed_kn()
@@ -547,6 +711,10 @@ func _refresh() -> void:
 		if _draft_route == null and not _draft_dirty and GameSession.is_underway():
 			# Being sailed: distance to go and ETA are live values in the header.
 			summary += "  ·  %d nm course" % roundi(GameSession.get_voyage_total_nm())
+			var turn := get_next_turn()
+			if not turn.is_empty():
+				summary += "\nSteering %03d°  ·  %s in %.1f nm" % [roundi(turn.course), "next turn to %03d°" % roundi(turn.next_course)
+					if turn.next_course >= 0.0 else "arrival", turn.nm]
 		elif distance >= 0.0:
 			summary += "  ·  %d nm  ·  about %s with the expected wind" % [roundi(distance), Simulation.format_duration(seconds)]
 		if not _draft_waypoints.is_empty():
@@ -700,7 +868,7 @@ func _on_cursor_moved(geo: Variant) -> void:
 		_cursor_label.text = ""
 		return
 	_cursor_label.text = GeoMath.format_position(geo)
-	if wind_shown:
+	if wind_shown and mode == MODE_STATION:
 		# The wind of the snapshot the chart shows (Now, past or forecast).
 		var layer := _map.wind_layer
 		var known := GameSession.get_game_time() if layer.get_offset_steps() > 0 else INF

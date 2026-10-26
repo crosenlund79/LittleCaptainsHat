@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://src/interaction/interactable.gd" id="7_r"]
 [ext_resource type="Script" path="res://src/companion/ship_companion.gd" id="8_r"]
 [ext_resource type="PackedScene" path="res://src/player/player.tscn" id="9_r"]
+[ext_resource type="PackedScene" path="res://src/boat/cabin_world_map.tscn" id="cwm_scene"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Companionway"]
 size = Vector2(30, 80)
@@ -27,6 +28,9 @@ size = Vector2(30, 120)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_Hat"]
 radius = 24.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_WorldMap"]
+size = Vector2(120, 30)
 
 [node name="Interior" type="Node2D"]
 script = ExtResource("1_r")
@@ -216,3 +220,17 @@ z_index = 10
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(0, 0)
 zoom = Vector2(1.5, 1.5)
+
+[node name="WorldMapFrame" parent="Layout" instance=ExtResource("cwm_scene")]
+position = Vector2(60, -93)
+size = Vector2(88, 48)
+
+[node name="WorldMap" type="Area2D" parent="Layout/Stations"]
+position = Vector2(60, -60)
+script = ExtResource("7_r")
+interaction_id = &"world_map"
+prompt = "Look at the world map"
+highlight_target = NodePath("")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Layout/Stations/WorldMap"]
+shape = SubResource("RectangleShape2D_WorldMap")
