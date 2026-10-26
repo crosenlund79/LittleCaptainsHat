@@ -70,6 +70,9 @@ const PORT_LABEL_GAP_PX := 4.0
 ## the whole world is drawn coarsely; from it on, Europe's own chart and the
 ## world's regional land outside Europe.
 const EUROPE_DETAIL_PX := 9.0
+## Europe's own country and sea names appear from this zoom (px per degree):
+## below it they would crowd the harbours of a small-scale chart.
+const EUROPE_LABEL_PX := 16.0
 const WORLD_META := "res://data/navigation/world/world.json"
 const WORLD_LAND := "res://data/navigation/world/land.json"
 ## The same land, projected and binary (tools/navigation/world_land_to_res.gd).
@@ -473,25 +476,15 @@ func _build_land() -> void:
 	# the region draws its own (see _build_regions()).
 	_load_region_rects()
 
-	# Land fill: polygons pre-clipped into tiles by the data builder.
-	for ring: Array in data.get("fill_tiles", data.get("polygons", [])):
-		for piece in _outside_regions(_project_ring(ring)):
-			if not MapView._drawable(piece):
-				continue
-			var polygon := Polygon2D.new()
-			polygon.color = LAND
-			polygon.polygon = piece
-			_europe_layer.add_child(polygon)
-
-	# Coastlines: drawn once as hairlines (constant 1 px at any zoom), split
-	# into spatial tiles so the renderer can skip tiles outside the view.
-	var tiles := {}
-	for ring: Array in data.get("polygons", []):
-		var points := _project_ring(ring)
-		points.append(points[0])
-		for line in _lines_outside_regions(points):
-			_add_coast_runs(tiles, line)
-	_add_coast_tiles(_europe_layer, tiles, "Coast")
+	# Projected, clipped and checked once, then kept (static) for every later
+	# chart opening (Iteration 16).
+	var europe := _europe_shapes(data)
+	for piece: PackedVector2Array in europe.fill:
+		var polygon := Polygon2D.new()
+		polygon.color = LAND
+		polygon.polygon = piece
+		_europe_layer.add_child(polygon)
+	_add_coast_tiles(_europe_layer, europe.coast, "Coast")
 
 	for label: Dictionary in data.get("labels", []):
 		_labels.append({
@@ -499,7 +492,7 @@ func _build_land() -> void:
 			"position": projection.geo_to_map(Vector2(label.get("lon", 0.0), label.get("lat", 0.0))),
 			"sea": label.get("kind", "") == "sea",
 			"size": 22 if label.get("kind", "") != "sea" else 19,
-			"min_px": EUROPE_DETAIL_PX if _has_world else 0.0,
+			"min_px": EUROPE_LABEL_PX if _has_world else 0.0,
 			"max_px": INF,
 		})
 	if _has_world:
@@ -508,7 +501,7 @@ func _build_land() -> void:
 			_labels.append({
 				"text": label.get("text", ""),
 				"position": projection.geo_to_map(Vector2(label.get("lon", 0.0), label.get("lat", 0.0))),
-				"sea": kind == "sea",
+				"sea": kind == "sea" or kind == "island",  # island groups sit in the sea: the sea's lighter text
 				"size": {"land": 20, "island": 15, "sea": 17}.get(kind, 16),
 				"min_px": float(label.get("min_px_per_degree", 0.0)),
 				"max_px": float(label.get("max_px_per_degree", INF)),
@@ -573,7 +566,8 @@ func _build_world_layer(parent: Node2D, level: String) -> void:
 
 
 ## The tiles of a world layer (cached with the world data):
-## [{"rect", "fill", "coast", "islets"}], including the wrap copies.
+## [{"rect", "points", "indices", "segments", "islets"}], including the wrap
+## copies.
 func _world_tiles(level: String) -> Array:
 	var data := _world_data()
 	if not data.has(level):
@@ -584,19 +578,31 @@ func _world_tiles(level: String) -> Array:
 	var margin := WRAP_MARGIN_DEG * units_per_degree
 	var east_edge := _map_bounds.end.x - margin
 	var west_edge := _map_bounds.position.x + margin
+	# Each tile is drawn in two calls (Iteration 16): its land as one indexed
+	# triangle array, its coast as one batch of line segments.
 	var tiles := {}
 	for ring: PackedVector2Array in data[level].fill:
-		if not MapView._drawable(ring):
-			continue
+		if ring.size() < 3 or absf(MapView._ring_area(ring)) < 0.05:
+			continue  # a sliver: nothing to draw
 		var box := MapView._bounds_of(ring)
 		for offset in _wrap_offsets(box, east_edge, west_edge):
 			var copy := _shifted(ring, offset.x) if offset.x != 0.0 else ring
-			if offset.x == 0.0 or MapView._drawable(copy):  # a shifted copy can round into a degenerate ring
-				_tile_of(tiles, box, offset).fill.append(copy)
+			var triangles := Geometry2D.triangulate_polygon(copy)
+			if triangles.is_empty():
+				continue  # degenerate (or rounded into it by the shift): cannot be filled
+			var tile := _tile_of(tiles, box, offset)
+			var base: int = tile.points.size()
+			tile.points.append_array(copy)
+			for index in triangles:
+				tile.indices.append(base + index)
 	for line: PackedVector2Array in data[level].coast:
 		var box := MapView._bounds_of(line)
 		for offset in _wrap_offsets(box, east_edge, west_edge):
-			_tile_of(tiles, box, offset).coast.append(_shifted(line, offset.x) if offset.x != 0.0 else line)
+			var copy := _shifted(line, offset.x) if offset.x != 0.0 else line
+			var segments: PackedVector2Array = _tile_of(tiles, box, offset).segments
+			for i in range(1, copy.size()):
+				segments.append(copy[i - 1])
+				segments.append(copy[i])
 	if level == "regional":
 		for p in data.islets:
 			for offset in _wrap_offsets(Rect2(p, Vector2.ZERO), east_edge, west_edge):
@@ -647,7 +653,7 @@ func _tile_of(tiles: Dictionary, box: Rect2, offset: Vector2) -> Dictionary:
 	var moved := Rect2(box.position + offset, box.size)
 	var key := Vector2i((moved.get_center() / size).floor())
 	if not tiles.has(key):
-		tiles[key] = {"fill": [] as Array[PackedVector2Array], "coast": [] as Array[PackedVector2Array],
+		tiles[key] = {"points": PackedVector2Array(), "indices": PackedInt32Array(), "segments": PackedVector2Array(),
 			"islets": PackedVector2Array(), "rect": moved}
 	var tile: Dictionary = tiles[key]
 	tile.rect = (tile.rect as Rect2).merge(moved)  # the drawn extent can reach past the square
@@ -655,19 +661,34 @@ func _tile_of(tiles: Dictionary, box: Rect2, offset: Vector2) -> Dictionary:
 
 
 func _draw_world_tile(tile: Node2D, content: Dictionary) -> void:
-	for ring: PackedVector2Array in content.fill:
-		tile.draw_colored_polygon(ring, LAND)
-	for line: PackedVector2Array in content.coast:
-		tile.draw_polyline(line, COAST, -1.0)
+	if not content.indices.is_empty():
+		RenderingServer.canvas_item_add_triangle_array(tile.get_canvas_item(), content.indices, content.points,
+			PackedColorArray([LAND]))
+	if not content.segments.is_empty():
+		tile.draw_multiline(content.segments, COAST, -1.0)
 
 
+## Islet dots, a constant size on screen, as one triangle array per tile.
 func _draw_islets(dots: Node2D, islets: PackedVector2Array) -> void:
 	var r := 1.6 / maxf(camera.zoom.x, 0.0001)
-	for q in islets:
-		dots.draw_rect(Rect2(q - Vector2(r, r), Vector2(r, r) * 2.0), ISLET_COLOUR)
+	var points := PackedVector2Array()
+	points.resize(islets.size() * 4)
+	var indices := PackedInt32Array()
+	indices.resize(islets.size() * 6)
+	for i in islets.size():
+		var q := islets[i]
+		points[i * 4] = q + Vector2(-r, -r)
+		points[i * 4 + 1] = q + Vector2(r, -r)
+		points[i * 4 + 2] = q + Vector2(r, r)
+		points[i * 4 + 3] = q + Vector2(-r, r)
+		for k in 6:
+			indices[i * 6 + k] = i * 4 + [0, 1, 2, 0, 2, 3][k]
+	if not islets.is_empty():
+		RenderingServer.canvas_item_add_triangle_array(dots.get_canvas_item(), indices, points, PackedColorArray([ISLET_COLOUR]))
 
 
 var _world_tile_key := ""
+var _islet_zoom := 0.0
 
 
 ## Shows the world tiles near the view and hides the rest (cheap; on view change).
@@ -692,11 +713,66 @@ func _update_world_tiles() -> void:
 			var show := rect.grow(1.0).intersects(area)
 			if show != tile.visible:
 				tile.visible = show
-		# Islets are sized for the screen: redraw the visible ones on zoom.
-		if layer == _world_regional and zoomed:
+		# Islets are sized for the screen: redraw the visible ones once the zoom
+		# has changed enough to see (15 %).
+		if layer == _world_regional and zoomed and absf(camera.zoom.x / maxf(_islet_zoom, 1e-9) - 1.0) > 0.15:
+			_islet_zoom = camera.zoom.x
 			for tile: Node2D in layer.get_children():
 				if tile.visible and tile.get_child_count() > 0:
 					(tile.get_child(0) as Node2D).queue_redraw()
+
+
+## Europe's land as drawn: fill pieces outside the detail regions and the
+## coastline tiles, built once per scale (static cache).
+static var _europe_cache := {}
+
+
+func _europe_shapes(data: Dictionary) -> Dictionary:
+	if is_equal_approx(float(_europe_cache.get("scale", 0.0)), units_per_degree):
+		return _europe_cache
+	var fill: Array[PackedVector2Array] = []
+	# Land fill: polygons pre-clipped into tiles by the data builder.
+	for ring: Array in data.get("fill_tiles", data.get("polygons", [])):
+		for piece in _outside_regions(_project_ring(ring)):
+			if MapView._drawable(piece):
+				fill.append(piece)
+	# Coastlines: drawn once as hairlines (constant 1 px at any zoom), split
+	# into spatial tiles so the renderer can skip tiles outside the view.
+	var tiles := {}
+	for ring: Array in data.get("polygons", []):
+		var points := _project_ring(ring)
+		points.append(points[0])
+		for line in _lines_outside_regions(points):
+			_add_coast_runs(tiles, line)
+	_europe_cache = {"scale": units_per_degree, "fill": fill, "coast": tiles}
+	return _europe_cache
+
+
+## A region's land as drawn, per level ({"overview": {"fill", "coast"},
+## "detail": …, "labels"}), built once per scale (static cache).
+static var _region_cache := {}
+
+
+func _region_shapes(region: Dictionary) -> Dictionary:
+	var key := "%s|%s" % [region.id, units_per_degree]
+	if _region_cache.has(key):
+		return _region_cache[key]
+	var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(String(region.folder).path_join("land.json")))
+	if not data is Dictionary:
+		return {}
+	var shapes := {"labels": data.get("labels", [])}
+	for level in ["overview", "detail"]:
+		var fill: Array[PackedVector2Array] = []
+		for ring: Array in data.get(level, {}).get("fill_tiles", []):
+			var points := _project_ring(ring)
+			if MapView._drawable(points):
+				fill.append(points)
+		var tiles := {}
+		for line: Array in data.get(level, {}).get("coast", []):
+			_add_coast_runs(tiles, _project_ring(line))
+		shapes[level] = {"fill": fill, "coast": tiles}
+	_region_cache[key] = shapes
+	return shapes
 
 
 func _add_coast_runs(tiles: Dictionary, points: PackedVector2Array) -> void:
@@ -788,29 +864,23 @@ func _lines_outside_regions(points: PackedVector2Array) -> Array[PackedVector2Ar
 func _build_regions() -> void:
 	_region_layers.clear()
 	for region in _regions:
-		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(String(region.folder).path_join("land.json")))
-		if not data is Dictionary:
+		var data := _region_shapes(region)
+		if data.is_empty():
 			continue
 		var layers := {"detail_px": region.detail_px}
 		for level in ["overview", "detail"]:
 			var layer := Node2D.new()
 			layer.name = "Region_%s_%s" % [region.id, level]
 			_europe_layer.add_child(layer)
-			for ring: Array in data.get(level, {}).get("fill_tiles", []):
-				var points := _project_ring(ring)
-				if not MapView._drawable(points):
-					continue
+			for points: PackedVector2Array in data[level].fill:
 				var polygon := Polygon2D.new()
 				polygon.color = LAND
 				polygon.polygon = points
 				layer.add_child(polygon)
-			var tiles := {}
-			for line: Array in data.get(level, {}).get("coast", []):
-				_add_coast_runs(tiles, _project_ring(line))
-			_add_coast_tiles(layer, tiles, "Coast")
+			_add_coast_tiles(layer, data[level].coast, "Coast")
 			layers[level] = layer
 		_region_layers.append(layers)
-		for label: Dictionary in data.get("labels", []):
+		for label: Dictionary in data.labels:
 			var kind: String = label.get("kind", "")
 			_labels.append({
 				"text": label.get("text", ""),
@@ -908,7 +978,7 @@ func set_weather_time(time: float) -> void:
 		if not Rect2(outline[0], Vector2.ZERO).merge(_bounds_of(outline)).intersects(_map_bounds):
 			continue
 		var shape := {"event": event, "outline": outline, "center": projection.geo_to_map(event.center_at(time)),
-			"label": WeatherStyle.label(event, time), "strength": event.life_factor(time)}
+			"label": WeatherStyle.label(event, time), "strength": event.life_factor(time), "bounds": _bounds_of(outline)}
 		if WeatherStyle.style(event.kind).core:
 			shape["core"] = _project_geo(event.ring(time, 0.35 if event.kind != WeatherEvent.KIND_CYCLONE else 0.0, 32)) \
 				if event.kind != WeatherEvent.KIND_CYCLONE else _project_geo(_circle(event.center_at(time), event.eye_radius_nm * 2.0))
@@ -1184,6 +1254,9 @@ func _draw_graticule(s: float) -> void:
 
 
 func _draw_weather(s: float) -> void:
+	# Only the shapes in view (Iteration 16: the weather is worldwide), on the
+	# world chart in the copy of the world nearest the view.
+	var view := Rect2(screen_to_map(Vector2.ZERO), Vector2.ZERO).expand(screen_to_map(get_viewport_rect().size)).grow(80.0 * s)
 	# Risk areas first (underneath), then gales, then storm cells and cyclones.
 	var order := [WeatherEvent.KIND_THUNDER_RISK, WeatherEvent.KIND_GALE, WeatherEvent.KIND_CYCLONE, WeatherEvent.KIND_THUNDERSTORM]
 	for kind in order:
@@ -1191,6 +1264,15 @@ func _draw_weather(s: float) -> void:
 			var event: WeatherEvent = shape.event
 			if event.kind != kind:
 				continue
+			var box: Rect2 = shape.get("bounds", Rect2())
+			var shift := INF
+			for dx in ([0.0, -_world_width, _world_width] if _has_world else [0.0]):
+				if Rect2(box.position + Vector2(dx, 0.0), box.size).intersects(view):
+					shift = dx
+					break
+			if shift == INF:
+				continue
+			_overlay.draw_set_transform(Vector2(shift, 0.0))
 			var style := WeatherStyle.style(kind)
 			var color: Color = style.color
 			var strength: float = clampf(shape.strength, 0.25, 1.0)
@@ -1208,6 +1290,7 @@ func _draw_weather(s: float) -> void:
 			WeatherStyle.draw_glyph(_overlay, kind, center, clampf(on_screen * 0.25, 14.0, 30.0) * s, Color(color, 1.0))
 			if on_screen >= 90.0:
 				_draw_text(shape.label, center + Vector2(0, 34) * s, 15 * s, Color(color, 1.0), true, true)
+			_overlay.draw_set_transform(Vector2.ZERO)
 
 
 func _draw_courses(s: float) -> void:

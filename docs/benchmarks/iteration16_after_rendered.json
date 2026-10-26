@@ -1,0 +1,135 @@
+{
+  "app_startup_ms": 181.9,
+  "chart_open_ms": 19.6,
+  "chart_ready_ms": 2512.5,
+  "chart_reopen_ms": 534.1,
+  "frame_chart_denmark_ms": 75.57,
+  "frame_chart_europe_ms": 79.42,
+  "frame_chart_pan_ms": 99.08,
+  "frame_chart_whole_ms": 93.19,
+  "frame_deck_ms": 31.3,
+  "graph_nodes": 32755,
+  "load_apply_ms": 3.7,
+  "load_parse_ms": 1.3,
+  "memory_after_navigation_mb": 113.8,
+  "memory_after_session_mb": 190.8,
+  "memory_after_world_navigation_mb": 143.5,
+  "memory_before_session_mb": 185.3,
+  "memory_end_mb": 190.9,
+  "memory_growth_days_2_to_10_mb": 1.7,
+  "memory_session_growth_mb": 5.5,
+  "memory_start_mb": 63.6,
+  "navigation_load_ms": 509.8,
+  "renderer": "X11",
+  "routes_cold": {
+    "castries>papeete": {
+      "ms": 0.1,
+      "nm": 0.0,
+      "ok": false
+    },
+    "copenhagen>kiel": {
+      "ms": 7.7,
+      "nm": 152.0,
+      "ok": true
+    },
+    "copenhagen>las_palmas": {
+      "ms": 0.1,
+      "nm": 0.0,
+      "ok": false
+    },
+    "copenhagen>lisbon": {
+      "ms": 27.9,
+      "nm": 1620.0,
+      "ok": true
+    },
+    "copenhagen>papeete": {
+      "ms": 0.0,
+      "nm": 0.0,
+      "ok": false
+    },
+    "copenhagen>piraeus": {
+      "ms": 47.3,
+      "nm": 3394.0,
+      "ok": true
+    },
+    "copenhagen>svendborg": {
+      "ms": 11.0,
+      "nm": 145.0,
+      "ok": true
+    },
+    "las_palmas>castries": {
+      "ms": 0.0,
+      "nm": 0.0,
+      "ok": false
+    },
+    "papeete>auckland": {
+      "ms": 0.1,
+      "nm": 0.0,
+      "ok": false
+    },
+    "reykjavik>piraeus": {
+      "ms": 65.1,
+      "nm": 3421.0,
+      "ok": true
+    }
+  },
+  "save_ms": 1.9,
+  "session_chart_cycles": 10,
+  "session_days": 10,
+  "session_sim_ms_per_day": 450.4,
+  "version": "0.103a",
+  "world_graph_nodes": 53641,
+  "world_navigation_load_ms": 849.8,
+  "world_routes": {
+    "castries>papeete": {
+      "ms": 6.9,
+      "nm": 5777.0,
+      "ok": true
+    },
+    "copenhagen>kiel": {
+      "ms": 10.1,
+      "nm": 152.0,
+      "ok": true
+    },
+    "copenhagen>las_palmas": {
+      "ms": 38.1,
+      "nm": 2285.0,
+      "ok": true
+    },
+    "copenhagen>lisbon": {
+      "ms": 35.5,
+      "nm": 1620.0,
+      "ok": true
+    },
+    "copenhagen>papeete": {
+      "ms": 64.1,
+      "nm": 10258.0,
+      "ok": true
+    },
+    "copenhagen>piraeus": {
+      "ms": 52.2,
+      "nm": 3394.0,
+      "ok": true
+    },
+    "copenhagen>svendborg": {
+      "ms": 20.2,
+      "nm": 145.0,
+      "ok": true
+    },
+    "las_palmas>castries": {
+      "ms": 3.2,
+      "nm": 2773.0,
+      "ok": true
+    },
+    "papeete>auckland": {
+      "ms": 6.3,
+      "nm": 2281.0,
+      "ok": true
+    },
+    "reykjavik>piraeus": {
+      "ms": 79.8,
+      "nm": 3421.0,
+      "ok": true
+    }
+  }
+}

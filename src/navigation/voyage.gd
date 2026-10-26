@@ -78,8 +78,9 @@ func get_position() -> Vector2:
 	return position_at(progress_nm)
 
 
+## Within ±180° of longitude, also on a segment across the Date Line.
 func position_at(distance_nm: float) -> Vector2:
-	return GeoMath.point_along(route.path, get_cumulative(), distance_nm)
+	return GeoMath.normalize(GeoMath.point_along(route.path, get_cumulative(), distance_nm))
 
 
 ## The part of the course still ahead, starting at the vessel's position.

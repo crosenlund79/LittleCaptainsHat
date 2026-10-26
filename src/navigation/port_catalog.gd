@@ -56,6 +56,13 @@ func ports_in_rect(geo_rect: Rect2) -> Array[PortData]:
 	var x1 := floori(geo_rect.end.x / BUCKET_DEGREES)
 	var y0 := floori(geo_rect.position.y / BUCKET_DEGREES)
 	var y1 := floori(geo_rect.end.y / BUCKET_DEGREES)
+	if (x1 - x0 + 1) * (y1 - y0 + 1) > ports.size():
+		# A large area (the whole world chart): looking at every harbour is
+		# cheaper than visiting every bucket.
+		for port in ports:
+			if geo_rect.has_point(port.get_geo_position()):
+				result.append(port)
+		return result
 	for bx in range(x0, x1 + 1):
 		for by in range(y0, y1 + 1):
 			for port: PortData in _buckets.get(Vector2i(bx, by), []):

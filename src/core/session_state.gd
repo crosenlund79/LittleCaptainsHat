@@ -400,7 +400,7 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		if state.anchor.active:
 			# At anchor the boat lies where the anchor holds it (Iteration 13).
 			state.vessel_position = state.anchor.position
-		elif state.voyage.get_position().distance_to(state.vessel_position) > 0.001:
+		elif not GeoMath.same_position(state.voyage.get_position(), state.vessel_position, 0.001):  # wrap-aware (Date Line)
 			errors.append("vessel position does not match the voyage progress")
 			return null
 		else:

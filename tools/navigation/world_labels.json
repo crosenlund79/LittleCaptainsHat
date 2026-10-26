@@ -12,7 +12,7 @@
 		{"text": "Gulf of Mexico", "kind": "sea", "lon": -90.0, "lat": 25.0, "min_px_per_degree": 3.0, "max_px_per_degree": 80.0},
 		{"text": "Tasman Sea", "kind": "sea", "lon": 160.0, "lat": -38.0, "min_px_per_degree": 3.0, "max_px_per_degree": 80.0},
 		{"text": "Coral Sea", "kind": "sea", "lon": 155.0, "lat": -16.0, "min_px_per_degree": 3.0, "max_px_per_degree": 80.0},
-		{"text": "EUROPE", "kind": "land", "lon": 15.0, "lat": 52.0, "max_px_per_degree": 9.0},
+		{"text": "EUROPE", "kind": "land", "lon": 30.0, "lat": 52.0, "max_px_per_degree": 9.0},
 		{"text": "AFRICA", "kind": "land", "lon": 20.0, "lat": 5.0, "max_px_per_degree": 30.0},
 		{"text": "ASIA", "kind": "land", "lon": 90.0, "lat": 50.0, "max_px_per_degree": 30.0},
 		{"text": "NORTH AMERICA", "kind": "land", "lon": -100.0, "lat": 45.0, "max_px_per_degree": 30.0},

@@ -1,0 +1,55 @@
+{
+  "app_startup_ms": 173.6,
+  "chart_open_ms": 18.1,
+  "chart_ready_ms": 1346.8,
+  "chart_reopen_ms": 555.1,
+  "frame_chart_denmark_ms": 65.73,
+  "frame_chart_europe_ms": 66.01,
+  "frame_chart_pan_ms": 55.44,
+  "frame_chart_whole_ms": 68.33,
+  "frame_deck_ms": 28.56,
+  "graph_nodes": 32755,
+  "load_apply_ms": 3.4,
+  "load_parse_ms": 2.0,
+  "memory_after_navigation_mb": 108.6,
+  "memory_after_session_mb": 124.6,
+  "memory_before_session_mb": 122.4,
+  "memory_end_mb": 124.6,
+  "memory_growth_days_2_to_10_mb": 0.8,
+  "memory_session_growth_mb": 2.2,
+  "memory_start_mb": 61.5,
+  "navigation_load_ms": 471.8,
+  "renderer": "X11",
+  "routes_cold": {
+    "copenhagen>kiel": {
+      "ms": 8.8,
+      "nm": 152.0,
+      "ok": true
+    },
+    "copenhagen>lisbon": {
+      "ms": 32.8,
+      "nm": 1620.0,
+      "ok": true
+    },
+    "copenhagen>piraeus": {
+      "ms": 50.2,
+      "nm": 3393.0,
+      "ok": true
+    },
+    "copenhagen>svendborg": {
+      "ms": 14.1,
+      "nm": 145.0,
+      "ok": true
+    },
+    "reykjavik>piraeus": {
+      "ms": 69.3,
+      "nm": 3421.0,
+      "ok": true
+    }
+  },
+  "save_ms": 2.3,
+  "session_chart_cycles": 10,
+  "session_days": 10,
+  "session_sim_ms_per_day": 455.6,
+  "version": "0.102b"
+}

@@ -84,6 +84,10 @@ var _cyclone := {}
 var _names: Array = []
 var _slot_cache := {}
 var _bucket_cache := {}
+## Per bucket, for each of its events: where it can reach during the bucket,
+## as PackedFloat32Array(centre lon, centre lat, half width, half height) in
+## degrees (Iteration 16: lets a sample skip the oceans' far-away weather).
+var _bucket_reach := {}
 var _cell_cache := {}
 
 
@@ -171,7 +175,7 @@ func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSam
 	var dominant: WeatherEvent = null
 	var dominant_score := 0.0
 	var cell_core := false
-	for event in active_events(time, seed, known_at):
+	for event in _events_near(geo, time, seed, known_at):
 		var weight := 0.0
 		match event.kind:
 			WeatherEvent.KIND_GALE:
@@ -333,6 +337,7 @@ func is_generating() -> bool:
 func clear_cache() -> void:
 	_slot_cache.clear()
 	_bucket_cache.clear()
+	_bucket_reach.clear()
 	_cell_cache.clear()
 
 
@@ -346,6 +351,7 @@ func _bucket_events(time: float, seed: int) -> Array[WeatherEvent]:
 		return _bucket_cache[key]
 	if _bucket_cache.size() > MAX_CACHE:
 		_bucket_cache.clear()
+		_bucket_reach.clear()
 	var t0 := bucket * BUCKET
 	var t1 := t0 + BUCKET
 	var events: Array[WeatherEvent] = []
@@ -376,7 +382,47 @@ func _bucket_events(time: float, seed: int) -> Array[WeatherEvent]:
 	events.sort_custom(func(a: WeatherEvent, b: WeatherEvent) -> bool:
 		return a.start_time < b.start_time or (a.start_time == b.start_time and String(a.id) < String(b.id)))
 	_bucket_cache[key] = events
+	_bucket_reach[key] = _reach_boxes(events, t0, t1)
 	return events
+
+
+## Conservative boxes around where each event can affect the wind during
+## [t0, t1]: its centre's movement plus its reach (WeatherEvent.reach_nm).
+static func _reach_boxes(events: Array[WeatherEvent], t0: float, t1: float) -> PackedFloat32Array:
+	var boxes := PackedFloat32Array()
+	boxes.resize(events.size() * 4)
+	for i in events.size():
+		var event := events[i]
+		var a := event.center_at(t0)
+		var b := event.center_at(t1)
+		var dx := GeoMath.wrap_delta(a.x, b.x)
+		var reach := event.reach_nm() / 60.0 + 0.1
+		var half_y := absf(b.y - a.y) / 2.0 + reach
+		var center_y := (a.y + b.y) / 2.0
+		var lat := minf(absf(center_y) + half_y, 89.0)
+		boxes[i * 4] = GeoMath.normalize_lon(a.x + dx / 2.0)
+		boxes[i * 4 + 1] = center_y
+		boxes[i * 4 + 2] = absf(dx) / 2.0 + reach / maxf(cos(deg_to_rad(lat)), 0.05)
+		boxes[i * 4 + 3] = half_y
+	return boxes
+
+
+## The active events at `time` that can reach `geo` (for sample()).
+func _events_near(geo: Vector2, time: float, seed: int, known_at: float) -> Array[WeatherEvent]:
+	var result: Array[WeatherEvent] = []
+	var events := _bucket_events(time, seed)
+	var boxes: PackedFloat32Array = _bucket_reach.get("%d|%d" % [seed, floori(time / BUCKET)], PackedFloat32Array())
+	for i in events.size():
+		var event := events[i]
+		if boxes.size() == events.size() * 4 and (absf(geo.y - boxes[i * 4 + 1]) > boxes[i * 4 + 3]
+				or absf(GeoMath.wrap_delta(boxes[i * 4], geo.x)) > boxes[i * 4 + 2]):
+			continue
+		if event.is_active_at(time) and event.start_time <= known_at:
+			result.append(event)
+	for event in fixture_events:
+		if event.is_active_at(time) and event.start_time <= known_at:
+			result.append(event)
+	return result
 
 
 ## The event (or null) an area forms in one slot. Cached; a pure function of

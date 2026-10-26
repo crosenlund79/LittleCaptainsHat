@@ -18,7 +18,7 @@
   ]
  },
  "crs": "WGS 84 longitude/latitude (EPSG:4326); raster in Mercator rows aligned to the European chart",
- "processing": "4x4 subsamples per cell; land if any subsample is land, approach-only if land covers at most half the cell; holes filled; latitudes -72..80; drawn land simplified 0.050 deg (overview) and 0.020 deg (regional). Not for navigation.",
+ "processing": "4x4 subsamples per cell; land if any subsample is land, approach-only if land covers at most half the cell; holes filled; latitudes -72..80; drawn land simplified 0.080 deg (overview) and 0.020 deg (regional). Not for navigation.",
  "columns": 4320,
  "rows": 2943,
  "cells_per_mercator_degree": 12,

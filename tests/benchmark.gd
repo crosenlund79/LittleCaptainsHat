@@ -22,8 +22,8 @@ const ROUTES := [
 ## Extra routes measured when the harbours exist (worldwide chart).
 const WORLD_ROUTES := [
 	[&"copenhagen", &"las_palmas"],
-	[&"las_palmas", &"bridgetown"],
-	[&"bridgetown", &"papeete"],
+	[&"las_palmas", &"castries"],
+	[&"castries", &"papeete"],
 	[&"papeete", &"auckland"],
 	[&"copenhagen", &"papeete"],
 ]
@@ -75,6 +75,25 @@ func _run() -> void:
 			"nm": snappedf(result.route.get_distance_nm(), 1.0) if result.is_ok() else 0.0}
 	results["routes_cold"] = routes
 	router = null
+	# The worldwide router (Iteration 16), when the world chart exists.
+	# (Looked up at run time, so this benchmark also runs on older builds.)
+	var router_script: GDScript = SeaRouter
+	if router_script.get_script_constant_map().has("WORLD_GRAPH"):
+		start = Time.get_ticks_usec()
+		var world_router: SeaRouter = router_script.call("load_world")
+		results["world_navigation_load_ms"] = _ms(start)
+		results["world_graph_nodes"] = world_router.get_node_count()
+		results["memory_after_world_navigation_mb"] = _mb()
+		var world_routes := {}
+		for pair: Array in ROUTES + WORLD_ROUTES:
+			var from := PortCatalog.get_default().get_port(pair[0])
+			if from == null or PortCatalog.get_default().get_port(pair[1]) == null:
+				continue
+			start = Time.get_ticks_usec()
+			var result := world_router.plan_route(from.id, from.get_geo_position(), [], pair[1])
+			world_routes["%s>%s" % pair] = {"ms": _ms(start), "ok": result.is_ok(),
+				"nm": snappedf(result.route.get_distance_nm(), 1.0) if result.is_ok() else 0.0}
+		results["world_routes"] = world_routes
 	# The game: startup, chart, frames.
 	Simulation.auto_advance = false
 	start = Time.get_ticks_usec()
@@ -84,11 +103,20 @@ func _run() -> void:
 	results["app_startup_ms"] = _ms(start)
 	app.router.fade_duration = 0.05
 	app.start_new_game()
+	await _chart_closed(app)  # wait for the new game's own transition to finish
 	await _frames(10)
 	start = Time.get_ticks_usec()
 	app.open_chart()
 	await _frames(1)
 	results["chart_open_ms"] = _ms(start)
+	await _chart_ready(app)
+	results["chart_ready_ms"] = _ms(start)  # until the chart is shown and settled
+	app.close_chart()
+	await _chart_closed(app)
+	start = Time.get_ticks_usec()
+	app.open_chart()
+	await _chart_ready(app)
+	results["chart_reopen_ms"] = _ms(start)
 	await _frames(10)
 	var world := app.router.current_screen as WorldMap
 	if world:
@@ -107,6 +135,7 @@ func _run() -> void:
 	var depart_error := GameSession.depart()
 	var sim_ms := 0.0
 	var chart_cycles := 0
+	var memory_after_day_1 := 0.0
 	if depart_error == "":
 		for day in 10:
 			start = Time.get_ticks_usec()
@@ -118,11 +147,16 @@ func _run() -> void:
 			app.close_chart()
 			await _frames(4)
 			chart_cycles += 1
+			if day == 0:
+				memory_after_day_1 = _mb()
 	results["session_days"] = 10 if depart_error == "" else 0
 	results["session_sim_ms_per_day"] = snappedf(sim_ms / 10.0, 0.1)
 	results["session_chart_cycles"] = chart_cycles
 	results["memory_after_session_mb"] = _mb()
 	results["memory_session_growth_mb"] = snappedf(results.memory_after_session_mb - results.memory_before_session_mb, 0.1)
+	# After the first day the one-time loads (chart land, router) are done:
+	# what grows over the other nine days is what a long session costs.
+	results["memory_growth_days_2_to_10_mb"] = snappedf(results.memory_after_session_mb - memory_after_day_1, 0.1)
 	# Save and load.
 	start = Time.get_ticks_usec()
 	SaveManager.save_to_slot(3, GameSession.get_state_snapshot())
@@ -147,6 +181,22 @@ func _run() -> void:
 	await _frames(2)
 	GameSession.end_session()
 	get_tree().quit(0)
+
+
+func _chart_ready(app: Node) -> void:
+	var guard := 0
+	while (not (app.router.current_screen is WorldMap) or app.router.is_busy()) and guard < 2000:
+		guard += 1
+		await get_tree().process_frame
+	await get_tree().process_frame
+
+
+func _chart_closed(app: Node) -> void:
+	var guard := 0
+	while (app.router.current_screen is WorldMap or app.router.is_busy()) and guard < 2000:
+		guard += 1
+		await get_tree().process_frame
+	await _frames(5)
 
 
 func _frame_time(map: MapView, centre: Vector2, zoom: float, count: int) -> float:
