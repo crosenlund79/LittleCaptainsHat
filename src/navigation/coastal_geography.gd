@@ -51,7 +51,7 @@ var res := 120
 var _index := PackedByteArray()
 var _offsets := {}  # tile key -> [offset, size]
 var _file := PackedByteArray()
-var _tiles := {}  # tile key -> PackedByteArray (res*res, 1 = land)
+var _tiles := {}  # tile key -> PackedByteArray (res*res bits, rows north to south, MSB first; 1 = land)
 var _tile_order: Array[int] = []
 var loaded := false
 ## Counters for tests and the benchmark.
@@ -111,18 +111,14 @@ func is_land_cell(cell: Vector2i) -> bool:
 	var tile: PackedByteArray = _tiles.get(key, PackedByteArray())
 	if tile.is_empty():
 		tile = _decode(key)
-	return tile[(cell.y % res) * res + cx % res] == 1
+	var bit := (cell.y % res) * res + cx % res
+	return (tile[bit >> 3] >> (7 - (bit & 7))) & 1 == 1
 
 
 func _decode(key: int) -> PackedByteArray:
+	# Kept bit-packed (decompressing is native and fast; bits are read on use).
 	var entry: Array = _offsets[key]
-	var packed := _file.slice(entry[0], entry[0] + entry[1]).decompress(res * res / 8, FileAccess.COMPRESSION_DEFLATE)
-	var tile := PackedByteArray()
-	tile.resize(res * res)
-	for i in packed.size():
-		var byte := packed[i]
-		for b in 8:
-			tile[i * 8 + b] = (byte >> (7 - b)) & 1
+	var tile := _file.slice(entry[0], entry[0] + entry[1]).decompress(res * res / 8, FileAccess.COMPRESSION_DEFLATE)
 	_tiles[key] = tile
 	_tile_order.append(key)
 	tiles_decoded += 1

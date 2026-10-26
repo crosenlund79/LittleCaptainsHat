@@ -154,6 +154,7 @@ func _ready() -> void:
 	_wind_toggle.button_pressed = wind_shown
 	_wind_toggle.toggled.connect(set_wind_shown)
 	set_wind_shown(wind_shown)
+	_build_anchorage_controls()
 	GameSession.route_changed.connect(_on_committed_changed)
 	GameSession.voyage_started.connect(_on_committed_changed)
 	GameSession.voyage_course_changed.connect(_on_committed_changed)
@@ -183,6 +184,7 @@ func get_station_zoom() -> float:
 
 
 func _process(delta: float) -> void:
+	_update_anchorage_info(delta)
 	if _dragging_waypoint >= 0 and _pending_drag_geo != Vector2.INF:
 		_drag_timer -= delta
 		if _drag_timer <= 0.0:
@@ -408,6 +410,10 @@ func _setup_dream() -> void:
 	_map.wind_layer.set_shown(false)
 	_wind_toggle.visible = false
 	_wind_legend.visible = false
+	if _anchor_toggle:
+		_anchor_toggle.visible = false
+		_anchor_legend.visible = false
+		_map.anchorage_layer.set_shown(false)
 	(_ui("Title") as Label).text = "Dreamer's Map"
 	%BackButton.text = "Back to the cabin (Esc)"
 	_tabs.set_tab_hidden(TAB_WEATHER, true)
@@ -722,7 +728,25 @@ func use_anchorage_suggestion() -> void:
 ## Anchor opens deep water too). The anchor a spot needs follows from its
 ## position (the depth is deterministic), so it is worked out again, not saved.
 func _spot(geo: Vector2) -> Dictionary:
-	return GameSession.anchorage_spot(geo, GameSession.has_magic_anchor())
+	# Remembered per position (the chart refreshes every second; the rule does
+	# not change with time), bounded.
+	var key := "%s|%s" % [geo, GameSession.has_magic_anchor()]
+	if not _spot_cache.has(key):
+		if _spot_cache.size() >= 64:
+			_spot_cache.clear()
+		_spot_cache[key] = GameSession.anchorage_spot(geo, GameSession.has_magic_anchor())
+	return _spot_cache[key]
+
+
+var _spot_cache := {}
+
+
+## For each anchorage waypoint: whether only the Magic Anchor will hold there.
+func _anchorage_magic_flags() -> Array[bool]:
+	var flags: Array[bool] = []
+	for i in _draft_waypoints.size():
+		flags.append(i < _draft_anchorages.size() and _draft_anchorages[i] and _spot(_draft_waypoints[i]).get("kind", &"") == AnchorSite.KIND_MAGIC)
+	return flags
 
 
 func get_anchorage_suggestion() -> Vector2:
@@ -759,6 +783,7 @@ func _refresh_map_only() -> void:
 		"draft_is_proposal": _draft_dirty,
 		"waypoints": _draft_waypoints,
 		"anchorages": _draft_anchorages,
+		"anchorage_magic": _anchorage_magic_flags(),
 		"invalid_waypoints": invalid,
 		"selected_waypoint": _selected_waypoint,
 		"editing_enabled": not _draft_legs.is_empty(),
@@ -1009,12 +1034,117 @@ func _on_cursor_moved(geo: Variant) -> void:
 		_cursor_label.text = ""
 		return
 	_cursor_label.text = GeoMath.format_position(geo)
+	_anchor_hover_geo = geo
+	_anchor_hover_wait = ANCHOR_HOVER_DELAY
 	if wind_shown and mode == MODE_STATION:
 		# The wind of the snapshot the chart shows (Now, past or forecast).
 		var layer := _map.wind_layer
 		var known := GameSession.get_game_time() if layer.get_offset_steps() > 0 else INF
 		var at := GameSession.get_game_time() if layer.get_offset_steps() == 0 else layer.get_snapshot_time()
 		_cursor_label.text += "  ·  " + Hud.describe_wind(Simulation.get_weather_at(geo, at, known))
+
+
+# --- Anchorage highlights (0.105b) -------------------------------------------------------
+
+const ANCHOR_HOVER_DELAY := 0.25
+var _anchor_toggle: CheckButton
+var _anchor_legend: PanelContainer
+var _anchor_note: Label
+var _anchor_info: Label
+var _anchor_hover_geo := Vector2.INF
+var _anchor_hover_wait := -1.0
+var _anchor_info_geo := Vector2.INF
+
+
+func _build_anchorage_controls() -> void:
+	_anchor_toggle = CheckButton.new()
+	_anchor_toggle.name = "AnchorageToggle"
+	_anchor_toggle.text = "Anchorages"
+	_anchor_toggle.tooltip_text = "Show where you can anchor (zoom in on a coast)"
+	_wind_toggle.get_parent().add_child(_anchor_toggle)
+	_wind_toggle.get_parent().move_child(_anchor_toggle, _wind_toggle.get_index() + 1)
+	_anchor_toggle.toggled.connect(set_anchorages_shown)
+	_anchor_legend = PanelContainer.new()
+	_anchor_legend.name = "AnchorageLegend"
+	_anchor_legend.theme_type_variation = &"HudPanel"
+	_anchor_legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_anchor_legend.position = Vector2(24, 92)
+	_anchor_legend.custom_minimum_size = Vector2(340, 0)
+	_wind_legend.get_parent().add_child(_anchor_legend)
+	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_anchor_legend.add_child(box)
+	var title := Label.new()
+	title.text = "Anchorages"
+	title.theme_type_variation = &"HeaderLabel"
+	box.add_child(title)
+	var row := HBoxContainer.new()
+	box.add_child(row)
+	for entry: Array in [[AnchorageLayer.NORMAL_COLOUR, "Normal anchor"], [AnchorageLayer.MAGIC_COLOUR, "Magic Anchor (deep)"]]:
+		var swatch := ColorRect.new()
+		swatch.color = Color(entry[0], 0.9)
+		swatch.custom_minimum_size = Vector2(18, 18)
+		swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(swatch)
+		var label := Label.new()
+		label.text = entry[1]
+		label.add_theme_font_size_override(&"font_size", 16)
+		row.add_child(label)
+	_anchor_note = Label.new()
+	_anchor_note.name = "AnchorageNote"
+	_anchor_note.theme_type_variation = &"MutedLabel"
+	_anchor_note.add_theme_font_size_override(&"font_size", 15)
+	box.add_child(_anchor_note)
+	_anchor_info = Label.new()
+	_anchor_info.name = "AnchorageInfo"
+	_anchor_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_anchor_info.custom_minimum_size = Vector2(330, 0)
+	_anchor_info.add_theme_font_size_override(&"font_size", 16)
+	box.add_child(_anchor_info)
+	set_anchorages_shown(false)
+
+
+## Shows or hides the anchorage highlights and their legend.
+func set_anchorages_shown(on: bool) -> void:
+	if _anchor_toggle == null:
+		return
+	_anchor_toggle.set_pressed_no_signal(on)
+	_anchor_legend.visible = on
+	_map.anchorage_layer.set_shown(on)
+	_anchor_info.text = ""
+	_anchor_info_geo = Vector2.INF
+
+
+func are_anchorages_shown() -> bool:
+	return _map.anchorage_layer.shown
+
+
+func get_anchorage_info_text() -> String:
+	return _anchor_info.text if _anchor_info else ""
+
+
+func _update_anchorage_info(delta: float) -> void:
+	if _anchor_toggle == null or not _map.anchorage_layer.shown:
+		return
+	var zoomed := _map.anchorage_layer.is_zoomed_in()
+	_anchor_note.text = ("Depths are GAME ESTIMATES, for play, not navigation. Point at the water to see more." if zoomed
+		else "Zoom in on a coast to see where you can anchor.")
+	if not zoomed:
+		_anchor_info.text = ""
+		return
+	if _anchor_hover_wait < 0.0:
+		return
+	_anchor_hover_wait -= delta
+	if _anchor_hover_wait < 0.0 and _anchor_hover_geo != Vector2.INF and _anchor_hover_geo != _anchor_info_geo:
+		inspect_anchorage(_anchor_hover_geo)
+
+
+## Explains the anchorage at `geo` in the legend (the cursor rested there).
+func inspect_anchorage(geo: Vector2) -> String:
+	_anchor_info_geo = geo
+	var site := AnchorSite.evaluate(geo, Simulation.get_weather_at(geo), GameSession.has_magic_anchor(), false)
+	_anchor_info.text = AnchorSite.describe_for_chart(site, GameSession.has_magic_anchor())
+	return _anchor_info.text
 
 
 ## Shows or hides the wind overlay and its legend.

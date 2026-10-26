@@ -102,6 +102,9 @@ var draft_is_proposal := false
 var waypoints: Array[Vector2] = []
 ## Which waypoints are anchorages (Iteration 18): drawn with an anchor.
 var anchorages: Array[bool] = []
+## Which of them need the Magic Anchor (0.105b): drawn in amber.
+var anchorage_magic: Array[bool] = []
+const MAGIC_AMBER := Color("#F2B24A")
 var invalid_waypoints := PackedInt32Array()
 var selected_waypoint := -1
 ## Course legs and waypoints react to the mouse only when editing is enabled.
@@ -147,6 +150,10 @@ static var _world_cache := {}
 ## Wind arrows (above land) and tint (under the land fill).
 var wind_layer := WindLayer.new()
 var _wind_view_key := ""
+## Anchorage highlights (0.105b): above the water, under the land fill, so the
+## soft edges never paint the land.
+var anchorage_layer := AnchorageLayer.new()
+var _anchorage_view_key := ""
 
 
 func _ready() -> void:
@@ -162,6 +169,12 @@ func _ready() -> void:
 	move_child(wind_layer, _overlay.get_index())
 	_land.add_child(wind_layer.tint)
 	_land.move_child(wind_layer.tint, 1)  # just above the water, below the land fill
+	anchorage_layer.name = "Anchorages"
+	anchorage_layer.map_view = self
+	anchorage_layer.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	anchorage_layer.visible = false
+	_land.add_child(anchorage_layer)
+	_land.move_child(anchorage_layer, 2)
 	reset_view()
 
 
@@ -178,6 +191,7 @@ func set_display(display: Dictionary) -> void:
 	draft_is_proposal = display.get("draft_is_proposal", false)
 	waypoints = display.get("waypoints", [] as Array[Vector2])
 	anchorages = display.get("anchorages", [] as Array[bool])
+	anchorage_magic = display.get("anchorage_magic", [] as Array[bool])
 	invalid_waypoints = display.get("invalid_waypoints", PackedInt32Array())
 	selected_waypoint = display.get("selected_waypoint", -1)
 	editing_enabled = display.get("editing_enabled", false)
@@ -461,6 +475,11 @@ func _process(delta: float) -> void:
 		if key != _wind_view_key:
 			_wind_view_key = key
 			wind_layer.refresh_view()
+	if anchorage_layer.shown:
+		var anchor_key := "%s|%s|%s" % [camera.position, camera.zoom.x, get_viewport_rect().size]
+		if anchor_key != _anchorage_view_key:
+			_anchorage_view_key = anchor_key
+			anchorage_layer.refresh_view()
 	_update_world_tiles()
 	# Whatever moved the camera (dragging, keys, centring, the wrap at the
 	# Date Line), the overlay's route copies follow the view.
@@ -1425,7 +1444,7 @@ func _draw_waypoints(s: float) -> void:
 		var p := _near_view(projection.geo_to_map(waypoints[i]))
 		var r := 9.0 * s
 		if i < anchorages.size() and anchorages[i]:
-			_draw_anchorage(p, s, i == selected_waypoint, i in invalid_waypoints, i + 1)
+			_draw_anchorage(p, s, i == selected_waypoint, i in invalid_waypoints, i + 1, i < anchorage_magic.size() and anchorage_magic[i])
 			continue
 		var diamond := PackedVector2Array([p + Vector2(0, -r), p + Vector2(r, 0), p + Vector2(0, r), p + Vector2(-r, 0)])
 		if i == selected_waypoint:
@@ -1442,18 +1461,18 @@ func _draw_waypoints(s: float) -> void:
 
 ## An anchorage waypoint: a round navy marker with a brass anchor, numbered
 ## and labelled (shape and word, never colour alone).
-func _draw_anchorage(p: Vector2, s: float, selected: bool, invalid: bool, number: int) -> void:
+func _draw_anchorage(p: Vector2, s: float, selected: bool, invalid: bool, number: int, magic := false) -> void:
 	var r := 12.0 * s
 	if selected:
 		_overlay.draw_circle(p, r + 6.0 * s, BRASS, false, 3.0 * s, true)
-	_overlay.draw_circle(p, r, PORT_RIM, true, -1.0, true)
+	_overlay.draw_circle(p, r, MAGIC_AMBER if magic else PORT_RIM, true, -1.0, true)
 	_overlay.draw_circle(p, r - 2.0 * s, Color("#16394A"), true, -1.0, true)
 	var w := 1.8 * s
 	_overlay.draw_circle(p + Vector2(0, -6.5) * s, 2.0 * s, BRASS, false, w, true)  # ring
 	_overlay.draw_line(p + Vector2(0, -4.5) * s, p + Vector2(0, 7) * s, BRASS, w, true)  # shank
 	_overlay.draw_line(p + Vector2(-4, -2.5) * s, p + Vector2(4, -2.5) * s, BRASS, w, true)  # stock
 	_overlay.draw_arc(p + Vector2(0, 1) * s, 6.5 * s, deg_to_rad(20.0), deg_to_rad(160.0), 12, BRASS, w, true)  # arms
-	_draw_text("%d  Anchorage" % number, p + Vector2(16, -8) * s, 16 * s, PORT_FILL, false, true)
+	_draw_text("%d  Anchorage%s" % [number, "  (Magic Anchor)" if magic else ""], p + Vector2(16, -8) * s, 16 * s, PORT_FILL, false, true)
 	if invalid:
 		_overlay.draw_line(p + Vector2(-r, -r), p + Vector2(r, r), INVALID, 3.5 * s, true)
 		_overlay.draw_line(p + Vector2(-r, r), p + Vector2(r, -r), INVALID, 3.5 * s, true)

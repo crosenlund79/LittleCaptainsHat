@@ -202,3 +202,27 @@ static func describe(site: Dictionary) -> String:
 		CLASS_POOR:
 			return "%sAn exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor (depth %s)." % [prefix, float(site.fetch_nm), depth]
 	return String(site.reason)
+
+
+## A friendly line for the chart's anchorage highlights (0.105b): whether the
+## spot suits the normal anchor or needs the Magic Anchor, the depth and where
+## it came from, and the shelter in the current wind (advisory).
+static func describe_for_chart(site: Dictionary, magic_owned: bool) -> String:
+	if not bool(site.get("water", false)):
+		return "Land or unsuitable water."
+	var depth := "Depth %s (%s)." % [DepthService.describe_depth(float(site.depth_m)), site.depth_label]
+	if not bool(site.get("reachable", false)):
+		if String(site.reason).begins_with("Too close"):
+			return "Too close to the shore for the boat. " + depth
+		return "No safe approach from open water. " + depth
+	var shelter: String = {SHELTERED: "Sheltered from the current wind.", PARTLY: "Partly sheltered from the current wind.",
+		EXPOSED: "Coast exposed to the current wind."}.get(site.shelter, "")
+	if bool(site.get("offshore", false)):
+		shelter = "Open sea: no shelter."
+	var deep: bool = float(site.depth_m) > NORMAL_MAX_DEPTH_M
+	if bool(site.get("normal_ok", false)):
+		return "Suitable for ordinary anchoring. %s %s" % [depth, shelter]
+	if deep:
+		var how := "" if magic_owned else " (fit one free at any boatyard)"
+		return "Deep water: Magic Anchor required%s. %s %s" % [how, depth, shelter]
+	return "%s %s" % [String(site.reason), depth]
