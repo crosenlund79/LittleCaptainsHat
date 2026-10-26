@@ -31,8 +31,10 @@ extends RefCounted
 ##   normal rules allow. A reassessment never resets any timer.
 
 
+## `trim_factor` (SailTrim.factor, Iteration 18) scales the sailing speed
+## only: the potential and every decision above use the sailing model as is.
 static func evaluate(state: PropulsionState, profile: VesselProfile, now: float, heading_deg: float,
-		wind: WindField.Sample, reset_history := false, reassess := false) -> PropulsionState:
+		wind: WindField.Sample, reset_history := false, reassess := false, trim_factor := 1.0) -> PropulsionState:
 	var next := state.duplicate_state()
 	var angle := WindField.relative_angle(heading_deg, wind.from_deg)
 	var potential := profile.sail_speed_kn(wind.speed_kn, angle)
@@ -62,7 +64,7 @@ static func evaluate(state: PropulsionState, profile: VesselProfile, now: float,
 		_decide(next, profile, potential, reassess)
 
 	next.potential_kn = potential
-	next.speed_kn = profile.engine_speed_kn if next.is_motoring() else potential
+	next.speed_kn = profile.engine_speed_kn if next.is_motoring() else potential * trim_factor
 	next.last_evaluation_time = now
 	next.heading_deg = heading_deg
 	next.wind_from_deg = wind.from_deg

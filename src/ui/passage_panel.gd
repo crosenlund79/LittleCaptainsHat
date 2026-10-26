@@ -120,6 +120,10 @@ func _on_rate(rate: float) -> void:
 
 func _on_interrupted(_reason: StringName, text: String) -> void:
 	_stopped.text = "Normal time: %s" % text
+	# Fish that nibbled and swam off meanwhile (Iteration 18), said once.
+	var nibbles := GameSession.take_quiet_nibbles()
+	if nibbles > 0:
+		_stopped.text += "  (%d %s nibbled and swam off on the way.)" % [nibbles, "fish" if nibbles != 1 else "fish"]
 
 
 func refresh() -> void:

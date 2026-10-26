@@ -338,8 +338,11 @@ func evaluate_propulsion(reset_history := false, reassess := false) -> void:
 	if not GameSession.is_underway() or GameSession.is_anchored():
 		return
 	var wind := get_wind_at(GameSession.get_vessel_position())
+	var heading := get_current_heading()
+	var trim := GameSession.get_sail_trim()
+	var factor := SailTrim.factor(trim.auto, trim.value, WindField.relative_angle(heading, wind.from_deg), wind.speed_kn)
 	var state := PropulsionController.evaluate(GameSession.get_propulsion(), GameSession.get_vessel_profile(),
-		GameSession.get_game_time(), get_current_heading(), wind, reset_history, reassess)
+		GameSession.get_game_time(), heading, wind, reset_history, reassess, factor)
 	GameSession.set_propulsion(state)
 
 

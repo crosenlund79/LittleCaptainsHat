@@ -56,7 +56,7 @@ func _ready() -> void:
 		collapsed = not collapsed
 		refresh())
 	header.add_child(_toggle)
-	for key in ["speed", "heading", "wind", "next_leg", "turn", "remaining"]:
+	for key in ["speed", "heading", "wind", "trim", "next_leg", "turn", "remaining"]:
 		var row := HBoxContainer.new()
 		row.name = key.capitalize().replace(" ", "")
 		row.add_theme_constant_override(&"separation", 10)
@@ -65,7 +65,7 @@ func _ready() -> void:
 		caption.custom_minimum_size = Vector2(84, 0)
 		caption.theme_type_variation = &"MutedLabel"
 		caption.add_theme_font_size_override(&"font_size", 16)
-		caption.text = {"speed": "Speed", "heading": "Heading", "wind": "Wind now", "next_leg": "Next leg",
+		caption.text = {"speed": "Speed", "heading": "Heading", "wind": "Wind now", "trim": "Sail trim", "next_leg": "Next leg",
 			"turn": "Next turn", "remaining": "To go"}[key]
 		row.add_child(caption)
 		var value := Label.new()
@@ -116,6 +116,7 @@ func refresh() -> void:
 		_show_row("speed", "0 kn  ·  at anchor")
 		_show_row("heading", "—", false)
 		_show_row("wind", Hud.describe_wind(wind).trim_prefix("Wind "))
+		_show_row("trim", "", false)
 		_show_row("next_leg", "", false)
 		_show_row("turn", "Raise the anchor to sail on", true)
 		_show_row("remaining", "", false)
@@ -131,6 +132,7 @@ func refresh() -> void:
 	if wind.speed_kn >= 0.5:
 		wind_text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else "off the bow"]
 	_show_row("wind", wind_text)
+	_show_row("trim", describe_trim(propulsion))
 	if turn.is_empty() or float(turn.next_course) < 0.0:
 		_show_row("next_leg", "", false)
 		var destination := catalog.get_display_name(GameSession.get_voyage_destination_id())
@@ -149,6 +151,18 @@ func refresh() -> void:
 
 
 ## "Thu 21 May, 07:25" (the year and zone are in the clock bar).
+## The sail trim row (Iteration 18): how the sails are trimmed, the effect,
+## and the key that opens the trim.
+static func describe_trim(propulsion: PropulsionState) -> String:
+	if propulsion.is_motoring():
+		return "under engine  ·  T to trim"
+	var trim := GameSession.get_sail_trim()
+	var word := SailTrim.feedback(trim.auto, trim.value, propulsion.true_wind_angle, propulsion.wind_speed_kn)
+	if trim.auto:
+		return "%s  ·  T to trim by hand" % word.to_lower()
+	return "%s  ·  %+d %%  ·  T" % [word.to_lower(), SailTrim.percent(trim.auto, trim.value, propulsion.true_wind_angle, propulsion.wind_speed_kn)]
+
+
 static func _short_time(unix_time: float) -> String:
 	var text := Simulation.format_game_time(unix_time, false)
 	var parts := text.split(" ")

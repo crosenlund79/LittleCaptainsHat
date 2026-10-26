@@ -41,6 +41,7 @@ func run(runner: Node) -> void:
 	await _test_bite_access()
 	await _test_menu_flow()
 	_test_persistence()
+	await _test_anchored_and_fast_time()
 	Simulation.auto_advance = true
 	app.queue_free()
 	await t.frames(2)
@@ -469,3 +470,76 @@ func _test_persistence() -> void:
 	t.check(not GameSession.get_state_snapshot().to_dict().has("pending_bite"), "[save] a bite on the line is never saved (no repeat after loading)")
 	GameSession.set_keep_preferences("common", FishingCatalog.GRADE_NONE)
 	GameSession.set_passage_posture(FishingState.PASSAGE_ALL)
+
+
+## Rod fishing at anchor (a still boat, not trolling), and the fast-time
+## choice: "only fish worth keeping" lets the others swim off without
+## stopping anything (and gives nothing).
+func _test_anchored_and_fast_time() -> void:
+	app.modals.clear()
+	t.set_wind(90.0, 9.0)
+	GameSession.plan_route_to(&"malmo")
+	t.check_eq(GameSession.depart(), "", "(setup) depart for Malmö")
+	var near := false
+	for i in 120:
+		Simulation.advance(300.0)
+		if GameSession.evaluate_anchorage().ok:
+			near = true
+			break
+	if not t.check(near and GameSession.drop_anchor(5, 0.9).error == "", "(setup) at anchor off the coast"):
+		return
+	t.check_eq(GameSession.get_fishing_mode(), FishingState.MODE_STATIONARY, "[still] at anchor one fishes with a rod from a still boat, not trolling")
+	GameSession.set_line(true, "spinner")
+	var menu: FishingMenu = app.open_fishing()
+	await t.frames(2)
+	t.check(menu != null and menu.get_info_text().begins_with("Rod fishing from the anchored boat"), "[still] the rod says so (%s)" % (menu.get_info_text() if menu else ""))
+	app.modals.clear()
+	var bit := false
+	for i in 300:
+		if Simulation.advance(300.0).bite:
+			bit = true
+			break
+	var bite := GameSession.get_pending_bite()
+	t.check(bit and String(bite.get("mode", "")) == "stationary", "[still] fish bite at anchor (%s)" % bite.get("species", "none"))
+	GameSession.expire_bite()
+	t.check_eq(GameSession.raise_anchor(), "", "(setup) anchor up, sailing on")
+	# Fast time with "only fish worth keeping" (very rare only).
+	GameSession.set_keep_preferences("very_rare", FishingCatalog.GRADE_NONE)
+	GameSession.set_passage_posture(FishingState.PASSAGE_KEEPERS)
+	GameSession.set_line(true, "spinner")
+	GameSession.take_quiet_nibbles()
+	GameSession.set_time_scale(20)
+	var interrupted := 0
+	for i in 72:  # six hours
+		var result := Simulation.advance(300.0, true)
+		if result.stopped_by == Simulation.STOP_BITE:
+			interrupted += 1
+			var keeper := GameSession.get_pending_bite()
+			t.check(String(keeper.get("rarity", "")) == "very_rare", "[fast] it stopped only for a keeper (%s)" % keeper.get("species", "?"))
+			GameSession.expire_bite()
+		if not GameSession.is_underway():
+			break
+	var nibbles := GameSession.take_quiet_nibbles()
+	t.check(nibbles > 0, "[fast] bites from fish not worth keeping swam off without stopping the passage (%d, stops %d)" % [nibbles, interrupted])
+	var caught := GameSession.get_fishing().total_caught
+	GameSession.set_passage_posture(FishingState.PASSAGE_ALL)
+	var stopped := false
+	for i in 72:
+		if Simulation.advance(300.0, true).stopped_by == Simulation.STOP_BITE:
+			stopped = true
+			break
+	t.check(stopped and GameSession.get_fishing().total_caught == caught, "[fast] \"Stop for every bite\": the next bite stops time; nothing was caught unattended")
+	GameSession.expire_bite()
+	# No storm of stops: for a few game hours after one, bites nibble quietly.
+	GameSession.take_quiet_nibbles()
+	var again := false
+	var elapsed := 0.0
+	while elapsed < GameSession.FAST_BITE_COOLDOWN_S - 600.0:
+		if Simulation.advance(300.0, true).stopped_by == Simulation.STOP_BITE:
+			again = true
+		elapsed += 300.0
+	t.check(not again, "[fast] after a bite stop, no further bite stops for %d game hours (%d nibbled quietly)" % [
+		roundi(GameSession.FAST_BITE_COOLDOWN_S / 3600.0), GameSession.take_quiet_nibbles()])
+	GameSession.set_time_scale(1)
+	GameSession.set_line(false)
+	GameSession.set_keep_preferences("common", FishingCatalog.GRADE_NONE)

@@ -52,6 +52,12 @@ var vessel_status: StringName = STATUS_MOORED
 var vessel_position := Vector2.ZERO
 ## Sail/engine state and the automatic controller's memory (used while underway).
 var propulsion := PropulsionState.new()
+## Sail trim (Iteration 18, SailTrim): left to the crew, or the captain's
+## setting (-1 eased .. +1 sheeted in). Kept across course changes, voyages
+## and saves; its effect is worked out from the wind at the time. Optional in
+## a save (format 12): absent means the crew trims.
+var trim_auto := true
+var trim_value := 0.0
 ## Selects this game's deterministic weather: the wind field's variation and
 ## every weather event (WeatherModel). Events are a pure function of this seed
 ## and time, so saving the seed saves the weather.
@@ -138,6 +144,8 @@ func duplicate_state() -> SessionState:
 	copy.vessel_status = vessel_status
 	copy.vessel_position = vessel_position
 	copy.propulsion = propulsion.duplicate_state()
+	copy.trim_auto = trim_auto
+	copy.trim_value = trim_value
 	copy.wind_seed = wind_seed
 	copy.weather_model_version = weather_model_version
 	copy.weather_exposure = weather_exposure.duplicate_exposure()
@@ -203,6 +211,7 @@ func to_dict() -> Dictionary:
 			"status": String(vessel_status),
 			"position": {"lon": vessel_position.x, "lat": vessel_position.y},
 			"propulsion": propulsion.to_dict(),
+			"sail_trim": {"auto": trim_auto, "value": trim_value},
 			"conditions": vessel_conditions.duplicate(),
 			"damage_applied_until": damage_applied_until,
 		},
@@ -315,6 +324,10 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 	state.propulsion = PropulsionState.from_dict(vessel.get("propulsion"), errors)
 	if state.propulsion == null:
 		return null
+	var trim: Variant = vessel.get("sail_trim")
+	if trim is Dictionary and trim.get("auto") is bool and _is_finite_number(trim.get("value")):
+		state.trim_auto = trim.auto
+		state.trim_value = clampf(float(trim.value), -1.0, 1.0)
 	var conditions: Variant = vessel.get("conditions")
 	if not conditions is Dictionary or not _is_finite_number(vessel.get("damage_applied_until")):
 		errors.append("missing or invalid vessel condition")

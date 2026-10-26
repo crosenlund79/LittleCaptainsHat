@@ -177,6 +177,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			open_action_wheel()
 		return
+	if event.is_action_pressed(&"sail_trim") and not event.is_echo():
+		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
+			get_viewport().set_input_as_handled()
+			open_sail_trim()
+		return
 	if event.is_action_pressed(&"reel_in") and not event.is_echo():
 		if is_in_gameplay() and modals.is_empty() and not router.is_busy():
 			get_viewport().set_input_as_handled()
@@ -402,6 +407,8 @@ func get_wheel_actions() -> Array[Dictionary]:
 			add.call(&"chartplotter", "Hide chartplotter" if ChartPlotter.shown else "Show chartplotter", toggle_chartplotter)
 			add.call(&"sailing_panel", "More sailing details" if SailingPanel.collapsed else "Fewer sailing details",
 				func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
+			if not GameSession.is_anchored():
+				add.call(&"sail_trim", "Trim the sails", func() -> void: open_sail_trim.call_deferred())
 			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "":
 				add.call(&"anchor", "Anchor", func() -> void: open_anchor())
 		elif GameSession.get_planned_route() != null:
@@ -415,6 +422,18 @@ func get_wheel_actions() -> Array[Dictionary]:
 			_on_area_change_requested(area.companionway_target_area, area.companionway_target_spawn))
 	add.call(&"log", "Captain's Log", toggle_captains_log)
 	return actions
+
+
+## Sail trim (Iteration 18): underway, at sea (not at anchor).
+func open_sail_trim() -> SailTrimPanel:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	if not GameSession.is_underway() or GameSession.is_anchored():
+		notify("Sail trim is for sailing: set sail first." if not GameSession.is_underway() else "At anchor the sails are down.")
+		return null
+	var panel := SailTrimPanel.new()
+	modals.push(panel)
+	return panel
 
 
 func open_action_wheel() -> ActionWheel:

@@ -22,6 +22,8 @@ signal voyage_course_changed
 signal voyage_arrived(port_id: StringName)
 ## Sail <-> engine changed (or propulsion ended on arrival: mode is then &"").
 signal propulsion_changed(mode: StringName)
+## The sail trim changed (Iteration 18).
+signal sail_trim_changed
 ## The player switched boats at the boatyard.
 signal vessel_changed(vessel_id: StringName)
 ## The ship's companion moved to another resting spot (see CompanionState).
@@ -630,6 +632,36 @@ func _note_crossings(before: Vector2, after: Vector2) -> void:
 
 ## Ends the voyage at its destination.
 ## Replaces the propulsion state (Simulation only). Announces mode changes.
+## The sail trim (Iteration 18): {"auto", "value"}.
+func get_sail_trim() -> Dictionary:
+	return {"auto": _state.trim_auto, "value": _state.trim_value} if _state else {"auto": true, "value": 0.0}
+
+
+## Sets the sail trim: left to the crew (`auto`), or the captain's `value`
+## (-1 eased .. +1 sheeted in). Under sail the boat's speed follows at once
+## (from the wind at the last evaluation); nothing else changes.
+func set_sail_trim(auto: bool, value: float) -> void:
+	if _state == null:
+		return
+	_state.trim_auto = auto
+	_state.trim_value = clampf(value, -1.0, 1.0)
+	_has_unsaved_changes = true
+	var propulsion := _state.propulsion
+	if is_underway() and not is_anchored() and propulsion.initialised and not propulsion.is_motoring():
+		propulsion.speed_kn = propulsion.potential_kn * get_trim_factor()
+		Simulation.invalidate_estimates()
+	sail_trim_changed.emit()
+
+
+## The speed factor of the current trim, from the wind at the last sail
+## evaluation (1.0 when the crew trims, or under engine).
+func get_trim_factor() -> float:
+	if _state == null:
+		return 1.0
+	var propulsion := _state.propulsion
+	return SailTrim.factor(_state.trim_auto, _state.trim_value, propulsion.true_wind_angle, propulsion.wind_speed_kn)
+
+
 func set_propulsion(state: PropulsionState) -> void:
 	if _state == null:
 		return
@@ -1205,6 +1237,9 @@ var _pending_bite := {}
 var _warned_too_fast := false
 ## Bites let go quietly in fast time (Iteration 18; not saved).
 var _quiet_nibbles := 0
+## In fast time a bite stops the clock at most once this often (game seconds).
+const FAST_BITE_COOLDOWN_S := 3.0 * 3600.0
+var _last_fast_bite_at := -INF
 
 
 func get_fishing() -> FishingState:
@@ -1301,6 +1336,14 @@ func apply_fish_check(tick: float) -> bool:
 			and (kind != FishingCatalog.KIND_FISH or FishingCatalog.rarity_index(rarity) < FishingCatalog.rarity_index(fishing.keep_min_rarity)):
 		_quiet_nibbles += 1
 		return false
+	# In fast time a bite stops the clock at most once every few game hours;
+	# bites in between nibble and swim off (measured: an ocean passage at
+	# 12 h/s otherwise stopped about every two real seconds).
+	if is_fast_time() and tick >= _last_fast_bite_at and tick - _last_fast_bite_at < FAST_BITE_COOLDOWN_S:
+		_quiet_nibbles += 1
+		return false
+	if is_fast_time():
+		_last_fast_bite_at = tick
 	_pending_bite = {"species": fish.species, "kg": fish.kg, "time": tick, "mode": String(mode), "lure": fishing.lure,
 		"kind": String(kind), "rarity": rarity}
 	fish_bite.emit(_pending_bite.duplicate())
@@ -2395,7 +2438,12 @@ func _recover_voyage(router: SeaRouter) -> void:
 	check.waypoints = voyage.get_remaining_waypoints()
 	check.path = remaining
 	check.origin_position = remaining[0] if not remaining.is_empty() else position
-	var path_ok := remaining.size() >= 2 and router.validate_route(check).is_empty()
+	# The remaining path is a cut of the voyage's route: the first leg out of a
+	# harbour may be a berth link, allowed only from the port itself, so the
+	# cut alone can fail although nothing changed. The whole route still being
+	# valid is enough (Iteration 18: a save just after leaving harbour asked
+	# for the course to be plotted again).
+	var path_ok := remaining.size() >= 2 and (router.validate_route(check).is_empty() or router.validate_route(voyage.route).is_empty())
 	var position_ok := _near_route_port(router, position, voyage.route) or router.is_point_navigable(position)
 	if path_ok and position_ok:
 		return
