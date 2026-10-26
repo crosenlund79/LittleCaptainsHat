@@ -33,6 +33,7 @@ func run(runner: Node) -> void:
 	await _settle()
 	await _test_canal_voyage()
 	await _test_chart_zoom()
+	await _test_canal_charts()
 	await _test_route_replanning()
 	await _test_debris()
 	await _test_wheel()
@@ -178,6 +179,27 @@ func _test_chart_zoom() -> void:
 	await _settle()
 
 
+## Screenshots of the canal courses on the chart (evidence; no checks).
+func _test_canal_charts() -> void:
+	for pair in [[&"kiel", &"cuxhaven", "cozy_chart_kiel_canal"], [&"limassol", &"noumea", "cozy_chart_suez"]]:
+		_moor_at(pair[0])
+		app.open_chart()
+		await _settle()
+		var map := app.router.current_screen as WorldMap
+		map.plot_course_to(pair[1])
+		await t.frames(2)
+		var view := map.get_map_view()
+		if pair[0] == &"kiel":
+			view.center_on_geo(Vector2(9.6, 54.1), 60.0)
+		else:
+			view.center_on_geo(Vector2(35.0, 24.0), 6.0)
+		await t.frames(3)
+		await t.screenshot(pair[2])
+		map.discard_changes()
+		app.close_chart()
+		await _settle()
+
+
 func _test_route_replanning() -> void:
 	_moor_at(&"palermo")
 	app.open_chart()
@@ -210,6 +232,9 @@ func _test_route_replanning() -> void:
 	await t.frames(2)
 	legs = map.get_draft_legs()
 	t.check(legs.size() == 1 and legs[0].ok and map.get_draft_waypoints().is_empty(), "[replan] plotting again: one course, nothing stale")
+	view.frame_geo_points(GameSession.get_planned_route().path)
+	await t.frames(3)
+	await t.screenshot("cozy_palermo_limassol")
 	map.discard_changes()
 	app.close_chart()
 	await _settle()
@@ -477,6 +502,7 @@ func _test_loading_screen() -> void:
 	screen.finished.connect(func() -> void: done[0] = true)
 	t.add_child(screen)
 	var status := (screen.find_child("Status", true, false) as Label).text
+	await t.screenshot("cozy_loading_screen")
 	await t.wait_until(func() -> bool: return done[0], 20.0)
 	t.check(done[0] and status.contains("of 3"), "[loading] real loading steps named one by one (%s), then it fades away" % status)
 

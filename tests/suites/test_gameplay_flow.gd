@@ -228,13 +228,16 @@ func _test_waypoint_editing(map: WorldMap) -> void:
 	t.check(map.get_draft_route() != null, "the course is recalculated through the new waypoint")
 	await t.screenshot("06b_chart_waypoint_drag")
 
-	# Drag the waypoint onto land (Møn): shown as invalid, cannot be applied.
+	# Drag the waypoint onto land (Møn): it moves to the nearest open water
+	# (Cozy Polish; no blocked line is left on the chart) and says so.
 	await _drag(view.geo_to_screen(map.get_draft_waypoints()[0]), view.geo_to_screen(Vector2(12.35, 54.97)))
-	t.check(map.get_draft_route() == null, "a waypoint on land makes the course invalid")
-	t.check("NOT NAVIGABLE" in (map.find_child("CourseStatus", true, false) as Label).text, "the panel explains why the course is invalid")
-	t.check((map.find_child("ApplyButton", true, false) as Button).disabled, "an invalid course cannot be applied")
-	t.check(not view.invalid_waypoints.is_empty() and view.draft_legs.any(func(l: Dictionary) -> bool: return not l.ok),
-		"the chart marks the waypoint and the blocked legs")
+	t.check(map.get_draft_waypoints().size() == 1 and SeaRouter.get_default().is_point_reachable(map.get_draft_waypoints()[0]),
+		"a waypoint let go on land moves to the nearest open water")
+	t.check("nearest open water" in (map.find_child("CourseStatus", true, false) as Label).text, "the panel says the waypoint was moved")
+	t.check(map.get_draft_route() != null and not (map.find_child("ApplyButton", true, false) as Button).disabled,
+		"the course stays valid and can be applied")
+	t.check(view.invalid_waypoints.is_empty() and view.draft_legs.all(func(l: Dictionary) -> bool: return l.ok),
+		"no waypoint or leg is left marked blocked")
 	t.check(GameSession.get_planned_route().path == committed.path, "the committed course is untouched while editing")
 	await t.screenshot("06c_chart_invalid_waypoint")
 
@@ -603,6 +606,7 @@ func _test_first_voyage_acceptance() -> void:
 	await t.click(app.hud.find_child("Speed1", true, false))
 
 	# 17-19. Sleep at the berth.
+	SettingsManager.set_sleep_hours(SettingsManager.DEFAULT_SLEEP_HOURS, false)  # the dialog remembers the last choice (Cozy Polish)
 	await _move_player_to(Vector2(276, 0))
 	await t.press_action(&"interact")
 	var progress_before_sleep := GameSession.get_voyage_progress_nm()

@@ -549,6 +549,12 @@ script = ExtResource("6_r")
 position = Vector2(-410, 0)
 size = Vector2(12, 100)
 
+[node name="CupHolderSpot" type="Marker2D" parent="Layout"]
+position = Vector2(-368, 80)
+
+[node name="Station" type="Marker2D" parent="Layout/CupHolderSpot"]
+position = Vector2(0, -42)
+
 [node name="Stations" type="Node2D" parent="Layout"]
 
 [node name="Companionway" type="Area2D" parent="Layout/Stations"]

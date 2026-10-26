@@ -152,6 +152,7 @@ func _test_petting(kind: StringName) -> void:
 # --- Sleep ---------------------------------------------------------------------------------
 
 func _test_sleep_dialog() -> void:
+	SettingsManager.set_sleep_hours(SettingsManager.DEFAULT_SLEEP_HOURS, false)  # the dialog remembers the last choice (Cozy Polish)
 	await _move_player_to(Vector2(276, 0))
 	await t.press_action(&"interact")
 	var menu := app.modals.get_top() as SleepMenu
@@ -180,6 +181,7 @@ func _test_sleep_dialog() -> void:
 
 func _test_sleep_from_cabin() -> void:
 	await _move_player_to(Vector2(-110, 0))
+	SettingsManager.set_sleep_hours(SettingsManager.DEFAULT_SLEEP_HOURS, false)  # the dialog remembers the last choice (Cozy Polish)
 	var before := GameSession.get_game_time()
 	app.open_sleep_menu()
 	await t.frames(2)  # let the dialog lay out before clicking
@@ -336,6 +338,7 @@ func _test_sleep_from_chart() -> void:
 	if not t.check(map != null, "(setup) still at the chart"):
 		return
 	t.set_wind(270.0, 14.0)
+	SettingsManager.set_sleep_hours(SettingsManager.DEFAULT_SLEEP_HOURS, false)  # the dialog remembers the last choice (Cozy Polish)
 	var snapshot := GameSession.get_state_snapshot()
 	await t.click(_button(map, "SleepButton"))
 	await t.frames(2)

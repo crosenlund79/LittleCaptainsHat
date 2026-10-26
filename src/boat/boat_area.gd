@@ -881,6 +881,11 @@ func _setup_aboard_gear() -> void:
 			_add_station(stations, "Anchor", &"anchor", "Anchor", windlass_at + Vector2(-30, 0), 40.0)
 		# The coffee cup holder (Cozy Polish): on the starboard coaming by the helm.
 		var cup := cup_holder_position(hull, helm.position if helm else Vector2.INF)
+		# A deck can place it itself (the Petrel 36's helm stands aft of its
+		# wheel, closed in by the wheel and the cockpit bench).
+		var spot := get_node_or_null(^"Layout/CupHolderSpot") as Node2D
+		if spot and spot.has_node(^"Station"):
+			cup = [spot.position, spot.position + (spot.get_node(^"Station") as Node2D).position]
 		if cup.size() == 2:
 			var holder := CoffeeMug.new()
 			holder.name = "CupHolder"

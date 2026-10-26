@@ -324,6 +324,7 @@ func _test_pause_everywhere() -> void:
 
 
 func _test_pause_and_sleep() -> void:
+	SettingsManager.set_sleep_hours(SettingsManager.DEFAULT_SLEEP_HOURS, false)  # the dialog remembers the last choice (Cozy Polish)
 	GameSession.set_paused(true)
 	var before := GameSession.get_game_time()
 	app.open_sleep_menu()
