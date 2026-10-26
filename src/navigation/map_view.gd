@@ -497,6 +497,54 @@ func _process(delta: float) -> void:
 
 # --- Building ----------------------------------------------------------------------------
 
+## The Dreamer's Map's illustrated colours (after 0.105b): green land, snowy
+## far north and Antarctica, sandy deserts, a deeper sea. A screen-reading
+## shader drawn over the land layer and under the overlay (labels, ports,
+## routes), so only the colours change - never the coastlines, navigation or
+## the working chart, which never calls this.
+const DREAM_SHADER := preload("res://src/navigation/shaders/dream_world.gdshader")
+
+var _dream_tint: Node2D
+
+
+func set_dream_style(on: bool) -> void:
+	if not on:
+		if _dream_tint:
+			_dream_tint.queue_free()
+			_dream_tint = null
+		return
+	if _dream_tint:
+		return
+	_dream_tint = Node2D.new()
+	_dream_tint.name = "DreamTint"
+	add_child(_dream_tint)
+	move_child(_dream_tint, _overlay.get_index())
+	var copy := BackBufferCopy.new()
+	copy.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
+	_dream_tint.add_child(copy)
+	var rect := ColorRect.new()
+	rect.name = "Colours"
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Wider and taller than the chart: the land fill runs a little past its bounds.
+	var area := _map_bounds.grow_individual(_world_width * 2.0, _map_bounds.size.y, _world_width * 2.0, _map_bounds.size.y)
+	rect.position = area.position
+	rect.size = area.size
+	var material := ShaderMaterial.new()
+	material.shader = DREAM_SHADER
+	material.set_shader_parameter(&"rect_origin", area.position)
+	material.set_shader_parameter(&"scale", projection.scale)
+	material.set_shader_parameter(&"land_src", LAND)
+	material.set_shader_parameter(&"islet_src", ISLET_COLOUR)
+	material.set_shader_parameter(&"coast_src", COAST)
+	material.set_shader_parameter(&"water_src", WATER)
+	rect.material = material
+	_dream_tint.add_child(rect)
+
+
+func is_dream_style() -> bool:
+	return _dream_tint != null
+
+
 func _build_land() -> void:
 	var data: Dictionary = land_data.data if land_data and land_data.data is Dictionary else {}
 	var bounds: Dictionary = data.get("bounds", {"west": -10.0, "south": 50.0, "east": 20.0, "north": 60.0})

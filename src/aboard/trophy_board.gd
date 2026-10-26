@@ -6,6 +6,12 @@ extends Node2D
 ## before, a fish shape in the species' colour); empty slots are faint
 ## outlines. Presentation only: the station beside it opens
 ## the list (TrophyMenu).
+##
+## The fish pictures are Sprite2D children, one per slot (fix after 0.105b):
+## drawn with draw_texture_rect() in this node's own _draw, a thumbnail that
+## had not been drawn anywhere before rendered as a plain white rectangle, and
+## the board never redrew it. Empty slots are a recessed frame with a faint
+## fish outline, so an empty place reads as "still to catch".
 
 const WOOD := Color("#8a5a35")
 const WOOD_DARK := Color("#5c3a22")
@@ -18,12 +24,50 @@ const FISH_COLOURS := {
 	"mahi_mahi": Color("#9fbf4f"), "skipjack": Color("#4a6f99"), "snapper": Color("#c8705a"), "yellowfin": Color("#d9b84a"),
 }
 const SIZE := Vector2(132, 46)
+## A slot's picture: 26 x 13 units, centred under its brass pin.
+const PICTURE := Vector2(26.0, 13.0)
+const SLOT_SHADE := Color(0.24, 0.14, 0.07, 0.35)
+
+var _pictures: Array[Sprite2D] = []
 
 
 func _ready() -> void:
 	z_index = 3
-	GameSession.fishing_changed.connect(queue_redraw)
-	GameSession.state_replaced.connect(queue_redraw)
+	for i in FishingState.TROPHY_COUNT:
+		var sprite := Sprite2D.new()
+		sprite.name = "Fish%d" % i
+		sprite.position = _slot_center(i)
+		sprite.visible = false
+		add_child(sprite)
+		_pictures.append(sprite)
+	GameSession.fishing_changed.connect(refresh)
+	GameSession.state_replaced.connect(refresh)
+	refresh()
+
+
+## Shows the current trophies (pictures and the board under them).
+func refresh() -> void:
+	var trophies := GameSession.get_fishing().trophies
+	for i in _pictures.size():
+		var sprite := _pictures[i]
+		var picture: Texture2D = FishArt.thumbnail(String(trophies[i].species)) if i < trophies.size() else null
+		sprite.texture = picture
+		sprite.visible = picture != null
+		if picture:
+			var size := picture.get_size()
+			var factor := minf(PICTURE.x / size.x, PICTURE.y / size.y)
+			sprite.scale = Vector2(factor, factor)
+	queue_redraw()
+
+
+## The picture in slot `i` (null when empty or drawn as a shape; tests).
+func get_picture(i: int) -> Texture2D:
+	return _pictures[i].texture if i < _pictures.size() and _pictures[i].visible else null
+
+
+func _slot_center(i: int) -> Vector2:
+	var rect := Rect2(-SIZE / 2.0, SIZE)
+	return Vector2(rect.position.x + SIZE.x * (i + 0.5) / FishingState.TROPHY_COUNT, 2.0)
 
 
 static func outline() -> PackedVector2Array:
@@ -38,17 +82,19 @@ func _draw() -> void:
 	draw_line(rect.position + Vector2(4, 34), Vector2(rect.end.x - 4, rect.position.y + 34), Color(WOOD_DARK, 0.5), 1.0)
 	var trophies := GameSession.get_fishing().trophies
 	for i in FishingState.TROPHY_COUNT:
-		var center := Vector2(rect.position.x + SIZE.x * (i + 0.5) / FishingState.TROPHY_COUNT, 2.0)
+		var center := _slot_center(i)
 		draw_circle(center + Vector2(0, -14), 1.6, BRASS)
 		if i < trophies.size():
-			var picture := FishArt.thumbnail(String(trophies[i].species))
-			if picture:
-				draw_texture_rect(picture, Rect2(center - Vector2(13, 7), Vector2(26, 13)), false)
+			if i < _pictures.size() and _pictures[i].visible:
 				if i == 0:
 					draw_circle(center + Vector2(0, 12), 2.4, BRASS)
 			else:
 				_draw_fish(center, Color(FISH_COLOURS.get(trophies[i].species, Color("#9fb7c0"))), i == 0)
 		else:
+			# Empty: a recessed little frame with a faint fish outline.
+			var slot := Rect2(center - PICTURE / 2.0 - Vector2(1.5, 1.5), PICTURE + Vector2(3, 3))
+			draw_rect(slot, SLOT_SHADE)
+			draw_rect(slot, Color(WOOD_DARK, 0.6), false, 0.8)
 			_draw_fish(center, EMPTY, false, true)
 
 

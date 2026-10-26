@@ -406,6 +406,7 @@ func _ui(node_name: String) -> Node:
 
 
 func _setup_dream() -> void:
+	_map.set_dream_style(true)
 	_map.show_weather = false
 	_map.wind_layer.set_shown(false)
 	_wind_toggle.visible = false

@@ -410,6 +410,10 @@ func _setup_deck_companion() -> void:
 	companion.deck_spots = spots
 	companion.spots_path = ^"../Layout/DeckCompanionSpots"
 	add_child(companion)
+	# Made after _ready connected the scene's interactables: connect its "Pet"
+	# here, or E would focus the cat on deck and do nothing (fix after 0.105b).
+	if companion.interactable and not companion.interactable.interacted.is_connected(_on_interacted):
+		companion.interactable.interacted.connect(_on_interacted)
 	if get_lighting():
 		get_lighting().add_contact_shadows()
 

@@ -76,6 +76,9 @@ var _was_focused := false
 var _rng := RandomNumberGenerator.new()
 var _time := 0.0
 var _reaction := 0.0
+## Seconds a walk waits because the companion was just petted (it stops,
+## enjoys it, then walks on).
+var _walk_pause := 0.0
 ## Settled at anchor: rest turns into long naps (see advance_behaviour()).
 var settled := false
 ## The deck's companion (Iteration 18): rests at DeckCompanionSpots.
@@ -124,19 +127,24 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	_reaction = maxf(_reaction - delta, 0.0)
-	if is_walking():
+	_walk_pause = maxf(_walk_pause - delta, 0.0)
+	if is_walking() and _walk_pause <= 0.0:
 		_advance_walk(delta)
 	if is_sprite_mode():
 		advance_behaviour(delta)
 	queue_redraw()
 
 
-## Called when the player pets the companion (E).
+## Called when the player pets the companion (E). Walking (in, out or across
+## the deck) it stops for the moment of petting, then walks on.
 func pet() -> void:
 	_reaction = REACTION_SECONDS
 	AudioManager.play_sfx(purr_sound if kind == CompanionState.KIND_CAT else dog_sound)
+	if is_walking():
+		_walk_pause = REACTION_SECONDS
 	if is_sprite_mode():
-		set_pose(CompanionVisualSet.POSE_ALERT, maxf(visual_set.alert_seconds, REACTION_SECONDS))
+		# Walking it keeps its walking look (alert) until it arrives.
+		set_pose(CompanionVisualSet.POSE_ALERT, 60.0 if is_walking() else maxf(visual_set.alert_seconds, REACTION_SECONDS))
 	GameSession.note_companion_petted(kind)
 	petted.emit(kind)
 
@@ -221,7 +229,11 @@ func _advance_walk(delta: float) -> void:
 		_walking_out = false
 		visible = false
 	elif is_sprite_mode():
-		set_pose(CompanionVisualSet.POSE_RESTING)
+		# Petted on the way: the reaction plays out before it settles.
+		if is_reacting():
+			set_pose(CompanionVisualSet.POSE_ALERT, _reaction)
+		else:
+			set_pose(CompanionVisualSet.POSE_RESTING)
 	_update_interactable()
 
 
@@ -239,9 +251,11 @@ func _rest_position() -> Vector2:
 	return get_spot_position(companion.spot)
 
 
+## Pettable whenever it is shown here, resting or walking (also on its way
+## out to follow the captain: it pauses, then goes).
 func _update_interactable() -> void:
 	if interactable:
-		interactable.enabled = visible and not _walking_out
+		interactable.enabled = visible
 
 
 func is_reacting() -> bool:
@@ -390,6 +404,7 @@ func _sync() -> void:
 	_walk = PackedVector2Array()
 	_walk_index = 0
 	_walking_out = false
+	_walk_pause = 0.0
 	position = _rest_position()
 	_sync_rotation()
 	update_highlight()
