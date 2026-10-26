@@ -6,7 +6,7 @@ Original music for Little Captain's Hat. The `MusicDirector` autoload (`src/audi
 |---|---|---|---|
 | `home_upon_the_waves.ogg` | Home Upon the Waves | daytime in harbour, in the cabin, at anchor, on the title screen | 8:43 |
 | `the_wind_knows_the_way.ogg` | The Wind Knows the Way | daytime underway on deck, including Long Passage | 9:30 |
-| `lanterns_across_the_water.ogg` | Lanterns Across the Water | at night, anywhere aboard | 8:13 |
+| `lanterns_across_the_water.ogg` | Lanterns Across the Water | at night, anywhere aboard | 8:12 |
 
 - **Format.** OGG Vorbis, 44.1 kHz stereo, quality 5. Each file is exactly one loop long: the music runs on from the end straight back into the beginning.
 - **Sidecars.** Each `.json` holds the loop length and the start times of the sections and of every four-bar phrase. When the game returns to a piece, it resumes at a phrase start.

@@ -52,6 +52,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 - [Sprite Workshop: start here](../art_replacements/README_START_HERE.md) (for the artist) and its [index](../art_replacements/INDEX.md).
 - [Sprite Workshop report](artwork/SPRITE_WORKSHOP_REPORT.md): audit, sizes, priorities and counts.
 - [Art pipeline](artwork/ART_PIPELINE.md): where the art instructions live.
+- [Original soundtrack](artwork/ORIGINAL_SOUNDTRACK_REPORT.md): the three pieces (*Home Upon the Waves*, *The Wind Knows the Way*, *Lanterns Across the Water*), how they were composed and rendered, their licence, and how the game chooses between them. Sources are in `tools/music/`.
 
 ## Benchmarks and screenshots
 
