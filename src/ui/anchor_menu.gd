@@ -27,10 +27,10 @@ const ADJUST_MINUTES := 10.0
 const RAISE_MINUTES := 10.0
 ## How fast the setting marker swings (cycles per real second).
 const SET_SPEED := 0.55
-const HOLDING_COLOURS := {
-	AnchorState.HOLDING_WELL: Color(0.75, 0.92, 0.7), AnchorState.HOLDING_FAIR: Color(0.93, 0.92, 0.86),
-	AnchorState.HOLDING_POOR: Color(1.0, 0.86, 0.62), AnchorState.HOLDING_DRAGGING: Color(1.0, 0.62, 0.55),
-}
+## How well the anchor holds, as theme roles (Captain's Chartroom) for the
+## holding text: right by day and by night.
+const HOLDING_ROLES := {AnchorState.HOLDING_WELL: &"success", AnchorState.HOLDING_FAIR: &"",
+	AnchorState.HOLDING_POOR: &"caution", AnchorState.HOLDING_DRAGGING: &"warning"}
 
 var _site: Label
 var _holding: Label
@@ -124,14 +124,14 @@ func refresh() -> void:
 		if anchor.dragged_nm > 0.0:
 			_site.text += "  Dragged %.2f nm so far." % anchor.dragged_nm
 		_holding.text = AnchorSite.holding_text(anchor.holding) + ("  ·  ALARM" if anchor.alarm else "")
-		_holding.modulate = HOLDING_COLOURS.get(anchor.holding, Color.WHITE)
+		UiTheme.tint(_holding, HOLDING_ROLES.get(anchor.holding, &""))
 		_scope.select(AnchorState.SCOPES.find(anchor.scope))
 	else:
 		var site := GameSession.evaluate_anchorage() if GameSession.is_underway() else {}
 		_site.text = refusal if refusal != "" else String(site.reason)
 		_holding.text = {AnchorSite.CLASS_GOOD: "A good anchorage", AnchorSite.CLASS_FAIR: "A fair anchorage",
 			AnchorSite.CLASS_POOR: "An exposed anchorage"}.get(StringName(site.get("class", "")), "No anchorage here")
-		_holding.modulate = Color(1.0, 0.86, 0.62) if refusal != "" or site.get("class", "") == AnchorSite.CLASS_POOR else Color(0.93, 0.92, 0.86)
+		UiTheme.tint(_holding, &"caution" if refusal != "" or site.get("class", "") == AnchorSite.CLASS_POOR else &"")
 	var busy := _setting or is_deploying_magic()
 	_drop.visible = not anchored
 	_drop.disabled = refusal != "" or busy

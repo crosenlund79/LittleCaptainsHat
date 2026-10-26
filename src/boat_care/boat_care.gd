@@ -236,6 +236,8 @@ static func quote(service: StringName, care: BoatCareState, condition: float, le
 ## Text colours of the levels on the dark panels.
 const LEVEL_COLOURS := {LEVEL_GOOD: Color(0.75, 0.92, 0.7), LEVEL_COSMETIC: Color(0.93, 0.92, 0.86),
 	LEVEL_RECOMMENDED: Color(1.0, 0.86, 0.62), LEVEL_NEEDED: Color(1.0, 0.62, 0.55)}
+## The same levels as theme roles (Captain's Chartroom), for text on panels.
+const LEVEL_ROLES := {LEVEL_GOOD: &"success", LEVEL_COSMETIC: &"", LEVEL_RECOMMENDED: &"caution", LEVEL_NEEDED: &"warning"}
 
 
 ## What the Captain could do about an area at this level ("" when nothing).

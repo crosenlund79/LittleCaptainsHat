@@ -94,7 +94,7 @@ text = "New Game"
 [node name="ContinueButton" type="Button" parent="Root/Center/Column/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BigButton"
+theme_type_variation = &"MenuItem"
 text = "Continue"
 
 [node name="ContinueInfo" type="Label" parent="Root/Center/Column/Buttons"]
@@ -107,7 +107,7 @@ horizontal_alignment = 1
 [node name="LoadButton" type="Button" parent="Root/Center/Column/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BigButton"
+theme_type_variation = &"MenuItem"
 text = "Load Game"
 
 [node name="ImportButton" type="Button" parent="Root/Center/Column/Buttons"]
@@ -120,13 +120,13 @@ text = "Import Next Harbor saves…"
 [node name="SettingsButton" type="Button" parent="Root/Center/Column/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BigButton"
+theme_type_variation = &"MenuItem"
 text = "Settings"
 
 [node name="QuitButton" type="Button" parent="Root/Center/Column/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"BigButton"
+theme_type_variation = &"MenuItem"
 text = "Quit"
 
 [node name="Credits" type="Label" parent="Root"]

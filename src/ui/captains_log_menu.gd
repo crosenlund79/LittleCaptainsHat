@@ -376,7 +376,7 @@ func _build_boat_tab() -> Control:
 	var care := GameSession.get_boat_care()
 	var overall := BoatCare.overall_level(care, GameSession.get_condition(), GameSession.get_game_time())
 	var heading := _add_text(list, "BoatHeading", "The %s: %s" % [vessel.display_name, BoatCare.LEVEL_NAMES[overall].to_lower()], HEADING)
-	heading.modulate = BoatCare.LEVEL_COLOURS[overall].lerp(Color.WHITE, 0.5)
+	UiTheme.tint(heading, BoatCare.LEVEL_ROLES[overall])
 	var view := BoatCareView.new()
 	view.name = "Overview"
 	list.add_child(view)

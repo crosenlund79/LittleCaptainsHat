@@ -24,7 +24,8 @@ func _ready() -> void:
 		button.toggle_mode = true
 		button.button_group = group
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.custom_minimum_size = Vector2(300, 44)
+		button.theme_type_variation = &"TocButton"  # a contents list, not a wall of buttons
+		button.custom_minimum_size = Vector2(300, 40)
 		button.pressed.connect(show_guide.bind(guide.path))
 		_list.add_child(button)
 	if guides.is_empty():

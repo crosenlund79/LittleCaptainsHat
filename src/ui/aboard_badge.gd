@@ -9,9 +9,10 @@ extends VBoxContainer
 ##   - "Well fed" after a warm meal.
 ## It only reads GameSession (presentation only, nothing is saved).
 
-const CALM := Color(0.86, 0.92, 0.9)
-const AMBER := Color(1.0, 0.86, 0.62)
-const RED := Color(1.0, 0.62, 0.55)
+## Theme roles for the lines (Captain's Chartroom: right by day and by night).
+const CALM := &""
+const AMBER := &"caution"
+const RED := &"warning"
 
 var _rows := {}
 var _time := 0.0
@@ -85,7 +86,7 @@ func refresh() -> void:
 			continue
 		var label := panel.find_child("Text", true, false) as Label
 		label.text = lines[id][0]
-		label.modulate = lines[id][1]
+		UiTheme.tint(label, lines[id][1])
 		(panel.find_child("Key", true, false) as Label).visible = lines[id][2]
 		var urgent: bool = id == "bite" or lines[id][1] == RED
 		panel.modulate = Color(1.0, 0.85 + 0.15 * cos(_time * 8.0), 0.8 + 0.2 * cos(_time * 8.0)) if urgent else Color.WHITE

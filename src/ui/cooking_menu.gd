@@ -94,10 +94,10 @@ func refresh() -> void:
 	var fishing := GameSession.get_fishing()
 	_rule.text = refusal if refusal != "" else "Fish in the cool box: %d  ·  Food in the stores: %s" % [fishing.hold.size(),
 		Provisions.format_days(GameSession.get_food_days())]
-	_rule.modulate = Color(1.0, 0.72, 0.55) if refusal != "" else Color.WHITE
+	UiTheme.tint(_rule, &"warning" if refusal != "" else &"")
 	for i in Recipes.LIST.size():
 		var ok := GameSession.recipe_refusal(Recipes.LIST[i].id) == ""
-		_recipes.set_item_custom_fg_color(i, Color.WHITE if ok else Color(1, 1, 1, 0.45))
+		_recipes.set_item_custom_fg_color(i, UiTheme.color(&"ink") if ok else UiTheme.color(&"disabled_text"))
 	_refresh_detail()
 
 

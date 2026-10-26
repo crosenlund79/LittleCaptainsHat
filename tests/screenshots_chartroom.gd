@@ -132,7 +132,7 @@ func _mood(mood: String) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = menu.get_global_transform_with_canvas() * (menu.size / 2.0)
 	motion.global_position = motion.position
-	get_viewport().push_input(motion)
+	get_viewport().push_input(motion, true)
 	await get_tree().create_timer(1.2).timeout
 	await _shot("21_warning_and_tooltip_%s" % mood)
 	app.hud.hide_warning()

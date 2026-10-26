@@ -107,7 +107,9 @@ func _draw_sketch() -> void:
 	var propulsion := GameSession.get_propulsion()
 	var trim := GameSession.get_sail_trim()
 	var center := _sketch.size / 2.0 + Vector2(0, 6)
-	var ink := Color("#f2eee3")
+	# Theme colours (Captain's Chartroom): readable on parchment and on slate.
+	var ink := UiTheme.color(&"ink")
+	var wind_colour := UiTheme.color(&"ink_soft")
 	# The boat from above, bow up.
 	var hull := PackedVector2Array([center + Vector2(0, -78), center + Vector2(26, -30), center + Vector2(24, 50),
 		center + Vector2(14, 72), center + Vector2(-14, 72), center + Vector2(-24, 50), center + Vector2(-26, -30)])
@@ -121,17 +123,17 @@ func _draw_sketch() -> void:
 	var from := Vector2(sin(a), -cos(a))
 	var tail := center + from * 150.0
 	var head := center + from * 96.0
-	_sketch.draw_line(tail, head, Color("#a6c4c9"), 4.0, true)
+	_sketch.draw_line(tail, head, wind_colour, 4.0, true)
 	var side := (head - tail).normalized().orthogonal() * 9.0
-	_sketch.draw_colored_polygon(PackedVector2Array([head + (head - tail).normalized() * 14.0, head + side, head - side]), Color("#a6c4c9"))
-	_sketch.draw_string(get_theme_default_font(), tail + Vector2(-20, -10), "wind", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#a6c4c9"))
+	_sketch.draw_colored_polygon(PackedVector2Array([head + (head - tail).normalized() * 14.0, head + side, head - side]), wind_colour)
+	_sketch.draw_string(get_theme_default_font(), tail + Vector2(-20, -10), "wind", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, wind_colour)
 	if propulsion.is_motoring():
 		_sketch.draw_circle(mast, 5.0, ink)
 		return
 	# The boom on the side away from the wind: sheeted in = along the boat.
 	var leeward := -1.0 if propulsion.true_wind_angle > 0.0 else 1.0
 	var best := SailTrim.best(propulsion.true_wind_angle, propulsion.wind_speed_kn)
-	for pair in [[best, Color(1, 1, 1, 0.25), 4.0], [float(trim.value) if not trim.auto else best, Color("#e8c27a"), 6.0]]:
+	for pair in [[best, Color(ink, 0.25), 4.0], [float(trim.value) if not trim.auto else best, UiTheme.color(&"accent"), 6.0]]:
 		var swing := deg_to_rad(lerpf(8.0, 80.0, (1.0 - float(pair[0])) / 2.0)) * leeward
 		var end: Vector2 = mast + Vector2(sin(swing), cos(swing)) * 88.0
 		_sketch.draw_line(mast, end, pair[1], pair[2], true)

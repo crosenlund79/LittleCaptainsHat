@@ -660,7 +660,7 @@ func _build_anchorage_buttons() -> void:
 	var row := _remove_button.get_parent()
 	_anchorage_button = Button.new()
 	_anchorage_button.name = "AnchorageButton"
-	_anchorage_button.text = "Anchorage (M)"
+	_anchorage_button.text = "Anchorage"
 	_anchorage_button.tooltip_text = "Make the selected waypoint tonight's anchorage (M): the boat stops there and asks you to drop the anchor."
 	_anchorage_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_anchorage_button.clip_text = true
@@ -915,7 +915,7 @@ func _refresh() -> void:
 	_discard_button.disabled = not _draft_dirty
 	_remove_button.disabled = _selected_waypoint < 0
 	_anchorage_button.disabled = _selected_waypoint < 0
-	_anchorage_button.text = "Unmark (M)" if is_anchorage(_selected_waypoint) else "Anchorage (M)"
+	_anchorage_button.text = "Unmark" if is_anchorage(_selected_waypoint) else "Anchorage"
 	_suggestion_button.visible = _anchorage_suggestion != Vector2.INF
 	_clear_button.disabled = GameSession.is_underway() or GameSession.get_planned_route() == null
 	# Always in the footer; disabled (not hidden) when it cannot be used.

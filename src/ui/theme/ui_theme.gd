@@ -34,6 +34,9 @@ const DAY_ABOVE := 4.0
 ## blend change that is applied (so nothing is rebuilt every frame).
 const CHECK_SECONDS := 0.25
 const MIN_STEP := 0.02
+## The fastest the interface changes mood: a whole day/night swing takes at
+## least 1 / MAX_RATE real seconds.
+const MAX_RATE := 0.25
 
 ## Role -> [day, night].
 const PALETTES := {
@@ -69,6 +72,7 @@ const PALETTES := {
 	&"warning": [Color("#A4513A"), Color("#E9965E")],
 	&"warning_surface": [Color(0.96, 0.86, 0.74, 0.97), Color(0.24, 0.16, 0.14, 0.95)],
 	&"success": [Color("#4F6B3A"), Color("#A9C98B")],
+	&"caution": [Color("#8A5A1E"), Color("#E9C46A")],
 	&"tooltip": [Color("#F6EBD5"), Color("#0B1C2A")],
 	&"key": [Color("#785039"), Color("#E9A84D")],
 	&"key_text": [Color("#F6EBD5"), Color("#0B1C2A")],
@@ -81,10 +85,13 @@ var theme: Theme
 var blend := 0.0
 var _mode: StringName = MODE_AUTO
 var _check := 0.0
+var _last_step_msec := 0
 var _boxes: Array[Dictionary] = []
 var _colors: Array[Array] = []
 ## Modal backdrops seen (weak), recoloured with the palette.
 var _dims: Array[WeakRef] = []
+## Controls given a role colour with tint(): [WeakRef, theme item, role].
+var _tints: Array[Array] = []
 var _font_heading: Font
 var _font_body: Font
 var _font_medium: Font
@@ -123,7 +130,15 @@ func _process(delta: float) -> void:
 	_check = CHECK_SECONDS
 	var target := _target_blend()
 	if absf(target - blend) >= MIN_STEP or (target in [0.0, 1.0] and target != blend):
-		set_blend(target)
+		# Never faster than MAX_RATE: in fast time, after a long sleep or on
+		# loading a game at night the interface still eases over a few seconds.
+		# Real time since the last step, so slow frames do not slow it down.
+		var now := Time.get_ticks_msec()
+		# (The first step of a change counts as one check.)
+		var elapsed := (now - _last_step_msec) / 1000.0
+		elapsed = clampf(elapsed, CHECK_SECONDS, 0.5) if elapsed < 1.0 else CHECK_SECONDS
+		_last_step_msec = now
+		set_blend(move_toward(blend, target, MAX_RATE * elapsed))
 
 
 ## Automatic, Always day or Always night.
@@ -191,7 +206,34 @@ func set_blend(value: float, force := false) -> void:
 			dim.color = color(&"backdrop")
 			alive.append(ref)
 	_dims = alive
+	var kept: Array[Array] = []
+	for entry in _tints:
+		var control := (entry[0] as WeakRef).get_ref() as Control
+		if control and control.has_meta(&"ui_tint_" + String(entry[1])):
+			control.add_theme_color_override(entry[1], color(control.get_meta(&"ui_tint_" + String(entry[1]))))
+			kept.append(entry)
+	_tints = kept
 	palette_changed.emit()
+
+
+## Adapter for screens that colour a single control by meaning (a holding
+## that is poor, a level that needs work): gives `control`'s `item` colour
+## the theme `role` ("success", "caution", "warning", "ink"...) and keeps it
+## right through dawn and dusk. An empty role puts the theme's own colour back.
+## Cheap to call every frame: it only changes anything when the role changes.
+func tint(control: Control, role: StringName, item: StringName = &"font_color") -> void:
+	var key := &"ui_tint_" + String(item)
+	if role == &"":
+		if control.has_meta(key):
+			control.remove_meta(key)
+			control.remove_theme_color_override(item)
+		return
+	if control.get_meta(key, &"") == role:
+		return
+	if not control.has_meta(key):
+		_tints.append([weakref(control), item])
+	control.set_meta(key, role)
+	control.add_theme_color_override(item, color(role))
 
 
 static func _with_alpha(c: Color, alpha: float) -> Color:
@@ -251,6 +293,10 @@ func _build() -> void:
 	_button_states(&"Button", &"button", &"button_hover", &"button_text")
 	_button_states(&"OptionButton", &"button", &"button_hover", &"button_text")
 	_button_states(&"BigButton", &"action", &"action_hover", &"action_text", Vector4(24, 12, 24, 12))
+	# The other items of a big menu (pause, title screen): the same size as the
+	# one primary action, but quiet, so only one button calls out.
+	theme.set_type_variation(&"MenuItem", &"BigButton")
+	_button_states(&"MenuItem", &"button", &"button_hover", &"button_text", Vector4(24, 12, 24, 12))
 	_col(&"Button", &"icon_normal_color", &"button_text")
 	# Small map and tool controls (the chart's toolbar): quieter, compact.
 	_button_states(&"MapButton", &"button", &"button_hover", &"button_text", Vector4(10, 3, 10, 3))
@@ -258,6 +304,22 @@ func _build() -> void:
 	theme.set_font_size(&"font_size", &"MapButton", 17)
 	theme.set_type_variation(&"MapToggle", &"CheckButton")
 	theme.set_font_size(&"font_size", &"MapToggle", 17)
+	# A table of contents (the developer guides): quiet rows; the open one is
+	# marked by a brass/amber rule on the left, like a bookmark.
+	theme.set_type_variation(&"TocButton", &"Button")
+	var toc_margin := Vector4(14, 6, 10, 6)
+	_style(&"TocButton", &"normal", _box(&"", &"", 0, 4, toc_margin))
+	_style(&"TocButton", &"hover", _box(&"surface_raised", &"", 0, 4, toc_margin))
+	_style(&"TocButton", &"disabled", _box(&"", &"", 0, 4, toc_margin))
+	_style(&"TocButton", &"focus", _box(&"", &"focus", 2, 4, toc_margin, 0, -1.0, -1.0, false))
+	for state: StringName in [&"pressed", &"hover_pressed"]:
+		var marked := _box(&"surface_raised", &"accent", 0, 4, toc_margin)
+		marked.border_width_left = 4
+		_style(&"TocButton", state, marked)
+	for state: StringName in [&"font_color", &"font_focus_color", &"font_hover_color"]:
+		_col(&"TocButton", state, &"ink")
+	for state: StringName in [&"font_pressed_color", &"font_hover_pressed_color"]:
+		_col(&"TocButton", state, &"heading")
 	# Check boxes and switches: no box, text in ink.
 	for type: StringName in [&"CheckBox", &"CheckButton"]:
 		for state: StringName in [&"font_color", &"font_focus_color", &"font_hover_color", &"font_pressed_color", &"font_hover_pressed_color"]:

@@ -57,7 +57,7 @@ theme_override_constants/separation = 16
 unique_name_in_owner = true
 custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-theme_type_variation = &"BigButton"
+theme_type_variation = &"MenuItem"
 tooltip_text = "One hour less (Left arrow)"
 text = "<"
 
@@ -74,7 +74,7 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(72, 64)
 layout_mode = 2
-theme_type_variation = &"BigButton"
+theme_type_variation = &"MenuItem"
 tooltip_text = "One hour more (Right arrow)"
 text = ">"
 
