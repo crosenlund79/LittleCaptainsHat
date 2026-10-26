@@ -2107,7 +2107,7 @@ func apply_anchor_check(tick: float) -> String:
 		# shore's edge the boat stays and scrapes.
 		var next := AnchorSite.offset(anchor.position, deg_to_rad(sample.from_deg + 180.0), DRAG_NM_PER_CHECK)
 		var coast := CoastalGeography.get_default()
-		if coast.is_water(next):
+		if SeaRouter.get_default().is_afloat(next):
 			anchor.position = next
 			anchor.dragged_nm += DRAG_NM_PER_CHECK
 			_state.vessel_position = anchor.position

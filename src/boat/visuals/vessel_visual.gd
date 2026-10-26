@@ -12,6 +12,8 @@ extends Node2D
 
 ## Logical drawing area in scene units (x forward, y to starboard).
 @export var canvas := Rect2(-560, -200, 1120, 400)
+## Decorative solar panels on deck (0.105b, SolarPanels), boat coordinates.
+@export var solar_panels: Array[Rect2] = []
 
 var profile: VesselVisualProfile
 
@@ -25,6 +27,26 @@ func apply(visual_profile: VesselVisualProfile) -> void:
 			slot.show_sprite(texture, canvas)
 		else:
 			slot.show_procedural()
+	_apply_solar_panels()
+
+
+func _apply_solar_panels() -> void:
+	var existing := get_node_or_null(^"SolarPanels")
+	if existing:
+		existing.free()
+	if solar_panels.is_empty():
+		return
+	var panels := SolarPanels.new()
+	add_child(panels)
+	panels.setup(solar_panels)
+	# Above the deck art, below the rigging (and the characters, drawn later).
+	var details := get_node_or_null(^"DeckDetails")
+	if details:
+		move_child(panels, details.get_index() + 1)
+
+
+func get_solar_panels() -> SolarPanels:
+	return get_node_or_null(^"SolarPanels") as SolarPanels
 
 
 func get_slots() -> Array[VisualSlot]:

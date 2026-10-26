@@ -18,6 +18,7 @@ font_color = Color(0.0627, 0.1765, 0.2314, 0.5500)
 [node name="Visual" type="Node2D"]
 script = ExtResource("1_r")
 canvas = Rect2(-560, -330, 1120, 660)
+solar_panels = Array[Rect2]([Rect2(-474, -148, 44, 94), Rect2(-474, -47, 44, 94), Rect2(-474, 54, 44, 94)])
 
 [node name="ShadowVisual" type="Node2D" parent="."]
 script = ExtResource("2_r")

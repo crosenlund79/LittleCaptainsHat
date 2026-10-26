@@ -9,8 +9,14 @@ extends SimplePanel
 ## Anchored: how it is holding, more or less chain, setting it again, the
 ## alarm, and raising it to sail on.
 ##
-## The model is a conservative gameplay rule without depth soundings (see
-## AnchorSite); the panel says so. GameSession does every change; the App
+## The Magic Anchor (0.105b), when aboard: "Magic Anchor" opens its
+## deployment - the shared circular timing dial (MagicAnchorDeployment): good
+## turns let it down, a miss costs a few game minutes, too many misses and it
+## has not bitten (try again or cancel; the boat stays unanchored). Success
+## anchors through GameSession like the normal anchor, with a short brass
+## flourish.
+##
+## Depths are GAME ESTIMATES (see AnchorSite, DepthService); the panel says so. GameSession does every change; the App
 ## spends the time each job takes (`time_requested`).
 
 signal time_requested(minutes: float)
@@ -37,6 +43,15 @@ var _reset: Button
 var _ack: Button
 var _raise: Button
 var _limits: Label
+var _magic: Button
+var _magic_box: VBoxContainer
+var _magic_dial: ReelDial
+var _magic_feedback: Label
+var _magic_retry: Button
+var _magic_cancel: Button
+var _deployment: MagicAnchorDeployment
+## Seconds left of the brass flourish after a Magic Anchor bites.
+var _flourish := 0.0
 ## The setting interaction: running, for dropping or re-setting.
 var _setting := false
 var _setting_for_drop := true
@@ -81,11 +96,15 @@ func _ready() -> void:
 	_set_button.custom_minimum_size = Vector2(200, 40)
 	_set_button.pressed.connect(func() -> void: catch_set())
 	_set_box.add_child(_set_button)
-	_limits = _label("Limits", "No depth soundings aboard this chart: anchoring is offered within %.1f nm of land, shelter is judged from the open water upwind, and the bottom is taken to be ordinary mixed ground everywhere." % AnchorSite.MAX_LAND_NM, &"MutedLabel")
+	_build_magic_box()
+	_limits = _label("Limits", "Depths are GAME ESTIMATES, for play, not navigation. The normal anchor reaches %d-%d m; shelter is judged from the open water upwind, and the bottom is taken to be ordinary mixed ground everywhere." % [
+		roundi(AnchorSite.MIN_DEPTH_M), roundi(AnchorSite.NORMAL_MAX_DEPTH_M)], &"MutedLabel")
 	_button("CloseButton", "Close", close)
 	_ack = _button("AckButton", "Alarm seen", _on_ack)
 	_reset = _button("ResetButton", "Set it again", func() -> void: start_setting(false))
 	_raise = _button("RaiseButton", "Raise anchor", _on_raise)
+	_magic = _button("MagicButton", GameSession.MAGIC_ANCHOR_NAME, start_magic, 180.0)
+	_magic.tooltip_text = GameSession.MAGIC_ANCHOR_TEXT
 	_drop = _button("DropButton", "Drop anchor", func() -> void: start_setting(true), 200.0)
 	GameSession.anchor_changed.connect(refresh)
 	refresh()
@@ -113,19 +132,29 @@ func refresh() -> void:
 		_holding.text = {AnchorSite.CLASS_GOOD: "A good anchorage", AnchorSite.CLASS_FAIR: "A fair anchorage",
 			AnchorSite.CLASS_POOR: "An exposed anchorage"}.get(StringName(site.get("class", "")), "No anchorage here")
 		_holding.modulate = Color(1.0, 0.86, 0.62) if refusal != "" or site.get("class", "") == AnchorSite.CLASS_POOR else Color(0.93, 0.92, 0.86)
+	var busy := _setting or is_deploying_magic()
 	_drop.visible = not anchored
-	_drop.disabled = refusal != "" or _setting
+	_drop.disabled = refusal != "" or busy
+	_magic.visible = not anchored and GameSession.has_magic_anchor()
+	_magic.disabled = busy or GameSession.anchoring_refusal(AnchorState.KIND_MAGIC) != ""
+	_magic.tooltip_text = GameSession.anchoring_refusal(AnchorState.KIND_MAGIC) if _magic.disabled and not busy else GameSession.MAGIC_ANCHOR_TEXT
+	if anchored and GameSession.get_anchor().kind == AnchorState.KIND_MAGIC:
+		_site.text = "The %s holds. %s" % [GameSession.MAGIC_ANCHOR_NAME, _site.text]
+		if GameSession.get_anchor().depth_m >= 0.0:
+			_site.text += "  Depth here %s (GAME ESTIMATE)." % DepthService.describe_depth(GameSession.get_anchor().depth_m)
 	_raise.visible = anchored
-	_raise.disabled = _setting
+	_raise.disabled = busy
 	_reset.visible = anchored
-	_reset.disabled = _setting
+	_reset.disabled = busy
 	_ack.visible = anchored and GameSession.get_anchor().alarm
-	_scope.disabled = _setting or (not anchored and refusal != "")
+	_scope.disabled = busy or (not anchored and refusal != "" and not _magic.visible)
 
 
 func focus_default() -> void:
 	if _drop.visible and not _drop.disabled:
 		_drop.grab_focus()
+	elif _magic.visible and not _magic.disabled:
+		_magic.grab_focus()
 	elif _raise.visible:
 		_raise.grab_focus()
 	else:
@@ -184,11 +213,19 @@ static func set_quality_at(marker: float) -> float:
 
 func _process(delta: float) -> void:
 	_time += delta
+	if _flourish > 0.0:
+		_flourish = maxf(_flourish - delta, 0.0)
+		_magic_dial.queue_redraw()
+		_magic_box.visible = _flourish > 0.0
 	if _setting:
 		_marker += delta * SET_SPEED
 		_set_bar.queue_redraw()
 		if Input.is_action_just_pressed(&"interact"):
 			catch_set()
+	elif is_deploying_magic() and (stack == null or stack.get_top() == self):
+		step_magic(delta)
+		if Input.is_action_just_pressed(&"interact"):
+			press_magic()
 
 
 ## Catches the marker now (or at `at`, tests): drops or re-sets the anchor.
@@ -253,3 +290,195 @@ func _draw_set_bar() -> void:
 	_set_bar.draw_rect(Rect2(Vector2(size.x * 0.45, 8), Vector2(size.x * 0.1, size.y - 16)), Color(0.6, 0.8, 0.45))
 	var x := get_marker() * size.x
 	_set_bar.draw_rect(Rect2(Vector2(x - 3, 0), Vector2(6, size.y)), Color(0.98, 0.95, 0.85))
+
+
+# --- The Magic Anchor (0.105b) ----------------------------------------------------------
+
+func _build_magic_box() -> void:
+	_magic_box = VBoxContainer.new()
+	_magic_box.name = "MagicDeploy"
+	_magic_box.visible = false
+	_magic_box.add_theme_constant_override(&"separation", 6)
+	_box.add_child(_magic_box)
+	var hint := Label.new()
+	hint.name = "MagicHint"
+	hint.text = "The brass flukes unfold and feel for the seabed far below. Press E (or click the dial) as the needle crosses the green arc."
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size = Vector2(620, 0)
+	_magic_box.add_child(hint)
+	_magic_dial = ReelDial.new()
+	_magic_dial.name = "MagicDial"
+	_magic_dial.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_magic_dial.pressed.connect(func() -> void: press_magic())
+	_magic_dial.draw.connect(_draw_flourish)
+	_magic_box.add_child(_magic_dial)
+	_magic_feedback = Label.new()
+	_magic_feedback.name = "MagicFeedback"
+	_magic_feedback.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_magic_feedback.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_magic_feedback.custom_minimum_size = Vector2(620, 0)
+	_magic_box.add_child(_magic_feedback)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override(&"separation", 12)
+	_magic_box.add_child(row)
+	_magic_retry = Button.new()
+	_magic_retry.name = "MagicRetry"
+	_magic_retry.text = "Try again"
+	_magic_retry.custom_minimum_size = Vector2(150, 40)
+	_magic_retry.pressed.connect(func() -> void: retry_magic())
+	row.add_child(_magic_retry)
+	_magic_cancel = Button.new()
+	_magic_cancel.name = "MagicCancel"
+	_magic_cancel.text = "Cancel"
+	_magic_cancel.custom_minimum_size = Vector2(150, 40)
+	_magic_cancel.pressed.connect(func() -> void: cancel_magic())
+	row.add_child(_magic_cancel)
+
+
+func is_deploying_magic() -> bool:
+	return _deployment != null
+
+
+func get_deployment() -> MagicAnchorDeployment:
+	return _deployment
+
+
+## "Magic Anchor": opens the deployment dial (checks by the wind now).
+func start_magic() -> void:
+	var refusal := GameSession.anchoring_refusal(AnchorState.KIND_MAGIC)
+	if refusal != "":
+		notify(refusal)
+		return
+	if _setting or is_deploying_magic():
+		return
+	_deployment = MagicAnchorDeployment.new(GameSession.magic_anchor_checks(), hash(GameSession.get_game_time()))
+	_show_magic_attempt()
+	AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
+	SessionLog.write("anchor", {"action": "magic_start", "checks": _deployment.check.checks_needed, "arc": _deployment.check.arc_deg})
+	refresh()
+
+
+func _show_magic_attempt() -> void:
+	_flourish = 0.0
+	_magic_dial.timing = _deployment.check
+	_magic_box.visible = true
+	_magic_retry.visible = false
+	_magic_cancel.visible = true
+	var n := _deployment.check.checks_needed
+	_magic_feedback.text = "%d good %s to set it down%s." % [n, "turn" if n == 1 else "turns",
+		"" if n == 1 else " in this wind"]
+	_magic_cancel.grab_focus()
+
+
+## Advances the needle (every frame; tests call it directly).
+func step_magic(delta: float) -> void:
+	if not is_deploying_magic() or _deployment.is_over():
+		return
+	_deployment.check.step(delta)
+	if _deployment.failed():
+		_magic_failed("The flukes found nothing to hold before the line went slack.")
+
+
+## The captain presses (key, a click on the dial).
+func press_magic() -> StringName:
+	if not is_deploying_magic() or _deployment.is_over():
+		return TimingCheck.PRESS_NONE
+	var outcome := _deployment.check.press()
+	if outcome == TimingCheck.PRESS_NONE:
+		return outcome
+	_magic_dial.flash(outcome)
+	match outcome:
+		TimingCheck.PRESS_PERFECT:
+			_magic_feedback.text = "Perfect!"
+			AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
+		TimingCheck.PRESS_HIT:
+			_magic_feedback.text = "Good!"
+			AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
+		TimingCheck.PRESS_MISS:
+			# Hauling back a little and paying out again takes time.
+			time_requested.emit(MagicAnchorDeployment.MISS_MINUTES)
+			var left := _deployment.check.get_line_control()
+			_magic_feedback.text = "Missed - it skips over the bottom (%d min). %d %s left." % [
+				roundi(MagicAnchorDeployment.MISS_MINUTES), left, "try" if left == 1 else "tries"]
+	SessionLog.write("anchor", {"action": "magic_press", "outcome": String(outcome)})
+	if _deployment.succeeded():
+		_magic_bit()
+	elif _deployment.failed():
+		_magic_failed("Too many misses: the Magic Anchor has not bitten.")
+	elif outcome != TimingCheck.PRESS_MISS:
+		_magic_feedback.text += "  %d more to go." % (_deployment.check.checks_needed - _deployment.check.hits)
+	return outcome
+
+
+func _magic_failed(why: String) -> void:
+	_magic_feedback.text = "%s The boat is not anchored and drifts with the weather. Try again, or cancel." % why
+	_magic_retry.visible = true
+	_magic_retry.grab_focus()
+	SessionLog.write("anchor", {"action": "magic_failed", "attempts": _deployment.attempts})
+	AudioManager.play_sfx(FishingSounds.snap(), FishingSounds.DB)
+
+
+## After a failed attempt: a fresh dial (same rules; the wind now decides the checks).
+func retry_magic() -> void:
+	if not is_deploying_magic() or not _deployment.failed():
+		return
+	var refusal := GameSession.anchoring_refusal(AnchorState.KIND_MAGIC)
+	if refusal != "":
+		cancel_magic()
+		notify(refusal)
+		return
+	_deployment.start(GameSession.magic_anchor_checks(), hash(GameSession.get_game_time()))
+	_show_magic_attempt()
+
+
+## Cancel: nothing is let go; the boat stays as it was (unanchored).
+func cancel_magic() -> void:
+	if not is_deploying_magic():
+		return
+	SessionLog.write("anchor", {"action": "magic_cancel", "attempts": _deployment.attempts})
+	_deployment = null
+	_magic_box.visible = false
+	refresh()
+	focus_default()
+
+
+func _magic_bit() -> void:
+	var deployment := _deployment
+	var result := GameSession.drop_magic_anchor(get_scope(), deployment.set_quality(), deployment.check.perfects)
+	SessionLog.write("anchor", {"action": "magic_drop", "scope": get_scope(), "set": snappedf(deployment.set_quality(), 0.01),
+		"perfects": deployment.check.perfects, "error": result.error, "holding": String(result.holding),
+		"offshore": bool(result.site.get("offshore", false))})
+	_deployment = null
+	if result.error != "":
+		_magic_box.visible = false
+		notify(result.error)
+		refresh()
+		return
+	_magic_feedback.text = "It bites!"
+	_magic_retry.visible = false
+	_magic_cancel.visible = false
+	_flourish = FLOURISH_SECONDS
+	AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
+	time_requested.emit(DROP_MINUTES)
+	var text := "The %s is down and holding: %s." % [GameSession.MAGIC_ANCHOR_NAME, AnchorSite.holding_text(result.holding).to_lower()]
+	if bool(result.site.get("offshore", false)):
+		text += " Out here it holds the boat's position - it is no shelter from the weather."
+	notify(text)
+	refresh()
+
+
+const FLOURISH_SECONDS := 1.2
+const BRASS := Color("#d9a441")
+
+
+## A short brass glow round the dial as the Magic Anchor bites.
+func _draw_flourish() -> void:
+	if _flourish <= 0.0:
+		return
+	var t := 1.0 - _flourish / FLOURISH_SECONDS
+	var strength := (1.0 - t) * (0.5 if SettingsManager.get_reduce_flashing() else 0.9)
+	var radius := minf(_magic_dial.size.x, _magic_dial.size.y - 70.0) / 2.0 - 12.0
+	var center := Vector2(_magic_dial.size.x / 2.0, radius + 12.0)
+	_magic_dial.draw_arc(center, radius + 20.0 + 16.0 * t, 0.0, TAU, 96, Color(BRASS, strength), 5.0, true)
+	_magic_dial.draw_arc(center, radius + 8.0 + 8.0 * t, 0.0, TAU, 96, Color(BRASS, strength * 0.6), 3.0, true)

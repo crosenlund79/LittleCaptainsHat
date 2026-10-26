@@ -22,6 +22,7 @@ var _view: BoatCareView
 var _header: Label
 var _services := {}
 var _upgrades := {}
+var _magic: Button
 var _haul_out: Button
 
 
@@ -75,6 +76,7 @@ func _ready() -> void:
 		if needs_haul_out and not GameSession.has_facility(HarbourFacilities.HAUL_OUT) and not GameSession.has_upgrade(upgrade.id):
 			continue
 		_add_upgrade_row(equipment, upgrade)
+	_add_magic_anchor_row(equipment)
 	_button("CloseButton", "Close", close)
 	GameSession.boat_care_changed.connect(refresh)
 	GameSession.funds_changed.connect(_on_funds_changed)
@@ -106,9 +108,40 @@ func _add_upgrade_row(grid: GridContainer, upgrade: Dictionary) -> void:
 	_upgrades[String(upgrade.id)] = button
 
 
+## The Magic Anchor (0.105b): prototype access until the chandlery of
+## Iteration 20 - fitted free at any boatyard, kept by the captain on every boat.
+func _add_magic_anchor_row(grid: GridContainer) -> void:
+	var title := _cell("%s\n(%s)" % [GameSession.MAGIC_ANCHOR_NAME, GameSession.MAGIC_ANCHOR_LONG_NAME], 260.0, &"HeaderLabel")
+	var text := _cell(GameSession.MAGIC_ANCHOR_TEXT + " Prototype: fitted free for now; its price comes with the chandlery.", 380.0, &"MutedLabel")
+	_magic = Button.new()
+	_magic.name = "Fit_magic_anchor"
+	_magic.custom_minimum_size = Vector2(230, 0)
+	_magic.pressed.connect(_on_magic_anchor)
+	grid.add_child(title)
+	grid.add_child(text)
+	grid.add_child(_magic)
+
+
+func _on_magic_anchor() -> void:
+	var error := GameSession.fit_magic_anchor()
+	if error != "":
+		notify(error)
+		return
+	SessionLog.write("upgrade_fitted", {"upgrade": "magic_anchor", "cost": 0, "port": String(GameSession.get_location_id())})
+	notify("The %s is aboard (prototype, free). Choose it at the windlass when the water is too deep for the normal anchor." % GameSession.MAGIC_ANCHOR_NAME)
+	refresh()
+
+
+func get_magic_anchor_button() -> Button:
+	return _magic
+
+
 func refresh() -> void:
 	if not is_inside_tree():
 		return
+	if _magic:
+		_magic.text = "Aboard" if GameSession.has_magic_anchor() else "Fit it (free prototype)"
+		_magic.disabled = GameSession.has_magic_anchor()
 	var facilities := GameSession.get_harbour_facilities()
 	var location := GameSession.get_location()
 	_header.text = "The %s in %s · %s%s · %s available" % [GameSession.get_vessel_definition().display_name,

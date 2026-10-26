@@ -7,6 +7,10 @@ extends Node2D
 ##     slack in good holding, straighter when the anchor is dragging;
 ##   - a small marker buoy over the anchor, bobbing gently (a presentation
 ##     choice for clarity: it marks where the anchor lies).
+## The Magic Anchor (0.105b) looks a little different, modestly: a small
+## brass mechanism at the bow fitting, a brass-tinted line kept short and
+## stylised (whatever the depth: no rope drawn across the sea to suggest
+## hundreds of metres), and a brass band on the buoy.
 ## Only at anchor: not moored, not underway, not while merely waiting at an
 ## anchorage. At night the white anchor light (BoatLighting, "anchor") shows
 ## too; the ball stays in place but the light is what is seen.
@@ -19,6 +23,10 @@ const BUOY := Color("#e2683c")
 const BUOY_BAND := Color("#f2eee3")
 const BOB_SPEED := 1.3
 const BALL_RADIUS := 12.0
+const BRASS := Color("#d9a441")
+const BRASS_DARK := Color("#7a5a22")
+## The Magic Anchor's line, drawn this long whatever the scope or depth.
+const MAGIC_LINE := 64.0
 
 var bow := Vector2.ZERO
 var mast := Vector2.ZERO
@@ -59,6 +67,8 @@ func get_buoy_position() -> Vector2:
 	# Short enough to stay in view: the rode leads off the bow at an angle,
 	# as a boat lying to its anchor sheers a little.
 	var length := 70.0 + float(anchor.scope) * 6.0
+	if anchor.kind == AnchorState.KIND_MAGIC:
+		length = MAGIC_LINE
 	if anchor.holding == AnchorState.HOLDING_DRAGGING:
 		length *= 0.8
 	var bob := Vector2(0, sin(_clock * BOB_SPEED) * 2.0) if not SettingsManager.get_reduce_motion() else Vector2.ZERO
@@ -77,17 +87,35 @@ func _draw() -> void:
 	for i in 13:
 		var f := i / 12.0
 		points.append(bow.lerp(buoy - (buoy - bow).normalized() * 10.0, f) + Vector2(0, sin(f * PI) * sag * 0.5))
+	var magic := anchor.kind == AnchorState.KIND_MAGIC
+	var rope := ROPE.lerp(BRASS, 0.55) if magic else ROPE
 	for i in range(1, points.size()):
 		var f := float(i) / points.size()
-		draw_line(points[i - 1], points[i], Color(ROPE, 0.95 - f * 0.7), 2.4, true)
+		draw_line(points[i - 1], points[i], Color(rope, 0.95 - f * 0.7), 2.4, true)
 	# The buoy: a small round float with a pale band and a ring of ripples.
 	draw_arc(buoy, 12.0 + sin(_clock * BOB_SPEED * 1.6) * 1.2, 0.0, TAU, 24, Color(1, 1, 1, 0.22), 1.6, true)
 	draw_circle(buoy, 9.0, BUOY)
 	draw_arc(buoy, 9.0, 0.0, TAU, 20, Color("#3a2a1e"), 1.6, true)
-	draw_line(buoy + Vector2(-8.0, 0), buoy + Vector2(8.0, 0), BUOY_BAND, 2.8, true)
+	draw_line(buoy + Vector2(-8.0, 0), buoy + Vector2(8.0, 0), BRASS if magic else BUOY_BAND, 2.8, true)
+	if magic:
+		_draw_brass_mechanism()
 	# The black ball, hoisted on the forestay.
 	var ball := get_ball_position()
 	draw_circle(ball + Vector2(2.0, 3.0), BALL_RADIUS, Color(0, 0, 0, 0.25))
 	draw_circle(ball, BALL_RADIUS, BALL)
 	draw_arc(ball, BALL_RADIUS, 0.0, TAU, 28, Color("#5a5a5e"), 1.6, true)
 	draw_circle(ball + Vector2(-3.5, -3.5), 3.0, Color(1, 1, 1, 0.25))
+
+
+## The Magic Anchor's little brass mechanism on the bow fitting: a toothed
+## wheel with a hub, and a soft glint.
+func _draw_brass_mechanism() -> void:
+	var c := bow + Vector2(-6.0, 0.0)
+	var turn := 0.0 if SettingsManager.get_reduce_motion() else _clock * 0.4
+	for i in 8:
+		var a := turn + i * TAU / 8.0
+		draw_line(c + Vector2.from_angle(a) * 5.0, c + Vector2.from_angle(a) * 8.5, BRASS_DARK, 3.0, true)
+	draw_circle(c, 6.5, BRASS)
+	draw_arc(c, 6.5, 0.0, TAU, 20, BRASS_DARK, 1.4, true)
+	draw_circle(c, 2.2, BRASS_DARK)
+	draw_circle(c + Vector2(-2.5, -2.5), 1.6, Color(1, 1, 1, 0.45))

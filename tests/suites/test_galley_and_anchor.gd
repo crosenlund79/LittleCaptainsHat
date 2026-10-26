@@ -134,7 +134,7 @@ func _test_site_model() -> void:
 	var open_sea := Vector2(4.0, 56.0)  # the middle of the North Sea
 	var far := AnchorSite.evaluate(open_sea, calm)
 	t.check(not far.ok and String(far.reason).contains("deep"), "[model] far from any coast: too deep to anchor (%s)" % far.reason)
-	var land := AnchorSite.evaluate(PortCatalog.get_default().get_port(&"copenhagen").get_geo_position() + Vector2(0.3, 0.0), calm)
+	var land := AnchorSite.evaluate(PortCatalog.get_default().get_port(&"copenhagen").get_geo_position() + Vector2(-0.3, 0.0), calm)  # inland Zealand
 	t.check(not land.ok, "[model] on land: no anchoring")
 
 
@@ -253,7 +253,7 @@ func _test_anchoring() -> void:
 		return
 	t.check(menu.get_holding_text().contains("anchorage") and menu.get_site_text() != "", "[anchor] it shows the anchorage (%s: %s)" % [
 		menu.get_holding_text(), menu.get_site_text()])
-	t.check((menu.find_child("Limits", true, false) as Label).text.contains("No depth soundings"), "[anchor] and says the model's limits")
+	t.check((menu.find_child("Limits", true, false) as Label).text.contains("GAME ESTIMATES"), "[anchor] and says the model's limits")
 	await _shot("13_anchor_suitability")
 	var progress := GameSession.get_voyage_progress_nm()
 	menu.set_scope(7)
@@ -326,7 +326,13 @@ func _test_dragging() -> void:
 	t.check(holding == AnchorState.HOLDING_DRAGGING, "[drag] a rising gale makes the anchor drag (%s)" % [steps])
 	t.check(alarms.size() >= 2 and alarms[0] == "poor" and alarms[-1] == "dragging", "[drag] the alarm warns of poor holding before dragging (%s)" % [alarms])
 	var moved := GeoMath.distance_nm(start, GameSession.get_vessel_position())
-	t.check(moved > 0.0 and moved <= GameSession.DRAG_NM_PER_CHECK * 3.0 + 1e-6, "[drag] dragging moves the boat a little at a time (%.3f nm), no jump" % moved)
+	# 0.105b: dragging moves the boat downwind a little at a time, but never
+	# up onto the land - here, in the lee of the harbour, it scrapes at the
+	# shore's edge (open-water dragging: test_magic_anchor).
+	var downwind := AnchorSite.offset(start, deg_to_rad(from + 180.0), GameSession.DRAG_NM_PER_CHECK)
+	var lee_shore := not SeaRouter.get_default().is_afloat(downwind)
+	t.check((moved > 0.0 or lee_shore) and moved <= GameSession.DRAG_NM_PER_CHECK * 3.0 + 1e-6 and SeaRouter.get_default().is_afloat(GameSession.get_vessel_position()),
+		"[drag] dragging moves the boat a little at a time (%.3f nm), no jump, never onto land%s" % [moved, " (a lee shore here: it scrapes at the edge)" if lee_shore else ""])
 	t.check(GameSession.is_anchored() and GameSession.get_condition() >= 99.0 or GameSession.get_condition() > 80.0,
 		"[drag] nothing critical at once: still at anchor, hull %d %%" % roundi(GameSession.get_condition()))
 	var deck := app.router.current_screen as BoatArea

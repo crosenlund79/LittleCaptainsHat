@@ -18,7 +18,7 @@ const PIP_DONE := Color("#e8c27a")
 const PIP_TODO := Color(0.86, 0.9, 0.9, 0.35)
 const FLASH_SECONDS := 0.3
 
-var timing: ReelTiming
+var timing: TimingCheck
 var _flash := 0.0
 var _flash_colour := Color.TRANSPARENT
 
@@ -93,8 +93,8 @@ func _draw() -> void:
 		if done:
 			draw_line(Vector2(x - 5, base_y), Vector2(x - 1, base_y + 5), RING_EDGE, 3.0, true)
 			draw_line(Vector2(x - 1, base_y + 5), Vector2(x + 6, base_y - 5), RING_EDGE, 3.0, true)
-	for i in ReelTiming.LINE_CONTROL:
-		var x := size.x / 2.0 + (i - 1) * 26.0
+	for i in timing.line_control:
+		var x := size.x / 2.0 + (i - (timing.line_control - 1) / 2.0) * 26.0
 		var left := i < timing.get_line_control()
 		var knot := Vector2(x, base_y + 32.0)
 		draw_line(knot - Vector2(13, 0), knot + Vector2(13, 0), Color(0.86, 0.8, 0.66, 0.8), 3.0, true)
