@@ -476,4 +476,17 @@ reopened and its wording was not invented.
 
 ## 23. Push and tag status
 
-Recorded at delivery (see the end of this section in the final commit).
+- Every checkpoint was pushed to `origin/claude/friendly-fermat-dey23f` with
+  a normal push (no force). Checkpoint H, `3cb379a`, was pushed and verified:
+  `git ls-remote` showed the remote branch at
+  `3cb379a7cd7290eca7dd481bb69e348c9bf6a83d`, the same as the local HEAD.
+- This section was then filled in and committed on top of `3cb379a` (the
+  branch head after it; the delivery message gives its hash, verified the
+  same way).
+- **Tag `v0.103a`: not pushed.** It was created locally on `3cb379a`, but
+  `git push origin v0.103a` failed ("unexpected disconnect while reading
+  sideband packet"); three retries reported "Everything up-to-date" while
+  `git ls-remote --tags origin` still showed no such tag. As in Iteration 14,
+  the tag is not on GitHub; it can be added from the GitHub web interface on
+  `3cb379a` (or on the final commit) if wanted.
+- No pull request was opened.
