@@ -57,7 +57,9 @@ and the two-process restart check).
 | E: day and night, cabin lamps, harbour lights, soft shadows | `d76193c` | 04:58 |
 | F: wind, water, rain, lightning and thunder; muffled below | `f7b95cf` | 05:05 |
 | H: overhead rig, fenders, facilities preview, harbours by country, docking | `5c5573b` | 05:23 |
-| I: final verification, screenshots, benchmarks, documentation, 0.104a | see section 40 | |
+| I (in progress): 0.104a, screenshots, restart test, report draft | `7253361` | |
+| I: final regression, benchmarks, screenshots, report, tracker | `fb67745` | |
+| I: this report's push record (final) | see section 40 | |
 
 D was done before C because the visual-turn and save-underway defects were
 gameplay bugs the Captain had reported; C, G, E, F and H then followed.
@@ -639,4 +641,12 @@ authorized navigation feature only.
 
 ### 40. Final commit and push verification
 
-@@PUSH@@
+- Branch `claude/friendly-fermat-dey23f` on
+  `https://github.com/crosenlund79/LittleCaptainsHat`.
+- Checkpoint I code and documentation: commit `fb67745`, pushed; the remote
+  head was checked with `git ls-remote` and matched
+  (`fb677452756a75dca78ce534121168ff549d2b0a`).
+- The final commit only adds this push record to the report; its hash is
+  given in the delivery message (a commit cannot contain its own hash).
+- Normal commits only: no force-push, reset or history rewrite. No pull
+  request was opened. No Windows executable was made.
