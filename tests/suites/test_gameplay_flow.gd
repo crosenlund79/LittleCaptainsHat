@@ -748,7 +748,33 @@ func _same_state(actual: Dictionary, expected: Dictionary) -> bool:
 		stores_ok = stores_ok and checked >= 0.0 and checked <= drift + HatConfig.get_default().check_interval_s
 		a.hat.erase("checked_until")
 		b.hat.erase("checked_until")
-	return a == b and stores_ok and drift >= 0.0 and drift < 20.0 * Simulation.game_seconds_per_real_second
+	return _same(a, b) and stores_ok and drift >= 0.0 and drift < 20.0 * Simulation.game_seconds_per_real_second
+
+
+## Equal values, numbers to 1e-9 relative. Iteration 17: Godot's JSON parser
+## does not always give back the last bit of a double written at full
+## precision, which made the exact comparison fail in about one run in four
+## (seen on the Iteration 16 build too); nothing a player could notice.
+func _same(a: Variant, b: Variant) -> bool:
+	if (typeof(a) == TYPE_FLOAT or typeof(a) == TYPE_INT) and (typeof(b) == TYPE_FLOAT or typeof(b) == TYPE_INT):
+		return absf(float(a) - float(b)) <= 1e-9 * maxf(1.0, absf(float(a)))
+	if typeof(a) != typeof(b):
+		return false
+	if a is Dictionary:
+		if a.size() != b.size():
+			return false
+		for k in a:
+			if not b.has(k) or not _same(a[k], b[k]):
+				return false
+		return true
+	if a is Array:
+		if a.size() != b.size():
+			return false
+		for i in a.size():
+			if not _same(a[i], b[i]):
+				return false
+		return true
+	return a == b
 
 
 # --- Helpers -------------------------------------------------------------------------

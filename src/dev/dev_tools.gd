@@ -3,7 +3,7 @@ extends RefCounted
 ## Development-only test tools: make dangerous weather, wear the boat down
 ## and run low on stores on demand, so damage, rescue and provisions can be
 ## verified without waiting for rare weather (the in-game panel is
-## DevTestPanel, F9 or the pause menu's "Developer tests").
+## DevTestPanel, F10 or the pause menu's "Developer tests").
 ##
 ## Everything acts on the real game: weather scenarios are WeatherFixtures in
 ## the one WeatherModel (they change the wind the boat sails in, the chart,

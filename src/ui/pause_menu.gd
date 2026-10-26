@@ -26,7 +26,7 @@ func _ready() -> void:
 	if DevTools.is_enabled():
 		var dev := Button.new()
 		dev.name = "DevTestsButton"
-		dev.text = "Developer tests (F9)"
+		dev.text = "Developer tests (F10)"
 		dev.pressed.connect(dev_tests_requested.emit)
 		%MainMenuButton.get_parent().add_child(dev)
 

@@ -17,6 +17,9 @@ const FORMAT_ID := "next_harbor_save"
 ## _migrate() for older versions that should stay loadable.
 const SAVE_VERSION := 12
 const SLOT_COUNT := 3
+## The quicksave (F5 / F9, Iteration 17): its own file, never one of the
+## manual slots, so a quicksave can never overwrite a manual save.
+const QUICKSAVE_SLOT := 9
 const DEFAULT_SAVE_DIR := "user://saves"
 
 enum Status { EMPTY, VALID, CORRUPTED, UNSUPPORTED }
@@ -85,11 +88,12 @@ func get_all_slot_info() -> Array[SlotInfo]:
 	return result
 
 
-## Slot number of the newest valid save, or 0 if there is none.
+## Slot number of the newest valid save (the quicksave included), or 0 if
+## there is none.
 func get_most_recent_valid_slot() -> int:
 	var best_slot := 0
 	var best_time := -INF
-	for info in get_all_slot_info():
+	for info in get_all_slot_info() + [get_slot_info(QUICKSAVE_SLOT)]:
 		if info.is_loadable() and info.saved_at_unix > best_time:
 			best_time = info.saved_at_unix
 			best_slot = info.slot
@@ -552,8 +556,15 @@ func _resolve_readable_path(slot: int) -> String:
 
 
 func _slot_path(slot: int) -> String:
+	if slot == QUICKSAVE_SLOT:
+		return save_dir.path_join("quicksave.json")
 	return save_dir.path_join("slot_%d.json" % slot)
 
 
 func _is_valid_slot(slot: int) -> bool:
-	return slot >= 1 and slot <= SLOT_COUNT
+	return (slot >= 1 and slot <= SLOT_COUNT) or slot == QUICKSAVE_SLOT
+
+
+## "slot 2" or "the quicksave", for messages.
+static func slot_name(slot: int) -> String:
+	return "the quicksave" if slot == QUICKSAVE_SLOT else "slot %d" % slot

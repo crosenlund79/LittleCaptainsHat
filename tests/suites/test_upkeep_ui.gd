@@ -393,9 +393,9 @@ func _test_rescue_flow() -> void:
 func _test_dev_panel() -> void:
 	DevTools.force_enabled = true
 	await _show(SessionState.AREA_INTERIOR, &"start")
-	await t.press_key(KEY_F9)
+	await t.press_key(KEY_F10)
 	var panel := app.modals.get_top() as DevTestPanel
-	if not t.check(panel != null, "[dev] F9 opens the developer test panel"):
+	if not t.check(panel != null, "[dev] F10 opens the developer test panel"):
 		return
 	var names := ["NormalWeather", "Gale", "Storm", "Squall", "StormAhead", "Condition100", "Condition75", "Condition40",
 		"Condition15", "Condition1", "RescueTest", "Stores3", "Stores0", "Advance1", "Advance6"]
@@ -409,7 +409,7 @@ func _test_dev_panel() -> void:
 	GameSession.plan_route_to(&"kiel")
 	GameSession.depart()
 	Simulation.advance(1800.0)
-	await t.press_key(KEY_F9)
+	await t.press_key(KEY_F10)
 	panel = app.modals.get_top() as DevTestPanel
 	await t.click(panel.get_button("StormAhead"))
 	t.check(DevTools.scenario == DevTools.SCENARIO_STORM_AHEAD and (panel.find_child("Status", true, false) as Label).text.contains("active"),
@@ -433,7 +433,7 @@ func _test_dev_panel() -> void:
 		await t.frames(3)
 		await t.screenshot("95_test_storm_chart")
 		# Squall at the boat: chart and warning.
-		await t.press_key(KEY_F9)
+		await t.press_key(KEY_F10)
 		panel = app.modals.get_top() as DevTestPanel
 		await t.click(panel.get_button("Squall"))
 		panel.close()
@@ -488,8 +488,8 @@ func _test_dev_panel() -> void:
 func _test_production_isolation() -> void:
 	DevTools.force_enabled = false
 	await _show(SessionState.AREA_INTERIOR, &"start")
-	await t.press_key(KEY_F9)
-	t.check(not (app.modals.get_top() is DevTestPanel), "[dev] in a player's build F9 does nothing")
+	await t.press_key(KEY_F10)
+	t.check(not (app.modals.get_top() is DevTestPanel), "[dev] in a player's build F10 does nothing")
 	app.open_pause_menu()
 	await t.frames(2)
 	var pause: ModalPanel = app.modals.get_top()

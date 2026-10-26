@@ -2,7 +2,7 @@ class_name DevTestPanel
 extends ModalPanel
 ## The development-only test panel (DevTools): buttons for test weather,
 ## boat condition, rescue, provisions and time, with the live state shown so
-## each test can be checked at a glance. Opened with F9 or from the pause
+## each test can be checked at a glance. Opened with F10 or from the pause
 ## menu, only where DevTools.is_enabled(). Clearly marked as a developer tool.
 ## The game is paused while it is open; "Advance" buttons move time through
 ## the normal simulation.
@@ -62,7 +62,7 @@ func _ready() -> void:
 	])
 	var close_button := Button.new()
 	close_button.name = "CloseButton"
-	close_button.text = "Close (F9 / Esc)"
+	close_button.text = "Close (F10 / Esc)"
 	close_button.pressed.connect(close)
 	box.add_child(close_button)
 	_buttons["CloseButton"] = close_button

@@ -41,6 +41,10 @@ func _refresh() -> void:
 		child.queue_free()
 	for info in SaveManager.get_all_slot_info():
 		_slots.add_child(_create_slot_entry(info))
+	# The quicksave (F5) can be loaded here too; it is never saved to from here.
+	var quick := SaveManager.get_slot_info(SaveManager.QUICKSAVE_SLOT)
+	if mode == Mode.LOAD and quick.status != SaveManager.Status.EMPTY:
+		_slots.add_child(_create_slot_entry(quick))
 
 
 func _create_slot_entry(info: SaveManager.SlotInfo) -> Button:
@@ -61,7 +65,7 @@ func _create_slot_entry(info: SaveManager.SlotInfo) -> Button:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var title := Label.new()
 	title.theme_type_variation = &"HeaderLabel"
-	title.text = "Slot %d" % info.slot
+	title.text = "Quicksave (F5)" if info.slot == SaveManager.QUICKSAVE_SLOT else "Slot %d" % info.slot
 	var details := Label.new()
 	details.theme_type_variation = &"MutedLabel"
 	details.text = describe_slot(info)

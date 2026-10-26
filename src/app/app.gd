@@ -162,10 +162,18 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			set_interaction_debug(not Interactable.debug_show_areas)
 		return
-	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F9:
+	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F10:
 		if DevTools.is_enabled():
 			get_viewport().set_input_as_handled()
 			toggle_dev_tests()
+		return
+	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F5:
+		get_viewport().set_input_as_handled()
+		quicksave()
+		return
+	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F9:
+		get_viewport().set_input_as_handled()
+		quickload()
 		return
 	if event.is_action_pressed(&"captains_log") and not event.is_echo():
 		get_viewport().set_input_as_handled()
@@ -255,12 +263,67 @@ func request_load(slot: int) -> void:
 func load_slot(slot: int) -> void:
 	var result := SaveManager.load_from_slot(slot)
 	if not result.is_ok():
-		notify("Could not load slot %d. %s" % [slot, result.error])
+		notify("Could not load %s. %s" % [SaveManager.slot_name(slot), result.error])
 		return
 	modals.clear()
 	GameSession.replace_state(result.state)
-	notify("Loaded slot %d." % slot)
+	notify("Loaded %s." % SaveManager.slot_name(slot))
 	_show_current_boat_area()
+
+
+# --- Quicksave and quickload (Iteration 17) ------------------------------------------
+# F5 writes the quicksave file (never a manual slot), aboard, with no window
+# open and no transition or Long Passage running; F9 loads it, asking first
+# when there is unsaved progress. A key held down or pressed twice within
+# QUICK_COOLDOWN_MSEC does nothing more. The save is the same verified write
+# (temporary file, read back, previous kept as backup) as a manual save.
+
+const QUICK_COOLDOWN_MSEC := 1000
+var _last_quick_msec := -100000
+
+
+## Why a quicksave cannot be taken now ("" when it can).
+func quicksave_blocker() -> String:
+	if not GameSession.is_active():
+		return "There is no game to save."
+	if router.is_busy() or not router.current_screen is BoatArea:
+		return "You can quicksave aboard the boat."
+	if not modals.is_empty():
+		return "Close the open window to quicksave."
+	if Simulation.is_passage_running():
+		return "Stop the Long Passage to quicksave."
+	return ""
+
+
+func quicksave() -> void:
+	if Time.get_ticks_msec() - _last_quick_msec < QUICK_COOLDOWN_MSEC:
+		return
+	_last_quick_msec = Time.get_ticks_msec()
+	var blocker := quicksave_blocker()
+	if not blocker.is_empty():
+		notify(blocker)
+		return
+	var err := SaveManager.save_to_slot(SaveManager.QUICKSAVE_SLOT, GameSession.get_state_snapshot())
+	if err == OK:
+		GameSession.mark_saved()
+		notify("Quicksaved (F9 to load).")
+	else:
+		notify("Quicksave failed (%s). The previous quicksave was kept." % error_string(err))
+
+
+func quickload() -> void:
+	if Time.get_ticks_msec() - _last_quick_msec < QUICK_COOLDOWN_MSEC or router.is_busy() or not modals.is_empty():
+		return
+	_last_quick_msec = Time.get_ticks_msec()
+	if not SaveManager.get_slot_info(SaveManager.QUICKSAVE_SLOT).is_loadable():
+		notify("No quicksave yet. Press F5 aboard to quicksave.")
+		return
+	if GameSession.is_active() and GameSession.has_unsaved_changes():
+		var proceed: bool = await modals.confirm("Load the quicksave?",
+			"Progress since your last save will be lost.", "Load")
+		if not proceed:
+			return
+	load_slot(SaveManager.QUICKSAVE_SLOT)
 
 
 func request_main_menu() -> void:
@@ -802,7 +865,7 @@ func set_interaction_debug(enabled: bool) -> void:
 	notify("Interaction areas: %s" % ("shown" if enabled else "hidden"))
 
 
-## The developer test panel (DevTools): F9 opens and closes it, in the boat or
+## The developer test panel (DevTools): F10 opens and closes it, in the boat or
 ## on the chart. Development builds only; it does not exist for players.
 func toggle_dev_tests() -> void:
 	if not DevTools.is_enabled() or not GameSession.is_active() or router.is_busy():

@@ -258,6 +258,16 @@ const OCTANT_HYSTERESIS_DEG := 8.0
 const OCTANT_NAMES := ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 var _octant := -1
 var _logged_octant := -1
+## The (course view, octant) the camera was last turned for. The heading also
+## changes without any signal (the autopilot passing a waypoint, a steering
+## change taking effect at the next evaluation), so _process compares it each
+## frame (Iteration 17: the deck no longer stays drawn on an old heading).
+var _applied_view := Vector2i(-1, -1)
+
+
+func _view_key() -> Vector2i:
+	var course := is_course_view()
+	return Vector2i(int(course), get_view_octant() if course else -1)
 
 
 ## The octant the deck is drawn in (0 = north … 7 = north-west), from the
@@ -301,6 +311,7 @@ func _update_camera() -> void:
 	if camera == null or not is_inside_tree():
 		return
 	var course := is_course_view()
+	_applied_view = _view_key()
 	camera.set_meta(&"course_view", course)
 	if course:
 		camera.offset.x = 0.0
@@ -375,7 +386,7 @@ func begin_exit() -> void:
 
 func _place_player() -> void:
 	var position := Vector2.ZERO
-	if GameSession.has_player_position() and walkable_bounds.has_point(GameSession.get_player_position()):
+	if GameSession.has_player_position() and is_valid_player_position(GameSession.get_player_position()):
 		position = GameSession.get_player_position()
 	else:
 		var marker := _spawn_points.get_node_or_null(NodePath(String(GameSession.get_spawn_point()))) as Node2D
@@ -385,6 +396,24 @@ func _place_player() -> void:
 			position = marker.position
 	player.position = position
 	GameSession.set_player_position(position)
+
+
+## Whether a restored player position (area coordinates: relative to the
+## boat, never the world) is somewhere the captain can stand: inside the
+## area's bounds and, on deck, inside the hull's lifeline, or on the pontoon
+## while it is reachable (Iteration 17). Anything else falls back to the spawn
+## point, so a stale or damaged position never puts the captain in the water.
+func is_valid_player_position(position: Vector2) -> bool:
+	if not walkable_bounds.has_point(position):
+		return false
+	if _shore and _shore.is_active() and _shore.get_shore_rect().grow(4.0).has_point(position):
+		return true
+	var lifeline := get_node_or_null(^"Layout/Collision/Lifeline/CollisionPolygon2D") as CollisionPolygon2D
+	if lifeline == null:
+		return true
+	# The lifeline is drawn in its own nodes' coordinates; bring it to the area's.
+	var outline := (global_transform.affine_inverse() * lifeline.global_transform) * lifeline.polygon
+	return Geometry2D.is_point_in_polygon(position, outline)
 
 
 ## Moves the player to a spawn marker without reloading the scene (waking up
@@ -590,6 +619,8 @@ func get_shore_station(facility: StringName) -> Interactable:
 
 
 func _process(delta: float) -> void:
+	if _camera_ready and not _leaving and _view_key() != _applied_view:
+		_update_camera()
 	_follow_in_course_view(delta)
 	if _shore == null or not _shore.is_active() or _leaving:
 		return

@@ -53,7 +53,7 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| BOAT-1 | Boat visually turns with heading while the Captain is on deck (all listed scenarios) | TODO | | |
+| BOAT-1 | Boat visually turns with heading while the Captain is on deck (all listed scenarios) | DONE | test_sailing_correctness [orientation]: autopilot turns at waypoints with the captain amidships/bow/stern, successive turns, cabin round trip, after load; fails without the fix | Root cause: the deck camera re-turned only on route edits/voyage start |
 | BOAT-2 | Player/sail and rigging depth order correct | TODO | | |
 | BOAT-3 | White side objects identified; fenders shown moored, stowed underway, correct after save/load | TODO | | |
 
@@ -61,11 +61,11 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| SAVE-1 | Save/load underway keeps the Captain aboard (all listed situations), relative positions, safe fallback | TODO | | |
-| SAVE-2 | Weather persistence: reload reproduces weather; no rerolling; documented | TODO | | |
-| SAVE-3 | F5 quicksave / F9 quickload with confirmation, no double-activation, defined policy | TODO | | |
+| SAVE-1 | Save/load underway keeps the Captain aboard (all listed situations), relative positions, safe fallback | DONE | test_sailing_correctness [save]: helm, bow, stern, cabin, after a course change, at anchor, in a gale at night; invalid position falls back to the spawn point | Two-process check in 17I |
+| SAVE-2 | Weather persistence: reload reproduces weather; no rerolling; documented | DONE | test_sailing_correctness [weather]: the same save sailed twice gives identical wind, position and condition for 12 h | Weather is a pure function of (position, time, seed); the seed is saved |
+| SAVE-3 | F5 quicksave / F9 quickload with confirmation, no double-activation, defined policy | DONE | test_sailing_correctness [quick]: F5 once per press, own file, manual slots untouched, refused with a window open, F9 asks then restores exactly, repeated F9 ignored | Developer test panel moved from F9 to F10 |
 | SAVE-4 | Two-process save/load verification (deck, cabin, storm) | TODO | | |
-| SAVE-5 | Existing saves load; save format decision documented | TODO | | |
+| SAVE-5 | Existing saves load; save format decision documented | DONE | Save format stays 12 (no new fields); test_save_manager, test_voyage_persistence pass |  |
 
 ## LGT — Lighting [§16–§21]
 
