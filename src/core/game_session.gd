@@ -378,6 +378,9 @@ func switch_vessel(vessel_id: StringName) -> String:
 		return ""
 	_state.vessel_id = vessel_id
 	_state.get_boat_care(vessel_id)
+	# Stores beyond what the new boat can stow stay ashore.
+	_state.provisions.food_days = minf(_state.provisions.food_days, maxf(vessel.passage_stores_days, Provisions.CAPACITY_DAYS))
+	_state.provisions.water_days = minf(_state.provisions.water_days, maxf(vessel.passage_stores_days, Provisions.CAPACITY_DAYS))
 	_state.propulsion = PropulsionState.new()
 	_state.fishing.line_out = false
 	_pending_bite = {}
@@ -598,10 +601,31 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 			_wear(elapsed, maxf(progress - _state.voyage.progress_nm, 0.0))
 		_state.voyage.sailed_nm += maxf(progress - _state.voyage.progress_nm, 0.0)
 		_state.voyage.progress_nm = progress
-		_state.vessel_position = _state.anchor.position if _state.anchor.active else _state.voyage.get_position()
+		var before := _state.vessel_position
+		_state.vessel_position = GeoMath.normalize(_state.anchor.position if _state.anchor.active else _state.voyage.get_position())
+		_note_crossings(before, _state.vessel_position)
 	_has_unsaved_changes = true
 	if _state.anchor.active or _settled:
 		_update_anchor_life()
+
+
+## Diagnostics (Iteration 16): the Date Line and the chart regions (detailed
+## Denmark, Europe, the world chart) crossed underway. Not saved.
+var _chart_region := "?"
+
+
+func _note_crossings(before: Vector2, after: Vector2) -> void:
+	if absf(after.x - before.x) > 180.0:
+		SessionLog.write("dateline_crossed", {"from_lon": snappedf(before.x, 0.01), "to_lon": snappedf(after.x, 0.01), "lat": snappedf(after.y, 0.01)})
+	var router := SeaRouter.get_loaded()
+	if router == null:
+		return
+	var region := router.grid.grid_at(after).region_id
+	if region != _chart_region:
+		if _chart_region != "?":
+			SessionLog.write("region_transition", {"from": _chart_region if _chart_region != "" else "world",
+				"to": region if region != "" else "world", "lon": snappedf(after.x, 0.01), "lat": snappedf(after.y, 0.01)})
+		_chart_region = region
 
 
 ## Ends the voyage at its destination.
@@ -623,6 +647,7 @@ func complete_voyage() -> void:
 	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_ARRIVED)
 	var new_harbour := _state.captains_log.record_voyage(record)
 	var awards := _award_objectives(record, new_harbour)
+	awards.append_array(_award_world_firsts(record, destination))
 	_state.voyage = null
 	_state.vessel_status = SessionState.STATUS_ARRIVED
 	_state.location_id = destination.id
@@ -1109,6 +1134,54 @@ func _award_objectives(record: Dictionary, new_harbour: bool) -> Array[Dictionar
 	return awards
 
 
+## Harbour regions outside Europe (Iteration 16).
+const WORLD_REGIONS := ["atlantic_islands", "caribbean", "central_america", "pacific"]
+## A passage at least this long (nm, in one voyage) is an offshore crossing.
+const OFFSHORE_CROSSING_NM := 500.0
+
+
+## The worldwide Captain's Log firsts (Iteration 16), each paid once.
+func _award_world_firsts(record: Dictionary, destination: PortData) -> Array[Dictionary]:
+	var found: Array[Dictionary] = []
+	var from := Vector2(float(record.from_position.lon), float(record.from_position.lat))
+	var to := destination.get_geo_position()
+	var international := destination.region in WORLD_REGIONS
+	if international:
+		SessionLog.write("international_arrival", {"port": String(destination.id), "region": destination.region, "nm": snappedf(float(record.nm), 0.1)})
+	var firsts := [
+		[_beyond_danish_waters(to), "world:beyond_denmark", "Beyond Danish waters: %s" % destination.display_name, 3],
+		[international, "world:first_international", "Your first international destination: %s" % destination.display_name, 4],
+		[float(record.nm) >= OFFSHORE_CROSSING_NM, "world:offshore_crossing", "Your first offshore crossing: %d nm to %s" % [roundi(float(record.nm)), destination.display_name], 4],
+		[_is_atlantic_crossing(from, to), "world:atlantic_crossing", "Across the Atlantic to %s" % destination.display_name, 6],
+		[destination.region == "pacific", "world:pacific_arrival", "Into the Pacific: %s" % destination.display_name, 5],
+		[destination.country == "French Polynesia", "world:french_polynesia", "French Polynesia: %s" % destination.display_name, 5],
+		[destination.country == "New Zealand", "world:new_zealand", "New Zealand: %s" % destination.display_name, 5],
+	]
+	for first: Array in firsts:
+		if first[0]:
+			var award := _award_once(first[1], first[2], first[3])
+			if not award.is_empty():
+				found.append(award)
+	return found
+
+
+## Outside the detailed Danish chart (the Danish waters with the Kattegat and
+## the western Baltic around them).
+static func _beyond_danish_waters(geo: Vector2) -> bool:
+	var router := SeaRouter.get_loaded()
+	return router != null and router.grid.grid_at(geo).region_id != "denmark"
+
+
+## From one side of the Atlantic to the other in one voyage: between the
+## eastern Atlantic (east of 30°W: Europe, Africa and the eastern islands)
+## and the western (west of 50°W: the Americas and the Caribbean).
+static func _is_atlantic_crossing(from: Vector2, to: Vector2) -> bool:
+	var atlantic := func(p: Vector2) -> bool: return p.x > -100.0 and p.x < 30.0 and p.y > -60.0 and p.y < 70.0
+	if not (atlantic.call(from) and atlantic.call(to)):
+		return false
+	return (from.x > -30.0 and to.x < -50.0) or (from.x < -50.0 and to.x > -30.0)
+
+
 ## Pays the (secret) objectives a hat event completes, inside the hat's own
 ## transaction, so each pays exactly once (see ObjectiveProgress.can_pay()).
 func _award_hat_objectives(event: Dictionary) -> Array[Dictionary]:
@@ -1493,7 +1566,7 @@ func cook(recipe_id: String) -> Dictionary:
 		used.append(fish)
 		kg += float(fish.kg)
 	_state.provisions.take_food(float(recipe.groceries))
-	result.food_added = _state.provisions.add_food(Recipes.food_gained(recipe, kg))
+	result.food_added = _state.provisions.add_food(Recipes.food_gained(recipe, kg), get_passage_store_days())
 	var galley := _state.galley
 	galley.well_fed_until = maxf(galley.well_fed_until, _state.game_time + float(recipe.well_fed_hours) * 3600.0)
 	galley.meals_cooked += 1
@@ -1899,35 +1972,44 @@ const REMOTE_WORK_MIN_HOURS := 1
 const REMOTE_WORK_MAX_HOURS := 8
 
 
-## Days missing to fill food and water to capacity, both counted (0-28).
-func get_missing_provision_days() -> float:
+## Days missing to fill food and water to `target` days each, both counted
+## (0-28 for the everyday stores).
+func get_missing_provision_days(target := Provisions.CAPACITY_DAYS) -> float:
 	if _state == null:
 		return 0.0
-	return (Provisions.CAPACITY_DAYS - _state.provisions.food_days) + (Provisions.CAPACITY_DAYS - _state.provisions.water_days)
+	return maxf(target - _state.provisions.food_days, 0.0) + maxf(target - _state.provisions.water_days, 0.0)
 
 
-## What filling food and water to capacity costs now (whole euros, rounded up,
-## so a fraction of a day is never free).
-func get_provisions_price() -> int:
-	return ceili(get_missing_provision_days() * PROVISIONS_PRICE_PER_DAY - 1e-6)
+## What filling food and water to `target` days costs now (whole euros,
+## rounded up, so a fraction of a day is never free).
+func get_provisions_price(target := Provisions.CAPACITY_DAYS) -> int:
+	return ceili(get_missing_provision_days(target) * PROVISIONS_PRICE_PER_DAY - 1e-6)
 
 
-## Buys food and water up to capacity at the grocery store: one transaction
-## that pays get_provisions_price() and fills both stores. Harbour only, and
-## refused (nothing changes) when the money is not enough. Returns "" on
-## success, otherwise the reason.
-func buy_provisions() -> String:
+## Days of food and water the active boat can stow for a long passage
+## (Iteration 16).
+func get_passage_store_days() -> float:
+	var vessel := VesselCatalog.get_default().get_vessel(_state.vessel_id) if _state else null
+	return maxf(vessel.passage_stores_days, Provisions.CAPACITY_DAYS) if vessel else Provisions.CAPACITY_DAYS
+
+
+## Buys food and water up to `target` days each (the everyday 14 by default)
+## at the grocery store: one transaction that pays get_provisions_price() and
+## fills both stores. Harbour only, and refused (nothing changes) when the
+## money is not enough. Returns "" on success, otherwise the reason.
+func buy_provisions(target := Provisions.CAPACITY_DAYS) -> String:
 	if not is_moored_in_harbour():
 		return "The grocery store is only reachable while moored in harbour."
 	if not has_facility(HarbourFacilities.GROCERY):
 		return facility_refusal(HarbourFacilities.GROCERY)
-	if _state.provisions.is_full():
+	target = minf(target, get_passage_store_days())
+	if _state.provisions.is_full(target):
 		return "Food and water are already full."
-	var price := get_provisions_price()
+	var price := get_provisions_price(target)
 	if price > _state.funds:
 		return "Not enough money: %s needed, you have %s." % [format_money(price), format_money(_state.funds)]
 	_state.funds -= price
-	_state.provisions.restock()
+	_state.provisions.restock(target)
 	_has_unsaved_changes = true
 	funds_changed.emit(_state.funds)
 	provisions_changed.emit()
@@ -1955,8 +2037,8 @@ func pay_remote_work(hours: int) -> int:
 func set_provisions_for_testing(days: float) -> void:
 	if _state == null:
 		return
-	_state.provisions.food_days = clampf(days, 0.0, Provisions.CAPACITY_DAYS)
-	_state.provisions.water_days = clampf(days, 0.0, Provisions.CAPACITY_DAYS)
+	_state.provisions.food_days = clampf(days, 0.0, Provisions.MAX_STORE_DAYS)
+	_state.provisions.water_days = clampf(days, 0.0, Provisions.MAX_STORE_DAYS)
 	_state.provisions.warning_level = Provisions.WARN_NONE
 	_has_unsaved_changes = true
 	_check_provisions()
@@ -2254,7 +2336,7 @@ func _recover_voyage(router: SeaRouter) -> void:
 func _near_route_port(router: SeaRouter, position: Vector2, route: PlannedRoute) -> bool:
 	for id: StringName in [route.origin_port_id, route.destination_port_id]:
 		var port := PortCatalog.get_default().get_port(id)
-		if port and GeoMath.rhumb_distance_nm(port.get_geo_position(), position) <= SeaRouter.MAX_APPROACH_NM \
+		if port and GeoMath.rhumb_distance_nm(port.get_geo_position(), position) <= router.approach_radius_nm(port.get_geo_position()) \
 				and router.grid.cell_class_at_geo(position) >= NavGrid.APPROACH:
 			return true
 	return false
@@ -2274,6 +2356,8 @@ static func _geo_dict(geo: Vector2) -> Dictionary:
 
 func _report_recovery(info: Dictionary) -> void:
 	_last_recovery = info
+	if info.get("failed", false):  # (a recovery itself is logged as "location_recovered")
+		SessionLog.write("invalid_position", info)
 	location_recovered.emit.call_deferred(info)
 	var text := "The chart has been updated. Your course was re-planned." if info.get("replanned", false) \
 		else "The chart has been updated. Please plot your course again."

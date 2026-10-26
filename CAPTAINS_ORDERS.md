@@ -156,9 +156,42 @@ The Captain has approved:
 - **No change to the roadmap's next major iteration: Iteration 15 remains
   reserved for the planned performance and stability pass.**
 
+### Iteration 16, The World Awaits
+
+The Captain has approved:
+
+- **Iteration 16 is The World Awaits** (version 0.103a): global sailing and
+  international passages are **authorized**. The player can open a world
+  chart, plan sensible voyages to harbours abroad, make long passages and
+  stop at harbours on the way.
+- **Iteration 15 was not delivered.** The Captain authorized Iteration 16 to
+  start on the 0.102b baseline, with performance measured first (before and
+  after, in `docs/benchmarks/`). Iteration 15 is recorded as skipped; whether
+  its performance and stability pass is rescheduled is the Captain's call.
+- **Denmark remains the detailed foundation.** Other detailed regions
+  (Sweden, New Zealand, French Polynesia, …) are future work, documented in
+  `DEV_GUIDES/CHART_REGIONS.md`, not built now.
+- **The global chart is intentionally lower resolution** (about 5 nm cells,
+  an ocean chart), from real, licensed, documented data (OpenStreetMap land,
+  ODbL). No fabricated coastlines; no depths are claimed.
+- **The existing simulation is used, not teleportation.** Long Passage time
+  lets hours pass per second on the same timeline and stops by itself when
+  something needs the captain.
+- **Passage Readiness remains advisory**; beyond the forecast horizon it says
+  that the weather is not yet known.
+- **Small boats remain valid**: every boat can stow passage stores (32 to 45
+  days), and island harbours break up the oceans.
+- **Cozy activities remain central**: fishing, cooking, anchoring, the
+  companions, the hat, sleep, Life at Anchor and coffee, the log, renown,
+  maintenance and Go Ashore all work abroad.
+- **Performance and save compatibility are mandatory**: save format 12 is
+  unchanged; older saves load.
+- **No visible activation circles**; the **eight-direction view and the
+  precise physics are preserved**.
+
 ### Iterations and versions
 
-- Iteration numbers are sequential integers: no letter suffixes and no
+- Iteration numbers are plain sequential integers: no letter suffixes and no
   sub-iteration numbers. Minor correction prompts belong to their parent
   iteration. One commissioned implementation assignment is one iteration.
 - Game version numbers are separate from iteration numbers. They follow
@@ -173,7 +206,7 @@ The Captain has approved:
   Next Harbor repository and unrelated projects are never edited.
 - Use recoverable checkpoint commits. Never reset, force-push or discard work.
 - A delivery states the version, the final commit, the branch, the report and
-  the Windows checklist, and ends with the clickable branch link.
+  the Windows checklist, and ends with the clickable branch link (mandatory).
 - The Captain's own workflow is: GitHub branch → Code → Download ZIP → extract →
   open `project.godot` in Godot → run. A Windows executable is not made unless
   asked.
@@ -186,9 +219,8 @@ The Captain has approved:
 These remain separately approved future assignments; they are not started
 early:
 
-- a worldwide chart (Iteration 14 details one region, Denmark, within the
-  existing European chart);
-- further detailed regions (the architecture allows them; none is built yet).
+- further detailed regions (the architecture allows them; Denmark is the only
+  one built). The worldwide chart itself was commissioned as Iteration 16.
 
 (Fishing and anchoring, listed here until Iteration 12, were commissioned by
 the Captain as Iteration 13. Maintenance and equipment, listed here until
@@ -202,10 +234,12 @@ policy is **still not written down in this repository** (checked again in
 Iterations 13 and 14), so it is not restated or guessed here. It stays in
 force exactly as the Captain defined it; the scope freeze holds.
 
-What is established by the Captain's current authorization: Iterations 13 and
-14 are within the current scope; they do not reopen or expand Phase Two.
-Iteration 14 adds one detailed region and boat care as authorized, and no
-worldwide exploration or other future systems.
+What is established by the Captain's current authorization: Iterations 13,
+14 and 16 are within the current scope; they do not reopen or expand Phase
+Two. Iteration 14 added one detailed region and boat care as authorized.
+Iteration 16 adds global sailing and international passages, which the
+Captain explicitly authorized; it does not invent Phase Two wording or reopen
+Phase Two (the wording was again not found in the repository in Iteration 16).
 *Developer note: please add the Phase Two wording here.*
 
 ## Iteration log
@@ -227,3 +261,11 @@ worldwide exploration or other future systems.
   (life at anchor, morning coffee; save format unchanged); see
   `REVISION_0_102B_REPORT.md` and `WINDOWS_SMOKE_0_102B.md`. Iteration 15 is
   reserved for the performance and stability pass.
+- **Iteration 16, The World Awaits**, version 0.103a, save format 12
+  (unchanged): a worldwide chart on OpenStreetMap land with Date Line
+  wrapping, worldwide routing, 36 international harbours (Atlantic islands,
+  the Caribbean, Panama, the Pacific, New Zealand), Long Passage time,
+  passage stores, global wind and ocean weather, and the Captain's Log firsts
+  of the voyage abroad; see `ITERATION_16_REPORT.md` and
+  `WINDOWS_ACCEPTANCE_16.md`. Iteration 15 (the performance and stability
+  pass) was skipped at the Captain's instruction.
