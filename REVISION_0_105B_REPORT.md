@@ -446,3 +446,4 @@ Plus one non-Godot step: the coastal raster build in Python (49 s).
 - Branch: `claude/friendly-fermat-dey23f` on `crosenlund79/LittleCaptainsHat`.
 - Every checkpoint was pushed as it landed: `a52f8aa`, `bd16387`, `6313113`, `574aae5`, `2803394` and `aa8fe0b`. There was no force-push, reset or history rewrite, and no Captain-owned art was modified.
 - Final delivery commit: the commit that adds this completed report; its hash is recorded in the follow-up line below and in the delivery message. Verified by comparing the local HEAD with `git ls-remote origin claude/friendly-fermat-dey23f` after the push.
+- Recorded after the push: Checkpoint H is `3ce8b38`, and `git ls-remote` showed the remote branch at `3ce8b38`, equal to the local HEAD. This line is added by the follow-up commit that records it.
