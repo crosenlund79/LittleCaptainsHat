@@ -71,12 +71,12 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| LGT-1 | Day/night cycle (dawn, day, dusk, night) on the game clock with local solar time by longitude; smooth | TODO | | |
-| LGT-2 | Correct under Long Passage, sleep, load, harbour | TODO | | |
-| LGT-3 | Warm cabin lighting from fixtures, all four boats, personalization-safe | TODO | | |
-| LGT-4 | Deck and cockpit night lighting, restrained; helm and highlights visible | TODO | | |
-| LGT-5 | Harbour lighting via reusable pattern | TODO | | |
-| LGT-6 | Soft shadows and depth; before/after comparison | TODO | | |
+| LGT-1 | Day/night cycle (dawn, day, dusk, night) on the game clock with local solar time by longitude; smooth | DONE | src/world/daylight.gd; test_lighting [sun]: local solar time by longitude, latitude and season (midnight sun), night→dawn→day→dusk→night, smooth (≤0.06 per 5 min) | Approximation, documented; no moon |
+| LGT-2 | Correct under Long Passage, sleep, load, harbour | DONE | test_lighting [fast]/[load]: Long Passage pace eased (no strobe), load jumps to the hour; harbour night/dusk; sleep eases over ~1 s |  |
+| LGT-3 | Warm cabin lighting from fixtures, all four boats, personalization-safe | DONE | test_lighting [cabin]: lamps at each boat's own fixtures (by fixture name, personalization-safe), night dim not black, day lamps off with hatch daylight; screenshots 17_cabin_night_* |  |
+| LGT-4 | Deck and cockpit night lighting, restrained; helm and highlights visible | DONE | test_lighting [deck]: cool dim night, helm instrument glow, companionway spill, red/green/white navigation lights; highlights compensated |  |
+| LGT-5 | Harbour lighting via reusable pattern | DONE | test_lighting [harbour]: quay lamps and pontoon lights from the shared HarbourDressing (every harbour), lit at night moored only |  |
+| LGT-6 | Soft shadows and depth; before/after comparison | PARTIAL | Fixture soft shadows and contact shadows (test_lighting); before/after comparison rendered in 17I |  |
 
 ## AUD — Audio and storm atmosphere [§22–§25, §39]
 

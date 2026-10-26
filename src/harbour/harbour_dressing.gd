@@ -170,6 +170,37 @@ func get_landmarks() -> Array[HarbourLandmark]:
 	return _landmarks
 
 
+## The quay's lamp posts (this node's coordinates), as _draw_quay places
+## them: every third post along the quay edge (Iteration 17: lit at night).
+func get_lamp_positions() -> PackedVector2Array:
+	var lamps := PackedVector2Array()
+	if _pontoon.size == Vector2.ZERO:
+		return lamps
+	var top := _pontoon.end.y + 6.0
+	var left := _pontoon.position.x - 40.0
+	var right := _pontoon.end.x + 40.0
+	var bx := left + 80.0
+	var i := 0
+	while bx < right - 40.0:
+		if i % 3 == 1:
+			lamps.append(Vector2(bx, top + 8.0))
+		bx += 190.0
+		i += 1
+	return lamps
+
+
+## Soft walkway lights along the pontoon (this node's coordinates).
+func get_pontoon_light_positions() -> PackedVector2Array:
+	var spots := PackedVector2Array()
+	if _pontoon.size == Vector2.ZERO:
+		return spots
+	var x := _pontoon.position.x + 120.0
+	while x < _pontoon.end.x - 60.0:
+		spots.append(Vector2(x, _pontoon.get_center().y))
+		x += 320.0
+	return spots
+
+
 func get_quay_anchor() -> Vector2:
 	return Vector2(_pontoon.get_center().x, _pontoon.end.y)
 

@@ -121,6 +121,7 @@ func _ready() -> void:
 	_setup_water_life()
 	_setup_anchor_ambience()
 	_setup_camera()
+	_setup_lighting()
 	_setup_hat_hook()
 	_update_hat_station()
 	_resolve_highlights.call_deferred()
@@ -338,6 +339,18 @@ func _update_camera() -> void:
 	if course and get_view_octant() != _logged_octant:
 		_logged_octant = get_view_octant()
 		SessionLog.write("view_octant", {"heading": snappedf(get_view_heading(), 0.1), "octant": OCTANT_NAMES[_logged_octant]})
+
+
+## Day and night, lamps and soft shadows (Iteration 17, BoatLighting).
+func _setup_lighting() -> void:
+	var lighting := BoatLighting.new()
+	add_child(lighting)
+	lighting.setup(self)
+	GameSession.state_replaced.connect(lighting.update_now)
+
+
+func get_lighting() -> BoatLighting:
+	return get_node_or_null(^"Lighting") as BoatLighting
 
 
 func get_harbour_dressing() -> HarbourDressing:

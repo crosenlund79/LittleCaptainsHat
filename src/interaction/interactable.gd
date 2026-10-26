@@ -36,6 +36,9 @@ const DEBUG_AREA := Color(0.4, 0.9, 1.0, 0.55)
 
 ## Developer view (F8 with the developer tools): every interaction area drawn.
 static var debug_show_areas := false
+## The inverse of the area's ambient light (BoatLighting, Iteration 17), so
+## the focus highlight stays as bright at night as by day.
+static var light_compensation := Color.WHITE
 
 ## The visible object's outline in this node's coordinates, set by the owning
 ## scene (see HighlightResolver); empty: a small soft outline of the area.
@@ -105,6 +108,7 @@ func _draw() -> void:
 	var closed := points.duplicate()
 	closed.append(points[0])
 	var breathe := 0.5 + 0.5 * sin(_time * 3.2)
+	self_modulate = light_compensation
 	draw_polyline(closed, Color(GLOW, GLOW.a * (0.7 + 0.5 * breathe)), 9.0, true)
 	draw_polyline(closed, Color(OUTLINE, OUTLINE.a * (0.75 + 0.25 * breathe)), 2.2, true)
 

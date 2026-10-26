@@ -7,7 +7,13 @@ extends Node2D
 ## small warm glow. Underway, in harbour or when the anchor is not holding
 ## quietly, nothing changes: the scene looks exactly as before.
 ##
-## Added by BoatArea; reads GameSession only. No lighting system is needed.
+## Added by BoatArea; reads GameSession only.
+##
+## Iteration 17: the boat's lighting (BoatLighting) now shows the time of day
+## everywhere (at anchor, underway and in harbour) with its own lamps, so this
+## node no longer tints the scene or draws its glow (two CanvasModulates in one
+## scene would fight). It still works out the settled-at-anchor mood (tint and
+## lamp strength) for the anchor's moments and its tests.
 
 const EASE_SECONDS := 2.5
 const LAMP_COLOUR := Color(1.0, 0.78, 0.45)
@@ -17,7 +23,7 @@ const RINGS := 18
 ## Set by BoatArea: the cabin lamps (local positions and radii), empty on deck.
 var lamps: Array[Vector3] = []
 
-var _modulate: CanvasModulate
+var _tint := Color.WHITE
 var _target := Color.WHITE
 var _lamp_target := 0.0
 var _lamp := 0.0
@@ -25,14 +31,7 @@ var _check_left := 0.0
 
 
 func _ready() -> void:
-	z_index = 50
-	var additive := CanvasItemMaterial.new()
-	additive.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
-	material = additive
-	_modulate = CanvasModulate.new()
-	_modulate.name = "Tint"
-	_modulate.color = Color.WHITE
-	add_child(_modulate)
+	visible = false  # BoatLighting draws the light (Iteration 17)
 	refresh(true)
 
 
@@ -42,7 +41,7 @@ func _process(delta: float) -> void:
 		_check_left = 0.5
 		refresh()
 	var t := clampf(delta / EASE_SECONDS * 3.0, 0.0, 1.0)
-	_modulate.color = _modulate.color.lerp(_target, t)
+	_tint = _tint.lerp(_target, t)
 	var lamp := lerpf(_lamp, _lamp_target, t)
 	if not is_equal_approx(lamp, _lamp):
 		_lamp = lamp
@@ -56,7 +55,7 @@ func refresh(immediate := false) -> void:
 	_target = AnchorLife.TINTS[phase] if settled else Color.WHITE
 	_lamp_target = float(AnchorLife.LAMP[phase]) if settled and not lamps.is_empty() else 0.0
 	if immediate:
-		_modulate.color = _target
+		_tint = _target
 		_lamp = _lamp_target
 		queue_redraw()
 
@@ -66,7 +65,7 @@ func is_active() -> bool:
 
 
 func get_tint() -> Color:
-	return _modulate.color
+	return _tint
 
 
 func get_lamp_strength() -> float:
