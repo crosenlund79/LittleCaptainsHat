@@ -37,6 +37,19 @@ var dragged_this_stay := false
 ## reload. Optional in saves (older saves have none); bounded.
 var moments: Array[String] = []
 const MAX_MOMENTS := 16
+## Revision 0.105b (optional in saves; older saves: a normal anchor, depth
+## unknown). Which anchor is down ("normal" or "magic"), the depth where it
+## went down and where that depth came from (DepthService source: in this
+## build a game estimate), and the small holding bonus a well-placed Magic
+## Anchor earned (knots, at most MAGIC_BONUS_MAX_KN). One anchored state for
+## every kind: the same holding and drag model applies.
+const KIND_NORMAL := &"normal"
+const KIND_MAGIC := &"magic"
+const MAGIC_BONUS_MAX_KN := 3.0
+var kind: StringName = KIND_NORMAL
+var depth_m := -1.0
+var depth_source: StringName = &""
+var bonus_kn := 0.0
 
 
 func duplicate_state() -> AnchorState:
@@ -52,13 +65,18 @@ func duplicate_state() -> AnchorState:
 	copy.checked_until = checked_until
 	copy.dragged_this_stay = dragged_this_stay
 	copy.moments = moments.duplicate()
+	copy.kind = kind
+	copy.depth_m = depth_m
+	copy.depth_source = depth_source
+	copy.bonus_kn = bonus_kn
 	return copy
 
 
 func to_dict() -> Dictionary:
 	return {"active": active, "position": {"lon": position.x, "lat": position.y}, "scope": scope, "set_quality": set_quality,
 		"holding": String(holding), "dragged_nm": dragged_nm, "alarm": alarm, "anchored_at": anchored_at,
-		"checked_until": checked_until, "dragged_this_stay": dragged_this_stay, "moments": moments.duplicate()}
+		"checked_until": checked_until, "dragged_this_stay": dragged_this_stay, "moments": moments.duplicate(),
+		"kind": String(kind), "depth_m": depth_m, "depth_source": String(depth_source), "bonus_kn": bonus_kn}
 
 
 static func from_dict(data: Variant, errors: Array[String]) -> AnchorState:
@@ -91,6 +109,11 @@ static func from_dict(data: Variant, errors: Array[String]) -> AnchorState:
 		for moment: Variant in moments:
 			if moment is String and not moment in state.moments and state.moments.size() < MAX_MOMENTS:
 				state.moments.append(moment)
+	# 0.105b optional fields (absent in older saves: a normal anchor).
+	state.kind = KIND_MAGIC if str(data.get("kind", "")) == String(KIND_MAGIC) else KIND_NORMAL
+	state.depth_m = float(data.depth_m) if _is_number(data.get("depth_m")) else -1.0
+	state.depth_source = StringName(str(data.get("depth_source", ""))) if data.get("depth_source") is String else &""
+	state.bonus_kn = clampf(float(data.bonus_kn), 0.0, MAGIC_BONUS_MAX_KN) if _is_number(data.get("bonus_kn")) else 0.0
 	return state
 
 

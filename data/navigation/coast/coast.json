@@ -1,0 +1,25 @@
+{
+ "id": "coast",
+ "name": "Fine coastal raster (anchoring)",
+ "source": "OpenStreetMap land polygons via geo-maps earth-lands-100m 0.6.0 (npm @geo-maps/earth-lands-100m, package SHA-1 bcee1e6ce052d9c57bc7a2aa3b39912aaaf43c41, about 100 m accuracy). Map data (c) OpenStreetMap contributors, ODbL 1.0, openstreetmap.org/copyright.",
+ "licence": "ODbL 1.0 (derived database)",
+ "crs": "WGS 84 longitude/latitude (EPSG:4326), plain latitude/longitude grid",
+ "cells_per_degree": 120,
+ "bounds": {
+  "west": -180,
+  "east": 180,
+  "south": -72,
+  "north": 80
+ },
+ "tiles": {
+  "columns": 360,
+  "rows": 152,
+  "mixed": 6315,
+  "land": 13389,
+  "water": 35016
+ },
+ "layout": "coast.bin: 'LCHC', uint32 version, uint32 cells_per_degree, uint32 mixed_count; uint8 index[rows][columns] (row 0 = northernmost, column 0 = 180W; 0 water, 1 land, 2 mixed); uint32 offset, uint32 size per mixed tile in index order; zlib-deflated payloads of 120 x 120 bits (rows north to south, bits west to east, MSB first; 1 = land).",
+ "processing": "Land if the cell centre is inside a land polygon; lakes filled. Not for navigation.",
+ "file_bytes": 1174826,
+ "built_seconds": 49.0
+}

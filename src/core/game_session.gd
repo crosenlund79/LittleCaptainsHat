@@ -415,9 +415,19 @@ func get_propulsion() -> PropulsionState:
 	return _state.propulsion.duplicate_state() if _state else PropulsionState.new()
 
 
-## True while the engine is driving the boat.
+## True while the engine is driving the boat (never at anchor: anchoring
+## stops the engine, 0.105b).
 func is_motoring() -> bool:
-	return is_underway() and _state.propulsion.is_motoring()
+	return is_underway() and not is_anchored() and _state.propulsion.is_motoring()
+
+
+## Starting the engine is the crew's job underway (the game has no manual
+## engine switch); anything that asks for it while the anchor is down gets
+## this answer (0.105b). Returns "" when the engine may run.
+func engine_start_refusal() -> String:
+	if is_anchored():
+		return "Let's raise the anchor before starting the engine."
+	return ""
 
 
 ## True while sails are drawing on a voyage (false in port or when motoring).
@@ -1807,34 +1817,93 @@ func get_anchor() -> AnchorState:
 	return _state.anchor.duplicate_state() if _state else AnchorState.new()
 
 
-## The anchorage here, in the wind now (AnchorSite.evaluate()).
+## The anchorage here, in the wind now (AnchorSite.evaluate()), for the
+## anchors aboard (the Magic Anchor if the captain has it).
 func evaluate_anchorage() -> Dictionary:
 	if _state == null:
 		return {"class": AnchorSite.CLASS_UNSUITABLE, "ok": false, "reason": "No game is running."}
-	return AnchorSite.evaluate(_state.vessel_position, Simulation.get_weather_at_vessel())
+	return AnchorSite.evaluate(_state.vessel_position, Simulation.get_weather_at_vessel(), has_magic_anchor())
 
 
-## Why the anchor cannot go down here, or "".
-func anchoring_refusal() -> String:
+## Why `kind` of anchor (normal / magic) cannot go down here, or "".
+func anchoring_refusal(kind: StringName = AnchorState.KIND_NORMAL) -> String:
 	if _state == null:
 		return "No game is running."
 	if is_anchored():
 		return "The anchor is already down."
 	if not is_underway():
 		return "In harbour the boat is moored: anchoring is for the coast between harbours."
+	if kind == AnchorState.KIND_MAGIC and not has_magic_anchor():
+		return "There is no Magic Anchor aboard."
 	var site := evaluate_anchorage()
-	return "" if site.ok else String(site.reason)
+	if kind == AnchorState.KIND_MAGIC:
+		return "" if site.magic_ok else String(site.reason)
+	if site.normal_ok:
+		return ""
+	return String(site.reason) if not site.magic_ok else "Deep water (%s, %s): too deep for the normal anchor to reach the bottom. The Magic Anchor could hold here." % [
+		DepthService.describe_depth(float(site.depth_m)), site.depth_label]
+
+
+# --- The Magic Anchor (0.105b) ----------------------------------------------------------
+
+const MAGIC_ANCHOR_MARK := &"equipment:magic_anchor"
+const MAGIC_ANCHOR_NAME := "Magic Anchor"
+const MAGIC_ANCHOR_LONG_NAME := "Multi-purpose Deep Anchor"
+const MAGIC_ANCHOR_TEXT := "For waters where the charts grow uncertain. A little engineering, a little seamanship, and a suspicious amount of nautical magic. Somehow it always finds a useful piece of seabed. (A fictional anchor: the game translates real-world depths into game-code magic. Not real seamanship.)"
+
+
+## The captain owns the Magic Anchor (kept with the captain, so it goes to any
+## boat; a progress mark in the save, no new field).
+func has_magic_anchor() -> bool:
+	return _state != null and _state.progress.is_completed(MAGIC_ANCHOR_MARK)
+
+
+## Prototype access (0.105b, until the chandlery of Iteration 20): fitted free
+## at any boatyard. Returns "" or why not.
+func fit_magic_anchor() -> String:
+	if _state == null:
+		return "No game is running."
+	if has_magic_anchor():
+		return "The Magic Anchor is already aboard."
+	_state.progress.mark(MAGIC_ANCHOR_MARK, _state.game_time)
+	_has_unsaved_changes = true
+	boat_care_changed.emit()
+	anchor_changed.emit()
+	return ""
+
+
+## How many good turns the Magic Anchor's dial asks for in this wind: 1 in
+## ordinary conditions, 2 when it is blowing, 3 in a gale or storm.
+func magic_anchor_checks() -> int:
+	var wind := Simulation.get_weather_at_vessel().speed_kn
+	if wind >= 28.0:
+		return 3
+	if wind >= 17.0:
+		return 2
+	return 1
 
 
 ## Lets the anchor go here on `scope`:1 chain, set with `set_quality` (0..1,
 ## from the setting interaction). The voyage pauses where the boat is.
 ## Returns {"error", "holding", "site"}.
 func drop_anchor(scope: int, set_quality: float) -> Dictionary:
-	var refusal := anchoring_refusal()
+	return _let_go(AnchorState.KIND_NORMAL, scope, set_quality, 0)
+
+
+## The Magic Anchor goes down (0.105b) after its dial: `perfects` Perfect hits
+## earn a small holding bonus (bounded). Same anchored state, holding and
+## drag model as the normal anchor. Returns {"error", "holding", "site"}.
+func drop_magic_anchor(scope: int, set_quality: float, perfects := 0) -> Dictionary:
+	return _let_go(AnchorState.KIND_MAGIC, scope, set_quality, perfects)
+
+
+func _let_go(kind: StringName, scope: int, set_quality: float, perfects: int) -> Dictionary:
+	var refusal := anchoring_refusal(kind)
 	if refusal != "":
 		return {"error": refusal, "holding": &"", "site": {}}
 	if not scope in AnchorState.SCOPES:
 		return {"error": "Choose 3, 5 or 7 times the depth of chain.", "holding": &"", "site": {}}
+	var site := evaluate_anchorage()
 	var anchor := _state.anchor
 	anchor.active = true
 	anchor.position = _state.vessel_position
@@ -1846,19 +1915,33 @@ func drop_anchor(scope: int, set_quality: float) -> Dictionary:
 	anchor.moments.clear()
 	anchor.anchored_at = _state.game_time
 	anchor.checked_until = _state.game_time
+	anchor.kind = kind
+	anchor.depth_m = float(site.get("depth_m", -1.0))
+	anchor.depth_source = StringName(site.get("depth_source", &""))
+	anchor.bonus_kn = minf(1.0 * maxi(perfects, 0), AnchorState.MAGIC_BONUS_MAX_KN) if kind == AnchorState.KIND_MAGIC else 0.0
+	# Anchoring stops the engine (0.105b): the one propulsion state, stopped.
+	_state.propulsion.mode = PropulsionState.MODE_SAIL
+	_state.propulsion.engine_reason = PropulsionState.REASON_NONE
+	_state.propulsion.speed_kn = 0.0
 	# Anchored at the anchorage the voyage was waiting at: that stop is done.
 	if _state.voyage and _state.voyage.holding_at >= 0:
 		_state.voyage.anchorages_done.append(_state.voyage.holding_at)
 		_state.voyage.holding_at = -1
-	var site := evaluate_anchorage()
-	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), get_anchor_holding_bonus_kn())
+	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), _holding_bonus())
 	_has_unsaved_changes = true
 	if anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
 		var award := _award_once("anchor:first", "Your first anchorage", 3)
 		if not award.is_empty():
 			renown_awarded.emit([award])
 	anchor_changed.emit()
+	propulsion_changed.emit(PropulsionState.MODE_SAIL)
 	return {"error": "", "holding": anchor.holding, "site": site}
+
+
+## Holding bonus of the gear now down (knots): heavier ground tackle, and the
+## Magic Anchor's well-placed bonus.
+func _holding_bonus() -> float:
+	return get_anchor_holding_bonus_kn() + (_state.anchor.bonus_kn if _state.anchor.kind == AnchorState.KIND_MAGIC else 0.0)
 
 
 ## Lets out (or takes in) chain, or sets the anchor again: the holding is
@@ -1872,8 +1955,8 @@ func adjust_anchor(scope: int, set_quality := -1.0) -> StringName:
 	if set_quality >= 0.0:
 		anchor.set_quality = clampf(set_quality, 0.0, 1.0)
 		anchor.position = _state.vessel_position
-	var site := evaluate_anchorage()
-	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), get_anchor_holding_bonus_kn())
+	var shelter := AnchorSite.shelter_at(anchor.position, Simulation.get_weather_at_vessel())
+	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, shelter, Simulation.get_weather_at_vessel(), _holding_bonus())
 	anchor.alarm = anchor.holding in [AnchorState.HOLDING_POOR, AnchorState.HOLDING_DRAGGING] and anchor.alarm
 	if was_dragging and anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
 		anchor.dragged_this_stay = false
@@ -1943,34 +2026,49 @@ func sail_on_from_anchorage() -> String:
 	return ""
 
 
-## Whether a spot is fit to be an anchorage (the game's anchoring rule: open
-## water within AnchorSite.MAX_LAND_NM of land; how sheltered it is depends
-## on the wind when the boat gets there). Returns {"ok", "reason", "land_nm"}.
-static func anchorage_spot(geo: Vector2) -> Dictionary:
-	var router := SeaRouter.get_default()
-	if not router.is_point_navigable(geo):
-		return {"ok": false, "reason": "That is on land or too close to the shore for the boat.", "land_nm": 0.0}
-	var land := HatStory.open_water_nm(geo, AnchorSite.MAX_LAND_NM + 0.5)
-	if land > AnchorSite.MAX_LAND_NM:
-		return {"ok": false, "land_nm": land, "reason": "Too far from the coast: the water is too deep to anchor (anchor within %.1f nm of land)." % AnchorSite.MAX_LAND_NM}
-	return {"ok": true, "land_nm": land, "reason": "Within %.1f nm of land: the anchor will reach the bottom. How sheltered it is depends on the wind when you arrive." % land}
+## Whether a spot is fit to be an anchorage waypoint (0.105b: the worldwide
+## rule of AnchorSite.evaluate - water, not too close to the shore, a safe
+## approach, and a depth the normal anchor reaches, or any of those depths
+## with `magic`). Shelter depends on the wind on arrival, so it is not judged
+## here. Returns {"ok", "kind" (normal / magic), "reason", "land_nm",
+## "depth_m", "depth_label"}.
+static func anchorage_spot(geo: Vector2, magic := false) -> Dictionary:
+	var calm := WindField.Sample.make(0.0, 0.0)
+	var site := AnchorSite.evaluate(geo, calm, magic, false)
+	var result := {"ok": site.ok, "kind": site.kind, "land_nm": site.land_nm, "depth_m": site.depth_m, "depth_label": site.depth_label,
+		"offshore": site.offshore}
+	if not site.ok:
+		result.reason = String(site.reason)
+	elif site.kind == AnchorSite.KIND_MAGIC:
+		result.reason = "Deep water (%s, %s): only the Magic Anchor will hold here.%s" % [DepthService.describe_depth(site.depth_m), site.depth_label,
+			" Open sea: no shelter from wind or waves." if site.offshore else ""]
+	else:
+		result.reason = "Good for the normal anchor (%s, %s; land %.1f nm away). How sheltered it is depends on the wind when you arrive." % [
+			DepthService.describe_depth(site.depth_m), site.depth_label, float(site.land_nm)]
+	return result
 
 
-## The nearest spot fit for an anchorage within `max_nm` of `geo`, or INF.
-static func nearest_anchorage_spot(geo: Vector2, max_nm := 12.0) -> Vector2:
+## The nearest spot fit for an anchorage within `max_nm` of `geo`, or INF
+## (for the normal anchor, or any anchor with `magic`). Cheap checks first
+## (clear water, depth), the approach search only for the best of a ring.
+static func nearest_anchorage_spot(geo: Vector2, max_nm := 12.0, magic := false) -> Vector2:
+	var coast := CoastalGeography.get_default()
+	var depths := DepthService.get_default()
 	var step := 0.25
 	var r := step
 	while r <= max_nm:
-		var best := Vector2.INF
-		var best_land := INF
+		var candidates: Array = []
 		for k in 32:
-			var point := AnchorSite.offset(geo, TAU * k / 32.0, r)
-			var spot := anchorage_spot(point)
-			if spot.ok and float(spot.land_nm) < best_land:
-				best = point
-				best_land = float(spot.land_nm)
-		if best != Vector2.INF:
-			return GeoMath.normalize(best)
+			var point := GeoMath.normalize(AnchorSite.offset(geo, TAU * k / 32.0, r))
+			if not coast.is_clear(point):
+				continue
+			var depth := float(depths.sample(point).depth_m)
+			if magic or (depth >= AnchorSite.MIN_DEPTH_M and depth <= AnchorSite.NORMAL_MAX_DEPTH_M):
+				candidates.append([absf(depth - 8.0), point])
+		candidates.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+		for candidate: Array in candidates:
+			if anchorage_spot(candidate[1], magic).ok:
+				return candidate[1]
 		r += step
 	return Vector2.INF
 
@@ -1999,16 +2097,21 @@ func apply_anchor_check(tick: float) -> String:
 	var anchor := _state.anchor
 	anchor.checked_until = maxf(anchor.checked_until, tick)
 	var sample := Simulation.get_weather_at_vessel()
-	var site := AnchorSite.evaluate(anchor.position, sample)
+	var shelter := AnchorSite.shelter_at(anchor.position, sample)
 	var before := anchor.holding
-	anchor.holding = AnchorSite.holding(anchor.scope, anchor.set_quality, site.shelter, sample, get_anchor_holding_bonus_kn())
+	anchor.holding = AnchorSite.holding(anchor.scope, anchor.set_quality, shelter, sample, _holding_bonus())
 	var event := ""
 	if anchor.holding == AnchorState.HOLDING_DRAGGING:
 		anchor.dragged_this_stay = true
-		anchor.position = AnchorSite.offset(anchor.position, deg_to_rad(sample.from_deg + 180.0), DRAG_NM_PER_CHECK)
-		anchor.dragged_nm += DRAG_NM_PER_CHECK
-		_state.vessel_position = anchor.position
-		if HatStory.open_water_nm(anchor.position, DRAG_GROUND_NM) < DRAG_GROUND_NM:
+		# Downwind a little; never up onto the land (0.105b, fine coast): on the
+		# shore's edge the boat stays and scrapes.
+		var next := AnchorSite.offset(anchor.position, deg_to_rad(sample.from_deg + 180.0), DRAG_NM_PER_CHECK)
+		var coast := CoastalGeography.get_default()
+		if coast.is_water(next):
+			anchor.position = next
+			anchor.dragged_nm += DRAG_NM_PER_CHECK
+			_state.vessel_position = anchor.position
+		if coast.shore_distance_nm(anchor.position, DRAG_GROUND_NM) < DRAG_GROUND_NM:
 			apply_weather_damage(DRAG_GROUND_DAMAGE, tick)
 		if before != AnchorState.HOLDING_DRAGGING or not anchor.alarm:
 			anchor.alarm = true
@@ -2032,8 +2135,7 @@ func apply_anchor_check(tick: float) -> String:
 func get_anchor_damage_factor() -> float:
 	if not is_anchored() or _state.anchor.holding == AnchorState.HOLDING_DRAGGING:
 		return 1.0
-	var site := AnchorSite.evaluate(_state.anchor.position, Simulation.get_weather_at_vessel())
-	return float(AnchorSite.EXPOSURE.get(site.shelter, 1.0))
+	return float(AnchorSite.EXPOSURE.get(AnchorSite.shelter_at(_state.anchor.position, Simulation.get_weather_at_vessel()), 1.0))
 
 
 func get_anchor_checked_until() -> float:
@@ -2562,6 +2664,12 @@ func _complete_legacy_route() -> void:
 ## location_recovered and get_last_location_recovery().
 func _recover_location() -> void:
 	_last_recovery = {}
+	# 0.105b: anchoring stops the engine; an older save at anchor with the
+	# engine running is set right (the one propulsion state, stopped).
+	if _state.anchor.active and _state.propulsion.is_motoring():
+		_state.propulsion.mode = PropulsionState.MODE_SAIL
+		_state.propulsion.engine_reason = PropulsionState.REASON_NONE
+		_state.propulsion.speed_kn = 0.0
 	var router := SeaRouter.get_default()
 	if is_underway():
 		_recover_voyage(router)
@@ -2592,7 +2700,7 @@ func _recover_voyage(router: SeaRouter) -> void:
 	# valid is enough (Iteration 18: a save just after leaving harbour asked
 	# for the course to be plotted again).
 	var path_ok := remaining.size() >= 2 and (router.validate_route(check).is_empty() or router.validate_route(voyage.route).is_empty())
-	var position_ok := _near_route_port(router, position, voyage.route) or router.is_point_navigable(position)
+	var position_ok := _near_route_port(router, position, voyage.route) or router.is_afloat(position)
 	if path_ok and position_ok:
 		return
 	var start := position
@@ -2632,7 +2740,7 @@ func _near_route_port(router: SeaRouter, position: Vector2, route: PlannedRoute)
 func _navigable(router: SeaRouter, points: Array[Vector2]) -> Array[Vector2]:
 	var result: Array[Vector2] = []
 	for point in points:
-		if router.is_point_navigable(point):
+		if router.is_point_reachable(point):
 			result.append(point)
 	return result
 

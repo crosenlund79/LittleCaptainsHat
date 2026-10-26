@@ -1,29 +1,53 @@
 class_name AnchorSite
 extends RefCounted
-## Where the boat can anchor, and how well it holds (Iteration 13).
+## Where the boat can anchor, and how well it holds (Iteration 13; worldwide
+## since Revision 0.105b).
 ##
-## The game has no depth soundings or seabed charts, so this is a
-## deliberately conservative gameplay rule built only on the chart's own
-## land/water grid (NavGrid, about one arc-minute per cell), never on invented
-## depths:
-##   - anchoring is offered only near a coast: in open water, with land
-##     within MAX_LAND_NM (the bottom is assumed within reach of the chain
-##     there, and too deep further out);
-##   - shelter is the fetch: how far the wind blows over open water before it
-##     reaches the boat (a ray from the boat towards where the wind comes
-##     from, until it meets land, at most MAX_FETCH_NM). Land close upwind is
-##     a sheltered anchorage; a long fetch is exposed. A wind shift can turn a
-##     good anchorage into a poor one;
-##   - holding compares what the anchor can hold (more chain, a well-set
-##     anchor and shelter help) with the wind it has to hold against.
+## Three separate questions (0.105b), never mixed:
+##   1. can the boat get there? Water on the fine coastal raster
+##      (CoastalGeography), not too close to the shore (clear water, at least
+##      ~0.3 nm off), and a short checked approach from the router's water
+##      (CoastalGeography.approach) - so a near-shore spot the coarse world
+##      routing chart cannot express is still reachable, and a lagoon behind a
+##      narrow entrance is not;
+##   2. is the water right for the anchor? Depth from DepthService (in this
+##      build always a labelled GAME ESTIMATE): the normal anchor works from
+##      MIN_DEPTH_M to NORMAL_MAX_DEPTH_M; the Magic Anchor (fictional
+##      equipment) anywhere the boat can float, including deep water and the
+##      open sea ("emergency": more than COASTAL_NM from land);
+##   3. how sheltered is it in this wind? The fetch: open water upwind before
+##      land, measured on the fine raster (at most MAX_FETCH_NM). Land close
+##      upwind shelters; a long fetch (or the open sea) is exposed. Advisory: a
+##      wind shift can turn a good anchorage poor, and no anchor removes the
+##      wind.
+## Holding (unchanged): what the anchor can hold (more chain, a well-set
+## anchor, shelter, heavier gear, a well-placed Magic Anchor) against the wind
+## it feels. The holding model has no depth term, so the Magic Anchor uses it
+## exactly as the normal one does ("effective depth" = the chosen scope);
+## the real (estimated) depth is stored and shown separately.
 ## The seabed is assumed to be a reasonable mixed bottom everywhere; the game
 ## does not pretend to know better.
 
+## (Iteration 13 rule, no longer used for eligibility: kept for old notes.)
 const MAX_LAND_NM := 2.5
 const MAX_FETCH_NM := 8.0
 const FETCH_STEP_NM := 0.25
-## Too much wind to anchor at all (sustained, knots).
+## Too much wind to anchor at all (sustained, knots): normal anchor.
 const MAX_ANCHORING_WIND_KN := 34.0
+## The Magic Anchor can go down in a storm, but not in a hurricane.
+const MAX_MAGIC_WIND_KN := 55.0
+## Depth for the normal anchor (m): enough water under the keel, and chain
+## enough for the deepest (7:1 scope = 175 m of chain).
+const MIN_DEPTH_M := 2.5
+const NORMAL_MAX_DEPTH_M := 25.0
+## Planning an anchorage keeps at least this far off the shore (nm, ~370 m).
+const MIN_SHORE_NM := 0.2
+## Further than this from land a Magic Anchor deployment is "offshore":
+## holding position, not shelter.
+const COASTAL_NM := 3.0
+
+const KIND_NORMAL := &"normal"
+const KIND_MAGIC := &"magic"
 
 const SHELTERED := &"sheltered"
 const PARTLY := &"partly sheltered"
@@ -46,29 +70,70 @@ const WELL_MARGIN := 8.0
 const FAIR_MARGIN := 3.0
 
 
-## The anchorage at `geo` in the wind `sample`: {"class", "ok", "reason",
-## "land_nm", "fetch_nm", "shelter"}.
-static func evaluate(geo: Vector2, sample: WindField.Sample) -> Dictionary:
-	var result := {"class": CLASS_UNSUITABLE, "ok": false, "reason": "", "land_nm": INF, "fetch_nm": MAX_FETCH_NM, "shelter": EXPOSED}
-	var grid := SeaRouter.get_default().grid
-	if grid == null or not grid.is_navigable(geo):
-		result.reason = "This is not open water."
+## The anchorage at `geo` in the wind `sample`, for a boat with (`magic`) or
+## without the Magic Anchor aboard. `at_boat`: the boat is already there (it
+## got there along its course), so the approach need not be searched.
+## Keys: "class", "ok", "kind" (normal / magic / ""), "reason", "land_nm",
+## "fetch_nm", "shelter", "water", "reachable", "depth_m", "depth_source",
+## "depth_label", "normal_ok", "magic_ok", "offshore", "approach".
+static func evaluate(geo: Vector2, sample: WindField.Sample, magic := false, at_boat := true) -> Dictionary:
+	var result := {"class": CLASS_UNSUITABLE, "ok": false, "kind": &"", "reason": "", "land_nm": INF, "fetch_nm": MAX_FETCH_NM,
+		"shelter": EXPOSED, "water": false, "reachable": false, "depth_m": 0.0, "depth_source": &"", "depth_label": "",
+		"normal_ok": false, "magic_ok": false, "offshore": false, "approach": PackedVector2Array()}
+	var coast := CoastalGeography.get_default()
+	if not coast.is_water(geo):
+		result.reason = "Land or unsuitable water."
 		return result
-	var land := HatStory.open_water_nm(geo, MAX_LAND_NM + 0.5)
-	result.land_nm = land
-	var fetch := fetch_nm(geo, sample.from_deg)
+	result.water = true
+	var depth := DepthService.get_default().sample(geo)
+	result.depth_m = float(depth.depth_m)
+	result.depth_source = depth.source
+	result.depth_label = String(depth.label)
+	result.land_nm = float(depth.shore_nm)
+	result.offshore = result.land_nm >= COASTAL_NM
+	if not at_boat:
+		if not coast.is_clear(geo) or result.land_nm < MIN_SHORE_NM:
+			result.reason = "Too close to the shore for the boat: keep a little further off."
+			return result
+		result.approach = coast.approach(geo)
+		if result.approach.is_empty():
+			result.reason = "No safe approach: the boat cannot get in there from open water."
+			return result
+	result.reachable = true
+	var fetch: float = coast.fetch_nm(geo, sample.from_deg) if not result.offshore else MAX_FETCH_NM
 	result.fetch_nm = fetch
 	result.shelter = shelter_for(fetch)
-	if land > MAX_LAND_NM:
-		result.reason = "Too far from the coast: the water is too deep to anchor here. Anchor within %.1f nm of land." % MAX_LAND_NM
-		return result
-	if sample.speed_kn > MAX_ANCHORING_WIND_KN:
-		result.reason = "Too much wind to anchor safely (%d kn)." % roundi(sample.speed_kn)
+	var depth_ok: bool = result.depth_m >= MIN_DEPTH_M and result.depth_m <= NORMAL_MAX_DEPTH_M
+	result.normal_ok = depth_ok and sample.speed_kn <= MAX_ANCHORING_WIND_KN
+	result.magic_ok = magic and sample.speed_kn <= MAX_MAGIC_WIND_KN
+	if result.normal_ok:
+		result.kind = KIND_NORMAL
+	elif result.magic_ok:
+		result.kind = KIND_MAGIC
+	if result.kind == &"":
+		if sample.speed_kn > (MAX_MAGIC_WIND_KN if magic else MAX_ANCHORING_WIND_KN):
+			result.reason = "Too much wind to anchor safely (%d kn)." % roundi(sample.speed_kn)
+		elif result.depth_m < MIN_DEPTH_M:
+			result.reason = "Too shallow for the boat here."
+		elif sample.speed_kn > MAX_ANCHORING_WIND_KN:
+			result.reason = "Too much wind for the normal anchor (%d kn)." % roundi(sample.speed_kn)
+		else:
+			result.reason = "Deep water (%s, %s): too deep for the normal anchor to reach the bottom.%s" % [
+				DepthService.describe_depth(result.depth_m), result.depth_label,
+				"" if magic else " A Magic Anchor could hold here."]
 		return result
 	result.ok = true
 	result.class = {SHELTERED: CLASS_GOOD, PARTLY: CLASS_FAIR, EXPOSED: CLASS_POOR}[result.shelter]
 	result.reason = describe(result)
 	return result
+
+
+## Only the shelter at `geo` in this wind (cheap: for the anchor checks).
+static func shelter_at(geo: Vector2, sample: WindField.Sample) -> StringName:
+	var coast := CoastalGeography.get_default()
+	if coast.shore_distance_nm(geo, COASTAL_NM) >= COASTAL_NM:
+		return EXPOSED
+	return shelter_for(coast.fetch_nm(geo, sample.from_deg))
 
 
 static func shelter_for(fetch: float) -> StringName:
@@ -80,18 +145,9 @@ static func shelter_for(fetch: float) -> StringName:
 
 
 ## Open water upwind of `geo` (nm, at most MAX_FETCH_NM): the wind comes from
-## `from_deg`.
+## `from_deg`. On the fine coastal raster (0.105b).
 static func fetch_nm(geo: Vector2, from_deg: float) -> float:
-	var grid := SeaRouter.get_default().grid
-	if grid == null:
-		return MAX_FETCH_NM
-	var bearing := deg_to_rad(from_deg)
-	var d := FETCH_STEP_NM
-	while d <= MAX_FETCH_NM:
-		if not grid.is_navigable(offset(geo, bearing, d)):
-			return d
-		d += FETCH_STEP_NM
-	return MAX_FETCH_NM
+	return CoastalGeography.get_default().fetch_nm(geo, from_deg)
 
 
 ## The point `nm` from `geo` on bearing `bearing` (radians, true): a flat
@@ -133,12 +189,16 @@ static func holding_text(holding: StringName) -> String:
 
 
 static func describe(site: Dictionary) -> String:
-	var land := "land %.1f nm away" % float(site.land_nm)
+	var depth := "%s, %s" % [DepthService.describe_depth(float(site.get("depth_m", 0.0))), site.get("depth_label", "")]
+	var magic := StringName(site.get("kind", &"")) == KIND_MAGIC
+	var prefix := "Magic Anchor: " if magic else ""
+	if magic and bool(site.get("offshore", false)):
+		return "Magic Anchor, open sea (%s): it will hold the boat's position, but there is no shelter out here from wind or waves." % depth
 	match StringName(site.class):
 		CLASS_GOOD:
-			return "A good anchorage: sheltered from this wind (%s)." % land
+			return "%sA good anchorage: sheltered from this wind (depth %s; land %.1f nm away)." % [prefix, depth, float(site.land_nm)]
 		CLASS_FAIR:
-			return "A fair anchorage: partly sheltered from this wind (%s)." % land
+			return "%sA fair anchorage: partly sheltered from this wind (depth %s; land %.1f nm away)." % [prefix, depth, float(site.land_nm)]
 		CLASS_POOR:
-			return "An exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor." % float(site.fetch_nm)
+			return "%sAn exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor (depth %s)." % [prefix, float(site.fetch_nm), depth]
 	return String(site.reason)

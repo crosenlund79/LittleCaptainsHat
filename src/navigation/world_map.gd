@@ -336,8 +336,8 @@ func apply_course() -> String:
 		return _set_feedback("This course cannot be used: %s" % _draft_error)
 	var error := ""
 	for i in _draft_waypoints.size():
-		if _draft_anchorages[i] and not GameSession.anchorage_spot(_draft_waypoints[i]).ok:
-			return _set_feedback("Anchorage %d cannot be used: %s Move it, or unmark it." % [i + 1, GameSession.anchorage_spot(_draft_waypoints[i]).reason])
+		if _draft_anchorages[i] and not _spot(_draft_waypoints[i]).ok:
+			return _set_feedback("Anchorage %d cannot be used: %s Move it, or unmark it." % [i + 1, _spot(_draft_waypoints[i]).reason])
 	if GameSession.is_underway():
 		error = GameSession.change_course(_draft_destination, _draft_waypoints, _draft_anchorages)
 	else:
@@ -581,7 +581,7 @@ func _move_waypoint(index: int, geo: Vector2) -> void:
 	_clear_suggestion()
 	_recalculate()
 	if index < _draft_anchorages.size() and _draft_anchorages[index]:
-		var spot := GameSession.anchorage_spot(geo)
+		var spot := _spot(geo)
 		_set_feedback(("Anchorage %d: %s" % [index + 1, spot.reason]) if spot.ok else
 			("Anchorage %d is no good here: %s" % [index + 1, spot.reason]))
 
@@ -688,9 +688,9 @@ func toggle_anchorage(index: int) -> String:
 		_recalculate()
 		_set_feedback("Waypoint %d is an ordinary waypoint again." % (index + 1))
 		return ""
-	var spot := GameSession.anchorage_spot(_draft_waypoints[index])
+	var spot := _spot(_draft_waypoints[index])
 	if not spot.ok:
-		var nearest := GameSession.nearest_anchorage_spot(_draft_waypoints[index])
+		var nearest := GameSession.nearest_anchorage_spot(_draft_waypoints[index], 12.0, GameSession.has_magic_anchor())
 		_anchorage_suggestion = nearest
 		_anchorage_suggestion_for = index if nearest != Vector2.INF else -1
 		var offer := " The nearest suitable spot is %.1f nm away." % GeoMath.distance_nm(_draft_waypoints[index], nearest) if nearest != Vector2.INF else " There is no suitable spot nearby."
@@ -715,7 +715,14 @@ func use_anchorage_suggestion() -> void:
 	_clear_suggestion()
 	_draft_dirty = true
 	_recalculate()
-	_set_feedback("Waypoint %d moved to a suitable spot and made an anchorage. %s" % [index + 1, GameSession.anchorage_spot(spot).reason])
+	_set_feedback("Waypoint %d moved to a suitable spot and made an anchorage. %s" % [index + 1, _spot(spot).reason])
+
+
+## The anchorage rule for the anchors the captain has (0.105b: the Magic
+## Anchor opens deep water too). The anchor a spot needs follows from its
+## position (the depth is deterministic), so it is worked out again, not saved.
+func _spot(geo: Vector2) -> Dictionary:
+	return GameSession.anchorage_spot(geo, GameSession.has_magic_anchor())
 
 
 func get_anchorage_suggestion() -> Vector2:
@@ -739,8 +746,8 @@ func _refresh_map_only() -> void:
 	var invalid := PackedInt32Array()
 	var router := SeaRouter.get_default()
 	for i in _draft_waypoints.size():
-		if not router.is_point_navigable(_draft_waypoints[i]) \
-				or (i < _draft_anchorages.size() and _draft_anchorages[i] and not GameSession.anchorage_spot(_draft_waypoints[i]).ok):
+		if not router.is_point_reachable(_draft_waypoints[i]) \
+				or (i < _draft_anchorages.size() and _draft_anchorages[i] and not _spot(_draft_waypoints[i]).ok):
 			invalid.append(i)
 	var voyage := GameSession.get_voyage()
 	var display := {

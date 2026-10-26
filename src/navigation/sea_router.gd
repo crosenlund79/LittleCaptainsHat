@@ -166,6 +166,19 @@ func is_segment_navigable(from: Vector2, to: Vector2) -> bool:
 	return grid.is_geo_line_clear(from, to, NavGrid.NAVIGABLE)
 
 
+## A point a course may use (0.105b): routing water, or near-shore clear water
+## with a checked approach from it (CoastalGeography.approach) - e.g. an
+## anchorage the coarse world chart cannot express.
+func is_point_reachable(geo: Vector2) -> bool:
+	return is_point_navigable(geo) or not CoastalGeography.get_default().approach(geo).is_empty()
+
+
+## A position a boat may lie at (0.105b): routing water or water on the fine
+## coastal raster (where an approach brought it).
+func is_afloat(geo: Vector2) -> bool:
+	return is_point_navigable(geo) or CoastalGeography.get_default().is_water(geo)
+
+
 ## Checks every segment of a route. Returns "" when valid, otherwise the reason.
 ## Allowed segments: navigable water everywhere; harbour approaches near the
 ## route's origin/destination port in approach-class water; and the short berth
@@ -188,7 +201,7 @@ func validate_route(route: PlannedRoute) -> String:
 	if origin:
 		ports.append(origin.get_geo_position())
 	for waypoint in route.waypoints:
-		if not is_point_navigable(waypoint):
+		if not is_point_reachable(waypoint):
 			return "A waypoint is on land or too close to the coast."
 	for i in range(1, path.size()):
 		if not _is_segment_allowed(path[i - 1], path[i], ports):
@@ -198,6 +211,11 @@ func validate_route(route: PlannedRoute) -> String:
 
 func _is_segment_allowed(a: Vector2, b: Vector2, ports: Array[Vector2]) -> bool:
 	if grid.is_geo_line_clear(a, b, NavGrid.NAVIGABLE):
+		return true
+	# A near-shore approach (0.105b): short, and clear water all the way on the
+	# fine coastal raster (never over land, never through a narrow entrance).
+	if GeoMath.rhumb_distance_nm(a, b) <= CoastalGeography.approach_max_nm(a) + 0.01 \
+			and CoastalGeography.get_default().is_line_clear(a, b):
 		return true
 	for port in ports:
 		var reach := approach_radius_nm(port)
@@ -364,11 +382,15 @@ func _compute_leg(from: Vector2, to: Vector2, from_port_id: StringName, to_port_
 	return leg
 
 
-## The fixed part of a leg at one end: [point] for open water, or the harbour
-## approach [port, ..., open-water point] for a port. Empty if unreachable.
+## The fixed part of a leg at one end: [point] for open water, the near-shore
+## approach [point, ..., open-water point] for a spot the routing chart cannot
+## express (0.105b, CoastalGeography.approach), or the harbour approach
+## [port, ..., open-water point] for a port. Empty if unreachable.
 func _endpoint_path(point: Vector2, port_id: StringName) -> PackedVector2Array:
 	if port_id.is_empty():
-		return PackedVector2Array([point]) if is_point_navigable(point) else PackedVector2Array()
+		if is_point_navigable(point):
+			return PackedVector2Array([point])
+		return CoastalGeography.get_default().approach(point)
 	var port := catalog.get_port(port_id)
 	return find_port_approach(port) if port else PackedVector2Array()
 

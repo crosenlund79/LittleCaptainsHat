@@ -83,20 +83,22 @@ func _test_marking() -> void:
 	world.plot_course_to(&"gothenburg")
 	await t.frames(1)
 	t.check(world.get_draft_route() != null, "(setup) a course to Gothenburg")
-	# A point on the course well away from any coast: too deep to anchor.
+	# A point on the course well away from any coast: too deep for the normal
+	# anchor (0.105b: depth, not distance, decides; 5 nm out is deep here).
 	var offshore := Vector2.INF
 	var path := world.get_draft_route().path
 	for i in range(path.size() - 1):
 		for f in [0.25, 0.5, 0.75]:
 			var p: Vector2 = path[i].lerp(path[i + 1], f)
-			if offshore == Vector2.INF and SeaRouter.get_default().is_point_navigable(p) and float(GameSession.anchorage_spot(p).land_nm) > AnchorSite.MAX_LAND_NM:
+			if offshore == Vector2.INF and SeaRouter.get_default().is_point_navigable(p) and float(GameSession.anchorage_spot(p).land_nm) >= 5.0 \
+					and not GameSession.anchorage_spot(p).ok:
 				offshore = p
 	if not t.check(offshore != Vector2.INF, "(setup) open water on the course, far from land"):
 		return
 	var index := world.insert_waypoint(world.get_draft_legs().size() - 1, offshore)
 	t.check(world.get_course_status_text().contains("mark it as an anchorage"), "[hint] the first waypoint brings the anchorage hint (%s)" % world.get_course_status_text())
 	var reason := world.toggle_anchorage(index)
-	t.check(not world.is_anchorage(index) and reason.contains("Too far from the coast"), "[mark] far offshore is refused: %s" % reason)
+	t.check(not world.is_anchorage(index) and reason.contains("too deep for the normal anchor"), "[mark] far offshore is refused for the normal anchor: %s" % reason)
 	t.check(world.get_anchorage_suggestion() != Vector2.INF and GameSession.anchorage_spot(world.get_anchorage_suggestion()).ok,
 		"[mark] and the nearest suitable spot is offered (%s)" % GeoMath.format_position(world.get_anchorage_suggestion()))
 	world.use_anchorage_suggestion()
@@ -112,7 +114,7 @@ func _test_marking() -> void:
 	# Land is refused.
 	var land_index := world.insert_waypoint(0, Vector2(12.45, 55.75))
 	var land_reason := world.toggle_anchorage(land_index)
-	t.check(not world.is_anchorage(land_index) and land_reason.contains("on land"), "[mark] on land is refused: %s" % land_reason)
+	t.check(not world.is_anchorage(land_index) and land_reason.contains("Land"), "[mark] on land is refused: %s" % land_reason)
 	world.remove_waypoint(land_index)
 	index = world.get_draft_waypoints().find(spot)
 	# M toggles the selected waypoint; the hint is not repeated.
@@ -258,8 +260,12 @@ func _test_date_line_and_old_saves() -> void:
 	# Abroad the world chart is coarse (cells of about 5 nm): no spot there is
 	# known to be within reach of the bottom, so none is offered - and the
 	# captain is told why, never routed somewhere unsafe.
-	var abroad := GameSession.anchorage_spot(Vector2(174.3, -35.3))
-	t.check(not abroad.ok and String(abroad.reason) != "", "[abroad] off New Zealand no anchorage is offered on the coarse ocean chart, with the reason (%s)" % abroad.reason)
+	# 0.105b: this used to check the I018 limitation (no anchorage on the coarse
+	# ocean chart); the Captain has made worldwide anchoring a requirement, so
+	# now a suitable anchorage is found off New Zealand.
+	var near_nz := GameSession.nearest_anchorage_spot(Vector2(174.3, -35.3), 12.0)
+	var abroad := GameSession.anchorage_spot(near_nz) if near_nz != Vector2.INF else {"ok": false, "reason": "none found"}
+	t.check(abroad.ok, "[abroad] off New Zealand an anchorage for the normal anchor is found (%s: %s)" % [GeoMath.format_position(near_nz) if near_nz != Vector2.INF else "-", abroad.reason])
 	_moor(&"papeete")
 	var router := SeaRouter.get_default()
 	var result := router.plan_route(&"papeete", PortCatalog.get_default().get_port(&"papeete").get_geo_position(),

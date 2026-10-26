@@ -142,6 +142,8 @@ static func format_position(geo: Vector2) -> String:
 static func _format_angle(value: float, positive: String, negative: String) -> String:
 	var hemisphere := positive if value >= 0.0 else negative
 	var absolute := absf(value)
-	var degrees := floori(absolute)
-	var minutes := (absolute - degrees) * 60.0
+	# Round to tenths of a minute first, so 16°59.97′ reads 17°00.0′, not 16°60.0′.
+	var tenths := roundi(absolute * 600.0)
+	var degrees := tenths / 600
+	var minutes := (tenths % 600) / 10.0
 	return "%d°%04.1f′%s" % [degrees, minutes, hemisphere]
