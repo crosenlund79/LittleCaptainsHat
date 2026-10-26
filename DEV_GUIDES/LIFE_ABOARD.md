@@ -220,3 +220,26 @@ inventory.
   `FOLLOW_DOWN_SECONDS`, `WANDER_SECONDS`) and `GameSession.companion_may_be_on_deck()`
   (moored, or anchored under `COMPANION_DECK_MAX_WIND_KN` without rain).
   `test_companion_deck` checks every frame of every walk on all four boats.
+
+## 10. Revision 0.105b: anchoring worldwide, the Magic Anchor, engine off
+
+- **Where you can anchor.** `AnchorSite.evaluate()` (`src/anchor/anchor_site.gd`) works on the fine coastal raster (`CoastalGeography`, 1/120°, `data/navigation/coast/`), not on the 5 nm routing cells. A spot must be:
+  - water;
+  - (when planning) at least `MIN_SHORE_NM` from the shore;
+  - reachable from routing water by a short checked approach.
+
+  Depth comes from `DepthService` (`src/navigation/depth_service.gd`). In this build every depth is a deterministic **GAME ESTIMATE** (no real bathymetry is installed), shown as "about 9 m". Shelter is judged separately, from the open water upwind.
+- **Normal anchor:** depth `MIN_DEPTH_M`–`NORMAL_MAX_DEPTH_M` (2.5–25 m), wind up to 34 kn. **Magic Anchor:** any depth and wind up to 55 kn. It counts as "offshore" (no shelter) beyond `COASTAL_NM` (3 nm) from land. Holding and drag use the same `AnchorSite.holding()` model for both. The Magic Anchor's Perfects add at most `AnchorState.MAGIC_BONUS_MAX_KN` (3 kn).
+- **Obtaining it:** Boat care → Equipment → Magic Anchor (free prototype until the chandlery). It is stored as the progress mark `equipment:magic_anchor`.
+- **The dial:** `MagicAnchorDeployment` (`src/anchor/`) wraps the shared `TimingCheck` (`src/skills/timing_check.gd`; the reel is the same component). Checks and arcs:
+
+  | Wind | Checks | Arc |
+  |---|---|---|
+  | Under 17 kn | 1 | 70° |
+  | 17–27 kn | 2 | 58° |
+  | 28 kn and up | 3 | 48° |
+
+  Each miss costs `MISS_MINUTES` (5). Three misses and it has not bitten: Try again or Cancel.
+- **Engine:** anchoring sets the one propulsion state to sail and stops the boat. `GameSession.is_motoring()` is false at anchor, and `engine_start_refusal()` gives "Let's raise the anchor before starting the engine." An older save at anchor with the engine on is corrected on loading.
+- **Overlay:** `AnchorageLayer` (`src/navigation/anchorage_layer.gd`) fills only visible tiles at close zoom. It is cached, works within a frame budget, and its colours match the waypoint rule exactly.
+- **Solar panels:** decoration only. Each deck scene lists its panel rectangles (`VesselVisual.solar_panels`, drawn by `SolarPanels`).

@@ -15,7 +15,7 @@ version of each guide.
 
 | Guide | Read it when you want to… | Applies to |
 |---|---|---|
-| [SPRITES.md](SPRITES.md) | replace any artwork with a PNG: formats, transparency, import settings, sizes, alignment, fallback, common mistakes | all sprites |
+| [SPRITES.md](SPRITES.md) | replace any artwork with a PNG: formats, transparency, import settings, sizes, alignment, fallback, common mistakes. Since 0.105b the no-code way is the Sprite Workshop: `art_replacements/README_START_HERE.md` | all sprites, `art_replacements/` |
 | [COMPANION_ANIMATION.md](COMPANION_ANIMATION.md) | change the cat's and the dog's poses, adjust their placement, repaint them or switch back to your own drawings | `assets/companions/`, `Visuals/Cat/`, `data/companions/` |
 | [VESSEL_ART.md](VESSEL_ART.md) | draw a boat's deck, cabin or sails, damage overlays and the provisions display; use the art templates; understand layouts, visual profiles and slots | `assets/vessels/`, `src/vessels/`, `data/vessels/` |
 | [AUDIO.md](AUDIO.md) | replace a sound (purr, engine, storm wind, thunder, ambience, clicks); understand the audio buses | `assets/audio/` |

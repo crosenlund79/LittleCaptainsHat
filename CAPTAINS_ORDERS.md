@@ -272,6 +272,54 @@ fields are optional):
     Boat of Your Own, I021 The Well-Trimmed Ship) and were not started.
 25. **No selectable difficulty mode is introduced.**
 
+### Revision 0.105b, Safe Harbours, Deep Waters & the Sprite Workshop
+
+The Captain has approved (version 0.105b, save format 12 unchanged; new
+fields are optional):
+
+1. **Worldwide anchoring is a required gameplay capability.**
+2. **The coarse global chart must not prohibit all international
+   anchorages.**
+3. **Real bathymetry is preferred where appropriate.**
+4. **Game-estimated depths are permitted when transparent, deterministic
+   and coherent.**
+5. **The game does not claim navigation-grade depth accuracy.**
+6. **Normal anchoring remains useful worldwide.**
+7. **Anchorage suitability is separate from land avoidance.**
+8. **Shelter/exposure is separate from depth.**
+9. **Zoom-dependent chart highlights show eligible anchoring areas.**
+10. **Overlay computation must be visible-area-only and cached.**
+11. **Anchorage waypoints must use the existing navigation system.**
+12. **The Magic Anchor is approved as fictional equipment.**
+13. **The Magic Anchor can overcome excess or uncertain depth.**
+14. **It can support appropriate deep/offshore emergency deployment.**
+15. **It does not overcome land, impassable geography or weather
+    exposure.**
+16. **Magic Anchor deployment uses a fair skill check.**
+17. **Successful special deployment uses the existing anchor holding
+    model.**
+18. **The Captain's existing anchor ball, light, rode and buoy remain.**
+19. **Sprite Workshop Phase 1 is approved.**
+20. **Every relevant artwork folder contains a CSV list of expected
+    replacement files and written instructions.**
+21. **Artwork targets 2× normal display resolution.**
+22. **Inventory reports unique designs separately from static directional
+    drawings.**
+23. **Artwork is classified by complexity and expected resolution.**
+24. **Assets are ranked by hand-drawing priority.**
+25. **Valid installed replacement PNGs automatically override current
+    artwork.**
+26. **Missing or invalid replacements safely fall back to existing
+    visuals.**
+27. **The original Captain-owned artwork is preserved.**
+28. **Full Windows acceptance will follow this revision.**
+29. **I019–I021 remain independently scoped and are not cancelled.**
+30. **Successfully anchoring automatically stops the engine; the engine
+    remains off until the Captain raises the anchor and chooses to start
+    it.**
+31. **All four boats receive decorative solar panels. No electrical,
+    battery, charging or power-management mechanics are authorized.**
+
 ### Iterations and versions
 
 - Iteration numbers are plain sequential integers: no letter suffixes and no
@@ -377,3 +425,11 @@ Two; the wording was again not found in the repository in Iteration 18.
   captain on deck; cabin light contrast, navigation lights on the rail and
   1-hour wind forecast steps; the world-route panning fix; see
   `ITERATION_18_REPORT.md` and `WINDOWS_ACCEPTANCE_18.md`.
+- **Revision 0.105b, Safe Harbours, Deep Waters & the Sprite Workshop**,
+  version 0.105b, save format 12 (unchanged; optional new fields): anchoring
+  worldwide on a fine coastal raster with game-estimated depths (labelled
+  GAME ESTIMATE), shelter judged separately, the zoom-limited anchorage
+  overlay, the fictional Magic Anchor with its timing dial, the engine
+  stopping at anchor, decorative solar panels on all four boats, and Sprite
+  Workshop Phase 1 (`art_replacements/`); see `REVISION_0_105B_REPORT.md`,
+  `SPRITE_WORKSHOP_REPORT.md` and `WINDOWS_ACCEPTANCE_0_105B.md`.

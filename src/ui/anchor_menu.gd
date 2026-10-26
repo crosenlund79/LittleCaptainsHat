@@ -140,8 +140,8 @@ func refresh() -> void:
 	_magic.tooltip_text = GameSession.anchoring_refusal(AnchorState.KIND_MAGIC) if _magic.disabled and not busy else GameSession.MAGIC_ANCHOR_TEXT
 	if anchored and GameSession.get_anchor().kind == AnchorState.KIND_MAGIC:
 		_site.text = "The %s holds. %s" % [GameSession.MAGIC_ANCHOR_NAME, _site.text]
-		if GameSession.get_anchor().depth_m >= 0.0:
-			_site.text += "  Depth here %s (GAME ESTIMATE)." % DepthService.describe_depth(GameSession.get_anchor().depth_m)
+	if anchored and GameSession.get_anchor().depth_m > 0.0:
+		_site.text += "  Depth here %s (GAME ESTIMATE)." % DepthService.describe_depth(GameSession.get_anchor().depth_m)
 	_raise.visible = anchored
 	_raise.disabled = busy
 	_reset.visible = anchored

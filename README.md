@@ -450,6 +450,15 @@ Menus work with the mouse and keyboard (Tab / arrow keys to move focus, Enter / 
 
 ## What works
 
+- **Revision 0.105b, Safe Harbours, Deep Waters & the Sprite Workshop**:
+  - **Anchoring worldwide.** The anchor works on suitable coasts everywhere, not just in Denmark. Depths are labelled GAME ESTIMATE.
+  - **Anchorage overlay.** An **Anchorages** switch on the chart shows teal (normal anchor) and amber (Magic Anchor) areas when zoomed in on a coast.
+  - **The Magic Anchor.** A fictional piece of equipment for deep water, fitted free in Boat care for now. It is set with a small timing dial, holds the boat's position offshore, and gives no shelter.
+  - **Engine off at anchor.** The engine stops whenever the anchor goes down.
+  - **Solar panels.** Decorative panels on all four boats.
+  - **The Sprite Workshop.** `art_replacements/` lets hand-drawn PNGs replace the game's art without code (start with `art_replacements/README_START_HERE.md`).
+  - See `REVISION_0_105B_REPORT.md`.
+
 - **Main menu** with the Next Harbor logo: New Game, Continue (most recent valid save),
   Load Game, Settings, Quit.
 - **Four boats**, each with its own deck and cabin (all on one level), player movement,
@@ -717,6 +726,11 @@ built and verified.
   as packaged by geo-maps *earth-lands-100m* 0.6.0 (code MIT). The region files in
   `data/navigation/regions/denmark/` are derived from it and are ODbL too; built by
   `tools/navigation/build_region.py`, **not for navigation**.
+- Fine coastal raster for anchoring (Revision 0.105b): map data © [OpenStreetMap](https://www.openstreetmap.org/copyright)
+  contributors, ODbL 1.0, from the same geo-maps *earth-lands-100m* 0.6.0 land polygons, rasterised
+  at 1/120° by `tools/navigation/build_coast.py` into `data/navigation/coast/` (ODbL, derived
+  database). **No real depth data is included**: every depth in the game is a deterministic
+  GAME ESTIMATE, **not for navigation**.
 - Danish harbour and chart-label positions (Iteration 14): town coordinates from
   [GeoNames](https://www.geonames.org/) (CC BY 4.0) via the lutangar/cities.json list.
 - Fonts: [Barlow](https://github.com/jpt/barlow) by Jeremy Tribby, SIL Open Font License
