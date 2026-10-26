@@ -32,6 +32,7 @@ var _course_view: CheckBox
 var _reduce_flashing: CheckBox
 var _flash: HSlider
 var _reduce_motion: CheckBox
+var _ui_light: OptionButton
 
 @onready var _audio_grid: GridContainer = %AudioGrid
 @onready var _window_mode: OptionButton = %WindowMode
@@ -193,6 +194,20 @@ func _build_accessibility_rows() -> void:
 		SettingsManager.set_reduce_motion(pressed)
 		_refresh_status())
 	grid.add_child(_reduce_motion)
+	# Captain's Chartroom: the interface's day and night look.
+	var light_label := Label.new()
+	light_label.name = "UiLightLabel"
+	light_label.text = "Interface light"
+	grid.add_child(light_label)
+	_ui_light = OptionButton.new()
+	_ui_light.name = "UiLight"
+	for text in ["Automatic (follows the day)", "Always day", "Always night"]:
+		_ui_light.add_item(text)
+	_ui_light.tooltip_text = "By day the chartroom's parchment and brass, by night harbour dusk and lantern light. Automatic follows the sun where the boat is."
+	_ui_light.item_selected.connect(func(index: int) -> void:
+		SettingsManager.set_ui_light(SettingsManager.UI_LIGHTS[index])
+		_refresh_status())
+	grid.add_child(_ui_light)
 
 
 func _sync_controls() -> void:
@@ -209,6 +224,7 @@ func _sync_controls() -> void:
 	_reduce_flashing.set_pressed_no_signal(SettingsManager.get_reduce_flashing())
 	_flash.set_value_no_signal(SettingsManager.get_flash_intensity())
 	_reduce_motion.set_pressed_no_signal(SettingsManager.get_reduce_motion())
+	_ui_light.select(SettingsManager.UI_LIGHTS.find(SettingsManager.get_ui_light()))
 	_refresh_status()
 
 

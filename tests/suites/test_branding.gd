@@ -96,7 +96,13 @@ func _test_fonts_and_licence() -> void:
 		var font := theme.get_font(&"font", variation) as FontVariation
 		t.check(font != null and font.base_font.resource_path == PATRICK and not font.fallbacks.is_empty()
 			and font.fallbacks[0].resource_path == BARLOW, "[fonts] %s uses Patrick Hand, with Barlow as fallback" % variation)
-	for variation in [&"HeaderLabel", &"MutedLabel", &"TitleLabel"]:
+	# Captain's Chartroom: headings are maritime (Patrick Hand, Barlow fallback);
+	# body and muted text stay Barlow.
+	for variation in [&"HeaderLabel", &"TitleLabel"]:
+		var font := theme.get_font(&"font", variation) as FontVariation
+		t.check(font != null and font.base_font.resource_path == PATRICK and font.fallbacks[0].resource_path == BARLOW,
+			"[fonts] %s uses Patrick Hand, with Barlow as fallback" % variation)
+	for variation in [&"Label", &"MutedLabel"]:
 		var font := theme.get_font(&"font", variation)
 		var path := font.resource_path if font else BARLOW
 		t.check(path.contains("Barlow"), "[fonts] %s stays Barlow" % variation)
@@ -247,6 +253,9 @@ func _test_typography_in_game() -> void:
 	await t.frames(2)
 	var hud: Hud = app.hud
 	for label: Label in hud.find_children("*", "Label", true, false):
+		# Headings (the area name) are maritime since the Captain's Chartroom pass.
+		if label.theme_type_variation in [&"HeaderLabel", &"TitleLabel"]:
+			continue
 		if not _font_path(label).contains("Barlow"):
 			t.check(false, "[fonts] HUD label %s is not Barlow" % label.name)
 			return

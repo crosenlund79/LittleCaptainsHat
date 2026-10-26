@@ -12,6 +12,8 @@ signal ui_scale_changed(scale: float)
 signal art_style_changed(style: StringName)
 ## The "boat faces its course" sailing view was switched (Iteration 12).
 signal course_view_changed(enabled: bool)
+## The interface light (Captain's Chartroom): "auto", "day" or "night".
+signal ui_light_changed(mode: StringName)
 
 const DEFAULT_PATH := "user://settings.cfg"
 
@@ -46,6 +48,13 @@ const DEFAULT_FLASH_INTENSITY := 100
 ## Reduce motion (Iteration 18): small decorative animations stay still (the
 ## fish's tail flick and bob); the information never depends on them.
 const DEFAULT_REDUCE_MOTION := false
+## Interface light (Captain's Chartroom, after 0.105b): follow the game's own
+## daylight (Vintage Chartroom by day, Harbor Dusk by night), or pin one.
+const UI_LIGHT_AUTO := &"auto"
+const UI_LIGHT_DAY := &"day"
+const UI_LIGHT_NIGHT := &"night"
+const UI_LIGHTS: Array[StringName] = [UI_LIGHT_AUTO, UI_LIGHT_DAY, UI_LIGHT_NIGHT]
+const DEFAULT_UI_LIGHT := UI_LIGHT_AUTO
 
 ## Window size used when (re)entering windowed mode. Clamped to the screen.
 const WINDOWED_SIZE := Vector2i(1600, 900)
@@ -62,6 +71,7 @@ var _course_view := DEFAULT_COURSE_VIEW
 var _reduce_flashing := DEFAULT_REDUCE_FLASHING
 var _flash_intensity := DEFAULT_FLASH_INTENSITY
 var _reduce_motion := DEFAULT_REDUCE_MOTION
+var _ui_light: StringName = DEFAULT_UI_LIGHT
 
 
 func _ready() -> void:
@@ -158,6 +168,21 @@ func set_reduce_motion(enabled: bool) -> void:
 	settings_applied.emit()
 
 
+func get_ui_light() -> StringName:
+	return _ui_light
+
+
+func set_ui_light(mode: StringName) -> void:
+	if mode not in UI_LIGHTS:
+		push_warning("Unknown interface light: %s" % mode)
+		return
+	if mode == _ui_light:
+		return
+	_ui_light = mode
+	ui_light_changed.emit(mode)
+	settings_applied.emit()
+
+
 ## Lightning flash brightness, 0-100 %.
 func get_flash_intensity() -> int:
 	return _flash_intensity
@@ -193,6 +218,7 @@ func snapshot() -> Dictionary:
 		"reduce_flashing": _reduce_flashing,
 		"flash_intensity": _flash_intensity,
 		"reduce_motion": _reduce_motion,
+		"ui_light": _ui_light,
 	}
 
 
@@ -210,7 +236,13 @@ func restore_snapshot(data: Dictionary) -> void:
 	_reduce_flashing = bool(data.get("reduce_flashing", DEFAULT_REDUCE_FLASHING))
 	_flash_intensity = clampi(int(data.get("flash_intensity", DEFAULT_FLASH_INTENSITY)), 0, 100)
 	_reduce_motion = bool(data.get("reduce_motion", DEFAULT_REDUCE_MOTION))
+	var light := StringName(data.get("ui_light", DEFAULT_UI_LIGHT))
+	var light_changed := light != _ui_light and light in UI_LIGHTS
+	if light in UI_LIGHTS:
+		_ui_light = light
 	apply_all()
+	if light_changed:
+		ui_light_changed.emit(_ui_light)
 	if style_changed:
 		art_style_changed.emit(_art_style)
 	if course_changed:
@@ -234,6 +266,7 @@ func save() -> Error:
 	config.set_value("accessibility", "reduce_flashing", _reduce_flashing)
 	config.set_value("accessibility", "flash_intensity", _flash_intensity)
 	config.set_value("accessibility", "reduce_motion", _reduce_motion)
+	config.set_value("interface", "ui_light", String(_ui_light))
 	var err := config.save(settings_path)
 	if err != OK:
 		push_error("Could not save settings to %s (error %d)" % [settings_path, err])
@@ -269,6 +302,8 @@ func load_settings() -> void:
 	loaded["flash_intensity"] = clampi(int(flash), 0, 100) if _is_number(flash) else DEFAULT_FLASH_INTENSITY
 	var motion: Variant = config.get_value("accessibility", "reduce_motion", DEFAULT_REDUCE_MOTION)
 	loaded["reduce_motion"] = motion if motion is bool else DEFAULT_REDUCE_MOTION
+	var light := StringName(str(config.get_value("interface", "ui_light", DEFAULT_UI_LIGHT)))
+	loaded["ui_light"] = light if light in UI_LIGHTS else DEFAULT_UI_LIGHT
 	restore_snapshot(loaded)
 
 

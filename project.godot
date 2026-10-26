@@ -29,6 +29,7 @@ GameSession="*res://src/core/game_session.gd"
 Simulation="*res://src/core/simulation.gd"
 SaveManager="*res://src/persistence/save_manager.gd"
 SessionLog="*res://src/diagnostics/session_log.gd"
+UiTheme="*res://src/ui/theme/ui_theme.gd"
 
 [display]
 

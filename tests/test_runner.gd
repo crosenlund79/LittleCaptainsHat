@@ -84,7 +84,8 @@ var passed := 0
 var failed := 0
 var current_suite := ""
 var screenshot_dir := ""
-## Run only suites whose file name contains this (--only=vessels).
+## Run only suites whose file name contains this, or any of a comma-separated
+## list (--only=vessels, --only=branding,settings).
 var only := ""
 ## Skip suites whose file name contains any of these (--skip=routing,harbours).
 var skip := PackedStringArray()
@@ -120,7 +121,7 @@ func _run() -> void:
 	for script in SUITES:
 		if Array(skip).any(func(part: String) -> bool: return script.resource_path.get_file().contains(part)):
 			continue
-		if not only.is_empty() and not script.resource_path.get_file().contains(only):
+		if not only.is_empty() and not Array(only.split(",")).any(func(part: String) -> bool: return script.resource_path.get_file().contains(part)):
 			continue
 		use_calm_wind()
 		var suite: Object = script.new()
