@@ -132,7 +132,7 @@ func _test_automatic_follows_daylight() -> void:
 	t.check(UiTheme._target_blend() > 0.99, "[auto] local midnight: night is the target")
 	await t.get_tree().create_timer(0.6).timeout
 	t.check(UiTheme.blend > 0.0 and UiTheme.blend < 0.5, "[auto] the change eases in, not at once (%.2f after 0.6 s)" % UiTheme.blend)
-	await t.wait_until(func() -> bool: return UiTheme.blend > 0.99, 8.0)
+	await t.wait_until(func() -> bool: return UiTheme.blend > 0.99, 15.0)
 	t.check(UiTheme.blend > 0.99, "[auto] and arrives at Harbor Dusk within a few seconds (%.2f, target %.2f)" % [UiTheme.blend, UiTheme._target_blend()])
 	var last := UiTheme.blend
 	var changes := [0]

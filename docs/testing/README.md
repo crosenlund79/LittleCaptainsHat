@@ -7,6 +7,7 @@ How Little Captain's Hat is tested, from Iteration 001 to today. Each release's 
 ```sh
 godot --headless --path . res://tests/test_runner.tscn                      # every suite
 godot --headless --path . res://tests/test_runner.tscn -- --only=anchorage  # suites whose file name contains "anchorage"
+godot --headless --path . res://tests/test_runner.tscn -- --only=chartroom,cockpit   # several, comma-separated
 godot --path . res://tests/test_runner.tscn -- --screenshots=/some/dir      # rendered, saving screenshots (e.g. under Xvfb)
 ```
 
@@ -21,7 +22,7 @@ Each is a scene in `tests/` with the exact command in its header comment.
 | Kind | Scenes | What they show |
 |---|---|---|
 | Restart (two separate processes) | `restart_check`, `restart_17`, `restart_18`, `restart_105b` | Saves and settings survive quitting and starting again. Run `--phase=write`, then `--phase=read` (0.105b adds the art install/import/remove phases). |
-| Screenshots | `screenshots_16`, `screenshots_17`, `screenshots_18`, `screenshots_105b` | Rendered evidence for each release, written to `docs/screenshots/…` or a given folder. |
+| Screenshots | `screenshots_16`, `screenshots_17`, `screenshots_18`, `screenshots_105b`, `screenshots_chartroom` (every main screen by day and by night) | Rendered evidence for each release, written to `docs/screenshots/…` or a given folder. |
 | Benchmarks | `benchmark`, `benchmark_17`, `benchmark_18`, `benchmark_105b` | Frame times under a software renderer, for before/after comparison only. Results are in [docs/benchmarks](../benchmarks/). |
 | Measurements | `pacing_18`, `cabin_light_18` | Long Passage stop counts; cabin light and shadow figures. |
 

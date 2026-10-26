@@ -39,6 +39,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 ## Design and technical references
 
 - [Architecture](technical/ARCHITECTURE.md): how the game is built, including route calculation.
+- [The Captain's Chartroom UI pass](technical/CAPTAINS_CHARTROOM_UI_PASS.md): the shared day/night interface theme (Vintage Chartroom and Harbor Dusk), what the HUD and chart show by default, and the *Interface light* setting.
 - [Developer guides](../DEV_GUIDES/README.md): step-by-step guides for art, companions, audio, weather, harbours, boat care, chart regions and life aboard, plus design principles for future user content ([MODDING_FUTURE.md](../DEV_GUIDES/MODDING_FUTURE.md)). They stay in `DEV_GUIDES/` because the game's in-game guide viewer reads them from there.
 
 ## Testing
@@ -55,7 +56,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 ## Benchmarks and screenshots
 
 - [Benchmarks](benchmarks/): JSON results by iteration and revision. Revision 0.105b's files record version, commit and label.
-- [Screenshots](screenshots/): by iteration (`iteration12/` … `iteration18/`) and revision (`revision_0102b/`, `revision_0_105b/`). The older screenshots from before Iteration 12 are at the top of the folder.
+- [Screenshots](screenshots/): by iteration (`iteration12/` … `iteration18/`) and revision (`revision_0102b/`, `revision_0_105b/`), plus the interface pass (`chartroom_ui/`). The older screenshots from before Iteration 12 are at the top of the folder.
 
 ## About this library
 

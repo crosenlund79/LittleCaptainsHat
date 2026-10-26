@@ -73,6 +73,9 @@ const PALETTES := {
 	&"warning_surface": [Color(0.96, 0.86, 0.74, 0.97), Color(0.24, 0.16, 0.14, 0.95)],
 	&"success": [Color("#4F6B3A"), Color("#A9C98B")],
 	&"caution": [Color("#8A5A1E"), Color("#E9C46A")],
+	# Documents (the developer guides): code and links.
+	&"code": [Color("#7A3E2C"), Color("#E6D3A8")],
+	&"link": [Color("#2F6670"), Color("#8FC7CC")],
 	&"tooltip": [Color("#F6EBD5"), Color("#0B1C2A")],
 	&"key": [Color("#785039"), Color("#E9A84D")],
 	&"key_text": [Color("#F6EBD5"), Color("#0B1C2A")],
@@ -136,7 +139,7 @@ func _process(delta: float) -> void:
 		var now := Time.get_ticks_msec()
 		# (The first step of a change counts as one check.)
 		var elapsed := (now - _last_step_msec) / 1000.0
-		elapsed = clampf(elapsed, CHECK_SECONDS, 0.5) if elapsed < 1.0 else CHECK_SECONDS
+		elapsed = clampf(elapsed, CHECK_SECONDS, 1.0) if elapsed < 2.0 else CHECK_SECONDS
 		_last_step_msec = now
 		set_blend(move_toward(blend, target, MAX_RATE * elapsed))
 

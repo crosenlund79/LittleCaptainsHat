@@ -28,6 +28,9 @@ func _ready() -> void:
 		button.custom_minimum_size = Vector2(300, 40)
 		button.pressed.connect(show_guide.bind(guide.path))
 		_list.add_child(button)
+	# A change of mood re-renders the open guide in the new colours, at the
+	# same place in the text.
+	UiTheme.palette_changed.connect(_on_palette_changed)
 	if guides.is_empty():
 		_title.text = "No developer guides"
 		_content.text = "The guides are read from %s, which is not available in this build. Open the project in Godot (or run it with godot --path .) to read them." % DevGuides.guides_dir
@@ -46,12 +49,25 @@ func show_guide(path: String) -> void:
 		_content.text = "This guide could not be read: %s" % path
 		return
 	_title.text = DevGuides.title_of(text, path.get_file())
+	_shown_path = path
 	_content.text = MarkdownLite.to_bbcode(text)
 	_content.scroll_to_line(0)
 
 
 ## Guides quote commands such as `--headless`; Barlow's ligatures would show
 ## "--" as a dash, so the viewer's fonts turn them off.
+var _shown_path := ""
+
+
+func _on_palette_changed() -> void:
+	if _shown_path == "":
+		return
+	var bar := _content.get_v_scroll_bar()
+	var at := bar.value
+	_content.text = MarkdownLite.to_bbcode(DevGuides.read(_shown_path))
+	bar.value = at
+
+
 func _disable_ligatures() -> void:
 	var server := TextServerManager.get_primary_interface()
 	var features := {}
