@@ -14,6 +14,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_data_model.gd"),
 	preload("res://tests/suites/test_routing.gd"),
 	preload("res://tests/suites/test_world_chart_render.gd"),
+	preload("res://tests/suites/test_route_wrap.gd"),
 	preload("res://tests/suites/test_wind_overlay.gd"),
 	preload("res://tests/suites/test_sailing_correctness.gd"),
 	preload("res://tests/suites/test_navigation_views.gd"),

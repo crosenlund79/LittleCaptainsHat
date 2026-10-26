@@ -131,6 +131,7 @@ var _moved := false
 var _has_world := false
 ## Map units for 360° of longitude.
 var _world_width := 0.0
+var _overlay_view_key := Vector3.INF
 var _europe_layer: Node2D
 var _world_overview: Node2D
 var _world_regional: Node2D
@@ -261,6 +262,33 @@ func _path_to_map(path: PackedVector2Array) -> PackedVector2Array:
 	return points
 
 
+## Every copy of a geographic path (as _path_to_map()) that reaches into the
+## view. A long route spans much of a world width, so the copy chosen by its
+## first point alone can lie outside the view while another copy of the same
+## route is in it (Iteration 18: routes vanished while panning). Off the world
+## chart there is only the one copy.
+func _path_copies(path: PackedVector2Array) -> Array[PackedVector2Array]:
+	var points := _path_to_map(path)
+	var copies: Array[PackedVector2Array] = []
+	if not _has_world or points.size() < 2:
+		if not points.is_empty():
+			copies.append(points)
+		return copies
+	var low := INF
+	var high := -INF
+	for p in points:
+		low = minf(low, p.x)
+		high = maxf(high, p.x)
+	var margin := 40.0 / maxf(get_zoom(), 1e-6)
+	var view_low := screen_to_map(Vector2.ZERO).x - margin
+	var view_high := screen_to_map(Vector2(get_viewport_rect().size.x, 0.0)).x + margin
+	for k in range(-2, 3):
+		var dx := k * _world_width
+		if high + dx >= view_low and low + dx <= view_high:
+			copies.append(points if k == 0 else _shifted(points, dx))
+	return copies
+
+
 func get_port_screen_position(port_id: StringName) -> Vector2:
 	var port := catalog.get_port(port_id)
 	return geo_to_screen(port.get_geo_position()) if port else Vector2.INF
@@ -297,15 +325,15 @@ func pick_route_leg(screen_point: Vector2) -> int:
 	var best := -1
 	var best_distance := ROUTE_PICK_PX
 	for leg_index in draft_legs.size():
-		var points := _path_to_map(draft_legs[leg_index].path)
-		for i in range(1, points.size()):
-			var a := map_to_screen(points[i - 1])
-			var b := map_to_screen(points[i])
-			var closest := Geometry2D.get_closest_point_to_segment(screen_point, a, b)
-			var distance := closest.distance_to(screen_point)
-			if distance <= best_distance:
-				best_distance = distance
-				best = leg_index
+		for points in _path_copies(draft_legs[leg_index].path):
+			for i in range(1, points.size()):
+				var a := map_to_screen(points[i - 1])
+				var b := map_to_screen(points[i])
+				var closest := Geometry2D.get_closest_point_to_segment(screen_point, a, b)
+				var distance := closest.distance_to(screen_point)
+				if distance <= best_distance:
+					best_distance = distance
+					best = leg_index
 	return best
 
 
@@ -431,6 +459,12 @@ func _process(delta: float) -> void:
 			_wind_view_key = key
 			wind_layer.refresh_view()
 	_update_world_tiles()
+	# Whatever moved the camera (dragging, keys, centring, the wrap at the
+	# Date Line), the overlay's route copies follow the view.
+	var view_key := Vector3(camera.position.x, camera.position.y, camera.zoom.x)
+	if view_key != _overlay_view_key:
+		_overlay_view_key = view_key
+		_overlay.queue_redraw()
 	var direction := Input.get_vector(&"move_left", &"move_right", &"move_up", &"move_down")
 	# Typing in a text field (the harbour search) must not pan the chart.
 	if direction != Vector2.ZERO and not get_viewport().gui_get_focus_owner() is LineEdit:
@@ -1329,30 +1363,32 @@ func _draw_weather(s: float) -> void:
 
 func _draw_courses(s: float) -> void:
 	if travelled_path.size() >= 2:
-		_overlay.draw_polyline(_path_to_map(travelled_path), Color(PORT_FILL, 0.45), 2.0 * s, true)
+		for points in _path_copies(travelled_path):
+			_overlay.draw_polyline(points, Color(PORT_FILL, 0.45), 2.0 * s, true)
 	if active_path.size() >= 2:
-		var points := _path_to_map(active_path)
-		_overlay.draw_polyline(points, BRASS, 4.0 * s, true)
-		_draw_arrowhead(points, BRASS, s)
+		for points in _path_copies(active_path):
+			_overlay.draw_polyline(points, BRASS, 4.0 * s, true)
+			_draw_arrowhead(points, BRASS, s)
 	for leg in draft_legs:
-		var points := _path_to_map(leg.path)
-		if points.size() < 2:
-			continue
-		if not leg.ok:
-			# Blocked leg: dashed red line with a cross, never only colour.
+		for points in _path_copies(leg.path):
+			if points.size() < 2:
+				continue
+			if not leg.ok:
+				# Blocked leg: dashed red line with a cross, never only colour.
+				for i in range(1, points.size()):
+					_overlay.draw_dashed_line(points[i - 1], points[i], INVALID, 3.0 * s, 10.0 * s, true, true)
+				var mid := (points[0] + points[points.size() - 1]) / 2.0
+				var r := 9.0 * s
+				_overlay.draw_line(mid + Vector2(-r, -r), mid + Vector2(r, r), INVALID, 4.0 * s, true)
+				_overlay.draw_line(mid + Vector2(-r, r), mid + Vector2(r, -r), INVALID, 4.0 * s, true)
+				_draw_text("BLOCKED", mid + Vector2(14, -10) * s, 15 * s, INVALID, false, true)
+				continue
+			var color := SEAFOAM if draft_is_proposal else BRASS
 			for i in range(1, points.size()):
-				_overlay.draw_dashed_line(points[i - 1], points[i], INVALID, 3.0 * s, 10.0 * s, true, true)
-			var mid := (points[0] + points[points.size() - 1]) / 2.0
-			var r := 9.0 * s
-			_overlay.draw_line(mid + Vector2(-r, -r), mid + Vector2(r, r), INVALID, 4.0 * s, true)
-			_overlay.draw_line(mid + Vector2(-r, r), mid + Vector2(r, -r), INVALID, 4.0 * s, true)
-			_draw_text("BLOCKED", mid + Vector2(14, -10) * s, 15 * s, INVALID, false, true)
-			continue
-		var color := SEAFOAM if draft_is_proposal else BRASS
-		for i in range(1, points.size()):
-			_overlay.draw_dashed_line(points[i - 1], points[i], color, 3.5 * s, 12.0 * s, true, true)
+				_overlay.draw_dashed_line(points[i - 1], points[i], color, 3.5 * s, 12.0 * s, true, true)
 	if not draft_legs.is_empty() and draft_legs.back().ok:
-		_draw_arrowhead(_path_to_map(draft_legs.back().path), SEAFOAM if draft_is_proposal else BRASS, s)
+		for points in _path_copies(draft_legs.back().path):
+			_draw_arrowhead(points, SEAFOAM if draft_is_proposal else BRASS, s)
 
 
 func _draw_arrowhead(points: PackedVector2Array, color: Color, s: float) -> void:
