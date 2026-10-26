@@ -11,11 +11,11 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| MAP-1 | No rectangular gaps or shifted land when panning toward Australia/Pacific from either direction | TODO | | |
-| MAP-2 | Repeated Date Line crossings, beyond one world width and back | TODO | | |
-| MAP-3 | Zoom around Australia/New Zealand; world ↔ regional scale switches | TODO | | |
-| MAP-4 | Reopen map and select destinations after extensive panning | TODO | | |
-| MAP-5 | Repeatable automated rendering-coverage regression test | TODO | | |
+| MAP-1 | No rectangular gaps or shifted land when panning toward Australia/Pacific from either direction | DONE | test_world_chart_render sweeps (west/east, world and regional); fails on I016 code | Linux rendering; Windows to confirm |
+| MAP-2 | Repeated Date Line crossings, beyond one world width and back | DONE | test_world_chart_render: 2.2 turns each way, round trip |  |
+| MAP-3 | Zoom around Australia/New Zealand; world ↔ regional scale switches | DONE | test_world_chart_render regional sweeps at Australia/Pacific latitudes; screenshot 17_map_australia_regional |  |
+| MAP-4 | Reopen map and select destinations after extensive panning | DONE | test_world_chart_render: harbour picking after long pans |  |
+| MAP-5 | Repeatable automated rendering-coverage regression test | DONE | tests/suites/test_world_chart_render.gd |  |
 | MAP-6 | Rendered before/after evidence | TODO | | |
 | MAP-7 | Worldwide routing and Date Line correctness preserved | TODO | | |
 
@@ -23,17 +23,17 @@ screenshot in `docs/screenshots/iteration17/` or a measurement in
 
 | ID | Requirement | Status | Evidence | Limitation |
 |---|---|---|---|---|
-| WND-1 | Profile before restricting: simulation, events, chart sampling, geometry, draw, caches, stationary, pan/zoom, fast time | TODO | | |
-| WND-2 | Separation: authoritative sailing weather / forecast-route sampling / chart visualization | TODO | | |
-| WND-3 | Audit: sailing weather local/on-demand; documented honestly | TODO | | |
-| WND-4 | Closing the chart stops chart wind work; sailing weather continues | TODO | | |
+| WND-1 | Profile before restricting: simulation, events, chart sampling, geometry, draw, caches, stationary, pan/zoom, fast time | DONE | tests/benchmark_17.gd; docs/benchmarks/iteration17_before_*.json; sample cost breakdown in report | Rendered numbers on software GL (llvmpipe) |
+| WND-2 | Separation: authoritative sailing weather / forecast-route sampling / chart visualization | DONE | WeatherModel.sample (sailing), Simulation forecasts with known_at (route), WeatherModel.sample_wind + WindLayer snapshot cache (chart) |  |
+| WND-3 | Audit: sailing weather local/on-demand; documented honestly | DONE | Audit: samples are point queries; event list per 15-min bucket ~10 events worldwide, 0.5 ms cold / 2 µs warm; reach boxes skip far events (0.38 events checked per sample near Denmark) | Was already local; no optimisation claimed |
+| WND-4 | Closing the chart stops chart wind work; sailing weather continues | DONE | test_wind_overlay [close]; WindLayer processes only while shown and in the open chart |  |
 | WND-5 | Long passages sample along the travelled path; Long Passage equivalence kept | TODO | | |
-| WND-6 | Chart wind as a cached snapshot (spatial, time, resolution; bounded; reuse on small pans; no per-frame rebuild) | TODO | | |
-| WND-7 | Adaptive density by zoom; thresholds measured; hysteresis; "Zoom in to see wind details." | TODO | | |
-| WND-8 | Wind snapshot controls: Previous/Next/Now, 30-min steps, ±2 h, NOW / PAST MODEL SNAPSHOT / FORECAST labels, uncertainty note | TODO | | |
-| WND-9 | Forecast preview is read-only (no time, movement, stores, wear, events, weather, seeds, rewards) | TODO | | |
+| WND-6 | Chart wind as a cached snapshot (spatial, time, resolution; bounded; reuse on small pans; no per-frame rebuild) | DONE | test_wind_overlay [overlay]: no chunks while stationary, small pans reuse, cached snapshot reuse, bounded caches |  |
+| WND-7 | Adaptive density by zoom; thresholds measured; hysteresis; "Zoom in to see wind details." | DONE | test_wind_overlay [zoom]: hidden below 9 px/° (shown again above 11), notice, bounded lattice points |  |
+| WND-8 | Wind snapshot controls: Previous/Next/Now, 30-min steps, ±2 h, NOW / PAST MODEL SNAPSHOT / FORECAST labels, uncertainty note | DONE | test_wind_overlay [navigator]; screenshot 17_wind_forecast |  |
+| WND-9 | Forecast preview is read-only (no time, movement, stores, wear, events, weather, seeds, rewards) | DONE | test_wind_overlay: time, position, seed and whole saved state unchanged after previewing |  |
 | WND-10 | Passage Readiness / cockpit forecasts limited to relevant samples | TODO | | |
-| WND-11 | Before/after wind performance measured | TODO | | |
+| WND-11 | Before/after wind performance measured | DONE | docs/benchmarks/iteration17_checkpointB_*.json: forced full re-sample 1051 → 36 ms (Denmark region, headless); in play spread over frames at ≤ 3 ms |  |
 
 ## NAV — Navigation architecture [§4–§8]
 

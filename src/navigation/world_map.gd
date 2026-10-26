@@ -115,6 +115,7 @@ func _ready() -> void:
 	%ResetViewButton.pressed.connect(_map.reset_view)
 	%CenterBoatButton.pressed.connect(center_on_vessel)
 	_build_wind_legend()
+	_build_wind_time_controls()
 	_build_search()
 	var legend := WeatherLegend.new()
 	legend.name = "WeatherLegend"
@@ -146,6 +147,7 @@ func _process(delta: float) -> void:
 		if GameSession.is_underway() and not _draft_dirty and _dragging_waypoint < 0:
 			_load_committed()
 		_refresh()
+		_update_wind_time()  # the NOW clock moves on
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -699,7 +701,11 @@ func _on_cursor_moved(geo: Variant) -> void:
 		return
 	_cursor_label.text = GeoMath.format_position(geo)
 	if wind_shown:
-		_cursor_label.text += "  ·  " + Hud.describe_wind(Simulation.get_wind_at(geo))
+		# The wind of the snapshot the chart shows (Now, past or forecast).
+		var layer := _map.wind_layer
+		var known := GameSession.get_game_time() if layer.get_offset_steps() > 0 else INF
+		var at := GameSession.get_game_time() if layer.get_offset_steps() == 0 else layer.get_snapshot_time()
+		_cursor_label.text += "  ·  " + Hud.describe_wind(Simulation.get_weather_at(geo, at, known))
 
 
 ## Shows or hides the wind overlay and its legend.
@@ -709,11 +715,84 @@ func set_wind_shown(shown: bool) -> void:
 	_wind_legend.visible = shown
 	_map.wind_layer.set_shown(shown)
 	if shown:
-		_map.wind_layer.update_time(GameSession.get_game_time(), true)
+		_map.wind_layer.update_time(GameSession.get_game_time())
 
 
 func is_wind_shown() -> bool:
 	return _map.wind_layer.visible
+
+
+## The read-only wind time navigator (Iteration 17) under the wind legend:
+## Previous / Now / Next in 30-minute steps up to two hours either way, the
+## snapshot's label and time, the forecast note, and the zoom notice. It only
+## changes which modelled time the overlay shows; nothing in the game moves.
+func _build_wind_time_controls() -> void:
+	var box := _wind_legend.get_node("VBox") as VBoxContainer
+	var row := HBoxContainer.new()
+	row.name = "WindTime"
+	row.add_theme_constant_override(&"separation", 6)
+	box.add_child(row)
+	var previous := Button.new()
+	previous.name = "WindPrevious"
+	previous.text = "◀ 30 min"
+	previous.tooltip_text = "Show the wind half an hour earlier (up to two hours)"
+	previous.pressed.connect(step_wind_time.bind(-1))
+	row.add_child(previous)
+	var now := Button.new()
+	now.name = "WindNow"
+	now.text = "Now"
+	now.tooltip_text = "Show the wind now"
+	now.pressed.connect(func() -> void: _map.wind_layer.set_offset_steps(0))
+	row.add_child(now)
+	var next := Button.new()
+	next.name = "WindNext"
+	next.text = "30 min ▶"
+	next.tooltip_text = "Show the forecast half an hour later (up to two hours)"
+	next.pressed.connect(step_wind_time.bind(1))
+	row.add_child(next)
+	var label := Label.new()
+	label.name = "WindTimeLabel"
+	label.add_theme_font_size_override(&"font_size", 16)
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(label)
+	var note := Label.new()
+	note.name = "WindForecastNote"
+	note.text = "Estimated conditions. Actual wind may differ."
+	note.theme_type_variation = &"MutedLabel"
+	note.add_theme_font_size_override(&"font_size", 15)
+	box.add_child(note)
+	var zoom := Label.new()
+	zoom.name = "WindZoomNotice"
+	zoom.text = "Zoom in to see wind details."
+	zoom.theme_type_variation = &"MutedLabel"
+	zoom.add_theme_font_size_override(&"font_size", 15)
+	box.add_child(zoom)
+	_map.wind_layer.snapshot_changed.connect(_update_wind_time)
+	_map.wind_layer.detail_changed.connect(func(_hidden: bool) -> void: _update_wind_time())
+	_update_wind_time()
+
+
+## Moves the wind snapshot by `steps` half hours (clamped to ±2 h).
+func step_wind_time(steps: int) -> void:
+	var layer := _map.wind_layer
+	layer.set_offset_steps(layer.get_offset_steps() + steps)
+
+
+func _update_wind_time() -> void:
+	var layer := _map.wind_layer
+	var offset := layer.get_offset_steps()
+	var label := _wind_legend.find_child("WindTimeLabel", true, false) as Label
+	if label == null:
+		return
+	var time := GameSession.get_game_time() if offset == 0 else layer.get_snapshot_time()
+	label.text = "%s  ·  %s" % [layer.snapshot_label(), Simulation.format_game_time(time)]
+	if offset != 0:
+		label.text += " (%s%s)" % ["+" if offset > 0 else "−", Simulation.format_duration(absi(offset) * WindLayer.SNAPSHOT_STEP)]
+	(_wind_legend.find_child("WindForecastNote", true, false) as Control).visible = offset > 0
+	(_wind_legend.find_child("WindZoomNotice", true, false) as Control).visible = layer.detail_hidden
+	(_wind_legend.find_child("WindPrevious", true, false) as Button).disabled = offset <= -WindLayer.MAX_OFFSET_STEPS
+	(_wind_legend.find_child("WindNext", true, false) as Button).disabled = offset >= WindLayer.MAX_OFFSET_STEPS
+	(_wind_legend.find_child("WindNow", true, false) as Button).disabled = offset == 0
 
 
 func _build_wind_legend() -> void:

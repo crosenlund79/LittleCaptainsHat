@@ -5,6 +5,7 @@ extends RefCounted
 ##
 ##   sample(geo, time, seed)   -> WeatherSample (sustained wind, gusts, hazard,
 ##                                classification, responsible event, ...)
+##   sample_wind(geo, time, seed) -> Vector2(from_deg, speed_kn) only (the chart)
 ##   active_events(time, seed) -> the weather events existing at that time
 ##
 ## Layers:
@@ -76,6 +77,8 @@ var fixture_events: Array[WeatherEvent] = []
 var generated_enabled := true
 
 var model_version := 1
+## Point queries answered so far (sample() and sample_wind()); for profiling.
+var sample_count := 0
 var _gale_zones: Array = []
 var _convective_zones: Array = []
 var _convective := {}
@@ -161,14 +164,58 @@ static func wind_hazard(sustained_kn: float, gust_kn: float) -> int:
 ## already formed by then are included (a forecast made at `known_at`: storms
 ## that form later cannot be foreseen).
 func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSample:
+	sample_count += 1
 	geo = GeoMath.normalize(geo)  # paths continuous across the Date Line may pass |lon| > 180
-	var field := WindField.get_default()
-	var background := field.sample(geo, time, seed)
+	var background := WindField.get_default().sample(geo, time, seed)
 	var result := WeatherSample.new()
 	result.geo = geo
 	result.time = time
 	result.background_from_deg = background.from_deg
 	result.background_kn = background.speed_kn
+	var parts := _compose(geo, time, seed, known_at, background, result)
+	var wind: Vector2 = parts[0]
+	var dominant: WeatherEvent = parts[3]
+	result.speed_kn = wind.length()
+	result.from_deg = _from_deg(wind, background.from_deg)
+	result.gust_kn = result.speed_kn * float(parts[1]) + float(parts[2])
+	result.hazard = wind_hazard(result.speed_kn, result.gust_kn)
+	if result.thunder_possible:
+		result.hazard = maxi(result.hazard, HAZARD_CAUTION)
+	if parts[4] and dominant and dominant.peak_kn + dominant.gust_kn >= SEVERE_STORM_KN:
+		result.hazard = maxi(result.hazard, HAZARD_DANGEROUS)
+	if dominant:
+		result.event_id = dominant.id
+		result.event_kind = dominant.kind
+		result.event_name = dominant.display_name
+	result.classification = _classify(result, dominant, time)
+	var risk := cyclone_risk(geo, time)
+	result.cyclone_risk = risk.risk
+	result.cyclone_basin = risk.basin
+	return result
+
+
+## Only the sustained wind at `geo` at `time`: Vector2(from_deg, speed_kn).
+## Exactly the speed and direction sample() gives (same code), without the
+## gusts, hazard, classification and cyclone risk: the chart's wind overlay
+## (Iteration 17) needs nothing else. A pure query, like sample().
+func sample_wind(geo: Vector2, time: float, seed := 1, known_at := INF) -> Vector2:
+	sample_count += 1
+	geo = GeoMath.normalize(geo)
+	var background := WindField.get_default().sample(geo, time, seed)
+	var wind: Vector2 = _compose(geo, time, seed, known_at, background, null)[0]
+	return Vector2(_from_deg(wind, background.from_deg), wind.length())
+
+
+static func _from_deg(wind: Vector2, fallback_deg: float) -> float:
+	var from := rad_to_deg(atan2(-wind.x, -wind.y)) if wind.length() > 1e-4 else fallback_deg
+	return fposmod(from, 360.0)
+
+
+## The background wind changed by the events that reach `geo`:
+## [wind vector, gust factor, extra gust kn, dominant event or null, at a cell core].
+## Sets the thunder flags on `result` when one is given.
+func _compose(geo: Vector2, time: float, seed: int, known_at: float, background: WindField.Sample,
+		result: WeatherSample) -> Array:
 	var wind := _vector(background.from_deg, background.speed_kn)
 	var gust_factor := GUST_FACTOR
 	var gust_extra := 0.0
@@ -193,7 +240,8 @@ func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSam
 				var d := event.normalized_distance(geo, time)
 				if d >= 1.0 or event.life_factor(time) < 0.2:
 					continue
-				result.thunder_possible = true
+				if result:
+					result.thunder_possible = true
 				weight = 1.0  # noted, but any real wind event dominates it
 			WeatherEvent.KIND_THUNDERSTORM:
 				var d := event.normalized_distance(geo, time)
@@ -209,9 +257,10 @@ func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSam
 				var speed := wind.length() + event.peak_kn * weight
 				wind = _blend_direction(wind, outflow, weight * 0.8) * speed
 				gust_extra = maxf(gust_extra, event.gust_kn * weight * event.gust_envelope(time))
-				result.thunder_possible = true
-				if d < 0.8 and strength > 0.3:
-					result.thunder_active = true
+				if result:
+					result.thunder_possible = true
+					if d < 0.8 and strength > 0.3:
+						result.thunder_active = true
 				if d < 0.5 and strength > 0.5:
 					cell_core = true
 				weight *= 8.0 + event.peak_kn + event.gust_kn
@@ -228,24 +277,7 @@ func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSam
 		if weight > dominant_score:
 			dominant_score = weight
 			dominant = event
-	result.speed_kn = wind.length()
-	result.from_deg = rad_to_deg(atan2(-wind.x, -wind.y)) if result.speed_kn > 1e-4 else background.from_deg
-	result.from_deg = fposmod(result.from_deg, 360.0)
-	result.gust_kn = result.speed_kn * gust_factor + gust_extra
-	result.hazard = wind_hazard(result.speed_kn, result.gust_kn)
-	if result.thunder_possible:
-		result.hazard = maxi(result.hazard, HAZARD_CAUTION)
-	if cell_core and dominant and dominant.peak_kn + dominant.gust_kn >= SEVERE_STORM_KN:
-		result.hazard = maxi(result.hazard, HAZARD_DANGEROUS)
-	if dominant:
-		result.event_id = dominant.id
-		result.event_kind = dominant.kind
-		result.event_name = dominant.display_name
-	result.classification = _classify(result, dominant, time)
-	var risk := cyclone_risk(geo, time)
-	result.cyclone_risk = risk.risk
-	result.cyclone_basin = risk.basin
-	return result
+	return [wind, gust_factor, gust_extra, dominant, cell_core]
 
 
 func _classify(sample: WeatherSample, dominant: WeatherEvent, time: float) -> StringName:
