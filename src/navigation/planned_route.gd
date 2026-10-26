@@ -12,6 +12,10 @@ extends RefCounted
 ## The origin is either a port (origin_port_id) or, for a course changed at
 ## sea, an arbitrary position (origin_port_id is empty). origin_position always
 ## holds the starting coordinate.
+##
+## Iteration 18: a waypoint can be an anchorage (`anchorages[i]`, parallel to
+## `waypoints`): the voyage stops there and asks the captain to anchor. Saved
+## as the list of anchorage waypoint indices (optional: none in older saves).
 
 var origin_port_id: StringName
 var origin_position := Vector2.ZERO
@@ -19,6 +23,7 @@ var destination_port_id: StringName
 var waypoints: Array[Vector2] = []
 var path := PackedVector2Array()
 var waypoint_path_indices := PackedInt32Array()
+var anchorages: Array[bool] = []
 
 
 func duplicate_route() -> PlannedRoute:
@@ -29,7 +34,20 @@ func duplicate_route() -> PlannedRoute:
 	copy.waypoints = waypoints.duplicate()
 	copy.path = path.duplicate()
 	copy.waypoint_path_indices = waypoint_path_indices.duplicate()
+	copy.anchorages = anchorages.duplicate()
 	return copy
+
+
+func is_anchorage(index: int) -> bool:
+	return index >= 0 and index < anchorages.size() and anchorages[index]
+
+
+## The anchorage flags for exactly the waypoints (missing ones are false).
+func anchorage_flags() -> Array[bool]:
+	var flags: Array[bool] = []
+	for i in waypoints.size():
+		flags.append(is_anchorage(i))
+	return flags
 
 
 ## False for routes that only name a destination (e.g. from an old save) and
@@ -70,6 +88,7 @@ func to_dict() -> Dictionary:
 		"waypoints": waypoints.map(_point_to_dict),
 		"path": Array(path).map(_point_to_dict),
 		"waypoint_path_indices": Array(waypoint_path_indices),
+		"anchorages": range(waypoints.size()).filter(func(i: int) -> bool: return is_anchorage(i)),
 	}
 
 
@@ -121,6 +140,17 @@ static func from_dict(data: Variant, catalog: PortCatalog, errors: Array[String]
 			errors.append("route waypoint index out of range")
 			return null
 		route.waypoint_path_indices.append(int(value))
+	var anchorage_list: Variant = data.get("anchorages", [])
+	if not anchorage_list is Array:
+		errors.append("route anchorages are not a list")
+		return null
+	route.anchorages.resize(route.waypoints.size())
+	route.anchorages.fill(false)
+	for value: Variant in anchorage_list:
+		if not (value is int or value is float) or int(value) < 0 or int(value) >= route.waypoints.size():
+			errors.append("route anchorage index out of range")
+			return null
+		route.anchorages[int(value)] = true
 	if route.has_path():
 		if route.waypoint_path_indices.size() != route.waypoints.size():
 			errors.append("route waypoints do not match the path")

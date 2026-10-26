@@ -24,6 +24,8 @@ signal voyage_arrived(port_id: StringName)
 signal propulsion_changed(mode: StringName)
 ## The sail trim changed (Iteration 18).
 signal sail_trim_changed
+## The boat arrived at an anchorage waypoint and waits there (Iteration 18).
+signal anchorage_reached(waypoint_index: int)
 ## The player switched boats at the boatyard.
 signal vessel_changed(vessel_id: StringName)
 ## The ship's companion moved to another resting spot (see CompanionState).
@@ -284,7 +286,7 @@ func get_vessel_position() -> Vector2:
 
 ## Current speed through the water in knots (0 when not underway).
 func get_vessel_speed_kn() -> float:
-	return _state.propulsion.speed_kn if is_underway() and not _state.anchor.active else 0.0
+	return _state.propulsion.speed_kn if is_underway() and not _state.anchor.active and not is_holding_at_anchorage() else 0.0
 
 
 ## The boat's performance profile (one starter boat for now).
@@ -561,7 +563,8 @@ func depart() -> String:
 ## (via the waypoints) to `destination_id` and replaces the remaining voyage.
 ## The clock, progress already made and position are preserved. If no valid
 ## route exists the current voyage stays exactly as it was. Returns "" on success.
-func change_course(destination_id: StringName, waypoints: Array[Vector2]) -> String:
+## `anchorages` (Iteration 18): which of `waypoints` are anchorages.
+func change_course(destination_id: StringName, waypoints: Array[Vector2], anchorages: Array[bool] = []) -> String:
 	if not is_underway():
 		return "The vessel is not underway."
 	var origin := _state.vessel_position
@@ -569,7 +572,11 @@ func change_course(destination_id: StringName, waypoints: Array[Vector2]) -> Str
 	if not result.is_ok():
 		return result.error
 	var voyage := _state.voyage
+	result.route.anchorages = anchorages.duplicate()
+	result.route.anchorages.resize(result.route.waypoints.size())
 	voyage.route = result.route
+	voyage.holding_at = -1
+	voyage.anchorages_done.clear()
 	voyage.progress_nm = 0.0
 	voyage.revision += 1
 	voyage.warned_conditions.clear()
@@ -1253,7 +1260,7 @@ func is_line_out() -> bool:
 ## How one fishes here now: from a still boat (in harbour or at anchor) or
 ## trolling behind a moving one.
 func get_fishing_mode() -> StringName:
-	return FishingState.MODE_TROLLING if is_underway() and not is_anchored() else FishingState.MODE_STATIONARY
+	return FishingState.MODE_TROLLING if is_underway() and not is_anchored() and not is_holding_at_anchorage() else FishingState.MODE_STATIONARY
 
 
 ## Why the line cannot go out now, or "".
@@ -1785,6 +1792,10 @@ func drop_anchor(scope: int, set_quality: float) -> Dictionary:
 	anchor.moments.clear()
 	anchor.anchored_at = _state.game_time
 	anchor.checked_until = _state.game_time
+	# Anchored at the anchorage the voyage was waiting at: that stop is done.
+	if _state.voyage and _state.voyage.holding_at >= 0:
+		_state.voyage.anchorages_done.append(_state.voyage.holding_at)
+		_state.voyage.holding_at = -1
 	var site := evaluate_anchorage()
 	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), get_anchor_holding_bonus_kn())
 	_has_unsaved_changes = true
@@ -1826,6 +1837,88 @@ func acknowledge_anchor_alarm() -> void:
 		_state.anchor.alarm = false
 		_has_unsaved_changes = true
 		anchor_changed.emit()
+
+
+# --- Anchorage waypoints (Iteration 18) ---------------------------------------------
+
+## True the first time a one-off hint `id` is asked for in this game (then
+## remembered in the save, so it is never repeated).
+func take_hint(id: String) -> bool:
+	if _state == null or _state.progress.is_completed(StringName("hint:" + id)):
+		return false
+	_state.progress.mark(StringName("hint:" + id), _state.game_time)
+	_has_unsaved_changes = true
+	return true
+
+## The boat has reached an anchorage waypoint and waits there (stopped, the
+## anchor not yet down).
+func is_holding_at_anchorage() -> bool:
+	return _state != null and _state.voyage != null and _state.voyage.holding_at >= 0 and not _state.anchor.active
+
+
+## The next anchorage ahead on the voyage: {"index", "nm", "geo"} or {}.
+func get_next_anchorage() -> Dictionary:
+	return _state.voyage.next_anchorage() if _state and _state.voyage else {}
+
+
+## Simulation only: the boat has come to `progress_nm`; if an anchorage
+## waypoint not yet reached lies there, the boat stops and waits for the
+## captain (the anchor is not set by itself). Returns whether it did.
+func reach_anchorage_at(progress_nm: float) -> bool:
+	if _state == null or _state.voyage == null or _state.anchor.active:
+		return false
+	var index := _state.voyage.anchorage_at(progress_nm)
+	if index < 0:
+		return false
+	_state.voyage.holding_at = index
+	_has_unsaved_changes = true
+	SessionLog.write("anchorage_reached", {"waypoint": index, "geo": _geo_dict(_state.vessel_position)})
+	anchorage_reached.emit(index)
+	return true
+
+
+## The captain chooses not to anchor at the anchorage the boat waits at and
+## sails on along the course. Returns "" or why not.
+func sail_on_from_anchorage() -> String:
+	if not is_holding_at_anchorage():
+		return "The boat is not waiting at an anchorage."
+	_state.voyage.anchorages_done.append(_state.voyage.holding_at)
+	_state.voyage.holding_at = -1
+	_has_unsaved_changes = true
+	voyage_course_changed.emit()
+	return ""
+
+
+## Whether a spot is fit to be an anchorage (the game's anchoring rule: open
+## water within AnchorSite.MAX_LAND_NM of land; how sheltered it is depends
+## on the wind when the boat gets there). Returns {"ok", "reason", "land_nm"}.
+static func anchorage_spot(geo: Vector2) -> Dictionary:
+	var router := SeaRouter.get_default()
+	if not router.is_point_navigable(geo):
+		return {"ok": false, "reason": "That is on land or too close to the shore for the boat.", "land_nm": 0.0}
+	var land := HatStory.open_water_nm(geo, AnchorSite.MAX_LAND_NM + 0.5)
+	if land > AnchorSite.MAX_LAND_NM:
+		return {"ok": false, "land_nm": land, "reason": "Too far from the coast: the water is too deep to anchor (anchor within %.1f nm of land)." % AnchorSite.MAX_LAND_NM}
+	return {"ok": true, "land_nm": land, "reason": "Within %.1f nm of land: the anchor will reach the bottom. How sheltered it is depends on the wind when you arrive." % land}
+
+
+## The nearest spot fit for an anchorage within `max_nm` of `geo`, or INF.
+static func nearest_anchorage_spot(geo: Vector2, max_nm := 12.0) -> Vector2:
+	var step := 0.25
+	var r := step
+	while r <= max_nm:
+		var best := Vector2.INF
+		var best_land := INF
+		for k in 32:
+			var point := AnchorSite.offset(geo, TAU * k / 32.0, r)
+			var spot := anchorage_spot(point)
+			if spot.ok and float(spot.land_nm) < best_land:
+				best = point
+				best_land = float(spot.land_nm)
+		if best != Vector2.INF:
+			return GeoMath.normalize(best)
+		r += step
+	return Vector2.INF
 
 
 ## Weighs anchor: the voyage continues along its course from where it paused.

@@ -121,6 +121,16 @@ func refresh() -> void:
 		_show_row("turn", "Raise the anchor to sail on", true)
 		_show_row("remaining", "", false)
 		return
+	if GameSession.is_holding_at_anchorage():
+		_title.text = "At the anchorage"
+		_show_row("speed", "0 kn  ·  waiting at the anchorage")
+		_show_row("heading", "—", false)
+		_show_row("wind", Hud.describe_wind(wind).trim_prefix("Wind "))
+		_show_row("trim", "", false)
+		_show_row("next_leg", "", false)
+		_show_row("turn", "Drop the anchor, or sail on (Q)", true)
+		_show_row("remaining", "", false)
+		return
 	_title.text = "Sailing to %s" % catalog.get_display_name(GameSession.get_voyage_destination_id())
 	_show_row("speed", "%.1f kn  ·  %s" % [speed, "under engine" if GameSession.is_motoring() else "under sail"])
 	var heading := Simulation.get_current_heading()
@@ -140,6 +150,11 @@ func refresh() -> void:
 		if not turn.is_empty():
 			arrive += ", %.1f nm" % float(turn.nm)
 		_show_row("turn", arrive)
+	elif not GameSession.get_next_anchorage().is_empty() and float(GameSession.get_next_anchorage().nm) <= float(turn.nm) + 1e-6:
+		# The next waypoint is tonight's anchorage.
+		_show_row("next_leg", "", false)
+		var nm := float(GameSession.get_next_anchorage().nm)
+		_show_row("turn", "Anchorage in %s, %.1f nm" % [Simulation.format_duration(nm / speed * 3600.0), nm] if speed > 0.3 else "Anchorage %.1f nm ahead" % nm)
 	else:
 		_show_row("next_leg", _next_leg_text(turn, speed), not collapsed)
 		var eta_turn := "in %s, %.1f nm" % [Simulation.format_duration(float(turn.nm) / speed * 3600.0), float(turn.nm)] \

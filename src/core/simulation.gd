@@ -65,6 +65,8 @@ const STOP_RESCUE := &"rescue"
 ## A fish took the lure, or the anchor needs the captain (Iteration 13).
 const STOP_BITE := &"bite"
 const STOP_ANCHOR := &"anchor"
+## The boat reached an anchorage waypoint (Iteration 18).
+const STOP_ANCHORAGE := &"anchorage"
 ## Long Passage speeds: game seconds per real second (1, 4 and 12 hours).
 const PASSAGE_RATES: Array[float] = [3600.0, 14400.0, 43200.0]
 ## Why Long Passage time stopped (besides the STOP_* reasons of advance()).
@@ -105,6 +107,8 @@ class AdvanceResult:
 	var bite := false
 	## The anchor alarm went ("poor" or "dragging"), or "".
 	var anchor_alarm := ""
+	## The boat reached an anchorage waypoint and waits there (Iteration 18).
+	var anchorage := false
 
 
 func _ready() -> void:
@@ -142,7 +146,7 @@ func tick(real_seconds: float) -> void:
 	var result := advance(real_seconds * game_seconds_per_real_second * GameSession.get_time_scale())
 	# Accelerated time drops back to normal speed when something needs the
 	# player's attention, so nothing actionable flies past at 20×.
-	if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "") \
+	if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "" or result.anchorage) \
 			and GameSession.get_time_scale() > 1:
 		GameSession.set_time_scale(1)
 
@@ -154,6 +158,8 @@ func start_passage(rate: float) -> String:
 		return "Long Passage time is for voyages: set sail first."
 	if GameSession.is_anchored():
 		return "Raise the anchor first: at anchor the voyage is paused."
+	if GameSession.is_holding_at_anchorage():
+		return "The boat is waiting at the anchorage: drop the anchor, or sail on first."
 	if rate not in PASSAGE_RATES:
 		return "Unknown passage speed."
 	var was := passage_rate
@@ -181,7 +187,7 @@ func is_passage_running() -> bool:
 ## stopping at the first event. Then back to normal time when something
 ## needs the captain.
 func _passage_tick(real_seconds: float) -> void:
-	if not GameSession.is_underway() or GameSession.is_anchored():
+	if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
 		_interrupt_passage(STOP_ENDED, "The passage is over.")
 		return
 	var result := advance(minf(real_seconds, 0.1) * passage_rate, true)
@@ -198,6 +204,8 @@ func _passage_tick(real_seconds: float) -> void:
 			text = "The voyage ended with a rescue."
 		STOP_ANCHOR:
 			text = "The anchor alarm went."
+		STOP_ANCHORAGE:
+			text = "We've arrived at our anchorage."
 	if reason == STOP_NONE and result.hat_warned:
 		reason = STOP_HAT
 		text = "Hold on to your hat: the wind is getting up."
@@ -231,13 +239,17 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 	while remaining > 1e-6 and guard > 0:
 		guard -= 1
 		var time := GameSession.get_game_time()
-		if not GameSession.is_underway() or GameSession.is_anchored():
-			# In harbour or at anchor the boat stays where it is. At anchor the
-			# weather and the anchor are checked on the evaluation grid; with
+		if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
+			# In harbour, at anchor or waiting at an anchorage the boat stays
+			# where it is. At anchor the weather and the anchor are checked on
+			# the evaluation grid (waiting at an anchorage: the weather); with
 			# the line out the bite checks run on their own grid.
 			var anchored := GameSession.is_anchored()
+			var holding := GameSession.is_holding_at_anchorage()
 			var end := time + remaining
 			var anchor_grid := _next_grid_time(GameSession.get_anchor_checked_until()) if anchored else INF
+			if holding:
+				anchor_grid = _next_grid_time(GameSession.get_propulsion().last_evaluation_time)
 			end = minf(end, maxf(anchor_grid, time))
 			var fish_tick := _next_fish_tick(time, end)
 			var step_end := minf(end, fish_tick)
@@ -249,6 +261,18 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 				result.bite = true
 				if stop_at_events:
 					result.stopped_by = STOP_BITE
+					break
+			if holding and step_end >= anchor_grid - 1e-6:
+				# Waiting at the anchorage: the weather goes on (on the grid).
+				var propulsion := GameSession.get_propulsion()
+				propulsion.last_evaluation_time = step_end
+				GameSession.set_propulsion(propulsion)
+				var holding_warned := _assess_weather(result)
+				if result.rescued:
+					result.stopped_by = STOP_RESCUE
+					break
+				if holding_warned and stop_at_events:
+					result.stopped_by = STOP_WARNING
 					break
 			if anchored and step_end >= anchor_grid - 1e-6:
 				var warned := _assess_weather(result)
@@ -304,6 +328,13 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 				break
 		if not reached_event:
 			continue  # a grid point or the end of the requested time
+		# An anchorage waypoint (Iteration 18): the boat stops and waits there.
+		if GameSession.reach_anchorage_at(event_at):
+			result.anchorage = true
+			if stop_at_events:
+				result.stopped_by = STOP_ANCHORAGE
+				break
+			continue
 		if event_at >= total - 1e-9:
 			var destination := GameSession.get_voyage_destination_id()
 			GameSession.complete_voyage()

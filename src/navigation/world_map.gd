@@ -57,6 +57,14 @@ const TAB_DETAILS := 2
 var _selected_port_id: StringName
 var _draft_destination: StringName
 var _draft_waypoints: Array[Vector2] = []
+## Which draft waypoints are anchorages (Iteration 18), parallel to the above.
+var _draft_anchorages: Array[bool] = []
+## A suitable spot offered for an anchorage that is not (Vector2.INF: none),
+## and for which waypoint.
+var _anchorage_suggestion := Vector2.INF
+var _anchorage_suggestion_for := -1
+var _anchorage_button: Button
+var _suggestion_button: Button
 ## Legs of the draft as [{"path", "ok"}] and its validated route (or null).
 var _draft_legs: Array[Dictionary] = []
 var _draft_route: PlannedRoute
@@ -68,6 +76,8 @@ var _pending_drag_geo := Vector2.INF
 var _drag_timer := 0.0
 var _live_timer := 0.0
 var _feedback := ""
+## A one-off hint shown under the course status (Iteration 18).
+var _feedback_hint := ""
 ## Estimated sailing time of the draft course (seconds), refreshed when it changes.
 var _draft_estimate_seconds := 0.0
 var _hazards_key := ""
@@ -121,6 +131,7 @@ func _ready() -> void:
 	_apply_button.pressed.connect(apply_course)
 	_discard_button.pressed.connect(discard_changes)
 	_remove_button.pressed.connect(func() -> void: remove_waypoint(_selected_waypoint))
+	_build_anchorage_buttons()
 	_clear_button.pressed.connect(clear_course)
 	_sail_button.pressed.connect(depart_requested.emit)
 	%BackButton.pressed.connect(close_requested.emit)
@@ -192,6 +203,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key and key.pressed and not key.echo and key.keycode in [KEY_DELETE, KEY_BACKSPACE] and _selected_waypoint >= 0:
 		remove_waypoint(_selected_waypoint)
+		get_viewport().set_input_as_handled()
+	elif key and key.pressed and not key.echo and key.keycode == KEY_M and _selected_waypoint >= 0 and mode == MODE_STATION:
+		toggle_anchorage(_selected_waypoint)
 		get_viewport().set_input_as_handled()
 
 
@@ -277,6 +291,8 @@ func plot_course_to(port_id: StringName) -> void:
 		return
 	_draft_destination = port_id
 	_draft_waypoints.clear()
+	_draft_anchorages.clear()
+	_clear_suggestion()
 	_selected_waypoint = -1
 	_draft_dirty = true
 	_feedback = ""
@@ -287,7 +303,11 @@ func plot_course_to(port_id: StringName) -> void:
 func insert_waypoint(leg_index: int, geo: Vector2) -> int:
 	var index := clampi(leg_index, 0, _draft_waypoints.size())
 	_draft_waypoints.insert(index, geo)
+	_draft_anchorages.insert(index, false)
+	_clear_suggestion()
 	_selected_waypoint = index
+	if GameSession.take_hint("anchorage"):
+		_feedback_hint = ANCHORAGE_HINT
 	_draft_dirty = true
 	_recalculate()
 	return index
@@ -297,6 +317,8 @@ func remove_waypoint(index: int) -> void:
 	if index < 0 or index >= _draft_waypoints.size():
 		return
 	_draft_waypoints.remove_at(index)
+	_draft_anchorages.remove_at(index)
+	_clear_suggestion()
 	_selected_waypoint = -1
 	_draft_dirty = true
 	_recalculate()
@@ -313,8 +335,11 @@ func apply_course() -> String:
 	if _draft_route == null:
 		return _set_feedback("This course cannot be used: %s" % _draft_error)
 	var error := ""
+	for i in _draft_waypoints.size():
+		if _draft_anchorages[i] and not GameSession.anchorage_spot(_draft_waypoints[i]).ok:
+			return _set_feedback("Anchorage %d cannot be used: %s Move it, or unmark it." % [i + 1, GameSession.anchorage_spot(_draft_waypoints[i]).reason])
 	if GameSession.is_underway():
-		error = GameSession.change_course(_draft_destination, _draft_waypoints)
+		error = GameSession.change_course(_draft_destination, _draft_waypoints, _draft_anchorages)
 	else:
 		error = GameSession.set_planned_route(_draft_route)
 	if not error.is_empty():
@@ -492,11 +517,14 @@ func _load_committed() -> void:
 	_draft_route = null
 	_draft_error = ""
 	_draft_waypoints.clear()
+	_draft_anchorages.clear()
+	_clear_suggestion()
 	_draft_destination = &""
 	if GameSession.is_underway():
 		var voyage := GameSession.get_voyage()
 		_draft_destination = voyage.route.destination_port_id
 		_draft_waypoints = voyage.get_remaining_waypoints()
+		_draft_anchorages = voyage.get_remaining_anchorages()
 		var remaining := voyage.get_remaining_path()
 		for leg in _split_at_waypoints(remaining, _draft_waypoints):
 			_draft_legs.append({"path": leg, "ok": true})
@@ -507,6 +535,7 @@ func _load_committed() -> void:
 			_draft_estimate_seconds = Simulation.estimate_route_seconds(planned.path)
 			_draft_destination = planned.destination_port_id
 			_draft_waypoints = planned.waypoints.duplicate()
+			_draft_anchorages = planned.anchorage_flags()
 			for leg_range in planned.get_leg_ranges():
 				_draft_legs.append({"path": planned.path.slice(leg_range.x, leg_range.y + 1), "ok": true})
 	if _selected_waypoint >= _draft_waypoints.size():
@@ -520,6 +549,8 @@ func _recalculate() -> void:
 	var result := SeaRouter.get_default().plan_route(origin_port, GameSession.get_vessel_position(),
 		_draft_waypoints, _draft_destination)
 	_draft_route = result.route
+	if _draft_route:
+		_draft_route.anchorages = _draft_anchorages.duplicate()
 	_draft_error = result.error
 	if result.is_ok():
 		SessionLog.write("route_completed", {"to": String(_draft_destination), "nm": snappedf(result.route.get_distance_nm(), 0.1),
@@ -547,7 +578,12 @@ func _move_waypoint(index: int, geo: Vector2) -> void:
 		return
 	_draft_waypoints[index] = geo
 	_draft_dirty = true
+	_clear_suggestion()
 	_recalculate()
+	if index < _draft_anchorages.size() and _draft_anchorages[index]:
+		var spot := GameSession.anchorage_spot(geo)
+		_set_feedback(("Anchorage %d: %s" % [index + 1, spot.reason]) if spot.ok else
+			("Anchorage %d is no good here: %s" % [index + 1, spot.reason]))
 
 
 func _select_waypoint(index: int) -> void:
@@ -601,6 +637,96 @@ static func _split_at_waypoints(path: PackedVector2Array, points: Array[Vector2]
 	return legs
 
 
+# --- Anchorage waypoints (Iteration 18) --------------------------------------------------
+
+const ANCHORAGE_HINT := "Found a sheltered bay? Place a waypoint near the coast and mark it as an anchorage (M). I'll stop there so you can drop the anchor."
+
+
+func _build_anchorage_buttons() -> void:
+	var row := _remove_button.get_parent()
+	_anchorage_button = Button.new()
+	_anchorage_button.name = "AnchorageButton"
+	_anchorage_button.text = "Mark as anchorage"
+	_anchorage_button.tooltip_text = "Make the selected waypoint tonight's anchorage (M): the boat stops there and asks you to drop the anchor."
+	_anchorage_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_anchorage_button.clip_text = true
+	_anchorage_button.pressed.connect(func() -> void: toggle_anchorage(_selected_waypoint))
+	row.add_child(_anchorage_button)
+	row.move_child(_anchorage_button, 1)
+	_suggestion_button = Button.new()
+	_suggestion_button.name = "AnchorageSuggestionButton"
+	_suggestion_button.text = "Move it to the nearest good spot"
+	_suggestion_button.visible = false
+	_suggestion_button.pressed.connect(use_anchorage_suggestion)
+	row.get_parent().add_child(_suggestion_button)
+	row.get_parent().move_child(_suggestion_button, row.get_index() + 1)
+
+
+func is_anchorage(index: int) -> bool:
+	return index >= 0 and index < _draft_anchorages.size() and _draft_anchorages[index]
+
+
+func get_course_status_text() -> String:
+	return _course_status.text
+
+
+func get_draft_anchorages() -> Array[bool]:
+	return _draft_anchorages.duplicate()
+
+
+## Marks waypoint `index` as an anchorage, or unmarks it. A spot that the
+## anchoring rule does not allow is not marked: the reason is shown, with the
+## nearest suitable spot offered. Returns "" or the reason.
+func toggle_anchorage(index: int) -> String:
+	if index < 0 or index >= _draft_waypoints.size():
+		return ""
+	_feedback_hint = ""
+	if _draft_anchorages[index]:
+		_draft_anchorages[index] = false
+		_clear_suggestion()
+		_draft_dirty = true
+		_recalculate()
+		_set_feedback("Waypoint %d is an ordinary waypoint again." % (index + 1))
+		return ""
+	var spot := GameSession.anchorage_spot(_draft_waypoints[index])
+	if not spot.ok:
+		var nearest := GameSession.nearest_anchorage_spot(_draft_waypoints[index])
+		_anchorage_suggestion = nearest
+		_anchorage_suggestion_for = index if nearest != Vector2.INF else -1
+		var offer := " The nearest suitable spot is %.1f nm away." % GeoMath.distance_nm(_draft_waypoints[index], nearest) if nearest != Vector2.INF else " There is no suitable spot nearby."
+		_set_feedback("Not an anchorage: %s%s" % [spot.reason, offer])
+		return String(spot.reason)
+	_draft_anchorages[index] = true
+	_clear_suggestion()
+	_draft_dirty = true
+	_recalculate()
+	_set_feedback("Waypoint %d is an anchorage. %s" % [index + 1, spot.reason])
+	return ""
+
+
+## Moves the waypoint to the offered spot and makes it the anchorage.
+func use_anchorage_suggestion() -> void:
+	var index := _anchorage_suggestion_for
+	var spot := _anchorage_suggestion
+	if index < 0 or index >= _draft_waypoints.size() or spot == Vector2.INF:
+		return
+	_draft_waypoints[index] = spot
+	_draft_anchorages[index] = true
+	_clear_suggestion()
+	_draft_dirty = true
+	_recalculate()
+	_set_feedback("Waypoint %d moved to a suitable spot and made an anchorage. %s" % [index + 1, GameSession.anchorage_spot(spot).reason])
+
+
+func get_anchorage_suggestion() -> Vector2:
+	return _anchorage_suggestion
+
+
+func _clear_suggestion() -> void:
+	_anchorage_suggestion = Vector2.INF
+	_anchorage_suggestion_for = -1
+
+
 func _set_feedback(text: String) -> String:
 	_feedback = text
 	_refresh()
@@ -613,7 +739,8 @@ func _refresh_map_only() -> void:
 	var invalid := PackedInt32Array()
 	var router := SeaRouter.get_default()
 	for i in _draft_waypoints.size():
-		if not router.is_point_navigable(_draft_waypoints[i]):
+		if not router.is_point_navigable(_draft_waypoints[i]) \
+				or (i < _draft_anchorages.size() and _draft_anchorages[i] and not GameSession.anchorage_spot(_draft_waypoints[i]).ok):
 			invalid.append(i)
 	var voyage := GameSession.get_voyage()
 	var display := {
@@ -624,6 +751,7 @@ func _refresh_map_only() -> void:
 		"draft_legs": _draft_legs,
 		"draft_is_proposal": _draft_dirty,
 		"waypoints": _draft_waypoints,
+		"anchorages": _draft_anchorages,
 		"invalid_waypoints": invalid,
 		"selected_waypoint": _selected_waypoint,
 		"editing_enabled": not _draft_legs.is_empty(),
@@ -733,12 +861,17 @@ func _refresh() -> void:
 		course_status = "Current course" + (" (being sailed)" if GameSession.is_underway() else "")
 	if not _feedback.is_empty():
 		course_status += "\n" + _feedback
+	if not _feedback_hint.is_empty():
+		course_status += "\n" + _feedback_hint
 	_set_text(_course_status, course_status)
 	_update_readiness(valid)
 	_apply_button.text = "Change course" if GameSession.is_underway() else "Apply course"
 	_apply_button.disabled = not _draft_dirty or _draft_route == null
 	_discard_button.disabled = not _draft_dirty
 	_remove_button.disabled = _selected_waypoint < 0
+	_anchorage_button.disabled = _selected_waypoint < 0
+	_anchorage_button.text = "Unmark anchorage" if is_anchorage(_selected_waypoint) else "Mark as anchorage"
+	_suggestion_button.visible = _anchorage_suggestion != Vector2.INF
 	_clear_button.disabled = GameSession.is_underway() or GameSession.get_planned_route() == null
 	# Always in the footer; disabled (not hidden) when it cannot be used.
 	_sail_button.disabled = GameSession.is_underway() or _draft_dirty or GameSession.get_planned_route() == null

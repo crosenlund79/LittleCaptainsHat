@@ -61,6 +61,8 @@ var weather_audio: WeatherAudio
 ## True from a rescue until its dialog is closed: gameplay stays paused (also
 ## while the screen changes to the harbour underneath).
 var _rescue_open := false
+## An anchorage was reached; its prompt waits for a free moment (Iteration 18).
+var _anchorage_prompt_due := false
 ## Real seconds left for the captain to reach the rod after a bite (counts
 ## only while playing, not while a menu is open), Iteration 13.
 var _bite_wait := 0.0
@@ -88,6 +90,7 @@ func _ready() -> void:
 	GameSession.hat_warning.connect(_on_hat_warning)
 	GameSession.hat_lost.connect(_on_hat_lost)
 	GameSession.fish_bite.connect(_on_fish_bite)
+	GameSession.anchorage_reached.connect(_on_anchorage_reached)
 	GameSession.anchor_alarm.connect(_on_anchor_alarm)
 	GameSession.anchor_moment.connect(_on_anchor_moment)
 	GameSession.fishing_warning.connect(func(warning: Dictionary) -> void: notify(String(warning.text)))
@@ -115,6 +118,9 @@ func _process(delta: float) -> void:
 		_weather_audio_timer = WEATHER_AUDIO_INTERVAL
 		update_weather_audio()
 	_update_bite_wait(delta)
+	if _anchorage_prompt_due and is_in_gameplay() and modals.is_empty() and not router.is_busy() and not GameSession.is_asleep():
+		_anchorage_prompt_due = false
+		show_anchorage_prompt()
 
 
 ## Weather sounds follow the weather at the boat (the same weather model as
@@ -409,8 +415,12 @@ func get_wheel_actions() -> Array[Dictionary]:
 				func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
 			if not GameSession.is_anchored():
 				add.call(&"sail_trim", "Trim the sails", func() -> void: open_sail_trim.call_deferred())
-			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "":
+			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "" or GameSession.is_holding_at_anchorage():
 				add.call(&"anchor", "Anchor", func() -> void: open_anchor())
+			if GameSession.is_holding_at_anchorage():
+				add.call(&"sail_on", "Sail on from the anchorage", func() -> void:
+					var error := GameSession.sail_on_from_anchorage()
+					notify("Sailing on along the course." if error == "" else error))
 		elif GameSession.get_planned_route() != null:
 			add.call(&"set_sail", "Set sail", request_departure)
 		add.call(&"chart", "Open the chart", open_chart)
@@ -590,6 +600,8 @@ func sleep_for(hours: float) -> void:
 				AnchorSite.holding_text(GameSession.get_anchor().holding).to_lower(), now, still_paused])
 		Simulation.STOP_ARRIVAL:
 			notify("You were woken after %s: the boat has arrived. It is %s.%s" % [slept, now, still_paused])
+		Simulation.STOP_ANCHORAGE:
+			notify("You were woken after %s: we've arrived at our anchorage. It is %s.%s" % [slept, now, still_paused])
 		_:
 			notify("You slept %s. It is %s.%s" % [slept, now, still_paused])
 	if not wake_line.is_empty():
@@ -754,6 +766,30 @@ func _on_meal_cooked(result: Dictionary) -> void:
 # --- The anchor (Iteration 13) --------------------------------------------------------
 
 ## The windlass on the foredeck.
+## The boat arrived at an anchorage waypoint (Iteration 18): ask once, when
+## nothing else is open (after waking, after a menu closes).
+func _on_anchorage_reached(_index: int) -> void:
+	AudioManager.play_sfx(FishingSounds.bite(), FishingSounds.DB)
+	_anchorage_prompt_due = true
+
+
+func show_anchorage_prompt() -> AnchoragePrompt:
+	if not GameSession.is_holding_at_anchorage() or not modals.is_empty():
+		return null
+	var prompt := AnchoragePrompt.new()
+	prompt.anchor_requested.connect(func() -> void: open_anchor.call_deferred())
+	prompt.sail_on_requested.connect(func() -> void:
+		var error := GameSession.sail_on_from_anchorage()
+		notify("Sailing on along the course." if error == "" else error))
+	modals.push(prompt)
+	SessionLog.write("anchorage_prompt", {"site": String(GameSession.evaluate_anchorage().get("class", ""))})
+	return prompt
+
+
+func is_anchorage_prompt_due() -> bool:
+	return _anchorage_prompt_due
+
+
 func open_anchor() -> AnchorMenu:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return null

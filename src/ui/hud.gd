@@ -248,6 +248,10 @@ func refresh() -> void:
 		_route_detail.text = "ETA about %s (estimate)" % Simulation.format_game_time(Simulation.get_eta())
 		_propulsion.text = propulsion.describe()
 		_propulsion.visible = true
+		if GameSession.is_holding_at_anchorage():
+			_route_caption.text = "At the anchorage  ·  0.0 kn"
+			_route_detail.text = "Drop the anchor, or sail on (Q)"
+			_propulsion.text = "Sails down  ·  waiting at the anchorage"
 		if GameSession.is_anchored():
 			_route_detail.text = "Raise the anchor at the windlass to sail on"
 			_propulsion.text = "%s  ·  %d × the depth of chain" % [AnchorSite.holding_text(GameSession.get_anchor().holding),

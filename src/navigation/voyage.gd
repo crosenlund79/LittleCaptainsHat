@@ -30,6 +30,12 @@ var damage_percent := 0.0
 ## False for a voyage loaded from a save made before the Captain's Log
 ## (Iteration 006): its weather and damage before then are unknown.
 var fully_recorded := true
+## Anchorage waypoints (Iteration 18): `holding_at` is the route waypoint the
+## boat has arrived at and waits at (stopped, not yet anchored; -1 when not
+## waiting); `anchorages_done` the ones already reached (anchored at, or
+## sailed on from), so none stops the boat twice. Optional in a save.
+var holding_at := -1
+var anchorages_done: Array[int] = []
 
 var _cumulative := PackedFloat64Array()
 
@@ -56,7 +62,41 @@ func duplicate_voyage() -> Voyage:
 	copy.worst_hazard = worst_hazard
 	copy.damage_percent = damage_percent
 	copy.fully_recorded = fully_recorded
+	copy.holding_at = holding_at
+	copy.anchorages_done = anchorages_done.duplicate()
 	return copy
+
+
+## The route distance (nm) of waypoint `index`.
+func waypoint_distance(index: int) -> float:
+	return get_cumulative()[route.waypoint_path_indices[index]]
+
+
+## The anchorage waypoint lying exactly at `distance_nm` that has not been
+## reached yet, or -1.
+func anchorage_at(distance_nm: float) -> int:
+	for i in route.waypoints.size():
+		if route.is_anchorage(i) and not i in anchorages_done and absf(waypoint_distance(i) - distance_nm) < 1e-6:
+			return i
+	return -1
+
+
+## The next anchorage ahead: {"index", "nm", "geo"} or {}.
+func next_anchorage() -> Dictionary:
+	for i in route.waypoints.size():
+		if route.is_anchorage(i) and not i in anchorages_done and waypoint_distance(i) >= progress_nm - 1e-6:
+			return {"index": i, "nm": waypoint_distance(i) - progress_nm, "geo": route.waypoints[i]}
+	return {}
+
+
+## Anchorage flags for get_remaining_waypoints() (not yet reached ones only).
+func get_remaining_anchorages() -> Array[bool]:
+	var result: Array[bool] = []
+	var cumulative := get_cumulative()
+	for i in route.waypoints.size():
+		if cumulative[route.waypoint_path_indices[i]] > progress_nm + 1e-6:
+			result.append(route.is_anchorage(i) and not i in anchorages_done)
+	return result
 
 
 func get_cumulative() -> PackedFloat64Array:
@@ -120,6 +160,8 @@ func to_dict() -> Dictionary:
 		"worst_hazard": worst_hazard,
 		"damage_percent": damage_percent,
 		"fully_recorded": fully_recorded,
+		"holding_at": holding_at,
+		"anchorages_done": anchorages_done.duplicate(),
 	}
 
 
@@ -178,6 +220,18 @@ static func from_dict(data: Variant, catalog: PortCatalog, errors: Array[String]
 		voyage.departure_position = voyage.route.origin_position
 		voyage.sailed_nm = voyage.progress_nm
 		voyage.fully_recorded = false
+	# Anchorage waypoints (Iteration 18): optional.
+	var holding: Variant = data.get("holding_at", -1)
+	var done: Variant = data.get("anchorages_done", [])
+	if not _is_number(holding) or int(holding) < -1 or int(holding) >= voyage.route.waypoints.size() or not done is Array:
+		errors.append("voyage anchorage data is invalid")
+		return null
+	voyage.holding_at = int(holding)
+	for value: Variant in done:
+		if not _is_number(value) or int(value) < 0 or int(value) >= voyage.route.waypoints.size():
+			errors.append("voyage anchorage data is invalid")
+			return null
+		voyage.anchorages_done.append(int(value))
 	return voyage
 
 
