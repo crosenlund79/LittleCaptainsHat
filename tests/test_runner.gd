@@ -13,6 +13,7 @@ extends Node
 const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_data_model.gd"),
 	preload("res://tests/suites/test_routing.gd"),
+	preload("res://tests/suites/test_world_chart_render.gd"),
 	preload("res://tests/suites/test_regions.gd"),
 	preload("res://tests/suites/test_boat_care.gd"),
 	preload("res://tests/suites/test_denmark_views.gd"),

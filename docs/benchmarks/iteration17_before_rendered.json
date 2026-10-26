@@ -1,0 +1,134 @@
+{
+  "app_startup_ms": 205.91,
+  "chart_first_open_ms": 2442.15,
+  "chart_frames": {
+    "coastal|wind_off|pan": {
+      "ms_per_frame": 45.89
+    },
+    "coastal|wind_off|stationary": {
+      "ms_per_frame": 52.73
+    },
+    "coastal|wind_off|zoom": {
+      "ms_per_frame": 61.45
+    },
+    "coastal|wind_on|pan": {
+      "ms_per_frame": 63.99
+    },
+    "coastal|wind_on|stationary": {
+      "ms_per_frame": 59.97
+    },
+    "coastal|wind_on|zoom": {
+      "ms_per_frame": 72.72
+    },
+    "continental|wind_off|pan": {
+      "ms_per_frame": 62.48
+    },
+    "continental|wind_off|stationary": {
+      "ms_per_frame": 74.74
+    },
+    "continental|wind_off|zoom": {
+      "ms_per_frame": 80.77
+    },
+    "continental|wind_on|pan": {
+      "ms_per_frame": 75.16
+    },
+    "continental|wind_on|stationary": {
+      "ms_per_frame": 83.86
+    },
+    "continental|wind_on|zoom": {
+      "ms_per_frame": 100.69
+    },
+    "denmark_region|wind_off|pan": {
+      "ms_per_frame": 41.13
+    },
+    "denmark_region|wind_off|stationary": {
+      "ms_per_frame": 46.96
+    },
+    "denmark_region|wind_off|zoom": {
+      "ms_per_frame": 51.89
+    },
+    "denmark_region|wind_on|pan": {
+      "ms_per_frame": 54.6
+    },
+    "denmark_region|wind_on|stationary": {
+      "ms_per_frame": 55.95
+    },
+    "denmark_region|wind_on|zoom": {
+      "ms_per_frame": 67.17
+    },
+    "world|wind_off|pan": {
+      "ms_per_frame": 65.88
+    },
+    "world|wind_off|stationary": {
+      "ms_per_frame": 68.73
+    },
+    "world|wind_off|zoom": {
+      "ms_per_frame": 79.31
+    },
+    "world|wind_on|pan": {
+      "ms_per_frame": 77.28
+    },
+    "world|wind_on|stationary": {
+      "ms_per_frame": 79.34
+    },
+    "world|wind_on|zoom": {
+      "ms_per_frame": 79.06
+    }
+  },
+  "chart_reopen_memory_mb": [
+    184.4,
+    184.4,
+    184.4,
+    184.4,
+    184.4,
+    184.4,
+    184.4,
+    184.4
+  ],
+  "chart_reopen_ms": [
+    586.19,
+    624.67,
+    620.89,
+    565.14,
+    565.48,
+    660.81,
+    625.65,
+    605.03
+  ],
+  "chart_stationary_clock_20x_wind_on": {
+    "coastal": {
+      "ms_per_frame": 105.38
+    },
+    "continental": {
+      "ms_per_frame": 112.54
+    },
+    "denmark_region": {
+      "ms_per_frame": 112.68
+    },
+    "world": {
+      "ms_per_frame": 97.42
+    }
+  },
+  "deck_underway_ms_per_frame": 34.74,
+  "load_ms": 4.56,
+  "long_passage_ms_per_game_day": 391.4,
+  "memory_end_mb": 188.1,
+  "renderer": "X11",
+  "sail_sim_ms_per_day": 548.7,
+  "save_ms": 1.63,
+  "version": "0.103a",
+  "wind_rebuild": {
+    "coastal": {
+      "ms_per_rebuild_frame": 798.51
+    },
+    "continental": {
+      "ms_per_rebuild_frame": 521.97
+    },
+    "denmark_region": {
+      "ms_per_rebuild_frame": 786.57
+    },
+    "world": {
+      "ms_per_rebuild_frame": 257.45
+    }
+  }
+}

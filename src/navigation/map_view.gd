@@ -77,9 +77,6 @@ const WORLD_META := "res://data/navigation/world/world.json"
 const WORLD_LAND := "res://data/navigation/world/land.json"
 ## The same land, projected and binary (tools/navigation/world_land_to_res.gd).
 const WORLD_LAND_RES := "res://data/navigation/world/land.res"
-## World land within this many degrees of ±180° is also drawn one world-width
-## over, so the chart wraps seamlessly across the Date Line.
-const WRAP_MARGIN_DEG := 40.0
 ## At world zoom, harbour markers closer than this (screen pixels) to a more
 ## important one are left out, so a click always hits the intended harbour.
 const DECLUTTER_PX := 16.0
@@ -547,27 +544,42 @@ func _world_data() -> Dictionary:
 ## is grouped into square tiles, each one canvas item that draws its fill,
 ## coast and islets; a tile is shown (and so triangulated, once) only when it
 ## comes into view (_update_world_tiles()), so opening the chart stays quick.
+## The world wraps east-west: the layer is drawn in three copies one
+## world-width apart (west, main, east), which share the same tile data. A
+## tile is shown in a copy only when that copy of it is in view, so whatever
+## the camera position and zoom, every visible longitude has its land
+## (Iteration 17: before, only land within 40° of ±180° was copied, and the
+## whole-world view, ~315° wide, showed rectangular gaps toward Asia,
+## Australia and the Americas).
 func _build_world_layer(parent: Node2D, level: String) -> void:
-	for content: Dictionary in _world_tiles(level):
-		var tile := Node2D.new()
-		tile.visible = false
-		tile.set_meta(&"rect", content.rect)
-		tile.draw.connect(_draw_world_tile.bind(tile, content))
-		var islets: PackedVector2Array = content.islets
-		if not islets.is_empty():
-			# Dots sized for the screen: their own item, redrawn on zoom without
-			# touching the land's triangulation.
-			var dots := Node2D.new()
-			dots.name = "Islets"
-			dots.draw.connect(_draw_islets.bind(dots, islets))
-			tile.add_child(dots)
-		parent.add_child(tile)
+	var tiles := _world_tiles(level)
+	for copy_index in 3:
+		var copy := Node2D.new()
+		copy.name = ["West", "Main", "East"][copy_index]
+		copy.position.x = float(copy_index - 1) * _world_width
+		parent.add_child(copy)
+		for content: Dictionary in tiles:
+			var tile := Node2D.new()
+			tile.visible = false
+			tile.set_meta(&"rect", content.rect)
+			tile.set_meta(&"content", content)
+			tile.draw.connect(_draw_world_tile.bind(tile, content))
+			var islets: PackedVector2Array = content.islets
+			if not islets.is_empty():
+				# Dots sized for the screen: their own item, redrawn on zoom without
+				# touching the land's triangulation.
+				var dots := Node2D.new()
+				dots.name = "Islets"
+				dots.draw.connect(_draw_islets.bind(dots, islets))
+				tile.add_child(dots)
+			copy.add_child(tile)
 	_world_tile_key = ""
 
 
 ## The tiles of a world layer (cached with the world data):
-## [{"rect", "points", "indices", "segments", "islets"}], including the wrap
-## copies.
+## [{"rect", "points", "indices", "segments", "islets"}], one world wide.
+## Iteration 17: no wrap copies are baked into the tiles any more; the layer
+## is drawn three times, one world-width apart (see _build_world_layer()).
 func _world_tiles(level: String) -> Array:
 	var data := _world_data()
 	if not data.has(level):
@@ -575,38 +587,28 @@ func _world_tiles(level: String) -> Array:
 	var cache_key := "tiles_" + level
 	if data.has(cache_key):
 		return data[cache_key]
-	var margin := WRAP_MARGIN_DEG * units_per_degree
-	var east_edge := _map_bounds.end.x - margin
-	var west_edge := _map_bounds.position.x + margin
 	# Each tile is drawn in two calls (Iteration 16): its land as one indexed
 	# triangle array, its coast as one batch of line segments.
 	var tiles := {}
 	for ring: PackedVector2Array in data[level].fill:
 		if ring.size() < 3 or absf(MapView._ring_area(ring)) < 0.05:
 			continue  # a sliver: nothing to draw
-		var box := MapView._bounds_of(ring)
-		for offset in _wrap_offsets(box, east_edge, west_edge):
-			var copy := _shifted(ring, offset.x) if offset.x != 0.0 else ring
-			var triangles := Geometry2D.triangulate_polygon(copy)
-			if triangles.is_empty():
-				continue  # degenerate (or rounded into it by the shift): cannot be filled
-			var tile := _tile_of(tiles, box, offset)
-			var base: int = tile.points.size()
-			tile.points.append_array(copy)
-			for index in triangles:
-				tile.indices.append(base + index)
+		var triangles := Geometry2D.triangulate_polygon(ring)
+		if triangles.is_empty():
+			continue  # degenerate: cannot be filled
+		var tile := _tile_of(tiles, MapView._bounds_of(ring))
+		var base: int = tile.points.size()
+		tile.points.append_array(ring)
+		for index in triangles:
+			tile.indices.append(base + index)
 	for line: PackedVector2Array in data[level].coast:
-		var box := MapView._bounds_of(line)
-		for offset in _wrap_offsets(box, east_edge, west_edge):
-			var copy := _shifted(line, offset.x) if offset.x != 0.0 else line
-			var segments: PackedVector2Array = _tile_of(tiles, box, offset).segments
-			for i in range(1, copy.size()):
-				segments.append(copy[i - 1])
-				segments.append(copy[i])
+		var segments: PackedVector2Array = _tile_of(tiles, MapView._bounds_of(line)).segments
+		for i in range(1, line.size()):
+			segments.append(line[i - 1])
+			segments.append(line[i])
 	if level == "regional":
 		for p in data.islets:
-			for offset in _wrap_offsets(Rect2(p, Vector2.ZERO), east_edge, west_edge):
-				_tile_of(tiles, Rect2(p, Vector2.ZERO), offset).islets.append(p + offset)
+			_tile_of(tiles, Rect2(p, Vector2.ZERO)).islets.append(p)
 	data[cache_key] = tiles.values()
 	return data[cache_key]
 
@@ -635,28 +637,18 @@ static func _shifted(points: PackedVector2Array, dx: float) -> PackedVector2Arra
 	return result
 
 
-func _wrap_offsets(box: Rect2, east_edge: float, west_edge: float) -> Array[Vector2]:
-	var offsets: Array[Vector2] = [Vector2.ZERO]
-	if box.end.x > east_edge:
-		offsets.append(Vector2(-_world_width, 0))
-	if box.position.x < west_edge:
-		offsets.append(Vector2(_world_width, 0))
-	return offsets
-
-
 ## World tiles are WORLD_TILE_DEG on a side (map units: degrees × units_per_degree).
 const WORLD_TILE_DEG := 10.0
 
 
-func _tile_of(tiles: Dictionary, box: Rect2, offset: Vector2) -> Dictionary:
+func _tile_of(tiles: Dictionary, box: Rect2) -> Dictionary:
 	var size := WORLD_TILE_DEG * units_per_degree
-	var moved := Rect2(box.position + offset, box.size)
-	var key := Vector2i((moved.get_center() / size).floor())
+	var key := Vector2i((box.get_center() / size).floor())
 	if not tiles.has(key):
 		tiles[key] = {"points": PackedVector2Array(), "indices": PackedInt32Array(), "segments": PackedVector2Array(),
-			"islets": PackedVector2Array(), "rect": moved}
+			"islets": PackedVector2Array(), "rect": box}
 	var tile: Dictionary = tiles[key]
-	tile.rect = (tile.rect as Rect2).merge(moved)  # the drawn extent can reach past the square
+	tile.rect = (tile.rect as Rect2).merge(box)  # the drawn extent can reach past the square
 	return tile
 
 
@@ -705,21 +697,23 @@ func _update_world_tiles() -> void:
 	var half := view / camera.zoom.x * 0.5
 	var area := Rect2(camera.position - half - Vector2(occluded_right_px, 0) / camera.zoom.x, half * 2.0 + Vector2(occluded_right_px, 0) / camera.zoom.x)
 	area = area.grow(WORLD_TILE_DEG * units_per_degree * 0.5)
+	var redraw_islets := zoomed and absf(camera.zoom.x / maxf(_islet_zoom, 1e-9) - 1.0) > 0.15
 	for layer: Node2D in [_world_overview, _world_regional]:
 		if layer == null or not layer.visible:
 			continue
-		for tile: Node2D in layer.get_children():
-			var rect: Rect2 = tile.get_meta(&"rect")
-			var show := rect.grow(1.0).intersects(area)
-			if show != tile.visible:
-				tile.visible = show
-		# Islets are sized for the screen: redraw the visible ones once the zoom
-		# has changed enough to see (15 %).
-		if layer == _world_regional and zoomed and absf(camera.zoom.x / maxf(_islet_zoom, 1e-9) - 1.0) > 0.15:
-			_islet_zoom = camera.zoom.x
-			for tile: Node2D in layer.get_children():
-				if tile.visible and tile.get_child_count() > 0:
+		for copy: Node2D in layer.get_children():
+			var shifted := Rect2(area.position - copy.position, area.size)  # the view in this copy's frame
+			for tile: Node2D in copy.get_children():
+				var rect: Rect2 = tile.get_meta(&"rect")
+				var show := rect.grow(1.0).intersects(shifted)
+				if show != tile.visible:
+					tile.visible = show
+				# Islets are sized for the screen: redraw the visible ones once the
+				# zoom has changed enough to see (15 %).
+				if redraw_islets and layer == _world_regional and show and tile.get_child_count() > 0:
 					(tile.get_child(0) as Node2D).queue_redraw()
+	if redraw_islets:
+		_islet_zoom = camera.zoom.x
 
 
 ## Europe's land as drawn: fill pieces outside the detail regions and the
@@ -932,6 +926,32 @@ func _update_region_detail() -> void:
 		(layers.overview as Node2D).visible = not detail
 
 
+## True when the world land layer now shown has a visible tile covering
+## `map_point`, in whichever copy of the world that point lies (tests: the
+## chart must never leave a gap where land is in view).
+func is_world_land_drawn_at(map_point: Vector2) -> bool:
+	for layer: Node2D in [_world_overview, _world_regional]:
+		if layer == null or not layer.visible:
+			continue
+		for copy: Node2D in layer.get_children():
+			var local := map_point - copy.position
+			for tile: Node2D in copy.get_children():
+				if tile.visible and (tile.get_meta(&"rect") as Rect2).has_point(local) \
+						and MapView._triangles_contain(tile.get_meta(&"content"), local):
+					return true
+	return false
+
+
+## True when `point` lies in one of the tile's filled triangles.
+static func _triangles_contain(content: Dictionary, point: Vector2) -> bool:
+	var points: PackedVector2Array = content.points
+	var indices: PackedInt32Array = content.indices
+	for i in range(0, indices.size(), 3):
+		if Geometry2D.point_is_inside_triangle(point, points[indices[i]], points[indices[i + 1]], points[indices[i + 2]]):
+			return true
+	return false
+
+
 ## True when the coarse whole-world land is drawn (zoomed out), false when
 ## Europe's chart and the regional world land are (tests).
 func is_world_overview_shown() -> bool:
@@ -1025,6 +1045,10 @@ func _set_zoom(value: float) -> void:
 	# Never zoom out further than showing the whole region.
 	var free := _free_view_size()
 	var whole_region := minf(free.x / _map_bounds.size.x, free.y / _map_bounds.size.y) * 0.8
+	if _has_world:
+		# The wrapping world chart: at most one world wide, so no land and no
+		# harbour is ever shown twice side by side.
+		whole_region = free.x / _world_width
 	var zoom := clampf(value, maxf(min_zoom, whole_region), max_zoom)
 	camera.zoom = Vector2(zoom, zoom)
 	_update_region_detail()
