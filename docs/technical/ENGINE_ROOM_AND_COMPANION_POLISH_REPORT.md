@@ -13,7 +13,8 @@ Documentation, personalized petting and test reliability. Version stays
 | Part A: the GDScript guides and their checker | `30556d9` |
 | Part B: companion dialogue | `4b72258` |
 | Parts C and D: test reliability and the small localization fixes | `1b1eb54` |
-| Part E/F: integration and this report | the commit that adds this file (the branch head) |
+| Draft of this report | `fb7f0b8` |
+| Part E/F: test results and integration | the branch head after `fb7f0b8` |
 
 The backup branches `backup/post-turbocharge-pre-i019` and
 `backup/post-i019-pre-i020` were not touched. No history was rewritten.
@@ -161,7 +162,17 @@ following. The checks are the same checks.
 
 ## 10. Repetition results
 
-(Running: the counts are added when the repeated runs finish.)
+Both suites together (`--only=test_fishing2,test_cozy_patch`, 108 checks a
+run), on the final code:
+
+| Runs | Conditions | Result |
+|---|---|---|
+| 20 | normal | **20 of 20 passed** (2,160 checks, 0 failed) |
+| 5 | all 4 CPU cores kept busy by other processes (a slow machine) | **5 of 5 passed** (540 checks, 0 failed) |
+
+Plus the measurements behind the fixes: the old fish check failed 44 times in
+2,000 measured pairs and the new one 0 times; the walk out takes 2.9 / 6.0 /
+10.4 s against the 2.5–5 s follow timer.
 
 ## 11. Localization audit
 
@@ -207,7 +218,22 @@ which is null, so its HUD radar check is always skipped.
 
 ## 12. Other tests
 
-(Running: added when the broad regression finishes.)
+- **Full regression:** all 73 suites, **4,700 checks passed, 0 failed**
+  (headless Linux, Godot 4.7.2).
+- **Targeted suites** after each part: `test_companion_remarks` (23 checks),
+  the companion suites, `test_fishing2`, `test_cozy_patch`,
+  `test_boat_of_your_own`, `test_localization`: all passing.
+- **The two new localization checks fail without their fixes** (verified by
+  running them against the old `boat_lighting.gd` and `grocery_menu.gd`):
+  "lighting is found in Danish" and "the grocery store shows the funds after
+  a sale".
+- **Tools:** `check_gdscript_guides.py` passes (278 scripts),
+  `check_links.py` passes (0 broken), `tools/i18n/check.py` passes (2,304
+  messages, all translated, 0 errors).
+- Known noise, unchanged by this work: the test log shows engine errors when
+  the app is instantiated again by a later suite ("Signal … is already
+  connected", from `App._ready`) and leaked-object notices at exit. They do
+  not fail any check.
 
 ## 13. Limitations
 
