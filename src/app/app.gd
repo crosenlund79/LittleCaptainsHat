@@ -154,6 +154,11 @@ func _ready() -> void:
 	GameSession.propulsion_changed.connect(func(_mode: StringName) -> void: update_engine_audio())
 	GameSession.state_replaced.connect(update_engine_audio)
 	_hud_layer.hide()
+	Simulation.passage_started.connect(_on_passage_started)
+	day_night_watch = DayNightWatch.new()
+	day_night_watch.name = "DayNightWatch"
+	day_night_watch.app = self
+	add_child(day_night_watch)
 	show_main_menu()
 	# Cozy Polish: the game's own loading screen over the menu, once per launch.
 	if LoadingScreen.wanted():
@@ -648,16 +653,67 @@ func open_sleep_menu() -> void:
 ## Sleeping is an explicit advance of time, so it also works while the game is
 ## paused, and the pause stays as it was afterwards (time does not start
 ## running continuously on waking).
+##
+## The Well-Run Ship: with a screen, the game first fades to black and shows
+## the date and the clock (TimePassage); the simulation runs once under the
+## black (one advance, not frame by frame), the clock then counts the hours
+## slept, and the game fades back in the new light. Without a screen (tests)
+## everything happens at once.
 func sleep_for(hours: float) -> void:
 	modals.clear()
+	if is_instance_valid(time_passage):
+		return  # already sleeping
+	if not TimePassage.is_shown():
+		_after_sleep(hours, _sleep_now(hours))
+		return
+	var outcome := {}
+	time_passage = TimePassage.new()
+	add_child(time_passage)
+	time_passage.play_sleep(GameSession.get_game_time(), func() -> float:
+		outcome.result = _sleep_now(hours)
+		return GameSession.get_game_time(),
+		func() -> String: return _wake_reason(outcome.result))
+	await time_passage.finished
+	_on_modal_stack_changed(modals.depth())
+	_after_sleep(hours, outcome.result)
+
+
+## The sleep itself: the simulation, and the captain back in the berth (with
+## the light and the interface already right for the new hour).
+func _sleep_now(hours: float) -> Dictionary:
 	GameSession.begin_sleep()
 	var result := Simulation.sleep(hours)
 	var wake_line := GameSession.end_sleep(result.elapsed_seconds)
 	SessionLog.write("sleep", {"hours": hours, "slept_h": snappedf(result.elapsed_seconds / 3600.0, 0.01), "stopped_by": String(result.stopped_by),
 		"anchored": GameSession.is_anchored()})
+	if result.stopped_by != Simulation.STOP_RESCUE:
+		_wake_in_berth()
+	if TimePassage.is_shown():
+		snap_light()
+	return {"result": result, "wake_line": wake_line}
+
+
+## One short line on the black when the captain woke early.
+static func _wake_reason(outcome: Dictionary) -> String:
+	match (outcome.result as Simulation.AdvanceResult).stopped_by:
+		Simulation.STOP_WARNING:
+			return "Woken by a weather warning"
+		Simulation.STOP_BITE:
+			return "Woken by the bell on the rod"
+		Simulation.STOP_ANCHOR:
+			return "Woken by the anchor alarm"
+		Simulation.STOP_ARRIVAL:
+			return "Woken: the boat has arrived"
+		Simulation.STOP_ANCHORAGE:
+			return "Woken at the anchorage"
+	return ""
+
+
+func _after_sleep(_hours: float, outcome: Dictionary) -> void:
+	var result: Simulation.AdvanceResult = outcome.result
+	var wake_line: String = outcome.wake_line
 	if result.stopped_by == Simulation.STOP_RESCUE:
 		return  # the rescue has already brought the player ashore and reports itself
-	_wake_in_berth()
 	var slept := Simulation.format_duration(result.elapsed_seconds)
 	var now := Simulation.format_game_time(GameSession.get_game_time())
 	var still_paused := "  Time is still paused." if GameSession.is_paused() else ""
@@ -677,6 +733,75 @@ func sleep_for(hours: float) -> void:
 			notify("You slept %s. It is %s.%s" % [slept, now, still_paused])
 	if not wake_line.is_empty():
 		toasts.show_message(wake_line, ANCHOR_MOMENT_SECONDS)
+
+
+## After a jump in time (sleep, a dawn or dusk passed under the black): the
+## interface and the boat's light take the new hour at once, instead of
+## easing over the next seconds in view.
+func snap_light() -> void:
+	UiTheme.set_blend(UiTheme._target_blend(), true)
+	var area := router.current_screen as BoatArea
+	var lighting := area.get_node_or_null(^"Lighting") if area else null
+	if lighting and lighting.has_method(&"update_now"):
+		lighting.update_now()
+
+
+## Long Passage as a journey (The Well-Run Ship): the voyage map while the
+## passage clock runs (not in tests, like the time passages).
+var voyage_map: VoyageMap
+var _dock_after_map := false
+
+
+func _on_passage_started(_rate: float) -> void:
+	if not TimePassage.is_shown() or is_instance_valid(voyage_map) or not GameSession.is_underway():
+		return
+	voyage_map = VoyageMap.new()
+	voyage_map.name = "VoyageMap"
+	voyage_map.screen = router.current_screen
+	voyage_map.hud_layer = _hud_layer
+	voyage_map.hud = hud
+	voyage_map.closed.connect(_on_voyage_map_closed)
+	add_child(voyage_map)
+
+
+func _on_voyage_map_closed() -> void:
+	voyage_map = null
+	if _dock_after_map:
+		_dock_after_map = false
+		show_docking_arrival.call_deferred()
+
+
+## The time passage on screen now (sleep, dawn or dusk), or null.
+var time_passage: TimePassage
+## Watches for dawn and dusk in ordinary play (The Well-Run Ship).
+var day_night_watch: DayNightWatch
+
+
+## True when a dawn or dusk card may cover the game: aboard or at the chart,
+## no menu, no screen change, nothing else passing time on screen.
+func can_show_time_passage() -> bool:
+	return GameSession.is_active() and (router.current_screen is BoatArea or router.current_screen is WorldMap) \
+		and modals.is_empty() and not router.is_busy() and not _rescue_open and not is_instance_valid(time_passage)
+
+
+## Dawn or dusk (DayNightWatch): the date card, and under the black the
+## twilight passes with the normal simulation (from `from` to `until`, game
+## time; it stops early for an event, which then reports itself as always).
+func play_new_light(from: float, until: float, evening: bool) -> void:
+	time_passage = TimePassage.new()
+	add_child(time_passage)
+	time_passage.play_card(until, evening, func() -> void:
+		var result := Simulation.advance(until - from, true)
+		# As in accelerated time: something that wants the captain brings the
+		# clock back to normal speed.
+		if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "" or result.anchorage
+				or result.stopped_by != Simulation.STOP_NONE) and GameSession.get_time_scale() > 1:
+			GameSession.set_time_scale(1)
+		SessionLog.write("new_light", {"evening": evening, "minutes": roundi(result.elapsed_seconds / 60.0),
+			"stopped_by": String(result.stopped_by)})
+		snap_light())
+	await time_passage.finished
+	_on_modal_stack_changed(modals.depth())
 
 
 ## After any sleep (full or cut short, in port or underway, started in the
@@ -936,7 +1061,9 @@ func _on_arrived(port_id: StringName) -> void:
 	hud.hide_warning()
 	notify("Arrived in %s." % PortCatalog.get_default().get_display_name(port_id))
 	# Sleeping through the arrival, the captain wakes in the cabin as always.
-	if not GameSession.is_asleep():
+	if is_instance_valid(voyage_map):
+		_dock_after_map = true  # after the voyage map, when the captain comes aboard
+	elif not GameSession.is_asleep():
 		show_docking_arrival.call_deferred()
 
 
@@ -1266,6 +1393,8 @@ func _connect_world_map(map: WorldMap) -> void:
 
 
 func _on_screen_changed(screen: Node) -> void:
+	if is_instance_valid(voyage_map):
+		voyage_map.close_now()
 	var area := screen as BoatArea
 	SessionLog.write("screen", {"screen": String(screen.name) if screen else "", "area": String(area.area_id) if area else ""})
 	# The HUD's clock bar is the shared time control: also shown on the chart.

@@ -188,6 +188,11 @@ func set_blend(value: float, force := false) -> void:
 	if not force and is_equal_approx(value, blend):
 		return
 	blend = value
+	# One theme change for the whole recolouring (The Well-Run Ship): every
+	# colour or style box set on the project theme otherwise announces itself,
+	# and each announcement refreshes every control in the game (hundreds of
+	# whole-tree refreshes per step, seconds with the chart open).
+	theme.set_block_signals(true)
 	for spec in _boxes:
 		var box: StyleBox = spec.box
 		if box is StyleBoxFlat:
@@ -202,6 +207,8 @@ func set_blend(value: float, force := false) -> void:
 			(box as StyleBoxLine).color = color(spec.border)
 	for c in _colors:
 		theme.set_color(c[1], c[0], _with_alpha(color(c[2]), c[3]))
+	theme.set_block_signals(false)
+	theme.emit_changed()
 	var alive: Array[WeakRef] = []
 	for ref in _dims:
 		var dim := ref.get_ref() as ColorRect

@@ -62,6 +62,37 @@ static func _mercator_y(lat: float) -> float:
 	return log(tan(PI / 4.0 + deg_to_rad(lat) / 2.0))
 
 
+## Paper width over paper height of the unit square (keeps shapes true).
+static func aspect() -> float:
+	return TAU / (_mercator_y(NORTH) - _mercator_y(SOUTH))
+
+
+## The land triangles (unit square), their indices and a white colour per
+## point, built once and shared (the voyage map draws them scaled and tinted).
+static func land_triangles() -> PackedVector2Array:
+	return _land_triangles()
+
+
+static var _indices := PackedInt32Array()
+static var _white := PackedColorArray()
+
+
+static func land_indices() -> PackedInt32Array:
+	var count := _land_triangles().size()
+	if _indices.size() != count:
+		_indices.resize(count)
+		for i in count:
+			_indices[i] = i
+		_white.resize(count)
+		_white.fill(Color.WHITE)
+	return _indices
+
+
+static func land_colours() -> PackedColorArray:
+	land_indices()
+	return _white
+
+
 ## The world's land as triangles in unit-square coordinates (built once).
 static func _land_triangles() -> PackedVector2Array:
 	if _built:

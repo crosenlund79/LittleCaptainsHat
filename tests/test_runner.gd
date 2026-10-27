@@ -71,6 +71,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_chartroom_ui.gd"),
 	preload("res://tests/suites/test_soundtrack.gd"),
 	preload("res://tests/suites/test_cozy_polish.gd"),
+	preload("res://tests/suites/test_well_run_ship.gd"),
 	preload("res://tests/suites/test_galley_and_anchor.gd"),
 	preload("res://tests/suites/test_eight_directions.gd"),
 	preload("res://tests/suites/test_catch_and_cove_journey.gd"),
@@ -120,6 +121,9 @@ func _run() -> void:
 	SessionLog.log_dir = "user://test_diagnostics"
 	SessionLog.restart()
 	SettingsManager.settings_path = TEST_SETTINGS_PATH
+	# Sleep, dawn and dusk happen at once in tests (suites that test the
+	# presentation switch it back on).
+	TimePassage.enabled = false
 	SettingsManager.load_settings()
 	for script in SUITES:
 		if Array(skip).any(func(part: String) -> bool: return script.resource_path.get_file().contains(part)):

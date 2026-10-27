@@ -37,6 +37,8 @@ signal weather_warning(warning: Dictionary)
 signal arrived(port_id: StringName)
 ## Long Passage time stopped by itself (Iteration 16): why, for the player.
 signal passage_interrupted(reason: StringName, text: String)
+## Long Passage time started (from normal time; not on a change of speed).
+signal passage_started(rate: float)
 
 ## Real seconds to game seconds at 1× (1 real second = 1 game minute).
 const DEFAULT_GAME_SECONDS_PER_REAL_SECOND := 60.0
@@ -169,6 +171,7 @@ func start_passage(rate: float) -> String:
 		GameSession.set_paused(false)
 	if was <= 0.0:
 		SessionLog.write("long_passage_start", {"rate_h": rate / 3600.0, "remaining_nm": snappedf(GameSession.get_voyage_remaining_nm(), 0.1)})
+		passage_started.emit(rate)
 	return ""
 
 
