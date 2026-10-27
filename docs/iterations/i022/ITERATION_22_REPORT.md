@@ -343,7 +343,10 @@ A 0.108a save (none of these) loads with all boats owned, Standard difficulty, a
   - `test_academy`: 46 checks.
   - `test_cabin_windows`: 26 checks.
   - `test_captains_other_life`: 68 checks (prices, difficulty, pastimes, the one clock, menus).
-- **Full regression:** see §16 for the result of the final run.
+- **Full regression** (all suites, headless, Linux): **4911 checks passed, 1 failed**.
+  - The failure was `test_living_world` "[water] drawn over the water, under the boat": the new `ShallowWater` had been inserted between the water and `WaterLife`.
+  - It is fixed by making `ShallowWater` a child of the water polygon (`e1c3b34`).
+  - The affected suites were then rerun on the final code: `test_living_world`, `test_cabin_windows`, `test_branding` and `test_diagnostics` (the version is now 0.109a), `test_captains_other_life` and `test_academy`. Result: **274 checks passed, 0 failed**.
 - **Also clean:**
   - the content checker (`tools/qa/check_game_content.py`): no FAIL;
   - links (`tools/docs/check_links.py`): 0 broken;
