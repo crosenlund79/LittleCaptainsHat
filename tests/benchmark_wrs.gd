@@ -344,8 +344,93 @@ func _run() -> void:
 	await _show(SessionState.AREA_EXTERIOR)
 	await _measure("walk_deck_after_session", 360, _walk)
 	_stop_walking()
+	if OS.get_cmdline_user_args().has("--turbo"):
+		await _turbo()
 
 	_finish()
+
+
+## Turbocharge (after The Well-Run Ship): the scenarios that pass added.
+## Run with --turbo (and --no-time-passage so sleep is measured as work).
+func _turbo() -> void:
+	results["turbo"] = {}
+	# Sleep underway: the cost of the one simulation call (8 h, three times).
+	_moor()
+	GameSession.plan_route_to(&"reykjavik")
+	GameSession.depart()
+	Simulation.advance(600.0)
+	var calls: Array[float] = []
+	for i in 3:
+		var t := Time.get_ticks_usec()
+		Simulation.sleep(8.0)
+		calls.append((Time.get_ticks_usec() - t) / 1000.0)
+	results.turbo["sleep_8h_underway_ms"] = calls
+	print("  sleep 8 h underway: %s ms" % [calls])
+	# Sailing with the floating things (illustrated art), at 1x.
+	SettingsManager.set_art_style(SettingsManager.ART_ILLUSTRATED)
+	await _show(SessionState.AREA_EXTERIOR)
+	_run_time(1)
+	await _measure("turbo_sailing_debris_1x", 300)
+	_stop_time()
+	# The chart: zooming and panning every frame.
+	await _show(SessionState.AREA_INTERIOR)
+	app.open_chart()
+	await _frames(20)
+	var view: MapView = (app.router.current_screen as WorldMap).get_map_view()
+	var zoom_pan := func(i: int) -> void:
+		if i % 2 == 0:
+			view.zoom_by(1.1 if (i / 20) % 2 == 0 else 1.0 / 1.1)
+		else:
+			view.camera.position += Vector2(6.0, 2.0) / view.camera.zoom.x
+	await _measure("turbo_chart_zoom_pan", 240, zoom_pan)
+	await _close_chart()
+	# The Dream World map.
+	_moor()
+	await _show(SessionState.AREA_INTERIOR)
+	app.open_dream_map()
+	await _frames(20)
+	await _measure("turbo_dream_map_idle", 180)
+	await _close_chart()
+	# The fishing rod on deck.
+	await _show(SessionState.AREA_EXTERIOR)
+	var menu: Node = app.open_fishing()
+	await _frames(10)
+	if menu:
+		await _measure("turbo_fishing_rod", 180)
+	app.modals.clear()
+	# A long session with saves and loads and a short Long Passage per round.
+	var rounds := []
+	for round in 10:
+		_moor()
+		await _show(SessionState.AREA_EXTERIOR)
+		var walk := await _measure("turbo_round_walk", 60, _walk, 5)
+		_stop_walking()
+		await _show(SessionState.AREA_INTERIOR)
+		app.open_chart()
+		await _frames(10)
+		await _close_chart()
+		app.sleep_for(2.0)
+		await _frames(5)
+		SaveManager.save_to_slot(1, GameSession.get_state_snapshot())
+		var loaded := SaveManager.load_from_slot(1)
+		if loaded.is_ok():
+			GameSession.replace_state(loaded.state)
+		GameSession.plan_route_to(&"gothenburg")
+		GameSession.depart()
+		await _show(SessionState.AREA_EXTERIOR)
+		Simulation.start_passage(Simulation.PASSAGE_RATES[0])
+		for i in 20:
+			Simulation.tick(0.05)
+			await get_tree().process_frame
+		Simulation.stop_passage()
+		var s := _structure()
+		rounds.append({"round": round + 1, "walk_median_ms": walk.median_ms, "walk_p99_ms": walk.p99_ms, "nodes": s.nodes,
+			"objects": s.objects, "orphans": s.orphan_nodes, "connections": s.autoload_connections, "tweens": s.tweens,
+			"audio": s.audio_players, "static_mb": s.static_mb, "weather_cache": s.weather_cache})
+		print("  turbo round %d: walk med %.1f, nodes %d objects %d conns %d static %.1f MB" % [round + 1, walk.median_ms, s.nodes,
+			s.objects, s.autoload_connections, s.static_mb])
+	results.turbo["session_rounds"] = rounds
+	results.scenarios.erase("turbo_round_walk")
 
 
 func _finish() -> void:

@@ -800,6 +800,21 @@ weather_events.json ─► WeatherModel.sample(geo, time, seed, known_at) ─►
   and an optional limit (the North Atlantic basin ends cyclones that cross 36°N or
   36°W, so none reach the European chart).
 
+### Quick samples (Turbocharge)
+
+`WeatherModel.sample_hazard(geo, time, seed, known_at)` returns
+`[from_deg, speed_kn, gust_kn, hazard]` (64-bit floats) computed by exactly
+the same code as `sample()`, without building a `WeatherSample`, classifying it
+or computing the cyclone risk.
+
+- The route-ahead hazard scan (`Simulation.route_hazards`) uses it for every
+  step and asks `sample()` only for the hazardous samples it keeps.
+- The weather damage grid (`WeatherDamage.damage_between`) uses it too.
+- Results are identical to the previous implementation (`test_turbocharge`
+  compares both on Baltic, Suez, Panama, Pacific and canal routes, several
+  dates and seeds). This is the bulk of a night's sleep underway and of Long
+  Passage's simulation cost.
+
 ### Formation and determinism
 
 - Each zone may form at most one event per **slot** (gales and risk areas 12 h,

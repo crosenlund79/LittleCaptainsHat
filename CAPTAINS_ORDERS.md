@@ -344,6 +344,11 @@ fields are optional):
 - Testing is focused and proportionate: no inflated test counts for cosmetic
   details. A suite that was skipped is reported as skipped. Windows acceptance
   is claimed only after the Captain's own trial.
+- **Performance register (Turbocharge).** Every iteration that measures or
+  changes performance updates `docs/technical/PERFORMANCE_OPPORTUNITIES.md`:
+  new evidence, status changes, implemented items with their commit and
+  measured benefit. Verified bottlenecks and hypotheses stay separate; large
+  reworks are recorded for the Captain's decision, never done silently.
 
 ### Not now
 

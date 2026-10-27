@@ -194,6 +194,36 @@ func sample(geo: Vector2, time: float, seed := 1, known_at := INF) -> WeatherSam
 	return result
 
 
+## The wind, gusts and hazard at `geo` at `time`, exactly as sample() gives
+## them (the same code), without building a WeatherSample: no
+## classification, names or cyclone risk. [from_deg, speed_kn, gust_kn,
+## hazard] in 64-bit floats (a Vector4 would round them to 32 bits, and the
+## results would no longer be exactly sample()'s). For scans that only keep the few samples that matter
+## (Turbocharge: the route-ahead hazard scan and the weather damage grid,
+## the bulk of a night's sleep underway); they ask sample() for those.
+func sample_hazard(geo: Vector2, time: float, seed := 1, known_at := INF) -> PackedFloat64Array:
+	sample_count += 1
+	geo = GeoMath.normalize(geo)
+	var background := WindField.get_default().sample(geo, time, seed)
+	_scratch.thunder_possible = false
+	_scratch.thunder_active = false
+	var parts := _compose(geo, time, seed, known_at, background, _scratch)
+	var wind: Vector2 = parts[0]
+	var dominant: WeatherEvent = parts[3]
+	var speed := wind.length()
+	var gust := speed * float(parts[1]) + float(parts[2])
+	var hazard := wind_hazard(speed, gust)
+	if _scratch.thunder_possible:
+		hazard = maxi(hazard, HAZARD_CAUTION)
+	if parts[4] and dominant and dominant.peak_kn + dominant.gust_kn >= SEVERE_STORM_KN:
+		hazard = maxi(hazard, HAZARD_DANGEROUS)
+	return PackedFloat64Array([_from_deg(wind, background.from_deg), speed, gust, hazard])
+
+
+## Reused by sample_hazard() for the thunder flags _compose() sets.
+var _scratch := WeatherSample.new()
+
+
 ## Only the sustained wind at `geo` at `time`: Vector2(from_deg, speed_kn).
 ## Exactly the speed and direction sample() gives (same code), without the
 ## gusts, hazard, classification and cyclone risk: the chart's wind overlay

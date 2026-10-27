@@ -50,7 +50,8 @@ static func damage_between(from_time: float, to_time: float, geo: Vector2, seed:
 	var total := 0.0
 	var k := floorf(from_time / SUBSTEP) + 1.0
 	while k * SUBSTEP <= to_time + 1e-6:
-		var sample := model.sample(geo, k * SUBSTEP, seed)
-		total += rate_per_hour(sample.speed_kn, sample.gust_kn, factor) * SUBSTEP / 3600.0
+		# The quick sample: exactly sample()'s wind and gusts (Turbocharge).
+		var sample := model.sample_hazard(geo, k * SUBSTEP, seed)
+		total += rate_per_hour(sample[1], sample[2], factor) * SUBSTEP / 3600.0
 		k += 1.0
 	return total

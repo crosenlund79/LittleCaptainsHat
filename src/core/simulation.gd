@@ -621,8 +621,11 @@ func route_hazards(path: PackedVector2Array, from_nm := 0.0, horizon_hours := DI
 	var by_key := {}
 	while seconds <= horizon_hours * 3600.0:
 		var geo := GeoMath.point_along(path, cumulative, d)
-		var sample := model.sample(geo, now + seconds, seed, now)
-		if sample.hazard >= WeatherModel.HAZARD_CAUTION:
+		# The quick sample (the same wind, gust and hazard as sample()); the
+		# full sample only where there is a hazard to keep (Turbocharge).
+		var quick := model.sample_hazard(geo, now + seconds, seed, now)
+		if int(quick[3]) >= WeatherModel.HAZARD_CAUTION:
+			var sample := model.sample(geo, now + seconds, seed, now)
 			var key := String(sample.event_id) if not sample.event_id.is_empty() else "wind"
 			if not by_key.has(key):
 				by_key[key] = {"key": key, "event_id": sample.event_id, "label": sample.get_label(), "hazard": sample.hazard,
@@ -638,7 +641,7 @@ func route_hazards(path: PackedVector2Array, from_nm := 0.0, horizon_hours := DI
 			break
 		var i := GeoMath.segment_index_at(cumulative, d)
 		var heading := GeoMath.rhumb_bearing(path[i - 1], path[i])
-		var potential := profile.sail_speed_kn(sample.speed_kn, WindField.relative_angle(heading, sample.from_deg))
+		var potential := profile.sail_speed_kn(quick[1], WindField.relative_angle(heading, quick[0]))
 		var speed := potential if potential >= profile.engine_start_below_kn else profile.engine_speed_kn
 		var ds := minf(FORECAST_STEP_NM, total - d)
 		seconds += ds / maxf(speed, MIN_ESTIMATE_SPEED_KN) * 3600.0
