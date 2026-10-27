@@ -63,7 +63,7 @@ msgstr ""
 msgid "Each harbour offers its own services: a grocery (food, water, a new hat, lures and the fishmonger), a boatyard (boat care, haul-out, chandlery, sailmaker and boats for sale) and Go Ashore. The arrival card says what is there."
 msgstr ""
 
-#: data/academy/academy.json src/boat/boat_area.gd:878
+#: data/academy/academy.json src/boat/boat_area.gd:939
 msgid "Fishing"
 msgstr ""
 
@@ -4338,7 +4338,7 @@ msgstr ""
 msgid "Travel update published: %d renown earned you %s. Funds: %s."
 msgstr ""
 
-#: src/app/app.gd:1531 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1268 src/boat/boat_area.gd:662
+#: src/app/app.gd:1531 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1329 src/boat/boat_area.gd:723
 msgid "Interactable"
 msgstr ""
 
@@ -4516,7 +4516,7 @@ msgstr ""
 msgid "Trim sails"
 msgstr ""
 
-#: src/app/app.gd:559 src/boat/boat_area.gd:886 src/ui/anchor_menu.gd:63
+#: src/app/app.gd:559 src/boat/boat_area.gd:947 src/ui/anchor_menu.gd:63
 msgid "Anchor"
 msgstr ""
 
@@ -4528,7 +4528,7 @@ msgstr ""
 msgid "Charts"
 msgstr ""
 
-#: src/app/app.gd:568 src/boat/boat_area.gd:878 src/ui/fishing_menu.gd:55
+#: src/app/app.gd:568 src/boat/boat_area.gd:939 src/ui/fishing_menu.gd:55
 msgid "Fishing rod"
 msgstr ""
 
@@ -4778,39 +4778,39 @@ msgstr ""
 msgid "OneShot%d"
 msgstr ""
 
-#: src/boat/boat_area.gd:1001 src/boat/boat_lighting.gd:38 src/interaction/highlight_resolver.gd:25
+#: src/boat/boat_area.gd:1062 src/boat/boat_lighting.gd:38 src/interaction/highlight_resolver.gd:25
 msgid "Table"
 msgstr ""
 
-#: src/boat/boat_area.gd:1020
+#: src/boat/boat_area.gd:1081
 msgid "Your coffee"
 msgstr ""
 
-#: src/boat/boat_area.gd:1295
+#: src/boat/boat_area.gd:1356
 msgid "Captain's hat"
 msgstr ""
 
-#: src/boat/boat_area.gd:364
+#: src/boat/boat_area.gd:424
 msgid "Visual/BoomVisual"
 msgstr ""
 
-#: src/boat/boat_area.gd:364
+#: src/boat/boat_area.gd:424
 msgid "Visual/HeadSailVisual"
 msgstr ""
 
-#: src/boat/boat_area.gd:364
+#: src/boat/boat_area.gd:424
 msgid "Visual/MainSailVisual"
 msgstr ""
 
-#: src/boat/boat_area.gd:364
+#: src/boat/boat_area.gd:424
 msgid "Visual/RiggingVisual"
 msgstr ""
 
-#: src/boat/boat_area.gd:365
+#: src/boat/boat_area.gd:425
 msgid "Visual/SpinnakerVisual"
 msgstr ""
 
-#: src/boat/boat_area.gd:570
+#: src/boat/boat_area.gd:631
 msgid "The cup holder, just the size of a mug. Make a coffee in the galley."
 msgstr ""
 
@@ -4818,51 +4818,51 @@ msgstr ""
 msgid "Take the helm"
 msgstr ""
 
-#: src/boat/boat_area.gd:677
-msgid "GUEST PONTOON · %s"
-msgstr ""
-
 #: src/boat/boat_area.gd:68
 msgid "Check sail configuration"
-msgstr ""
-
-#: src/boat/boat_area.gd:706 src/harbour/harbour_facilities.gd:133
-msgid "Go ashore"
 msgstr ""
 
 #: src/boat/boat_area.gd:71
 msgid "Put on captain's hat"
 msgstr ""
 
-#: src/boat/boat_area.gd:719
-msgid "GO ASHORE"
-msgstr ""
-
 #: src/boat/boat_area.gd:72 src/boat/boat_area.gd:73
 msgid "Hang up captain's hat"
+msgstr ""
+
+#: src/boat/boat_area.gd:738
+msgid "GUEST PONTOON · %s"
 msgstr ""
 
 #: src/boat/boat_area.gd:74
 msgid "Look at the empty hat hook"
 msgstr ""
 
-#: src/boat/boat_area.gd:901
+#: src/boat/boat_area.gd:767 src/harbour/harbour_facilities.gd:133
+msgid "Go ashore"
+msgstr ""
+
+#: src/boat/boat_area.gd:780
+msgid "GO ASHORE"
+msgstr ""
+
+#: src/boat/boat_area.gd:962
 msgid "Cup holder"
 msgstr ""
 
-#: src/boat/boat_area.gd:914 src/ui/cooking_menu.gd:70
+#: src/boat/boat_area.gd:975 src/ui/cooking_menu.gd:70
 msgid "Cook"
 msgstr ""
 
-#: src/boat/boat_area.gd:914
+#: src/boat/boat_area.gd:975
 msgid "Cook a meal or make coffee"
 msgstr ""
 
-#: src/boat/boat_area.gd:924
+#: src/boat/boat_area.gd:985
 msgid "Look at the trophy board"
 msgstr ""
 
-#: src/boat/boat_area.gd:924
+#: src/boat/boat_area.gd:985
 msgid "Trophies"
 msgstr ""
 
@@ -8077,27 +8077,27 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
-#: src/ui/academy_guide.gd:182
+#: src/ui/academy_guide.gd:190
 msgid "Tip"
 msgstr ""
 
-#: src/ui/academy_guide.gd:202
+#: src/ui/academy_guide.gd:211
 msgid "Read more"
 msgstr ""
 
-#: src/ui/academy_guide.gd:203
+#: src/ui/academy_guide.gd:212
 msgid "Got it"
 msgstr ""
 
-#: src/ui/academy_guide.gd:205
+#: src/ui/academy_guide.gd:214
 msgid "Skip the First Voyage"
 msgstr ""
 
-#: src/ui/academy_guide.gd:213
+#: src/ui/academy_guide.gd:222
 msgid "First Voyage · %d of %d: %s"
 msgstr ""
 
-#: src/ui/academy_guide.gd:271
+#: src/ui/academy_guide.gd:282
 msgid "First Voyage skipped. You can begin it again from the Captain's Handbook (%s)."
 msgstr ""
 

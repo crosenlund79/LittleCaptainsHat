@@ -718,7 +718,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_area.gd`
 
 **Formål:** Hjertet i hver dæks- og kahytsscene: den placerer Kaptajnen, sætter alt om bord op og gør "tryk på E ved noget" til ønsker, som spillet tager sig af.
-- **Hvad det gør:** Ved indlæsning lægger den bådens grafik på og tilføjer lys, vejr, liv i vandet, ankertegn, ledsageren på dækket, fiskestang, ankerspil, komfur, trofætavle, kaffepladser og kahytspynt. Den styrer kameraet (bredere under sejlads, drejet efter kursen, følger dig i land), gangen ud på pontonen i havnen og den korte ankomst til kaj. Når du bruger en station, sender den et signal (en besked et objekt sender, som andre kan lytte efter), f.eks. åbn søkort, sov eller lav mad, som app'en tager sig af; den åbner aldrig selv menuer. Når du kæler for ledsageren, viser den en gang imellem et venligt ord (`CompanionRemarks`), eller et venligt blik, når hænderne er fulde.
+- **Hvad det gør:** Ved indlæsning lægger den bådens grafik på og tilføjer lys, vejr, liv i vandet, ankertegn, ledsageren på dækket, fiskestang, ankerspil, komfur, trofætavle, kaffepladser og kahytspynt. Den styrer kameraet (bredere under sejlads, drejet efter kursen, følger dig i land), gangen ud på pontonen i havnen og den korte ankomst til kaj. Når du bruger en station, sender den et signal (en besked et objekt sender, som andre kan lytte efter), f.eks. åbn søkort, sov eller lav mad, som app'en tager sig af; den åbner aldrig selv menuer. Når du kæler for ledsageren, viser den en gang imellem et venligt ord (`CompanionRemarks`), eller et venligt blik, når hænderne er fulde. I022: dækkets vand får sin blødere farve fra WaterLook med en svag havbund i lavt vand (ShallowWater), og Starling 33's kahyt får sine vinduer (CabinWindows), kun vist med den tegnede stil.
 - **Arbejder sammen med:** `GameSession`, `Player`, `Interactable`, `VesselVisual`, `SailRig`, `BoatLighting`, `ShoreAccess`, `HarbourDressing`, `WaterLife`, `App` (som lytter efter dens ønsker).
 - **Holder styr på:** Kameraindstillinger, stationerne i land og ankomst-animationen; den skriver Kaptajnens position tilbage til spillets tilstand.
 - **Hvornår det kører:** Når du er på dækket eller i kahytten.
@@ -742,6 +742,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Når du er på dækket eller i kahytten.
 - **Godt at vide:** Noden hedder altid "Lighting", på alle sprog, fordi båden finder den ved det navn.
 - **Hvis du ændrer det:** Hele spillets stemning dag og nat; fejl kan gøre scener for mørke eller tænde lys på forkerte tidspunkter.
+
+### `src/boat/cabin_windows.gd`
+
+**Formål:** Verden uden for kahytsvinduerne (I022), indtil videre i Starling 33's kahyt.
+- **Hvad det gør:** Tegner vinduesåbninger i den tegnede kahyts vægge. Hver åbning viser et lille udsnit af verden omkring båden: himlen i timens og vejrets farver, solen hvor den virkelig står, stjerner om natten, havet med toppe der vokser med vinden, havnens eget billede på kajsiden, når båden er fortøjet, og regn på glasset. Hvilket udsnit afhænger af bådens kurs, hvilken side vinduet sidder på, og hvor skipperen står: går man forbi et vindue, drejer udsigten, og tæt på viser det mere. Vinduesrammerne tegnes over udsigten, og møblerne forbliver foran.
+- **Arbejder sammen med:** `BoatArea` (tilføjer den), `WaterLook` (havets farve), `HarbourLooks` (havnebilledet), `Daylight`, `Simulation` (vejr, kurs), `data/vessels/cabin_windows.json` (hvor vinduerne sidder).
+- **Holder styr på:** Vinduerne, verden som sidst aflæst, hvor skipperen stod.
+- **Hvornår det kører:** Den tegner kun igen, når skipperen flytter sig, eller hvert andet sekund (omkring 0,35 ms pr. gang).
+- **Hvis du ændrer det:** Vinduer til en anden båd kræver målte åbninger, der ligger inde i den kahyts vægtegning; testen tjekker hvert hjørne. Hold den fri for shaders og arbejde i hvert billede.
 
 ### `src/boat/cabin_world_map.gd`
 
@@ -832,6 +841,24 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Lagets navn og det billede, den viser.
 - **Hvornår det kører:** Når bådgrafik vises.
 - **Hvis du ændrer det:** Hvordan tegnede billeder passer på plads på alle både.
+
+### `src/boat/shallow_water.gd`
+
+**Formål:** Et strejf af havbunden gennem lavt vand (I022).
+- **Hvad det gør:** Tegner nogle få store, meget svage sandede pletter i vandet omkring en fortøjet eller ankret båd, over vandets farve og under bølgetoppene og skroget. Hver havn får altid de samme pletter. Skjult til søs, og når vandets gennemsigtighed er 0.
+- **Arbejder sammen med:** `BoatArea` (tilføjer den ved vandet), `WaterLook`, `GameSession` (afgang, ankomst, ankring).
+- **Holder styr på:** Mønstrets frø.
+- **Hvornår det kører:** Den tegner én gang og igen kun, når båden forlader eller kommer tilbage til lavt vand.
+- **Hvis du ændrer det:** Hold det svagt.
+
+### `src/boat/water_look.gd`
+
+**Formål:** Blødere vand, der ser mere gennemsigtigt ud (I022).
+- **Hvad det gør:** Giver farven på vandet omkring båden: det gamle dybe blågrønne med en smule af en sandet havbundsfarve skinnende igennem, lidt mere i havn eller for anker, hvor vandet er lavt. Det er en almindelig farveblanding, uden shader og uden gennemsigtighed. Dagens og nattens lys, bølgetoppe og krusninger ligger stadig ovenpå. Styrken er én indstilling, adskilt fra vinduesglassets farve, og 0 giver præcis det gamle vand.
+- **Arbejder sammen med:** `BoatArea` (dækkets vand), `ShallowWater`, `CabinWindows`.
+- **Holder styr på:** Kun styrken.
+- **Hvornår det kører:** Når en dækscene åbner, og når båden sejler, ankommer eller ankrer.
+- **Hvis du ændrer det:** Hold vandet tydeligt vand; testen tjekker, at det forbliver mørkt nok, og at 0 er den gamle farve.
 
 ### `src/boat/weather_visuals.gd`
 
@@ -1973,6 +2000,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Kun i test.
 - **Hvis du ændrer det:** Kun tjekkene ændrer sig. Den tjekker den nøjagtige version ("0.108a", "0.108.1") og gemmeformat 12, så en ny udgivelse betyder, at denne test skal rettes.
 
+### `tests/suites/test_cabin_windows.gd`
+
+**Formål:** Tester kahytsvinduerne og det blødere vand (I022).
+- **Hvad det gør:** Tester, at hver vinduesåbning ligger inde i Starling 33's vægtegning, at vinduerne ligger over væggene og under møblerne, og at udsigten skifter med hvor skipperen står, siden, kursen, havnen, timen og vejret. Den tester også, at den klassiske tegnestil og de andre kahytter er uberørte, måler hvad en ny tegning koster, og tjekker at vandets blødhed og glassets farve er adskilt. Den tager skærmbilleder fra to steder, i skumringen, om natten, undervejs og af dækkets vand før og efter.
+- **Arbejder sammen med:** `CabinWindows`, `WaterLook`, `BoatArea`, `App`.
+- **Holder styr på:** Intet.
+- **Hvornår det kører:** Sammen med de andre testsæt (`test_runner.tscn`).
+- **Hvis du ændrer det:** Kun testene ændres.
+
 ### `tests/suites/test_captains_log.gd`
 
 **Formål:** Tjekker Logbogens statistik og dens panel (Iteration 006).
@@ -2779,7 +2815,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Formål:** Spillets automatiske testkører: den kører alle 74 testsamlinger og fortæller, hvor mange tjek der bestod.
-- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem. I022: den slår Skipperskolens tilbud og tips fra for de andre testsæt.
+- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem. I022: den slår Skipperskolens tilbud og tips fra for de andre testsæt. Den kører også testsættet for kahytsvinduerne.
 - **Arbejder sammen med:** Alle testsamlinger i `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Holder styr på:** Antal beståede/fejlede tjek og listen over fejl.
 - **Hvornår det kører:** Når du starter det, eller i automatik: `godot --headless --path . res://tests/test_runner.tscn` (valgmuligheder efter `--`: `--only=navn`, `--skip=navn`, `--screenshots=MAPPE`).

@@ -58,9 +58,9 @@
    "note": "I022 Captain's Academy"
   },
   "src/app/game_version.gd": {
-   "sha": "8392004ca99d3110",
+   "sha": "ee3547eb8d0e13de",
    "reviewed": "2026-10-27",
-   "note": "I021: version 0.108a"
+   "note": "I022 version 0.109a"
   },
   "src/app/scene_router.gd": {
    "sha": "1ddf708627a20b17",
@@ -93,9 +93,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/boat/boat_area.gd": {
-   "sha": "6f0e13675a13a9af",
+   "sha": "25c086ead66d1d88",
    "reviewed": "2026-10-27",
-   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
+   "note": "I022 windows and softer water"
   },
   "src/boat/boat_fixture.gd": {
    "sha": "cb427e4ff17e7ac7",
@@ -106,6 +106,11 @@
    "sha": "bc4df275891ccb27",
    "reviewed": "2026-10-27",
    "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
+  },
+  "src/boat/cabin_windows.gd": {
+   "sha": "26ab79eea6ed1634",
+   "reviewed": "2026-10-27",
+   "note": "I022 windows and softer water"
   },
   "src/boat/cabin_world_map.gd": {
    "sha": "7af0d7e4aa6154f0",
@@ -126,6 +131,11 @@
    "sha": "88ec65f04dbc67f1",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/shallow_water.gd": {
+   "sha": "ad93d276dcd70921",
+   "reviewed": "2026-10-27",
+   "note": "I022 windows and softer water"
   },
   "src/boat/visuals/damage_overlay.gd": {
    "sha": "3c0ac961e220d95d",
@@ -156,6 +166,11 @@
    "sha": "afd047e224ca3dda",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/water_look.gd": {
+   "sha": "bfa0036989283e38",
+   "reviewed": "2026-10-27",
+   "note": "I022 windows and softer water"
   },
   "src/boat/weather_visuals.gd": {
    "sha": "3d92b4ff77547e19",
@@ -1073,9 +1088,9 @@
    "note": "I021 screenshots"
   },
   "tests/suites/test_academy.gd": {
-   "sha": "959de442accfcba7",
+   "sha": "be2d1139644d46d9",
    "reviewed": "2026-10-27",
-   "note": "I022 Captain's Academy"
+   "note": "I022 windows and softer water"
   },
   "tests/suites/test_anchor_life.gd": {
    "sha": "74cec34564e9983a",
@@ -1108,9 +1123,14 @@
    "note": "compass checks"
   },
   "tests/suites/test_branding.gd": {
-   "sha": "af080fa22cdd42f2",
+   "sha": "32d73f7c86071676",
    "reviewed": "2026-10-27",
-   "note": "I021: version 0.108a"
+   "note": "I022 version 0.109a"
+  },
+  "tests/suites/test_cabin_windows.gd": {
+   "sha": "1a79512750ae6476",
+   "reviewed": "2026-10-27",
+   "note": "I022 windows and softer water"
   },
   "tests/suites/test_captains_log.gd": {
    "sha": "d53166fad920e986",
@@ -1198,9 +1218,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_diagnostics.gd": {
-   "sha": "cd357592167f1229",
+   "sha": "85e1c8b0085b1e52",
    "reviewed": "2026-10-27",
-   "note": "I021: version 0.108a"
+   "note": "I022 version 0.109a"
   },
   "tests/suites/test_eight_directions.gd": {
    "sha": "52a098d0ba76c10d",
@@ -1453,9 +1473,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/test_runner.gd": {
-   "sha": "b436d34c025bddbc",
+   "sha": "24281e0c498c5840",
    "reviewed": "2026-10-27",
-   "note": "I022 Captain's Academy"
+   "note": "I022 windows and softer water"
   },
   "tools/art/capture_previews.gd": {
    "sha": "5519443f78ad3805",

@@ -716,7 +716,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_area.gd`
 
 **Purpose:** The heart of each deck and cabin scene: it places the Captain, sets up everything aboard and turns "pressing E at something" into requests for the game.
-- **What it does:** On load it applies the boat's art, adds lighting, weather, water life, anchor signs, the companion on deck, the fishing rod, windlass, stove, trophy board, coffee spots and cabin decor. It handles the camera (wider underway, turned to the course, following you ashore), the walk onto the pontoon in harbour and the short docking arrival. When you use a station it sends a request (open chart, sleep, cook…) for the app to handle; it never opens menus itself. Petting the companion shows the occasional kind word (`CompanionRemarks`), or a friendly look when your hands are full.
+- **What it does:** On load it applies the boat's art, adds lighting, weather, water life, anchor signs, the companion on deck, the fishing rod, windlass, stove, trophy board, coffee spots and cabin decor. It handles the camera (wider underway, turned to the course, following you ashore), the walk onto the pontoon in harbour and the short docking arrival. When you use a station it sends a request (open chart, sleep, cook…) for the app to handle; it never opens menus itself. Petting the companion shows the occasional kind word (`CompanionRemarks`), or a friendly look when your hands are full. I022: the deck's water takes its softer colour from WaterLook with a faint sea bed in shallow water (ShallowWater), and the Starling 33's cabin gets its windows (CabinWindows), shown with the illustrated art only.
 - **Works with:** `GameSession`, `Player`, `Interactable`, `VesselVisual`, `SailRig`, `BoatLighting`, `ShoreAccess`, `HarbourDressing`, `WaterLife`, `App` (which listens to its requests).
 - **Keeps:** Camera settings, the shore stations and the docking animation; it writes the Captain's position back to the game state.
 - **When it runs:** Whenever you are on deck or in the cabin.
@@ -740,6 +740,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** Whenever you are on deck or in the cabin.
 - **Good to know:** Its node is always called "Lighting", in every language, because the boat looks it up by that name.
 - **If you change it:** The whole mood of the game by day and night; mistakes could make scenes too dark or lights show at the wrong time.
+
+### `src/boat/cabin_windows.gd`
+
+**Purpose:** The world beyond the cabin windows (I022), so far in the Starling 33's cabin.
+- **What it does:** Draws window openings in the illustrated cabin's walls. Each opening shows a small slice of the world around the boat: sky in the colours of the hour and the weather, the sun where it really is, stars at night, the sea with crests that grow with the wind, the harbour's own picture on the quay side when moored, and rain on the glass. Which slice depends on the boat's heading, which side the window is on, and where the captain stands: walking past a window turns the view, and up close it shows more. The window frames are drawn over the scenery, and the furniture stays in front.
+- **Works with:** `BoatArea` (adds it), `WaterLook` (the sea's colour), `HarbourLooks` (the harbour art), `Daylight`, `Simulation` (weather, heading), `data/vessels/cabin_windows.json` (where the windows are).
+- **Keeps:** The windows, the world as last sampled, where the captain stood.
+- **When it runs:** It redraws only when the captain moves or every two seconds (about 0.35 ms per redraw).
+- **If you change it:** Windows for another boat need measured openings that lie inside that cabin's wall art; the test checks every corner. Keep it free of shaders and per-frame work.
 
 ### `src/boat/cabin_world_map.gd`
 
@@ -830,6 +839,24 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Keeps:** Its layer name and the picture it shows.
 - **When it runs:** Whenever boat art is shown.
 - **If you change it:** How drawn pictures line up on every boat.
+
+### `src/boat/shallow_water.gd`
+
+**Purpose:** A hint of the sea bed through shallow water (I022).
+- **What it does:** Draws a few large, very faint sandy patches in the water around a moored or anchored boat, over the water colour and under the crests and the hull. Each harbour always gets the same patches. It is hidden at sea and when the water's translucency is 0.
+- **Works with:** `BoatArea` (adds it next to the water), `WaterLook`, `GameSession` (leaving, arriving, anchoring).
+- **Keeps:** The pattern's seed.
+- **When it runs:** It draws once, and again only when the boat leaves or returns to shallow water.
+- **If you change it:** Keep it faint.
+
+### `src/boat/water_look.gd`
+
+**Purpose:** Softer, more translucent-looking water (I022).
+- **What it does:** Gives the colour of the water around the boat: the old deep blue-green with a little of a sandy sea-bed colour showing through, a little more in harbour or at anchor where the water is shallow. It is a plain colour blend, with no shader and no transparency. Day and night light, crests and ripples still lie over it. Its strength is one setting, separate from the window glass tint, and 0 gives exactly the old water.
+- **Works with:** `BoatArea` (the deck's water), `ShallowWater`, `CabinWindows`.
+- **Keeps:** Only the strength setting.
+- **When it runs:** When a deck scene opens and when the boat leaves, arrives or anchors.
+- **If you change it:** Keep the water clearly water; the test checks it stays dark enough and that 0 is the old colour.
 
 ### `src/boat/weather_visuals.gd`
 
@@ -1971,6 +1998,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** Only in tests.
 - **If you change it:** Only the checks change. It checks the exact version ("0.108a", "0.108.1") and save format 12, so a new release means updating this test.
 
+### `tests/suites/test_cabin_windows.gd`
+
+**Purpose:** Checks the cabin windows and the softer water (I022).
+- **What it does:** Checks that every window opening lies inside the Starling 33's wall art, that the windows sit over the walls and under the furniture, and that the view changes with where the captain stands, the side, the heading, the harbour, the hour and the weather. It also checks that the classic art and the other cabins are untouched, measures the cost of a redraw, and checks that the water's softness and the glass tint are separate. It takes screenshots from two viewpoints, at dusk, at night, underway, and of the deck water before and after.
+- **Works with:** `CabinWindows`, `WaterLook`, `BoatArea`, `App`.
+- **Keeps:** Nothing.
+- **When it runs:** With the other suites (`test_runner.tscn`).
+- **If you change it:** Only the tests change.
+
 ### `tests/suites/test_captains_log.gd`
 
 **Purpose:** Checks the Captain's Log statistics and its panel (Iteration 006).
@@ -2777,7 +2813,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Purpose:** The game's automatic test runner: it runs all 74 test suites and says how many checks passed.
-- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites.
+- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites. It also runs the cabin windows suite.
 - **Works with:** Every suite in `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Keeps:** The pass/fail counts and the list of failures.
 - **When it runs:** By hand or in automation: `godot --headless --path . res://tests/test_runner.tscn` (options after `--`: `--only=name`, `--skip=name`, `--screenshots=DIR`).

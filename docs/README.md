@@ -4,7 +4,7 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 
 ## Where we are
 
-- **Current development version: 0.108a**, save format 12. This is [Iteration 21, A Wider, Warmer World](iterations/i021/).
+- **Current development version: 0.109a**, save format 12. This is [Iteration 22, The Captain's Other Life](iterations/i022/).
 - **Latest iteration:** [report](iterations/i021/ITERATION_21_REPORT.md), [harbour looks](iterations/i021/HARBOUR_LOOKS.md) and the [Windows acceptance checklist](iterations/i021/WINDOWS_ACCEPTANCE_21.md) (pending).
 - **Before it:** [Revision 0.105b](revisions/v0.105b/), Iterations [19](iterations/i019/) and [20](iterations/i020/), and the Engine Room maintenance pass ([report](technical/ENGINE_ROOM_AND_COMPANION_POLISH_REPORT.md)). Windows acceptance of 0.105b, I018–I021 is pending. Future scope is set by the Captain; see [CAPTAINS_ORDERS.md](../CAPTAINS_ORDERS.md).
 
@@ -27,6 +27,7 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 | [19](iterations/i019/) The Captain's Watch | 0.106a | [report](iterations/i019/ITERATION_19_REPORT.md) (traffic, radar, anchor alarms, VHF, English and Dansk; Windows acceptance pending) |
 | [20](iterations/i020/) A Boat of Your Own | 0.107a | [report](iterations/i020/ITERATION_20_REPORT.md) (fishmonger, chandlery, sailmaker, cabin things; Windows acceptance pending) |
 | [21](iterations/i021/) A Wider, Warmer World | 0.108a | [report](iterations/i021/ITERATION_21_REPORT.md), [harbour looks](iterations/i021/HARBOUR_LOOKS.md), [Windows acceptance](iterations/i021/WINDOWS_ACCEPTANCE_21.md) (pending) |
+| [22](iterations/i022/) The Captain's Other Life | 0.109a | [report](iterations/i022/ITERATION_22_REPORT.md), [Academy coverage](iterations/i022/CAPTAINS_ACADEMY_COVERAGE.md), [Windows acceptance](iterations/i022/WINDOWS_ACCEPTANCE_22.md) (pending) |
 
 Iterations 7–11 have no separate documents in this repository. Iteration 15 (the performance pass) was skipped at the Captain's instruction.
 

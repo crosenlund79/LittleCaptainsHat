@@ -916,7 +916,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/boat/boat_area.gd`
 
-- **Role:** class_name `BoatArea`, extends Node2D; root script of every vessel's `deck.tscn` / `cabin.tscn`; places the player, builds aboard presentation, routes interactions to signals.
+- **Role:** class_name `BoatArea`, extends Node2D; root script of every vessel's `deck.tscn` / `cabin.tscn`; places the player, builds aboard presentation, routes interactions to signals. I022: `_setup_water_look` (Surroundings/Water colour via `_recolour_water`, connected to voyage_started / voyage_arrived (`_on_arrived_recolour_water`) / anchor_changed; `ShallowWater` sibling after Water), `_setup_cabin_windows` (interior; `CabinWindows.setup`; sibling after the `CabinBase` slot), `_update_cabin_windows` (visible only with an illustrated CabinBase texture; also on art style change), `get_cabin_windows()`.
 - **Depends on:** `GameSession`, `Simulation` (heading, weather), `SettingsManager`, `AudioManager`, `SessionLog`, `Loc`, `Player`, `Interactable`, `VesselVisual`, `VesselVisualProfile`, `VesselDefinition`, `SailRig`, `FenderStowage`, `HarbourDressing`, `WaterLife`, `AnchorAmbience`, `BoatLighting`, `WeatherVisuals`, `AnchorSignals`, `DeckCompanionSpots`, `ShipCompanion`, `CompanionRemarks` (pet: `take_remark()` → `message_requested`; hands full: `hands_full()`), `ShoreAccess`, `HarbourFacilities`, `RodHolder`, `Windlass`, `CoffeeMug`, `GalleyStove`, `TrophyBoard`, `CabinDecor`, `HarbourTrades`, `HighlightProvider`, `HighlightResolver`, `HatHook`, `HatBlowAway`, `HatState`, `BoatFixture`.
 - **Signals:** Declares `area_change_requested(area, spawn_point)`, `chart_requested`, `world_map_requested`, `sleep_requested`, `helm_requested`, `boatyard_requested`, `provisions_requested`, `work_requested`, `grocery_requested`, `go_ashore_requested`, `fishing_requested`, `anchor_requested`, `cooking_requested`, `trophies_requested`, `message_requested(text)`, `interaction_prompt_changed(prompt)`, `docking_finished` — emitted from `_on_interacted` by `interaction_id`, prompt changes, and the end of `play_docking_arrival`. Connected in `App._connect_boat_area`. Connects to many GameSession signals (`condition_changed`, `voyage_started`, `voyage_arrived`, `voyage_course_changed`, `state_replaced`, `rescued`, `hat_changed`, `hat_lost`, `home_changed`, `coffee_changed`) and `SettingsManager.art_style_changed` / `course_view_changed`.
 - **State:** Writes `SessionState.player_position` via `GameSession.set_player_position` every physics frame (unless leaving); reads spawn point / restored position on `_place_player`. Hat/coffee actions go through `GameSession.use_hat_hook`, `put_coffee_down`, `pick_up_coffee`. Owns camera tween, shore station map, docking tween.
@@ -947,6 +947,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Invariants:** The only CanvasModulate in the scene (AnchorAmbience is hidden for this). Light follows clock with `FOLLOW_RATE` 2.5/s (no strobe at Long Passage speed); `update_now()` snaps. Nav lights only underway and not anchored; anchor light only anchored; harbour lights only moored. Cabin lamps keyed by fixture names, not art.
 - **Tests:** `tests/suites/test_lighting.gd`, `tests/suites/test_companion_deck.gd`, `tests/suites/test_atmosphere.gd`; `tests/cabin_light_18.gd`.
 - **Change risks:** The node name is the literal "Lighting" (never translated: `BoatArea.get_lighting()`, `App.snap_light()` and WeatherAudio's flash find it by name; in Danish it was "Belysning" until the Engine Room pass, checked by `test_localization`); renaming fixtures silently drops lamps; changing `light_compensation` affects all highlights; AnchorSignals depends on `boat_bounds()`.
+
+### `src/boat/cabin_windows.gd`
+
+- **Role:** class_name `CabinWindows`, extends Node2D (I022). static `windows_for(vessel_id)` (data/vessels/cabin_windows.json `windows.<id>`: at, length, thickness, angle, side), `setup(area, vessel_id) -> bool`, `viewer_position()`, `view_of(window, viewer)` → {centre (compass: heading + outward angle from the bow + atan2 offset of the captain), fov (2·atan(half length / depth), 16–80°), right, outward}, `_sample_world()` (heading: `Simulation.get_current_heading()` underway else 90°, elevation, sun bearing from `Daylight.local_solar_hours`, daylight, overcast as BoatLighting, `WeatherAudio.rain_level`, wind, hazard, moored, `HarbourLooks.picture_for(location)`, `WaterLook.water_colour`), `_draw` → per window `draw_set_transform_matrix(Transform2D(right, -outward, at))` + `_draw_window` (sky gradient, stars on a 6° grid, sun + glow, `_draw_shore` quay at heading+90° ±40° and far shore at heading−90° ±22°, sea + crests on a 4° grid drifting with game time, rain, glass `GLASS_TINT`·`glass_strength`, frame). `last_draw_usec`.
+- **Depends on:** `BoatArea.player`, `Simulation`, `Daylight`, `WeatherModel` classes, `WeatherAudio.rain_level`, `HarbourLooks`, `WaterLook`.
+- **State:** `windows`, `world`, `_viewer`, `_refresh_left`, static `_data`, static `glass_strength`.
+- **Lifecycle:** created by `BoatArea._setup_cabin_windows` (interior only, inserted right after the `CabinBase` slot of `Visual`, under `FurnitureVisual`); `_update_cabin_windows` hides it with the classic art.
+- **Tests:** `tests/suites/test_cabin_windows.gd`.
+- **Change risks:** everything is drawn inside each opening's rectangle (clamped), so nothing bleeds onto walls; the quay is assumed starboard (as the deck scenes lie alongside); only boats listed in the data get windows.
 
 ### `src/boat/cabin_world_map.gd`
 
@@ -1053,6 +1062,24 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Invariants:** Sprite placed at canvas top-left, scaled uniformly to canvas width; warns if aspect differs >1%.
 - **Tests:** None found by class name; exercised indirectly through VesselVisual suites (`test_vessels.gd`, `test_visual_prototype.gd`, `test_sprite_workshop.gd`).
 - **Change risks:** `FenderStowage` swaps `get_sprite().texture` directly and relies on `is_sprite()`; `show_procedural` frees the sprite (losing FenderStowage meta).
+
+### `src/boat/shallow_water.gd`
+
+- **Role:** class_name `ShallowWater`, extends Node2D (I022). `PATCHES` 9 soft polygons (plus a fainter rim) within `SPREAD` 1500, alpha `ALPHA` 0.07·translucency, seeded by `hash(location id)` moored (else the position); `refresh()` (visibility = `WaterLook.is_shallow()` and translucency > 0), connected to `voyage_started`, `voyage_arrived` (`_on_arrived`), `anchor_changed`.
+- **Depends on:** `WaterLook`, `GameSession`.
+- **State:** `_seed`.
+- **Lifecycle:** added by `BoatArea._setup_water_look` as the sibling right after `Surroundings/Water` (decks only).
+- **Tests:** `tests/suites/test_cabin_windows.gd` (deck water screenshots).
+- **Change risks:** method connections (not lambdas) so they disconnect when the deck scene is freed.
+
+### `src/boat/water_look.gd`
+
+- **Role:** class_name `WaterLook`, extends RefCounted, static only (I022). `DEEP` (the old Surroundings/Water colour), `SEABED`, `OPEN_SEA` 0.12, `SHALLOW_EXTRA` 0.1, static `translucency` (1 default, 0 = old water), `water_colour(shallow)` (DEEP.lerp(SEABED, share·translucency), max 0.6), `is_shallow()` (moored or anchored).
+- **Depends on:** `GameSession.is_underway/is_anchored`.
+- **State:** static `translucency`.
+- **Lifecycle:** read by `BoatArea._setup_water_look/_recolour_water`, `ShallowWater`, `CabinWindows._sample_world`.
+- **Tests:** `tests/suites/test_cabin_windows.gd` (`[water]`, before/after screenshots).
+- **Change risks:** independent from `CabinWindows.glass_strength` by design (the addendum asks for separate controls).
 
 ### `src/boat/weather_visuals.gd`
 
@@ -2396,6 +2423,13 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** —
 - **Change risks:** pins the version strings, save version and asset paths, so every release bump needs this test updated. Tagline text is compared exactly. Screenshots `130_*`–`134_*`.
 
+### `tests/suites/test_cabin_windows.gd`
+
+- **Role:** extends RefCounted; I022 suite. `_test_data_in_the_walls` (each opening's corners +1.5 frame sampled in `cabin_base.png`: alpha ≥ 0.9 and r ≤ 0.35 = wall paint), `_test_water_look`, `_test_in_the_cabin` (`_aboard` sets vessel/time via `replace_state`; node order after `CabinBase`; `view_of` port north / starboard south moored, aft offset, fov up close; `last_draw_usec` median of 30 redraws; ≤ 2 redraws standing still for 60 frames; dusk 18:42 and night 22:30 UTC; underway heading −90°; classic art hides), `_test_other_cabins`, `_test_deck_water` (translucency 0/1 × moored/underway screenshots).
+- **Depends on:** `app.tscn`, `Image.load_from_file` of the cabin art, runner helpers.
+- **Lifecycle:** in `test_runner.gd` `SUITES` after `test_academy`; restores `WaterLook.translucency` and `CabinWindows.glass_strength`.
+- **Change risks:** the time-of-day checks assume Copenhagen on the default start date.
+
 ### `tests/suites/test_captains_log.gd`
 
 - **Role:** extends RefCounted; test suite for Iteration 006 Captain's Log. Covers the start harbour, arrival records, change of course (one record, both legs), rescue (a gale fixture with condition 1 %), determinism (9 h in one step vs 540 steps), the bounded history (`MAX_VOYAGES`, save size < 20000 chars), save/load equality, rejection of a negative distance, migration of version 7 saves (in port and underway), and the `CaptainsLogMenu` UI (L key, statistics, tabs, country groups and filters, pause-menu button).
@@ -3229,7 +3263,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/test_runner.gd`
 
-- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`. I022: `test_captains_other_life` in `SUITES`; sets `GameSession.test_all_boats_owned = true` with `TimePassage.enabled = false`. I022: `AcademyGuide.enabled = false` at start; `test_academy` in SUITES after `test_captains_other_life`.
+- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`. I022: `test_captains_other_life` in `SUITES`; sets `GameSession.test_all_boats_owned = true` with `TimePassage.enabled = false`. I022: `AcademyGuide.enabled = false` at start; `test_academy` in SUITES after `test_captains_other_life`. `test_cabin_windows` in SUITES after `test_academy`.
 - **Depends on:** all `tests/suites/test_*.gd`; `SaveManager`, `SessionLog`, `SettingsManager`, `TimePassage`, `WindField`, `Simulation`, `GameSession`, `PortCatalog`, `SeaRouter`.
 - **State:** redirects `SaveManager.save_dir = user://test_saves`, `SessionLog.log_dir = user://test_diagnostics`, `SettingsManager.settings_path = user://test_settings.cfg`; `TimePassage.enabled = false`; language forced to `en` before each suite; before each suite `use_calm_wind()` and `Simulation.sea_encounters` true only for `test_captains_watch.gd` and `test_localization.gd`; scratch saves/settings deleted at start and end; `_exit_tree` calls `WindField.clear_default()`.
 - **Lifecycle:** `godot --headless --path . res://tests/test_runner.tscn [-- --only=a,b] [--skip=a,b] [--screenshots=DIR]` (filters match suite file-name substrings; screenshots only when rendered). `process_mode = ALWAYS`.
