@@ -359,6 +359,7 @@ verified checkpoint branch (`backup/post-engine-room-pre-i021`):
 - Only the repository `crosenlund79/LittleCaptainsHat` is worked on. The archived
   Next Harbor repository and unrelated projects are never edited.
 - Use recoverable checkpoint commits. Never reset, force-push or discard work.
+  Major iterations have their own branches (see *Major iteration branches*).
 - A delivery states the version, the final commit, the branch, the report and
   the Windows checklist, and ends with the clickable branch link (mandatory).
 - The Captain's own workflow is: GitHub branch → Code → Download ZIP → extract →
@@ -387,6 +388,97 @@ verified checkpoint branch (`backup/post-engine-room-pre-i021`):
   explained in the report; unused assets are listed for the Captain's review
   and never deleted without his approval. Releases follow
   `docs/technical/RELEASE_READINESS.md`.
+
+### Major iteration branches
+
+Every major numbered iteration (I022, I023, ...) has its own development
+branch and a permanent recovery branch of the completed iteration, so each one
+can be recovered, identified and downloaded on its own.
+
+**Major or minor.** Only a major iteration (a commissioned, numbered
+implementation assignment, see *Iterations and versions*) gets its own
+branches. These do **not**, unless the Captain says so: injections, small
+adjustments, cosmetic polish, hotfixes, and documentation or
+quality-assurance assignments. They are committed on the integration branch.
+
+**Names.** For iteration I022 (three digits, the same pattern after it):
+
+| Branch | Purpose |
+|---|---|
+| `iteration/i022` | Development of the iteration |
+| `release/i022` | The completed iteration, frozen |
+| `claude/friendly-fermat-dey23f` | The integration branch (unchanged): everything verified ends up here |
+
+**Starting a major iteration.**
+
+1. Identify the latest verified integration baseline (the integration
+   branch's remote head, with its tests passing).
+2. Make sure unrelated work is committed and pushed.
+3. Record the exact starting SHA (all 40 characters).
+4. Create `iteration/i022` at that SHA:
+   `git push origin <SHA>:refs/heads/iteration/i022`.
+5. Verify it remotely: `git ls-remote origin refs/heads/iteration/i022` must
+   show that SHA (and the GitHub branch list, when available).
+6. Develop the iteration on that branch only.
+
+If the branch cannot be created and verified, implementation does not begin.
+If the GitHub environment refuses a branch, an authorized GitHub
+integration/API route may be used; otherwise the work stops and the limitation
+is reported. A branch is never reported as existing until it has been seen on
+the remote.
+
+**Completing a major iteration.**
+
+1. Run the required tests (`docs/technical/RELEASE_READINESS.md`).
+2. Commit all of the iteration's changes.
+3. Push `iteration/i022` and verify its remote head.
+4. Create `release/i022` at that exact completed SHA:
+   `git push origin <SHA>:refs/heads/release/i022`.
+5. Verify it remotely (`git ls-remote`, as above).
+6. Record both full SHAs (start and completed) in the iteration report.
+
+**Release branches are immutable.** A `release/…` branch is never moved,
+reset, deleted, rebased or force-pushed, and nothing is committed to it. A
+correction found later belongs to new work (a hotfix on the integration
+branch, or the next iteration), never to the snapshot. The `backup/…`
+checkpoint branches follow the same rule.
+
+**Integration.** An iteration is integrated into
+`claude/friendly-fermat-dey23f` only after its tests and its release branch are
+verified. Before merging, check what the integration branch has gained since
+the iteration started (`git log <start SHA>..origin/claude/friendly-fermat-dey23f`)
+and whether the two can be combined cleanly; never assume it. Integrate with a
+normal merge commit (or a fast-forward when nothing was added meanwhile) so
+that both the completed iteration and later work are kept. A conflict where
+choosing either side would lose behaviour goes to the Captain. After
+integration, re-run the tests on the integration branch and verify its remote
+head.
+
+**Downloading an iteration as a ZIP.** On GitHub: open the repository, choose
+the branch (for example `release/i021`) in the branch selector, then Code →
+Download ZIP; or open
+`https://github.com/crosenlund79/LittleCaptainsHat/archive/refs/heads/release/i021.zip`
+(replace `i021` with the iteration). Extract it and open `project.godot` in
+Godot, as usual.
+
+**Git tags.** Tags are optional; the release branch is the authoritative
+snapshot. If a tag push fails (the GitHub environment may refuse tags), the
+tag is not reported as existing: the failure and its message are written in the
+report, the push is not forced, and the release branch is relied on. A tag can
+be added later, by the Captain on GitHub (Releases) or through an authorized
+route, at the release branch's SHA.
+
+**No destructive Git operations** on any shared branch: no force-push, no
+`reset --hard` of pushed work, no rebase or amend of pushed commits, no
+deleting or renaming `release/…`, `backup/…`, `iteration/…` or the
+integration branch, no rewriting of history. Mistakes are corrected by new
+commits. Only the Captain may decide otherwise, explicitly.
+
+**Iteration 21** was already under way when this policy was set and kept its
+branch and history. Its recovery branch `release/i021` was created at the final
+I021 commit, `04a76231581f5a6d0af22ce2c2c138842b869453`, and verified on GitHub.
+The pre-I021 checkpoint `backup/post-engine-room-pre-i021` (`ec84cfa`) is
+unchanged.
 
 ### Not now
 
@@ -483,4 +575,5 @@ Two; the wording was again not found in the repository in Iteration 18.
   three cabin things; boats and the parrot and hamster deferred with
   feasibility notes; see `docs/iterations/i021/ITERATION_21_REPORT.md`,
   `docs/iterations/i021/HARBOUR_LOOKS.md` and
-  `docs/iterations/i021/WINDOWS_ACCEPTANCE_21.md`.
+  `docs/iterations/i021/WINDOWS_ACCEPTANCE_21.md`. Recovery branch:
+  `release/i021` (`04a76231581f5a6d0af22ce2c2c138842b869453`).

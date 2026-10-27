@@ -21,6 +21,10 @@ below was run on Linux (Godot 4.7.2).
 | Tests, version, guides, documentation, screenshots | `cc70f75` |
 | Test and benchmark results (this report's final version) | the branch head after `cc70f75` |
 
+The final I021 commit is `04a76231581f5a6d0af22ce2c2c138842b869453`. It is kept
+on the recovery branch `release/i021`, created afterwards under the Captain's
+major iteration branch policy (`CAPTAINS_ORDERS.md`) and verified on GitHub.
+
 ## 2. The checkpoint before I021
 
 - **Backup branch:** `backup/post-engine-room-pre-i021` at
