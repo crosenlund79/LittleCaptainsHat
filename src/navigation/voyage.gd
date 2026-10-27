@@ -36,6 +36,10 @@ var fully_recorded := true
 ## sailed on from), so none stops the boat twice. Optional in a save.
 var holding_at := -1
 var anchorages_done: Array[int] = []
+## Standing by for a vessel that asked for help (I019, VHF): until this game
+## time the boat stays where it is (the voyage pauses; the clock, weather and
+## stores go on). 0 when not standing by. Optional in a save.
+var standby_until := 0.0
 
 var _cumulative := PackedFloat64Array()
 
@@ -64,6 +68,7 @@ func duplicate_voyage() -> Voyage:
 	copy.fully_recorded = fully_recorded
 	copy.holding_at = holding_at
 	copy.anchorages_done = anchorages_done.duplicate()
+	copy.standby_until = standby_until
 	return copy
 
 
@@ -162,6 +167,7 @@ func to_dict() -> Dictionary:
 		"fully_recorded": fully_recorded,
 		"holding_at": holding_at,
 		"anchorages_done": anchorages_done.duplicate(),
+		"standby_until": standby_until,
 	}
 
 
@@ -232,6 +238,7 @@ static func from_dict(data: Variant, catalog: PortCatalog, errors: Array[String]
 			errors.append("voyage anchorage data is invalid")
 			return null
 		voyage.anchorages_done.append(int(value))
+	voyage.standby_until = maxf(float(data.standby_until), 0.0) if _is_number(data.get("standby_until")) else 0.0
 	return voyage
 
 

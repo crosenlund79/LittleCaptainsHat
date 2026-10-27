@@ -27,6 +27,14 @@ var holding: StringName = HOLDING_WELL
 var dragged_nm := 0.0
 ## The anchor alarm is sounding (poor holding or dragging), until answered.
 var alarm := false
+## The highest concern announced (I019): 0 none, 1 holding poorly, 2
+## dragging. A new alarm only when it rises, so holding that wavers with the
+## gusts never wakes the captain twice; back to 0 after holding well for an
+## hour (GOOD_RESET_SECONDS).
+var alarm_level := 0
+## When the holding last became good again after an alarm, or -1.
+var good_since := -1.0
+const GOOD_RESET_SECONDS := 3600.0
 var anchored_at := 0.0
 ## Anchor checks have been made up to this game time (Simulation only).
 var checked_until := 0.0
@@ -61,6 +69,8 @@ func duplicate_state() -> AnchorState:
 	copy.holding = holding
 	copy.dragged_nm = dragged_nm
 	copy.alarm = alarm
+	copy.alarm_level = alarm_level
+	copy.good_since = good_since
 	copy.anchored_at = anchored_at
 	copy.checked_until = checked_until
 	copy.dragged_this_stay = dragged_this_stay
@@ -76,7 +86,8 @@ func to_dict() -> Dictionary:
 	return {"active": active, "position": {"lon": position.x, "lat": position.y}, "scope": scope, "set_quality": set_quality,
 		"holding": String(holding), "dragged_nm": dragged_nm, "alarm": alarm, "anchored_at": anchored_at,
 		"checked_until": checked_until, "dragged_this_stay": dragged_this_stay, "moments": moments.duplicate(),
-		"kind": String(kind), "depth_m": depth_m, "depth_source": String(depth_source), "bonus_kn": bonus_kn}
+		"kind": String(kind), "depth_m": depth_m, "depth_source": String(depth_source), "bonus_kn": bonus_kn,
+		"alarm_level": alarm_level, "good_since": good_since}
 
 
 static func from_dict(data: Variant, errors: Array[String]) -> AnchorState:
@@ -114,6 +125,12 @@ static func from_dict(data: Variant, errors: Array[String]) -> AnchorState:
 	state.depth_m = float(data.depth_m) if _is_number(data.get("depth_m")) else -1.0
 	state.depth_source = StringName(str(data.get("depth_source", ""))) if data.get("depth_source") is String else &""
 	state.bonus_kn = clampf(float(data.bonus_kn), 0.0, MAGIC_BONUS_MAX_KN) if _is_number(data.get("bonus_kn")) else 0.0
+	# I019 optional fields: older saves take the level from the alarm itself.
+	if _is_number(data.get("alarm_level")):
+		state.alarm_level = clampi(int(data.alarm_level), 0, 2) if state.active else 0
+	elif state.alarm:
+		state.alarm_level = 2 if state.holding == HOLDING_DRAGGING else 1
+	state.good_since = float(data.good_since) if _is_number(data.get("good_since")) else -1.0
 	return state
 
 

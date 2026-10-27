@@ -1993,6 +1993,8 @@ func _let_go(kind: StringName, scope: int, set_quality: float, perfects: int) ->
 	anchor.set_quality = clampf(set_quality, 0.0, 1.0)
 	anchor.dragged_nm = 0.0
 	anchor.alarm = false
+	anchor.alarm_level = 0
+	anchor.good_since = -1.0
 	anchor.dragged_this_stay = false
 	anchor.moments.clear()
 	anchor.anchored_at = _state.game_time
@@ -2073,6 +2075,61 @@ func take_hint(id: String) -> bool:
 ## anchor not yet down).
 func is_holding_at_anchorage() -> bool:
 	return _state != null and _state.voyage != null and _state.voyage.holding_at >= 0 and not _state.anchor.active
+
+
+## Standing by for a vessel in need (I019): the boat stays where it is.
+func is_standing_by() -> bool:
+	return _state != null and _state.voyage != null and not _state.anchor.active and _state.game_time < _state.voyage.standby_until - 1e-6
+
+
+func get_standby_until() -> float:
+	return _state.voyage.standby_until if _state and _state.voyage else 0.0
+
+
+## Whether a VHF call (VhfRadio) can still be answered: underway, not yet
+## answered, and heard less than VhfRadio.ANSWER_WITHIN_SECONDS ago.
+func can_answer_vhf(call: Dictionary) -> bool:
+	if _state == null or not is_underway() or call.is_empty():
+		return false
+	if _state.progress.is_completed(StringName("vhf:" + String(call.id))):
+		return false
+	return _state.game_time <= float(call.due) + VhfRadio.ANSWER_WITHIN_SECONDS
+
+
+## The captain answers (or declines) a VHF call. Answering an assist call
+## stands the boat by for its hours (the voyage waits); the thanks (renown,
+## and for an assist a small gift) are paid once per call, whatever is saved
+## and loaded. Returns {"answered", "text", "renown", "money"}.
+func answer_vhf(call: Dictionary, accept: bool) -> Dictionary:
+	var result := {"answered": false, "text": "", "renown": 0, "money": 0}
+	if not accept or not can_answer_vhf(call):
+		result.text = Loc.t("Another vessel answers the call. The radio goes quiet.") if not accept \
+			else Loc.t("The call has been answered by another vessel.")
+		return result
+	var award := _award_once("vhf:" + String(call.id), Loc.t("Answered a call on channel 16: %s") % String(call.vessel), int(call.renown))
+	if award.is_empty():
+		result.text = Loc.t("The call has been answered by another vessel.")
+		return result
+	result.answered = true
+	result.renown = int(call.renown)
+	if call.kind == VhfRadio.KIND_ASSIST:
+		_state.voyage.standby_until = _state.game_time + float(call.hours) * 3600.0
+		_state.funds += int(call.money)
+		result.money = int(call.money)
+		result.text = Loc.t("You answer and heave to nearby. The crew of %s wave across the water. The coastguard expects to be there in about %d hours.") % [String(call.vessel), int(call.hours)]
+		funds_changed.emit(_state.funds)
+	else:
+		result.text = Loc.t("You read them the forecast. \"Thank you, skipper. Fair winds.\"")
+	_has_unsaved_changes = true
+	renown_awarded.emit([award])
+	return result
+
+
+## Standing by ends: the coastguard has the yacht in tow (I019).
+func end_standby() -> void:
+	if _state and _state.voyage and _state.voyage.standby_until > 0.0:
+		_state.voyage.standby_until = 0.0
+		_has_unsaved_changes = true
 
 
 ## The next anchorage ahead on the voyage: {"index", "nm", "geo"} or {}.
@@ -2161,6 +2218,8 @@ func raise_anchor() -> String:
 		return "The anchor is not down."
 	_state.anchor.active = false
 	_state.anchor.alarm = false
+	_state.anchor.alarm_level = 0
+	_state.anchor.good_since = -1.0
 	_state.vessel_position = _state.voyage.get_position()
 	_state.propulsion = PropulsionState.new()
 	_has_unsaved_changes = true
@@ -2183,6 +2242,19 @@ func apply_anchor_check(tick: float) -> String:
 	var before := anchor.holding
 	anchor.holding = AnchorSite.holding(anchor.scope, anchor.set_quality, shelter, sample, _holding_bonus())
 	var event := ""
+	# I019: an alarm only when the concern rises (poor 1, dragging 2) past what
+	# was already announced; holding well again is said once, quietly, and
+	# after an hour of good holding the next trouble is news again.
+	var level := 2 if anchor.holding == AnchorState.HOLDING_DRAGGING else (1 if anchor.holding == AnchorState.HOLDING_POOR else 0)
+	if level == 0:
+		if anchor.alarm_level > 0 and anchor.good_since < 0.0:
+			anchor.good_since = tick
+			anchor.alarm = false
+			notice.emit(Loc.t("The anchor is holding well again."))
+		elif anchor.alarm_level > 0 and tick - anchor.good_since >= AnchorState.GOOD_RESET_SECONDS:
+			anchor.alarm_level = 0
+	else:
+		anchor.good_since = -1.0
 	if anchor.holding == AnchorState.HOLDING_DRAGGING:
 		anchor.dragged_this_stay = true
 		# Downwind a little; never up onto the land (0.105b, fine coast): on the
@@ -2195,14 +2267,16 @@ func apply_anchor_check(tick: float) -> String:
 			_state.vessel_position = anchor.position
 		if coast.shore_distance_nm(anchor.position, DRAG_GROUND_NM) < DRAG_GROUND_NM:
 			apply_weather_damage(DRAG_GROUND_DAMAGE, tick)
-		if before != AnchorState.HOLDING_DRAGGING or not anchor.alarm:
+		if anchor.alarm_level < 2:
 			anchor.alarm = true
+			anchor.alarm_level = 2
 			event = "dragging"
-			anchor_alarm.emit({"level": "dragging", "text": "Anchor dragging! The boat is moving downwind. Let out more chain, set the anchor again or weigh anchor."})
-	elif anchor.holding == AnchorState.HOLDING_POOR and before in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
+			anchor_alarm.emit({"level": "dragging", "text": Loc.t("Anchor dragging! The boat is moving downwind. Let out more chain, set the anchor again or weigh anchor.")})
+	elif anchor.holding == AnchorState.HOLDING_POOR and anchor.alarm_level < 1:
 		anchor.alarm = true
+		anchor.alarm_level = 1
 		event = "poor"
-		anchor_alarm.emit({"level": "poor", "text": "The anchor is holding poorly as the wind rises. Check it: more chain helps."})
+		anchor_alarm.emit({"level": "poor", "text": Loc.t("The anchor is holding poorly as the wind rises. Check it: more chain helps.")})
 	if before != anchor.holding:
 		anchor_changed.emit()
 	if tick - anchor.anchored_at >= NIGHT_AT_ANCHOR_S and not anchor.dragged_this_stay:

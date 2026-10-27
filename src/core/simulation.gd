@@ -39,6 +39,10 @@ signal arrived(port_id: StringName)
 signal passage_interrupted(reason: StringName, text: String)
 ## Long Passage time started (from normal time; not on a change of speed).
 signal passage_started(rate: float)
+## A vessel nearby is newly on a collision course (I019): see traffic_risks().
+signal traffic_alert(info: Dictionary)
+## A call on the VHF radio (I019): see VhfRadio.
+signal vhf_call(call: Dictionary)
 
 ## Real seconds to game seconds at 1× (1 real second = 1 game minute).
 const DEFAULT_GAME_SECONDS_PER_REAL_SECOND := 60.0
@@ -69,6 +73,24 @@ const STOP_BITE := &"bite"
 const STOP_ANCHOR := &"anchor"
 ## The boat reached an anchorage waypoint (Iteration 18).
 const STOP_ANCHORAGE := &"anchorage"
+## A vessel nearby is on a collision course (I019).
+const STOP_TRAFFIC := &"traffic"
+## A vessel nearby asks for assistance on the radio (I019).
+const STOP_VHF := &"vhf"
+
+## Traffic (I019, The Captain's Watch): the radar's reach and the levels of
+## concern. Risk is judged at the evaluation points (as the weather), from
+## the closest point of approach (CPA) and the time to it (TCPA).
+const RADAR_RANGE_NM := 12.0
+const TRAFFIC_NEARBY_NM := 6.0
+const TRAFFIC_CAUTION_CPA_NM := 1.0
+const TRAFFIC_CAUTION_TCPA_H := 0.75
+const TRAFFIC_DANGER_CPA_NM := 0.3
+const TRAFFIC_DANGER_TCPA_H := 0.5
+const RISK_NONE := 0
+const RISK_NEARBY := 1
+const RISK_CAUTION := 2
+const RISK_DANGER := 3
 ## Long Passage speeds: game seconds per real second (1, 4 and 12 hours).
 const PASSAGE_RATES: Array[float] = [3600.0, 14400.0, 43200.0]
 ## Why Long Passage time stopped (besides the STOP_* reasons of advance()).
@@ -111,6 +133,10 @@ class AdvanceResult:
 	var anchor_alarm := ""
 	## The boat reached an anchorage waypoint and waits there (Iteration 18).
 	var anchorage := false
+	## A vessel newly on a collision course (I019), or {}.
+	var traffic := {}
+	## A call on the radio (I019), or {}.
+	var vhf := {}
 
 
 func _ready() -> void:
@@ -148,8 +174,8 @@ func tick(real_seconds: float) -> void:
 	var result := advance(real_seconds * game_seconds_per_real_second * GameSession.get_time_scale())
 	# Accelerated time drops back to normal speed when something needs the
 	# player's attention, so nothing actionable flies past at 20×.
-	if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "" or result.anchorage) \
-			and GameSession.get_time_scale() > 1:
+	if (not result.warnings.is_empty() or result.hat_warned or result.bite or result.anchor_alarm != "" or result.anchorage
+			or not result.traffic.is_empty()) and GameSession.get_time_scale() > 1:
 		GameSession.set_time_scale(1)
 
 
@@ -209,6 +235,10 @@ func _passage_tick(real_seconds: float) -> void:
 			text = "The anchor alarm went."
 		STOP_ANCHORAGE:
 			text = "We've arrived at our anchorage."
+		STOP_TRAFFIC:
+			text = describe_traffic(result.traffic)
+		STOP_VHF:
+			text = Loc.t("A call for assistance on the radio, channel 16.")
 	if reason == STOP_NONE and result.hat_warned:
 		reason = STOP_HAT
 		text = "Hold on to your hat: the wind is getting up."
@@ -242,14 +272,18 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 	while remaining > 1e-6 and guard > 0:
 		guard -= 1
 		var time := GameSession.get_game_time()
-		if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
-			# In harbour, at anchor or waiting at an anchorage the boat stays
+		if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage() or GameSession.is_standing_by():
+			# In harbour, at anchor, waiting at an anchorage or standing by for
+			# a vessel in need (I019) the boat stays
 			# where it is. At anchor the weather and the anchor are checked on
 			# the evaluation grid (waiting at an anchorage: the weather); with
 			# the line out the bite checks run on their own grid.
 			var anchored := GameSession.is_anchored()
-			var holding := GameSession.is_holding_at_anchorage()
+			var standing_by := GameSession.is_standing_by()
+			var holding := GameSession.is_holding_at_anchorage() or standing_by
 			var end := time + remaining
+			if standing_by:
+				end = minf(end, GameSession.get_standby_until())  # then the voyage goes on, exactly then
 			var anchor_grid := _next_grid_time(GameSession.get_anchor_checked_until()) if anchored else INF
 			if holding:
 				anchor_grid = _next_grid_time(GameSession.get_propulsion().last_evaluation_time)
@@ -258,6 +292,9 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 			var step_end := minf(end, fish_tick)
 			GameSession.apply_simulation_step(step_end, GameSession.get_voyage_progress_nm())
 			_check_hat(time, step_end, -1.0, -1.0, result)
+			if standing_by and not GameSession.is_standing_by():
+				GameSession.end_standby()
+				GameSession.notice.emit(Loc.t("The coastguard's boat has the yacht in tow. You sail on."))
 			result.elapsed_seconds += step_end - time
 			remaining -= step_end - time
 			if fish_tick <= step_end + 1e-6 and GameSession.apply_fish_check(fish_tick):
@@ -307,6 +344,14 @@ func advance(seconds: float, stop_at_events := false) -> AdvanceResult:
 				break
 			if warned and stop_at_events:
 				result.stopped_by = STOP_WARNING
+				break
+			# Traffic on the same grid (I019): a vessel newly on a collision course.
+			if _assess_traffic(result) and stop_at_events:
+				result.stopped_by = STOP_TRAFFIC
+				break
+			# And now and then a call on the radio (I019).
+			if _assess_vhf(result) and stop_at_events:
+				result.stopped_by = STOP_VHF
 				break
 		var speed := propulsion.speed_kn
 		var progress := GameSession.get_voyage_progress_nm()
@@ -547,6 +592,109 @@ func sleep(hours: float) -> AdvanceResult:
 	var result := advance(hours * 3600.0, true)
 	_hat_sheltered = false
 	return result
+
+
+# --- Traffic (I019, The Captain's Watch) -------------------------------------------
+
+## The vessels within `range_nm` of the boat now, each with its approach
+## (TrafficModel.approach: cpa_nm, tcpa_h, distance_nm) against our own
+## course and speed, its "risk" (RISK_*) and its "bearing" (degrees true),
+## most urgent first. Moored or at anchor our own speed is zero.
+func traffic_risks(range_nm := RADAR_RANGE_NM) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if not GameSession.is_active():
+		return result
+	var here := GameSession.get_vessel_position()
+	var moving := GameSession.is_underway() and not GameSession.is_anchored() and not GameSession.is_holding_at_anchorage()
+	var own_speed := GameSession.get_propulsion().speed_kn if moving else 0.0
+	var own_course := get_current_heading() if moving else 0.0
+	for vessel in TrafficModel.get_default().vessels_near(here, GameSession.get_game_time(), GameSession.get_wind_seed(), range_nm):
+		var info := TrafficModel.approach(vessel.offset_nm, vessel.course, vessel.speed_kn, own_course, own_speed)
+		info.merge(vessel)
+		info["bearing"] = fposmod(rad_to_deg(atan2(vessel.offset_nm.x, vessel.offset_nm.y)), 360.0)
+		info["risk"] = risk_level(info, moving)
+		result.append(info)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return a.risk > b.risk if a.risk != b.risk else float(a.distance_nm) < float(b.distance_nm))
+	return result
+
+
+## The level of concern for one approach. Only a moving boat can be on a
+## collision course; moored or at anchor, ships nearby are just nearby.
+static func risk_level(info: Dictionary, moving := true) -> int:
+	var tcpa: float = info.tcpa_h
+	var cpa: float = info.cpa_nm
+	if moving and tcpa > 0.0 and tcpa <= TRAFFIC_DANGER_TCPA_H and cpa < TRAFFIC_DANGER_CPA_NM:
+		return RISK_DANGER
+	if moving and tcpa > 0.0 and tcpa <= TRAFFIC_CAUTION_TCPA_H and cpa < TRAFFIC_CAUTION_CPA_NM:
+		return RISK_CAUTION
+	if float(info.distance_nm) <= TRAFFIC_NEARBY_NM:
+		return RISK_NEARBY
+	return RISK_NONE
+
+
+## At an evaluation point underway: a vessel newly on a collision course is
+## announced once per voyage (its key is kept with the voyage, so a load,
+## sleep or Long Passage never announces it twice). True when one was.
+func _assess_traffic(result: AdvanceResult) -> bool:
+	if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
+		return false
+	for info in traffic_risks(TRAFFIC_NEARBY_NM * 1.5):
+		if info.risk < RISK_DANGER:
+			break
+		var key := StringName("traffic>%s" % info.id)
+		if GameSession.is_weather_warned(key):
+			continue
+		GameSession.record_weather_warning(key)
+		info["text"] = describe_traffic(info)
+		if result:
+			result.traffic = info
+		SessionLog.write("traffic_alert", {"kind": String(info.kind), "cpa_nm": snappedf(info.cpa_nm, 0.01),
+			"tcpa_min": roundi(float(info.tcpa_h) * 60.0)})
+		traffic_alert.emit(info)
+		return true
+	return false
+
+
+## At an evaluation point underway: the radio call of this slot, when its
+## time has come (VhfRadio: at most one per slot, once per voyage). True for
+## a call for assistance (it wakes the captain and stops Long Passage).
+func _assess_vhf(result: AdvanceResult) -> bool:
+	var voyage := GameSession.get_voyage()
+	if voyage == null or GameSession.is_anchored() or GameSession.is_holding_at_anchorage() or GameSession.is_standing_by():
+		return false
+	if voyage.progress_nm < 3.0 or GameSession.get_voyage_remaining_nm() < 5.0:
+		return false  # not right at the harbour mouth
+	var now := GameSession.get_game_time()
+	var slot := floori(now / VhfRadio.SLOT_SECONDS)
+	var key := StringName("vhf>%d" % slot)
+	if GameSession.is_weather_warned(key):
+		return false
+	var hazardous := get_weather_at_vessel().hazard >= WeatherModel.HAZARD_CAUTION
+	var call := VhfRadio.call_for_slot(voyage.departed_at, slot, GameSession.get_wind_seed(), hazardous)
+	if call.is_empty() or now < float(call.due):
+		return false
+	GameSession.record_weather_warning(key)
+	call["heard_at"] = now
+	if result:
+		result.vhf = call
+	SessionLog.write("vhf_call", {"kind": String(call.kind), "id": String(call.id)})
+	vhf_call.emit(call)
+	return call.kind == VhfRadio.KIND_ASSIST
+
+
+## "Collision risk: the cargo ship Nordlys will pass 0.2 nm off in about
+## 12 min, from the NE. ..."
+static func describe_traffic(info: Dictionary) -> String:
+	if info.is_empty():
+		return ""
+	if float(info.cpa_nm) < 0.1:
+		return Loc.t("Collision risk: the %s %s will pass very close in about %d min, from the %s. Keep a sharp lookout and give way if needed.") % [
+			TrafficModel.kind_name(info.kind).to_lower(), info.name, maxi(roundi(float(info.tcpa_h) * 60.0), 1),
+			Loc.t(WindField.compass_name(float(info.bearing)), "compass")]
+	return Loc.t("Collision risk: the %s %s will pass %.1f nm off in about %d min, from the %s. Keep a sharp lookout and give way if needed.") % [
+		TrafficModel.kind_name(info.kind).to_lower(), info.name, float(info.cpa_nm), maxi(roundi(float(info.tcpa_h) * 60.0), 1),
+		Loc.t(WindField.compass_name(float(info.bearing)), "compass")]
 
 
 # --- Captain's hat ------------------------------------------------------------------

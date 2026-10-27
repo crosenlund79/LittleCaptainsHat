@@ -49,6 +49,7 @@ var passage_panel: PassagePanel
 ## (left, on deck underway, P or the action wheel).
 var sailing_panel: SailingPanel
 var chart_plotter: ChartPlotter
+var radar_panel: RadarPanel
 var _area_id: StringName
 var _planned_key := ""
 var _planned_estimated_at := -INF
@@ -96,6 +97,14 @@ func _ready() -> void:
 	chart_plotter.offset_bottom = -64.0
 	chart_plotter.on_deck = func() -> bool: return _area_id == SessionState.AREA_EXTERIOR
 	add_child(chart_plotter)
+	# The radar (I019): bottom left, beside the chartplotter when both show.
+	radar_panel = RadarPanel.new()
+	radar_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE)
+	radar_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	radar_panel.offset_left = 24.0
+	radar_panel.offset_bottom = -64.0
+	radar_panel.on_deck = func() -> bool: return _area_id == SessionState.AREA_EXTERIOR
+	add_child(radar_panel)
 
 
 func _build_controls() -> void:
@@ -132,6 +141,10 @@ func get_controls_text() -> String:
 func _process(_delta: float) -> void:
 	if is_visible_in_tree():
 		refresh()
+	if radar_panel:
+		var left := 24.0 + (chart_plotter.size.x + 12.0 if chart_plotter.visible else 0.0)
+		if not is_equal_approx(radar_panel.offset_left, left):
+			radar_panel.offset_left = left
 
 
 ## Width the chart's sidebar takes on the right, in unscaled UI pixels; the
@@ -149,11 +162,11 @@ var _warning_pending := false
 func set_chart_mode(enabled: bool) -> void:
 	_chart_mode = enabled
 	for node_name in ["AreaPanel", "RoutePanel", "PromptPanel", "Controls", "HatBadge", "AboardBadge", "PassagePanel",
-			"SailingPanel", "ChartPlotter"]:
+			"SailingPanel", "ChartPlotter", "RadarPanel"]:
 		var node := get_node_or_null(node_name) as Control
 		if node == null:
 			continue
-		if node_name in ["HatBadge", "AboardBadge", "PassagePanel", "SailingPanel", "ChartPlotter"]:
+		if node_name in ["HatBadge", "AboardBadge", "PassagePanel", "SailingPanel", "ChartPlotter", "RadarPanel"]:
 			node.process_mode = Node.PROCESS_MODE_DISABLED if enabled else Node.PROCESS_MODE_INHERIT
 			if enabled:
 				node.hide()
@@ -239,7 +252,12 @@ func refresh() -> void:
 		var remaining := GameSession.get_voyage_remaining_nm()
 		var total := GameSession.get_voyage_total_nm()
 		var propulsion := GameSession.get_propulsion()
-		_location.text = ("At anchor  ·  bound for %s" if GameSession.is_anchored() else "Underway to %s") % destination
+		if GameSession.is_anchored():
+			# I019: the anchor's condition at a glance.
+			_location.text = Loc.t("At anchor, %s  ·  bound for %s") % [Loc.t(AnchorSite.holding_text(GameSession.get_anchor().holding)).to_lower(),
+				destination]
+		else:
+			_location.text = Loc.t("Underway to %s") % destination
 		_route_caption.text = "At anchor  ·  voyage paused" if GameSession.is_anchored() else \
 			"Underway  ·  %.1f kn" % GameSession.get_vessel_speed_kn()
 		_route.text = "To %s  ·  %d nm to go" % [destination, roundi(remaining)]

@@ -108,6 +108,8 @@ func _update_companion_follow(delta: float) -> void:
 
 ## An anchorage was reached; its prompt waits for a free moment (Iteration 18).
 var _anchorage_prompt_due := false
+## A VHF call waiting to be shown (I019), or {}.
+var _pending_vhf := {}
 ## Real seconds left for the captain to reach the rod after a bite (counts
 ## only while playing, not while a menu is open), Iteration 13.
 var _bite_wait := 0.0
@@ -128,6 +130,8 @@ func _ready() -> void:
 	hud.save_requested.connect(open_save_menu)
 	GameSession.notice.connect(notify)
 	Simulation.weather_warning.connect(_on_weather_warning)
+	Simulation.traffic_alert.connect(_on_traffic_alert)
+	Simulation.vhf_call.connect(_on_vhf_call)
 	Simulation.arrived.connect(_on_arrived)
 	GameSession.rescued.connect(_on_rescued)
 	GameSession.voyage_logged.connect(_on_voyage_logged)
@@ -185,6 +189,11 @@ func _process(delta: float) -> void:
 	if _anchorage_prompt_due and is_in_gameplay() and modals.is_empty() and not router.is_busy() and not GameSession.is_asleep():
 		_anchorage_prompt_due = false
 		show_anchorage_prompt()
+	if not _pending_vhf.is_empty() and is_in_gameplay() and modals.is_empty() and not router.is_busy() and not GameSession.is_asleep() \
+			and not is_instance_valid(voyage_map):
+		var call := _pending_vhf
+		_pending_vhf = {}
+		show_vhf_dialog(call)
 
 
 ## Weather sounds follow the weather at the boat (the same weather model as
@@ -480,6 +489,8 @@ func get_wheel_actions() -> Array[Dictionary]:
 			actions.back().checked = func() -> bool: return ChartPlotter.shown
 			add.call(&"sailing_panel", "Sailing details", func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
 			actions.back().checked = func() -> bool: return not SailingPanel.collapsed
+			add.call(&"radar", "Radar", func() -> void: RadarPanel.shown = not RadarPanel.shown)
+			actions.back().checked = func() -> bool: return RadarPanel.shown
 			if not GameSession.is_anchored():
 				add.call(&"sail_trim", "Trim sails", func() -> void: open_sail_trim.call_deferred())
 			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "" or GameSession.is_holding_at_anchorage():
@@ -706,6 +717,10 @@ static func _wake_reason(outcome: Dictionary) -> String:
 			return "Woken: the boat has arrived"
 		Simulation.STOP_ANCHORAGE:
 			return "Woken at the anchorage"
+		Simulation.STOP_TRAFFIC:
+			return "Woken by a traffic warning"
+		Simulation.STOP_VHF:
+			return "Woken by a call on the radio"
 	return ""
 
 
@@ -729,6 +744,10 @@ func _after_sleep(_hours: float, outcome: Dictionary) -> void:
 			notify("You were woken after %s: the boat has arrived. It is %s.%s" % [slept, now, still_paused])
 		Simulation.STOP_ANCHORAGE:
 			notify("You were woken after %s: we've arrived at our anchorage. It is %s.%s" % [slept, now, still_paused])
+		Simulation.STOP_TRAFFIC:
+			notify("You were woken after %s by a traffic warning. Go up on deck and keep a lookout. It is %s.%s" % [slept, now, still_paused])
+		Simulation.STOP_VHF:
+			notify("You were woken after %s by a call for assistance on the radio. It is %s.%s" % [slept, now, still_paused])
 		_:
 			notify("You slept %s. It is %s.%s" % [slept, now, still_paused])
 	if not wake_line.is_empty():
@@ -1055,6 +1074,39 @@ func work_for(hours: int) -> void:
 func _on_weather_warning(warning: Dictionary) -> void:
 	hud.show_warning(warning.text)
 	notify(warning.text)
+
+
+## A vessel newly on a collision course (I019): the warning, a short alarm,
+## and the radar shows by itself while the risk lasts.
+func _on_traffic_alert(info: Dictionary) -> void:
+	AudioManager.play_sfx(FishingSounds.warning(), FishingSounds.DB)
+	hud.show_warning(String(info.text))
+	if not GameSession.is_asleep():
+		notify(String(info.text))
+
+
+## A call on the VHF (I019): a short radio sound, and the call is shown as
+## soon as nothing else is open (after waking, after the voyage map).
+func _on_vhf_call(call: Dictionary) -> void:
+	AudioManager.play_sfx(FishingSounds.bite(), FishingSounds.DB)
+	_pending_vhf = call
+	if not GameSession.is_asleep() and GameSession.get_time_scale() > 1 and not is_instance_valid(voyage_map):
+		GameSession.set_time_scale(1)
+
+
+func show_vhf_dialog(call: Dictionary) -> VhfDialog:
+	if not GameSession.can_answer_vhf(call) or not modals.is_empty():
+		return null
+	var dialog := VhfDialog.new()
+	dialog.call = call
+	dialog.answered.connect(func(result: Dictionary) -> void: notify(String(result.text)))
+	modals.push(dialog)
+	SessionLog.write("vhf_dialog", {"id": String(call.id), "kind": String(call.kind)})
+	return dialog
+
+
+func get_pending_vhf() -> Dictionary:
+	return _pending_vhf
 
 
 func _on_arrived(port_id: StringName) -> void:
