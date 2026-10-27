@@ -6,7 +6,9 @@ extends ModalPanel
 ## writes them to disk; leaving with unapplied changes asks before reverting
 ## to the last saved values.
 
-const BUS_LABELS := {&"Master": "Master", &"Music": "Music", &"Ambience": "Ambience", &"SFX": "Sound Effects", &"UI": "UI Sounds"}
+const BUS_LABELS := {&"Master": "Master", &"Music": "Music", &"Ambience": "Ambience", &"Wind": "Wind", &"SFX": "Sound Effects", &"UI": "UI Sounds"}
+## The Wind row's test: a few seconds of the breeze, on the Wind bus (I022).
+const WIND_TEST := preload("res://assets/audio/weather/wind_breeze.wav")
 const WINDOW_MODE_LABELS := {
 	SettingsManager.WINDOW_WINDOWED: "Windowed",
 	SettingsManager.WINDOW_FULLSCREEN: "Fullscreen",
@@ -314,6 +316,8 @@ func _play_test_sound(bus: StringName) -> void:
 				AudioManager.play_music(music_test_stream, false)
 		&"Ambience":
 			AudioManager.play_one_shot(ambience_test_stream, AudioManager.BUS_AMBIENCE)
+		&"Wind":
+			AudioManager.play_one_shot(WIND_TEST, &"Wind")
 		&"SFX":
 			AudioManager.play_sfx(sfx_test_stream)
 		&"UI":

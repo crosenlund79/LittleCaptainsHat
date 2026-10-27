@@ -352,7 +352,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/settings/settings_manager.gd`
 
 **Purpose:** The player's settings, separate from saved games.
-- **What it does:** Keeps and applies volumes, window mode, VSync, interface size, art style, the turning sailing view, flashing and motion options, day/night interface light, language, and the last sleep length. Changes apply at once; they are written to disk only when saved.
+- **What it does:** Keeps and applies volumes, window mode, VSync, interface size, art style, the turning sailing view, flashing and motion options, day/night interface light, language, and the last sleep length. Changes apply at once; they are written to disk only when saved. Since I022 there is also a Wind volume (100 % by default, which is exactly the sound from before).
 - **Works with:** Godot's audio and display, the settings menu, `App` (first-launch language choice), many screens that listen for changes.
 - **Keeps:** All the preferences above, in `user://settings.cfg`.
 - **When it runs:** Always (an autoload); loaded at start-up.
@@ -953,7 +953,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/audio/weather_audio.gd`
 
 **Purpose:** Makes the weather heard aboard: wind, water along the hull, rain, storms and thunder.
-- **What it does:** Once a second it sets the volume of looping wind, water, rain and storm sounds from the weather at the boat. Near a thunderstorm it flashes the boat's lights and plays thunder after a delay that grows with distance. Below deck it muffles everything outside.
+- **What it does:** Once a second it sets the volume of looping wind, water, rain and storm sounds from the weather at the boat. Near a thunderstorm it flashes the boat's lights and plays thunder after a delay that grows with distance. Below deck it muffles everything outside. Since I022 the wind (breeze and storm) plays on its own Wind bus, so it has its own volume in Settings; it is still muffled below deck.
 - **Works with:** `AudioManager` (plays the loops), `GameSession` (boat speed and position), `WeatherSample`/`WeatherEvent` (the weather), `BoatLighting` (flashes), `SettingsManager` (reduce flashing). Created and fed by `App`.
 - **Keeps:** Where the captain is (deck or inside), the current sound levels, and timers for the next lightning and thunder.
 - **When it runs:** While a game is going; `App` hands it the weather every real second.
@@ -1675,7 +1675,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/settings_menu.gd`
 
 **Purpose:** The settings dialog, from both the title screen and the pause menu.
-- **What it does:** Lets you change volumes (with test sounds), window mode, VSync, interface size, artwork style, sailing view, reduce flashing, lightning brightness, reduce motion, day/night interface light and language. Changes show at once; Apply saves them, and leaving without applying asks before undoing them.
+- **What it does:** Lets you change volumes (with test sounds), window mode, VSync, interface size, artwork style, sailing view, reduce flashing, lightning brightness, reduce motion, day/night interface light and language. Changes show at once; Apply saves them, and leaving without applying asks before undoing them. Since I022 it has a Wind slider with its own test sound (a few seconds of breeze).
 - **Works with:** `SettingsManager`, `AudioManager`, `MusicDirector`, `SessionLog` (logs folder), `ModalStack`.
 - **Keeps:** A copy of the last saved settings, to detect unsaved changes.
 - **When it runs:** When you open Settings.
@@ -1821,7 +1821,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_atmosphere.gd`
 
 **Purpose:** Checks the weather you hear and see aboard: wind, water, rain, lightning and thunder (Iteration 17).
-- **What it does:** It checks that the sound files exist and say where they came from, and that the sound channels are set up right. Rain should match the weather, a gale should sound louder, and sound should be muffled in the cabin. Lightning should flash (gentler with the accessibility settings) and thunder should come later from far-off storms. On deck, wind streaks and raindrops are checked.
+- **What it does:** It checks that the sound files exist and say where they came from, and that the sound channels are set up right. Rain should match the weather, a gale should sound louder, and sound should be muffled in the cabin. Lightning should flash (gentler with the accessibility settings) and thunder should come later from far-off storms. On deck, wind streaks and raindrops are checked. Since I022 it checks that the wind plays on its own Wind bus, which feeds the muffled Outside bus.
 - **Works with:** `WeatherAudio`, `AudioManager`, `WeatherFixtures` (made-up test weather), `WeatherVisuals`, `SettingsManager`, the app scene.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.
@@ -2289,7 +2289,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_settings_and_audio.gd`
 
 **Purpose:** Checks the settings (volumes, window, VSync, UI size) and the sound system.
-- **What it does:** Checks default settings, that volume sliders reach the sound channels at once (0 % mutes, over 100 % is capped), that settings survive a restart, that bad values in the settings file fall back safely, and, with a real window, that window modes and VSync are applied. It also checks that the sound manager reuses a fixed set of players and can start, swap and stop ambience and music.
+- **What it does:** Checks default settings, that volume sliders reach the sound channels at once (0 % mutes, over 100 % is capped), that settings survive a restart, that bad values in the settings file fall back safely, and, with a real window, that window modes and VSync are applied. It also checks that the sound manager reuses a fixed set of players and can start, swap and stop ambience and music. Since I022 it checks the wind volume: default 100 %, applied at once, kept after a restart.
 - **Works with:** `SettingsManager`, `AudioManager`, Godot's `AudioServer` and `DisplayServer`.
 - **Keeps:** Nothing of its own; it uses a separate test settings file and deletes it.
 - **When it runs:** Only in tests (window checks are skipped without a real window).

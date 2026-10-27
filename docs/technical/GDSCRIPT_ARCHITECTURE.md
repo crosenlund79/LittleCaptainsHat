@@ -464,7 +464,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/settings/settings_manager.gd`
 
-- **Role:** no class_name, extends Node; autoload `SettingsManager`. Player preferences in `user://settings.cfg` (audio volumes, window mode, VSync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, sleep hours).
+- **Role:** no class_name, extends Node; autoload `SettingsManager`. Player preferences in `user://settings.cfg` (audio volumes, window mode, VSync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, sleep hours). I022: `&"Wind"` in `AUDIO_BUSES` (after Ambience) and `DEFAULT_VOLUMES` (100 = 0 dB, the pre-I022 balance); stored as `[audio] wind`, read with the default (no migration).
 - **Depends on:** `AudioServer`, `DisplayServer`, `TranslationServer`, `ConfigFile`.
 - **Signals:** `settings_applied`, `ui_scale_changed(scale)`, `art_style_changed(style)`, `course_view_changed(enabled)`, `ui_light_changed(mode)`, `language_changed(locale)` — emitted when values change or are re-applied.
 - **State:** private preference fields; `settings_path` (tests redirect it).
@@ -1206,7 +1206,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/audio/weather_audio.gd`
 
-- **Role:** class_name `WeatherAudio`, extends Node; weather soundscape (wind/water/rain/storm loops), lightning flashes and delayed thunder, plus below-deck muffling on the `Outside` bus.
+- **Role:** class_name `WeatherAudio`, extends Node; weather soundscape (wind/water/rain/storm loops), lightning flashes and delayed thunder, plus below-deck muffling on the `Outside` bus. I022: `WIND_BUS` (&"Wind", sends to `Outside`); `_loop(..., bus := OUTSIDE_BUS)` takes the bus; `WIND_LOOP` and `STORM_LOOP` use `WIND_BUS`, water and rain stay on `OUTSIDE_BUS` (thunder one-shots too).
 - **Depends on:** `AudioManager` (`play_loop`, `stop_loop`, `play_one_shot`), `GameSession` (`get_vessel_speed_kn`, `get_vessel_position`, `get_game_time`), `WeatherSample`, `WeatherModel.CLASS_*`, `WeatherEvent` (`offset_nm`, `radius_nm`), `SettingsManager.get_reduce_flashing`, `BoatLighting.flash` via `lighting_provider` Callable; preloaded WAVs in `res://assets/audio/weather/` and `placeholder/storm_wind.wav`.
 - **State:** `place` ("deck" / "inside" / ""), muffle level, strike/thunder timers, pending `_flashes`, `levels` dict and `strikes` counter (tests/diagnostics); `_rng` is cosmetic only.
 - **Lifecycle:** instanced by `src/app/app.gd`, which calls `update(here, place, underway, storms)` once per real second; `PROCESS_MODE_PAUSABLE`.
@@ -2075,7 +2075,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/settings_menu.gd`
 
-- **Role:** `class_name SettingsMenu`, extends `ModalPanel`; shared settings dialog with live preview and Apply/Discard.
+- **Role:** `class_name SettingsMenu`, extends `ModalPanel`; shared settings dialog with live preview and Apply/Discard. I022: `BUS_LABELS` has `Wind`; `_play_test_sound(&"Wind")` plays `WIND_TEST` (wind_breeze.wav, not looping) as a one-shot on the Wind bus.
 - **Depends on:** `settings_menu.tscn`, `SettingsManager` (snapshot/restore, volumes, window mode, vsync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, save, defaults), `Loc.LANGUAGES`, `SessionLog.get_folder`, `AudioManager`, `MusicDirector`, `ModalStack.confirm`.
 - **State:** `_saved` snapshot for unapplied-change detection; all writes go through SettingsManager.
 - **Lifecycle:** instantiated from `settings_menu_scene` by `App.open_settings()` (from main menu and pause menu).
@@ -2245,7 +2245,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_atmosphere.gd`
 
-- **Role:** extends RefCounted; test suite for Iteration 17 weather audio and visuals. Covers asset files plus README provenance in `assets/audio/weather/`, the Outside bus (low-pass, sends to Ambience) and the unfiltered SFX bus, `WeatherAudio.rain_level` per classification, the wind/water/rain loops and storm audio in a gale fixture, cabin muffling, lightning flashes on the scene lighting (flash intensity 0, reduce flashing), thunder delay with distance, and deck `WeatherVisuals` streaks and drops.
+- **Role:** extends RefCounted; test suite for Iteration 17 weather audio and visuals. Covers asset files plus README provenance in `assets/audio/weather/`, the Outside bus (low-pass, sends to Ambience) and the unfiltered SFX bus, `WeatherAudio.rain_level` per classification, the wind/water/rain loops and storm audio in a gale fixture, cabin muffling, lightning flashes on the scene lighting (flash intensity 0, reduce flashing), thunder delay with distance, and deck `WeatherVisuals` streaks and drops. I022: `[buses]` checks `WIND_BUS` sends to `OUTSIDE_BUS` (index after it); `[loops]` checks the wind loop on `WIND_BUS`, water on `OUTSIDE_BUS`.
 - **Depends on:** `src/app/app.tscn`, `WeatherAudio` (reads private `_strike_in`, `_thunder_near`, `_flashes`), `AudioManager`, `AudioServer`, `WeatherFixtures`, `WeatherSample`, `WeatherModel`, `WeatherVisuals`, `SettingsManager`, `Simulation`, `GameSession`.
 - **State:** changes the flash settings and restores the defaults; clears `WeatherFixtures`.
 - **Lifecycle:** test suite run by `tests/test_runner.gd`.
@@ -2733,7 +2733,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_settings_and_audio.gd`
 
-- **Role:** extends RefCounted; test suite: `SettingsManager` defaults on missing file, `AUDIO_BUSES` exist and route to Master, `set_volume` → bus dB / mute / clamp, save/load round trip (volumes, VSync, window mode, UI scale), `snapshot`/`restore_snapshot`, invalid/unparseable config values fall back or clamp; non-headless only: window modes map to `DisplayServer` modes, VSync (skipped if unsupported), windowed size; `AudioManager` fixed one-shot player pool, bus routing, ambience start/replace/stop, music play/stop.
+- **Role:** extends RefCounted; test suite: `SettingsManager` defaults on missing file, `AUDIO_BUSES` exist and route to Master, `set_volume` → bus dB / mute / clamp, save/load round trip (volumes, VSync, window mode, UI scale), `snapshot`/`restore_snapshot`, invalid/unparseable config values fall back or clamp; non-headless only: window modes map to `DisplayServer` modes, VSync (skipped if unsupported), windowed size; `AudioManager` fixed one-shot player pool, bus routing, ambience start/replace/stop, music play/stop. I022: Wind default 100, `set_volume(&"Wind", 35)` sets the bus dB, save/restore_defaults/load round trip.
 - **Depends on:** `SettingsManager`, `AudioManager`, `AudioServer`, `DisplayServer`; placeholder audio under `res://assets/audio/placeholder/`; runner `TEST_SETTINGS_PATH`.
 - **Persistence:** Writes/deletes the test settings config file.
 - **Lifecycle:** test suite in `tests/test_runner.gd`; `run(t)` uses the runner directly.

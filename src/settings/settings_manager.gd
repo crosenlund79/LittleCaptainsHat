@@ -19,8 +19,10 @@ signal language_changed(locale: StringName)
 
 const DEFAULT_PATH := "user://settings.cfg"
 
-const AUDIO_BUSES: Array[StringName] = [&"Master", &"Music", &"Ambience", &"SFX", &"UI"]
-const DEFAULT_VOLUMES := {&"Master": 80, &"Music": 70, &"Ambience": 70, &"SFX": 80, &"UI": 70}
+## Wind (I022): the wind's own share inside Ambience (its bus sends to the
+## muffled "Outside" bus); 100 % is the sound balance from before it existed.
+const AUDIO_BUSES: Array[StringName] = [&"Master", &"Music", &"Ambience", &"Wind", &"SFX", &"UI"]
+const DEFAULT_VOLUMES := {&"Master": 80, &"Music": 70, &"Ambience": 70, &"Wind": 100, &"SFX": 80, &"UI": 70}
 
 const WINDOW_WINDOWED := &"windowed"
 const WINDOW_FULLSCREEN := &"fullscreen"

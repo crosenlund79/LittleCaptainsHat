@@ -3764,7 +3764,7 @@ msgstr ""
 msgid "Discard changes"
 msgstr ""
 
-#: src/app/app.gd:580 src/ui/settings_menu.gd:88
+#: src/app/app.gd:580 src/ui/settings_menu.gd:90
 msgid "Keep editing"
 msgstr ""
 
@@ -7011,7 +7011,7 @@ msgstr ""
 msgid "Show or hide the wind arrows and speed colours"
 msgstr ""
 
-#: src/navigation/world_map.tscn:411 src/ui/sail_trim_panel.gd:22
+#: src/navigation/world_map.tscn:411 src/ui/sail_trim_panel.gd:22 src/ui/settings_menu.gd:9
 msgid "Wind"
 msgstr ""
 
@@ -7809,7 +7809,7 @@ msgstr ""
 msgid "%s nm  (%s)"
 msgstr ""
 
-#: src/ui/captains_log_menu.gd:73 src/ui/radar_panel.gd:149
+#: src/ui/captains_log_menu.gd:73 src/ui/radar_panel.gd:152
 msgid "%s nm"
 msgstr ""
 
@@ -8679,32 +8679,32 @@ msgstr ""
 msgid "Language_%s"
 msgstr ""
 
-#: src/ui/loading_screen.gd:114
+#: src/ui/loading_screen.gd:101
+msgid "Loading: %s"
+msgstr ""
+
+#: src/ui/loading_screen.gd:122
 msgid "Ready. Welcome aboard."
 msgstr ""
 
-#: src/ui/loading_screen.gd:65 src/ui/main_menu.tscn:75
+#: src/ui/loading_screen.gd:71 src/ui/main_menu.tscn:75
 msgid "Small boat. Wide world. Hold onto your hat."
 msgstr ""
 
-#: src/ui/loading_screen.gd:78
+#: src/ui/loading_screen.gd:86
 msgid "Reading the harbour list…"
 msgstr ""
 
-#: src/ui/loading_screen.gd:79
+#: src/ui/loading_screen.gd:87
 msgid "Unrolling the charts of the world…"
 msgstr ""
 
-#: src/ui/loading_screen.gd:80
+#: src/ui/loading_screen.gd:88
 msgid "Making the cabin ready…"
 msgstr ""
 
-#: src/ui/loading_screen.gd:91
+#: src/ui/loading_screen.gd:99
 msgid "%s  (%d of %d)"
-msgstr ""
-
-#: src/ui/loading_screen.gd:93
-msgid "Loading: %s"
 msgstr ""
 
 #: src/ui/main_menu.gd:44
@@ -8945,27 +8945,27 @@ msgstr ""
 msgid "Publish for %s"
 msgstr ""
 
-#: src/ui/radar_panel.gd:117
+#: src/ui/radar_panel.gd:120
 msgid "No vessels in range. A clear sea."
 msgstr ""
 
-#: src/ui/radar_panel.gd:120
+#: src/ui/radar_panel.gd:123
 msgid "%s %s nm %s"
 msgstr ""
 
-#: src/ui/radar_panel.gd:123
+#: src/ui/radar_panel.gd:126
 msgid ", passes %s nm off in %d min"
 msgstr ""
 
-#: src/ui/radar_panel.gd:127
+#: src/ui/radar_panel.gd:130
 msgid "Collision risk: keep a sharp lookout and give way if needed."
 msgstr ""
 
-#: src/ui/radar_panel.gd:129
+#: src/ui/radar_panel.gd:132
 msgid "Keep an eye on it: it will pass close."
 msgstr ""
 
-#: src/ui/radar_panel.gd:148 src/weather/wind_field.gd
+#: src/ui/radar_panel.gd:151 src/weather/wind_field.gd
 msgctxt "compass"
 msgid "N"
 msgstr ""
@@ -9222,139 +9222,139 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
-#: src/ui/settings_menu.gd:11
-msgid "Windowed"
-msgstr ""
-
-#: src/ui/settings_menu.gd:110
+#: src/ui/settings_menu.gd:112
 msgid "Test"
 msgstr ""
 
-#: src/ui/settings_menu.gd:111
+#: src/ui/settings_menu.gd:113
 msgid "Play a temporary test sound on the %s bus"
 msgstr ""
 
-#: src/ui/settings_menu.gd:12
-msgid "Fullscreen"
-msgstr ""
-
-#: src/ui/settings_menu.gd:125
+#: src/ui/settings_menu.gd:127
 msgid "Artwork"
 msgstr ""
 
-#: src/ui/settings_menu.gd:129
+#: src/ui/settings_menu.gd:13
+msgid "Windowed"
+msgstr ""
+
+#: src/ui/settings_menu.gd:131
 msgid "The illustrated look is a prototype on every boat and in harbour; Classic shows the earlier art."
 msgstr ""
 
-#: src/ui/settings_menu.gd:13
-msgid "Borderless fullscreen"
+#: src/ui/settings_menu.gd:14
+msgid "Fullscreen"
 msgstr ""
 
-#: src/ui/settings_menu.gd:143
+#: src/ui/settings_menu.gd:145
 msgid "Sailing view"
 msgstr ""
 
-#: src/ui/settings_menu.gd:147
+#: src/ui/settings_menu.gd:149
 msgid "Boat faces its course"
 msgstr ""
 
-#: src/ui/settings_menu.gd:148
+#: src/ui/settings_menu.gd:15
+msgid "Borderless fullscreen"
+msgstr ""
+
+#: src/ui/settings_menu.gd:150
 msgid "Underway the deck turns so the bow points along the course, north up. Off: the boat always points right."
 msgstr ""
 
-#: src/ui/settings_menu.gd:161
+#: src/ui/settings_menu.gd:163
 msgid "Flashing"
 msgstr ""
 
-#: src/ui/settings_menu.gd:165
+#: src/ui/settings_menu.gd:167
 msgid "Reduce flashing"
 msgstr ""
 
-#: src/ui/settings_menu.gd:166
+#: src/ui/settings_menu.gd:168
 msgid "Lightning shows as one soft glow, and highlights pulse once gently instead of blinking."
 msgstr ""
 
-#: src/ui/settings_menu.gd:17
-msgid "Illustrated (prototype)"
-msgstr ""
-
-#: src/ui/settings_menu.gd:173
+#: src/ui/settings_menu.gd:175
 msgid "Lightning flash"
 msgstr ""
 
-#: src/ui/settings_menu.gd:18
-msgid "Classic"
-msgstr ""
-
-#: src/ui/settings_menu.gd:181
+#: src/ui/settings_menu.gd:183
 msgid "How bright lightning flashes are (0 %: thunder only)."
 msgstr ""
 
-#: src/ui/settings_menu.gd:188
+#: src/ui/settings_menu.gd:19
+msgid "Illustrated (prototype)"
+msgstr ""
+
+#: src/ui/settings_menu.gd:190
 msgid "Motion"
 msgstr ""
 
-#: src/ui/settings_menu.gd:192
+#: src/ui/settings_menu.gd:194
 msgid "Reduce motion"
 msgstr ""
 
-#: src/ui/settings_menu.gd:193
+#: src/ui/settings_menu.gd:195
 msgid "Small decorative animations stay still (a landed fish's tail flick and bobbing)."
 msgstr ""
 
-#: src/ui/settings_menu.gd:201
+#: src/ui/settings_menu.gd:20
+msgid "Classic"
+msgstr ""
+
+#: src/ui/settings_menu.gd:203
 msgid "Interface light"
 msgstr ""
 
-#: src/ui/settings_menu.gd:205
+#: src/ui/settings_menu.gd:207
 msgid "Always day"
 msgstr ""
 
-#: src/ui/settings_menu.gd:205
+#: src/ui/settings_menu.gd:207
 msgid "Always night"
 msgstr ""
 
-#: src/ui/settings_menu.gd:205
+#: src/ui/settings_menu.gd:207
 msgid "Automatic (follows the day)"
 msgstr ""
 
-#: src/ui/settings_menu.gd:207
+#: src/ui/settings_menu.gd:209
 msgid "By day the chartroom's parchment and brass, by night harbour dusk and lantern light. Automatic follows the sun where the boat is."
 msgstr ""
 
-#: src/ui/settings_menu.gd:215
+#: src/ui/settings_menu.gd:217
 msgid "Language"
 msgstr ""
 
-#: src/ui/settings_menu.gd:254 src/ui/settings_menu.gd:67
+#: src/ui/settings_menu.gd:256 src/ui/settings_menu.gd:69
 msgid "Opens the folder with the technical session logs (for bug reports): %s"
 msgstr ""
 
-#: src/ui/settings_menu.gd:266
+#: src/ui/settings_menu.gd:268
 msgid "Muted"
 msgstr ""
 
-#: src/ui/settings_menu.gd:296
+#: src/ui/settings_menu.gd:298
 msgid "Settings saved."
 msgstr ""
 
-#: src/ui/settings_menu.gd:298
+#: src/ui/settings_menu.gd:300
 msgid "Settings could not be saved."
 msgstr ""
 
-#: src/ui/settings_menu.gd:306
+#: src/ui/settings_menu.gd:308
 msgid "Unapplied changes — press Apply to keep them."
 msgstr ""
 
-#: src/ui/settings_menu.gd:66
+#: src/ui/settings_menu.gd:68
 msgid "Diagnostic logs…"
 msgstr ""
 
-#: src/ui/settings_menu.gd:86
+#: src/ui/settings_menu.gd:88
 msgid "Discard changes?"
 msgstr ""
 
-#: src/ui/settings_menu.gd:87
+#: src/ui/settings_menu.gd:89
 msgid "Some settings have not been applied. Leaving now restores the previous settings."
 msgstr ""
 

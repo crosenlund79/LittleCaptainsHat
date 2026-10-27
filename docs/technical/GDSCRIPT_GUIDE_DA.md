@@ -354,7 +354,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/settings/settings_manager.gd`
 
 **Formål:** Spillerens indstillinger, adskilt fra gemte spil.
-- **Hvad det gør:** Holder og anvender lydstyrker, vinduestilstand, VSync, interfacets størrelse, grafikstil, den drejende sejlvisning, valg for blink og bevægelse, interfacets dag/nat-lys, sprog og den senest valgte søvnlængde. Ændringer virker med det samme; de skrives først til disken, når der gemmes.
+- **Hvad det gør:** Holder og anvender lydstyrker, vinduestilstand, VSync, interfacets størrelse, grafikstil, den drejende sejlvisning, valg for blink og bevægelse, interfacets dag/nat-lys, sprog og den senest valgte søvnlængde. Ændringer virker med det samme; de skrives først til disken, når der gemmes. Siden I022 findes der også en lydstyrke for vind (100 % som standard, præcis lyden fra før).
 - **Arbejder sammen med:** Godots lyd og skærm, indstillingsmenuen, `App` (valg af sprog ved første opstart), mange skærme der lytter efter ændringer.
 - **Holder styr på:** Alle valgene ovenfor, i `user://settings.cfg`.
 - **Hvornår det kører:** Altid (en autoload); indlæses ved opstart.
@@ -955,7 +955,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/audio/weather_audio.gd`
 
 **Formål:** Gør vejret hørbart om bord: vind, vand langs skroget, regn, storm og torden.
-- **Hvad det gør:** Én gang i sekundet sætter det lydstyrken på løkkelydene for vind, vand, regn og storm ud fra vejret ved båden. Nær et tordenvejr blinker det med bådens lys og spiller torden efter en forsinkelse, der vokser med afstanden. Under dæk dæmpes alt udefra.
+- **Hvad det gør:** Én gang i sekundet sætter det lydstyrken på løkkelydene for vind, vand, regn og storm ud fra vejret ved båden. Nær et tordenvejr blinker det med bådens lys og spiller torden efter en forsinkelse, der vokser med afstanden. Under dæk dæmpes alt udefra. Siden I022 spiller vinden (brise og storm) på sin egen Wind-kanal, så den har sin egen lydstyrke under Indstillinger; den dæmpes stadig under dæk.
 - **Arbejder sammen med:** `AudioManager` (spiller løkkerne), `GameSession` (bådens fart og position), `WeatherSample`/`WeatherEvent` (vejret), `BoatLighting` (lynglimt), `SettingsManager` (indstillingen for færre blink). Oprettes og fodres af `App`.
 - **Holder styr på:** Hvor kaptajnen er (på dækket eller indenfor), de aktuelle lydniveauer og timere for næste lyn og torden.
 - **Hvornår det kører:** Mens et spil er i gang; `App` giver det vejret hvert virkeligt sekund.
@@ -1677,7 +1677,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/settings_menu.gd`
 
 **Formål:** Indstillingsdialogen, både fra titelskærmen og pausemenuen.
-- **Hvad det gør:** Lader dig ændre lydstyrker (med testlyde), vinduestilstand, VSync, grænsefladens størrelse, grafikstil, sejlvisning, mindre blink, lynets lysstyrke, mindre bevægelse, grænsefladens dag/nat-lys og sprog. Ændringer ses med det samme; Apply gemmer dem, og forlader du uden at gemme, bliver du spurgt, før de fortrydes.
+- **Hvad det gør:** Lader dig ændre lydstyrker (med testlyde), vinduestilstand, VSync, grænsefladens størrelse, grafikstil, sejlvisning, mindre blink, lynets lysstyrke, mindre bevægelse, grænsefladens dag/nat-lys og sprog. Ændringer ses med det samme; Apply gemmer dem, og forlader du uden at gemme, bliver du spurgt, før de fortrydes. Siden I022 har den en skyder for vind med sin egen testlyd (et par sekunders brise).
 - **Arbejder sammen med:** `SettingsManager`, `AudioManager`, `MusicDirector`, `SessionLog` (logmappen), `ModalStack`.
 - **Holder styr på:** En kopi af de senest gemte indstillinger, så den kan se ikke-gemte ændringer.
 - **Hvornår det kører:** Når du åbner indstillinger.
@@ -1823,7 +1823,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_atmosphere.gd`
 
 **Formål:** Tjekker det vejr, man hører og ser om bord: vind, vand, regn, lyn og torden (Iteration 17).
-- **Hvad det gør:** Den tjekker, at lydfilerne findes og fortæller, hvor de kommer fra, og at lydkanalerne er sat rigtigt op. Regnen skal passe til vejret, en kuling skal lyde kraftigere, og lyden skal være dæmpet i kahytten. Lyn skal blinke (mildere med tilgængeligheds-indstillingerne), og torden skal komme senere fra fjerne uvejr. På dækket tjekker den vindstriber og regndråber.
+- **Hvad det gør:** Den tjekker, at lydfilerne findes og fortæller, hvor de kommer fra, og at lydkanalerne er sat rigtigt op. Regnen skal passe til vejret, en kuling skal lyde kraftigere, og lyden skal være dæmpet i kahytten. Lyn skal blinke (mildere med tilgængeligheds-indstillingerne), og torden skal komme senere fra fjerne uvejr. På dækket tjekker den vindstriber og regndråber. Siden I022 tjekker den, at vinden spiller på sin egen Wind-kanal, som føder den dæmpede Outside-kanal.
 - **Arbejder sammen med:** `WeatherAudio`, `AudioManager`, `WeatherFixtures` (opdigtet testvejr), `WeatherVisuals`, `SettingsManager` og app-scenen.
 - **Holder styr på:** Intet af sit eget.
 - **Hvornår det kører:** Kun i test.
@@ -2291,7 +2291,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_settings_and_audio.gd`
 
 **Formål:** Tjekker indstillingerne (lydstyrke, vindue, VSync, størrelse på brugerfladen) og lydsystemet.
-- **Hvad det gør:** Tjekker standardindstillinger, at lydstyrken straks når lydkanalerne (0 % slår lyden fra, over 100 % begrænses), at indstillinger overlever en genstart, at forkerte værdier i indstillingsfilen falder sikkert tilbage, og, med et rigtigt vindue, at vinduestilstande og VSync bliver anvendt. Den tjekker også, at lydmanageren genbruger et fast sæt afspillere og kan starte, skifte og stoppe baggrundslyd og musik.
+- **Hvad det gør:** Tjekker standardindstillinger, at lydstyrken straks når lydkanalerne (0 % slår lyden fra, over 100 % begrænses), at indstillinger overlever en genstart, at forkerte værdier i indstillingsfilen falder sikkert tilbage, og, med et rigtigt vindue, at vinduestilstande og VSync bliver anvendt. Den tjekker også, at lydmanageren genbruger et fast sæt afspillere og kan starte, skifte og stoppe baggrundslyd og musik. Siden I022 tjekker den vindens lydstyrke: 100 % som standard, anvendt med det samme, bevaret efter genstart.
 - **Arbejder sammen med:** `SettingsManager`, `AudioManager`, Godots `AudioServer` og `DisplayServer`.
 - **Holder styr på:** Intet selv; den bruger en separat testfil til indstillinger og sletter den.
 - **Hvornår det kører:** Kun i test (vinduestjek springes over uden et rigtigt vindue).

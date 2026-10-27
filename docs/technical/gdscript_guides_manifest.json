@@ -83,9 +83,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/audio/weather_audio.gd": {
-   "sha": "20644b03781bc327",
+   "sha": "945af216b1e5885c",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 wind volume"
   },
   "src/boat/anchor_signals.gd": {
    "sha": "a24007421ad50d1e",
@@ -578,9 +578,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/settings/settings_manager.gd": {
-   "sha": "e89a2d1703187735",
+   "sha": "7c010f8eea01fe87",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 wind volume"
   },
   "src/skills/timing_check.gd": {
    "sha": "9128e4ade8419976",
@@ -793,9 +793,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/settings_menu.gd": {
-   "sha": "ec233f3835fec2ed",
+   "sha": "2b637b15637b0b10",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 wind volume"
   },
   "src/ui/simple_panel.gd": {
    "sha": "fd078dfabae6e16d",
@@ -1028,9 +1028,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_atmosphere.gd": {
-   "sha": "583a9754143ea783",
+   "sha": "7eee22df22c09e3e",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 wind volume"
   },
   "tests/suites/test_boat_care.gd": {
    "sha": "42281edf30e6f325",
@@ -1288,9 +1288,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_settings_and_audio.gd": {
-   "sha": "f210800c0f7b918f",
+   "sha": "198fec484dd042e6",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 wind volume"
   },
   "tests/suites/test_simulation.gd": {
    "sha": "d6a55b5008b6fc35",
