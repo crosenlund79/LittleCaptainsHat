@@ -46,6 +46,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 - [Cozy Polish injection report](technical/COZY_POLISH_INJECTION_REPORT.md): floating things at sea, the chart's zoom limit, the Kiel and Suez canals, the Q menu, coffee and the hat in hand, the remembered sleep, visited-harbour pins, compact panels and the loading screen.
 - [The Well-Run Ship performance report](technical/THE_WELL_RUN_SHIP_PERFORMANCE_REPORT.md): where the time went (the day/night theme stall), what is kept in memory and what is written to disk, the sleep, dawn and dusk cards, and Long Passage on the voyage map.
 - [Turbocharge performance report](technical/TURBOCHARGE_PERFORMANCE_REPORT.md) and the permanent [Performance Opportunity Register](technical/PERFORMANCE_OPPORTUNITIES.md): what was measured, what was optimized, and the ranked list of what could be done next.
+- [Operation One Clock](technical/ONE_CLOCK_PERFORMANCE_INVESTIGATION.md): fast time, dawn and dusk; where the frame time goes, three options, and the Windows sea trial.
 - [Operation Paperwork](technical/ENGINEERING_FRICTION_EXPERIMENT.md): one small change (a brass compass) timed from start to delivery: where the time went.
 - [Release readiness](technical/RELEASE_READINESS.md): the checklist for every build, and the content checker of [the Harbourmaster's Inspection](technical/HARBOURMASTERS_INSPECTION_REPORT.md) (`python tools/qa/check_game_content.py`).
 - [Localization](technical/LOCALIZATION.md): English and Dansk, how text is translated, the tools and the glossary.

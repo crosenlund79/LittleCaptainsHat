@@ -49,6 +49,16 @@ Godot runner then checks behaviour (routes, mooring, catching, saves). See
 [RELEASE_READINESS.md](../technical/RELEASE_READINESS.md) and
 [the inspection report](../technical/HARBOURMASTERS_INSPECTION_REPORT.md).
 
+## Operation One Clock sea trial
+
+Where the frame time goes at 1×, 5× and 20×, at night, at dawn and dusk and in
+harbour. In Godot open `tests/one_clock_sea_trial.tscn` and press F6 (about five
+minutes; the table is shown, copied to the clipboard and saved as
+`one_clock_sea_trial.txt`). Developers: `xvfb-run -a godot --path .
+--rendering-driver opengl3 --resolution 1600x900 res://tests/one_clock_sea_trial.tscn
+-- --all --out=/tmp/one_clock.json`. See
+[the investigation](../technical/ONE_CLOCK_PERFORMANCE_INVESTIGATION.md).
+
 ## Documentation checks
 
 ```sh

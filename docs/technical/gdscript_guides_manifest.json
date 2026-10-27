@@ -952,6 +952,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "tests/one_clock_sea_trial.gd": {
+   "sha": "0ee993e3e86c2a65",
+   "reviewed": "2026-10-27",
+   "note": "Operation One Clock sea trial"
+  },
   "tests/pacing_18.gd": {
    "sha": "03d6bd428a01645e",
    "reviewed": "2026-10-27",

@@ -3097,6 +3097,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** —.
 - **Change risks:** file names are referenced from the I021 report; harbour ids and framing rectangles are hard-coded.
 
+### `tests/one_clock_sea_trial.gd`
+
+- **Role:** extends Node (root of `one_clock_sea_trial.tscn`, `PROCESS_MODE_ALWAYS`); Operation One Clock diagnostic. Turns off `Simulation`, `UiTheme` and `app.day_night_watch` processing (and the current area's `Lighting` each frame) and calls `Simulation.tick(dt)`, `day_night_watch._process(dt)`, `UiTheme._process(dt)` and `Lighting._process(dt)` itself once per frame with the measured real delta, timing each; also records `viewport_get_measured_render_time_gpu/cpu`, evaluation points crossed (`EVALUATION_INTERVAL`), blend steps, `palette_changed` count, card/pause state, sun elevation, visible `PointLight2D` count, darkness, draw calls and render objects. Scenarios: `TRIAL` by default; `--all` adds 1x/5x/20x day/night, dawn/dusk with/without `TimePassage`, chart, isolation (`freeze_theme`/`freeze_lighting`), rapid speed changes, harbour dusk; `--only=a,b`, `--long_seconds=N`, `--out=FILE` (JSON, then quits).
+- **Depends on:** `app.tscn` (`start_new_game`, `router`, `modals`, `toasts`, `_show_current_boat_area`, `open_chart`, `close_chart`, `snap_light`, `time_passage`, `day_night_watch`), `GameSession` (`replace_state`, `plan_route_to(&"bergen")`, `depart`, `set_time_scale`, `set_paused`), `SessionState.TIME_SCALES`, `TimePassage.enabled`, `DayNightWatch.DAY_ABOVE/NIGHT_BELOW`, `BoatLighting` private `_darkness`, `UiTheme.blend`, `PortCatalog`, `GameVersion.describe()`.
+- **State:** scratch saves/settings (`user://test_saves`, `user://test_settings.cfg`); fixed wind 200°/11 kn; boards `starling_33`; writes `user://one_clock_sea_trial.txt` and sets the clipboard.
+- **Lifecycle:** F6 in the editor (results stay on screen until the window is closed) or command line with `--out` (quits). About five minutes for `TRIAL`.
+- **Tests:** none (diagnostic tool).
+- **Change risks:** depends on private App/BoatLighting names; a renamed member stops the trial, not the game. Must not stay in a build's normal flow (it is a separate scene).
+
 ### `tests/test_runner.gd`
 
 - **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`.

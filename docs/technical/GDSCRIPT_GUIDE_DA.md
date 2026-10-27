@@ -2641,6 +2641,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Kun når du starter det, med en rigtig skærm eller Xvfb: `res://tests/screenshots_i021.tscn -- --out=DIR`.
 - **Hvis du ændrer det:** Kun skærmbillederne ændrer sig.
 
+### `tests/one_clock_sea_trial.gd`
+
+**Formål:** En prøvetur på fem minutter, der måler, hvor tiden går, når uret kører hurtigere end 1x, især ved daggry, skumring, om natten og i havn (Operation One Clock).
+- **Hvad det gør:** Starter et spil med kladdegemninger, sejler og fortøjer på faste steder og kører hvert scenarie (dag og nat ved 1x og 20x, skumring med og uden datokortet, søkortet i skumringen, havnen om natten med og uden lys og et minut ved 20x). For hvert billede tager den tid på simuleringen, omfarvningen af brugerfladen, bådens lys og daggry/skumrings-vagten hver for sig og på tegningen. Til sidst viser den en tabel, kopierer den til udklipsholderen og gemmer den som `one_clock_sea_trial.txt`.
+- **Arbejder sammen med:** Spilscenen, `GameSession`, `Simulation`, `UiTheme`, `DayNightWatch`, `BoatLighting`, `TimePassage`, `Daylight`.
+- **Holder styr på:** Intet selv; spillerens gemninger og indstillinger bruges aldrig.
+- **Hvornår det kører:** Kun når man starter det med vilje: åbn `tests/one_clock_sea_trial.tscn` i Godot og tryk F6, eller (udviklere) `xvfb-run godot --path . --rendering-driver opengl3 --resolution 1600x900 res://tests/one_clock_sea_trial.tscn -- --all --out=/tmp/one_clock.json`.
+- **Hvis du ændrer det:** Intet i spillet ændres; sammenligninger med tidligere prøveture kræver, at scenarierne er de samme.
+
 ### `tests/test_runner.gd`
 
 **Formål:** Spillets automatiske testkører: den kører alle 74 testsamlinger og fortæller, hvor mange tjek der bestod.

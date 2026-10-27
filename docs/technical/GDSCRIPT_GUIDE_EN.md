@@ -2639,6 +2639,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** Only by hand, with a real screen or Xvfb: `res://tests/screenshots_i021.tscn -- --out=DIR`.
 - **If you change it:** Only the screenshots change.
 
+### `tests/one_clock_sea_trial.gd`
+
+**Purpose:** A five-minute "sea trial" that measures where the time goes when the clock runs faster than 1x, especially at dawn, dusk, at night and in harbour (Operation One Clock).
+- **What it does:** Starts a game on scratch saves, sails and moors in fixed places, and runs each scenario (day and night at 1x and 20x, dusk with and without the date card, the chart at dusk, harbour at night with and without its lights, and a minute at 20x). Each frame it times the simulation, the interface recolouring, the boat's light and the dawn/dusk watch separately, and the rendering. At the end it shows a table, copies it to the clipboard and saves it as `one_clock_sea_trial.txt`.
+- **Works with:** The game scene, `GameSession`, `Simulation`, `UiTheme`, `DayNightWatch`, `BoatLighting`, `TimePassage`, `Daylight`.
+- **Keeps:** Nothing of its own; the player's saves and settings are never used.
+- **When it runs:** Only when started on purpose: in Godot open `tests/one_clock_sea_trial.tscn` and press F6, or (developers) `xvfb-run godot --path . --rendering-driver opengl3 --resolution 1600x900 res://tests/one_clock_sea_trial.tscn -- --all --out=/tmp/one_clock.json`.
+- **If you change it:** Nothing in the game changes; comparisons with earlier trials depend on the scenarios staying the same.
+
 ### `tests/test_runner.gd`
 
 **Purpose:** The game's automatic test runner: it runs all 74 test suites and says how many checks passed.

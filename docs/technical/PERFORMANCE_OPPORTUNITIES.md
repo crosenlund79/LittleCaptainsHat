@@ -128,6 +128,15 @@ godot --headless --path . res://tests/test_runner.tscn -- --only=turbocharge
 - **Status:** measured (software only), deferred.
 - **Next action:** measure on Windows first. Harbor Dusk's lighting is not
   compromised for software-rendering numbers.
+- **Operation One Clock (2026-10-27):** the same cost is now the leading
+  explanation of the Captain's slowdown above 1×. Harbour at night: 130–135 ms
+  with the lights, 57 ms with them hidden (render time 124 → 52 ms); open
+  water at night 64–69 ms against 37 ms by day; all equal at 1×, 5× and 20×.
+  In harbour the lights fall on about 775 draw calls (about 250 at sea).
+  Status: measured (software only); **next action:** the Windows sea trial
+  (`tests/one_clock_sea_trial.tscn`, F6). If it confirms, a lighting
+  follow-up: light range and item masks, quay lamps as glow sprites, at the
+  same look. See `ONE_CLOCK_PERFORMANCE_INVESTIGATION.md`.
 
 ### 9. Traffic queries on the evaluation grid (I019)
 
@@ -166,6 +175,7 @@ godot --headless --path . res://tests/test_runner.tscn -- --only=turbocharge
 | Weather, router, daydream and spot caches | All bounded (`MAX_CACHE`, `LEG_CACHE_LIMIT`, 64-entry limits) | No unbounded growth |
 | I020 trade panels and cabin things | No per-frame work (panels built on open, freed on close; cabin things drawn once, redrawn on change); `--turbo` probe equal to I019 re-run in the same session (`docs/benchmarks/i019_rerun_rendered.json`, `i020_after1_rendered.json`) | Nothing to gain. Note for future comparisons: this machine drifted 3–10 % between runs hours apart; compare against a baseline re-run in the same session |
 | I021 harbour looks, special stars, arrival card | One shared texture per look, loaded on first use and cached (`HarbourLooks`); the chart star is one dictionary lookup per drawn pin; the card is a short-lived toast. `--turbo` probe before and after in the same session (`docs/benchmarks/i021_before_rendered.json`, `i021_after_rendered.json`): equal or faster in every scenario (drift), memory +0.1 MB; repeated moorings keep the node count steady | Nothing to gain |
+| Time acceleration itself (1×, 5×, 20×) and the dawn/dusk machinery (Operation One Clock) | Per frame at any speed: simulation 0.2–0.8 ms (worst 9.7 ms, at most one evaluation point), interface recolouring 4–7.5 ms per step on deck and 20–24 ms at the chart (one step per twilight with the date card, at most four a second without), boat light script 0.1 ms, dawn/dusk watch ≤ 0.02 ms; 60 game hours at 20× with no growth (578 nodes) | Not the bottleneck: frame time follows the lit scene (#5), not the speed |
 | Disk writes during play | No autosave; one flushed log line per meaningful event; logs capped | Not a responsiveness factor |
 
 ## Hypotheses and larger rework candidates (not yet measured or approved)
