@@ -46,6 +46,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 - [The Well-Run Ship performance report](technical/THE_WELL_RUN_SHIP_PERFORMANCE_REPORT.md): where the time went (the day/night theme stall), what is kept in memory and what is written to disk, the sleep, dawn and dusk cards, and Long Passage on the voyage map.
 - [Turbocharge performance report](technical/TURBOCHARGE_PERFORMANCE_REPORT.md) and the permanent [Performance Opportunity Register](technical/PERFORMANCE_OPPORTUNITIES.md): what was measured, what was optimized, and the ranked list of what could be done next.
 - [Localization](technical/LOCALIZATION.md): English and Dansk, how text is translated, the tools and the glossary.
+- **The Engine Room, the GDScript guides:** every script in the game, one entry each. [For the Captain, in English](technical/GDSCRIPT_GUIDE_EN.md), [for the Captain, in Danish](technical/GDSCRIPT_GUIDE_DA.md), and [the developer architecture reference](technical/GDSCRIPT_ARCHITECTURE.md) (dependencies, signals, state, invariants, tests, cross-system flows). Kept current with `python tools/docs/check_gdscript_guides.py`.
 - [Developer guides](../DEV_GUIDES/README.md): step-by-step guides for art, companions, audio, weather, harbours, boat care, chart regions and life aboard, plus design principles for future user content ([MODDING_FUTURE.md](../DEV_GUIDES/MODDING_FUTURE.md)). They stay in `DEV_GUIDES/` because the game's in-game guide viewer reads them from there.
 
 ## Testing

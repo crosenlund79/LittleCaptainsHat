@@ -1,0 +1,1386 @@
+{
+ "version": 1,
+ "about": "Fingerprints of each .gd file when its entries in the three GDScript guides were last reviewed. Update only with tools/docs/check_gdscript_guides.py --acknowledge after a review.",
+ "scripts": {
+  "src/aboard/anchor_ambience.gd": {
+   "sha": "3dfc0a174dea3fac",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/anchor_life.gd": {
+   "sha": "637eeb0cca991aaa",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/cabin_decor.gd": {
+   "sha": "3cbeebb1d99927c9",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/coffee_mug.gd": {
+   "sha": "7591f61fef11b354",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/galley_stove.gd": {
+   "sha": "8bb043abd03c4904",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/rod_holder.gd": {
+   "sha": "ba8c39aa4ff2e659",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/trophy_board.gd": {
+   "sha": "4aca6f2400527c05",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/aboard/windlass.gd": {
+   "sha": "4b5be5feae75a0b8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/anchor/anchor_site.gd": {
+   "sha": "12cc445db12d83b7",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/anchor/magic_anchor_deployment.gd": {
+   "sha": "8c546d332996c80e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/app/app.gd": {
+   "sha": "5c1941fa4019be83",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/app/game_version.gd": {
+   "sha": "a08c000173a473c6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/app/scene_router.gd": {
+   "sha": "1ddf708627a20b17",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/art/artwork_resolver.gd": {
+   "sha": "a93a16579a6087e8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/audio/audio_manager.gd": {
+   "sha": "1b0cb38f92bb1b44",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/audio/music_director.gd": {
+   "sha": "19e35f301fb46ee3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/audio/weather_audio.gd": {
+   "sha": "20644b03781bc327",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/anchor_signals.gd": {
+   "sha": "a24007421ad50d1e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/boat_area.gd": {
+   "sha": "52889b5f29155f8c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/boat_fixture.gd": {
+   "sha": "cb427e4ff17e7ac7",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/boat_lighting.gd": {
+   "sha": "d7bfcf573f6689e5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/cabin_world_map.gd": {
+   "sha": "7af0d7e4aa6154f0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/fender_stowage.gd": {
+   "sha": "315aff909bba2830",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/provision_display.gd": {
+   "sha": "0fd4202c19bcd94e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/sail_rig.gd": {
+   "sha": "88ec65f04dbc67f1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/visuals/damage_overlay.gd": {
+   "sha": "3c0ac961e220d95d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/visuals/procedural_shape.gd": {
+   "sha": "8d3ee9cc6f71e179",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/visuals/solar_panels.gd": {
+   "sha": "2c3ccdf8e66918b0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/visuals/vessel_visual.gd": {
+   "sha": "0bad0eecedbbcb72",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/visuals/vessel_visual_profile.gd": {
+   "sha": "901c75ab4e247976",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/visuals/visual_slot.gd": {
+   "sha": "afd047e224ca3dda",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat/weather_visuals.gd": {
+   "sha": "3d92b4ff77547e19",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat_care/boat_care.gd": {
+   "sha": "f64897cac45ebfbd",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/boat_care/passage_readiness.gd": {
+   "sha": "19971cdde76c1db9",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/companion/companion_pose_art.gd": {
+   "sha": "f3d35333b11baa07",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/companion/companion_state.gd": {
+   "sha": "d574f0be431fa89e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/companion/companion_visual_set.gd": {
+   "sha": "43f1cbbad71c947c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/companion/deck_companion_spots.gd": {
+   "sha": "b4b42d42349b4243",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/companion/ship_companion.gd": {
+   "sha": "a4b1f2abe56d5c69",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/anchor_state.gd": {
+   "sha": "fca549a2299f57e0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/boat_care_state.gd": {
+   "sha": "12b3abf36b95447d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/captains_log.gd": {
+   "sha": "13a4a204a31df263",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/fishing_state.gd": {
+   "sha": "1727045f3d97deb5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/galley_state.gd": {
+   "sha": "9e5a38892a4ac65a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/game_session.gd": {
+   "sha": "99c3d3d01a211dcc",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/hat_state.gd": {
+   "sha": "5d50d71e51204312",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/home_state.gd": {
+   "sha": "e0c2c4b471d130ec",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/loc.gd": {
+   "sha": "58ce2b5d40da0c7b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/objective_catalog.gd": {
+   "sha": "bffd72952cee339b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/objective_progress.gd": {
+   "sha": "8019337ae4e9eb5d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/provisions.gd": {
+   "sha": "2a5ea7d7061a4e03",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/session_state.gd": {
+   "sha": "5241c7b692ca60ef",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/simulation.gd": {
+   "sha": "43d8f1626651ac23",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/vessel_condition.gd": {
+   "sha": "d1e2f8e4ae1d2c4b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/core/vhf_radio.gd": {
+   "sha": "8b3b863c81a6f698",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/dev/dev_guides.gd": {
+   "sha": "4fd554e9aeaedfe2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/dev/dev_test_panel.gd": {
+   "sha": "a066c200e03d68f6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/dev/dev_tools.gd": {
+   "sha": "84c938b20351d479",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/dev/weather_fixtures.gd": {
+   "sha": "4891d7a2e1bbbdf6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/diagnostics/session_log.gd": {
+   "sha": "275309aed5731d8a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/fishing/fish_art.gd": {
+   "sha": "64a5a41c44f40f37",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/fishing/fish_portrait.gd": {
+   "sha": "56c8a89f9282ab0c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/fishing/fishing_catalog.gd": {
+   "sha": "92b09e4c1b7473ed",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/fishing/fishing_sounds.gd": {
+   "sha": "a68fd882e227ac42",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/fishing/reel_timing.gd": {
+   "sha": "bbfac841b17c3c74",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/galley/recipes.gd": {
+   "sha": "5e4a4311add0301c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/harbour_art.gd": {
+   "sha": "0721a158f37876f6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/harbour_dressing.gd": {
+   "sha": "89577a924fbc2c64",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/harbour_facilities.gd": {
+   "sha": "89468fd9d1acf16e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/harbour_landmark.gd": {
+   "sha": "a0f34cd640504119",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/harbour_trades.gd": {
+   "sha": "7f7cd0c7d12d1f2a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/shore_access.gd": {
+   "sha": "4d797172dd771675",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/shore_events.gd": {
+   "sha": "66c4502529141751",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/hat_art.gd": {
+   "sha": "7e3e8d99f9e02bff",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/hat_blow_away.gd": {
+   "sha": "172ab78b2d314ed8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/hat_config.gd": {
+   "sha": "278cab2e7bae9595",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/hat_drawing.gd": {
+   "sha": "538e63408f0a0f19",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/hat_hook.gd": {
+   "sha": "89b7a756899dab05",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/hat_story.gd": {
+   "sha": "3b7a963503043da3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/hat/player_hat.gd": {
+   "sha": "7e7f12f6a19ab242",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/interaction/highlight_provider.gd": {
+   "sha": "d19d27da4b7936fd",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/interaction/highlight_resolver.gd": {
+   "sha": "02abbca6b297a9c3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/interaction/interactable.gd": {
+   "sha": "ea800ba5922f5652",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/interaction/interaction_sensor.gd": {
+   "sha": "26b448b60c4dc21a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/anchorage_layer.gd": {
+   "sha": "cb8ca2e0cd928c8d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/coastal_geography.gd": {
+   "sha": "910fc45b5d790325",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/depth_data.gd": {
+   "sha": "dd6e908a75f3c3f1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/depth_service.gd": {
+   "sha": "234760006619d177",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/geo_math.gd": {
+   "sha": "df538d0f3be530bb",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/map_projection.gd": {
+   "sha": "38a7d66b974f1cd0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/map_view.gd": {
+   "sha": "d5c9c58916333610",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/nav_grid.gd": {
+   "sha": "630855214a2c8a0d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/planned_route.gd": {
+   "sha": "1b49e388342b8d3f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/port_catalog.gd": {
+   "sha": "172727ff0de6a5de",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/port_data.gd": {
+   "sha": "3adcd918d7e4645e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/sea_router.gd": {
+   "sha": "18bd434ff4ce69b6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/traffic_model.gd": {
+   "sha": "d7f0fb1d22e0955e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/vessel_profile.gd": {
+   "sha": "9195a34fdfaeb521",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/voyage.gd": {
+   "sha": "f5a33267d50ccc5d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/voyage_daydream.gd": {
+   "sha": "2aea01c86fd02a51",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/weather_legend.gd": {
+   "sha": "78fbad1df8da5777",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/weather_style.gd": {
+   "sha": "18a0829eb7ec0423",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/wind_layer.gd": {
+   "sha": "3eb9cb9164ae595a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/world_land.gd": {
+   "sha": "616620224d07c795",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/navigation/world_map.gd": {
+   "sha": "f6158f07579093c7",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/persistence/legacy_saves.gd": {
+   "sha": "19476bac39c66476",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/persistence/save_manager.gd": {
+   "sha": "f951fcc69f129ee5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/player/player.gd": {
+   "sha": "69e5024f6daeaa1f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/player/sailor_drawing.gd": {
+   "sha": "09860300810d9dbb",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/sailing/propulsion_controller.gd": {
+   "sha": "613e110f5aa90235",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/sailing/propulsion_state.gd": {
+   "sha": "dc45046ccc274d9d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/sailing/sail_trim.gd": {
+   "sha": "d9f274871fa948a2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/sailing/weather_damage.gd": {
+   "sha": "297959c59a881f59",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/settings/settings_manager.gd": {
+   "sha": "e89a2d1703187735",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/skills/timing_check.gd": {
+   "sha": "9128e4ade8419976",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/aboard_badge.gd": {
+   "sha": "6e4c251ca656e9a5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/action_wheel.gd": {
+   "sha": "77d784d9635b9903",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/anchor_menu.gd": {
+   "sha": "57dbe19f810164dc",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/anchorage_prompt.gd": {
+   "sha": "0b3ab1054038da6d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/boat_care_menu.gd": {
+   "sha": "cce19b06c0d3099d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/boat_care_view.gd": {
+   "sha": "75f156024fd6a3de",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/boatyard_menu.gd": {
+   "sha": "54d32d47ce9a99f1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/cabin_home_menu.gd": {
+   "sha": "191f769d207df869",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/captains_log_menu.gd": {
+   "sha": "b31e5c66eb208430",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/catch_badge.gd": {
+   "sha": "38bc607b427410d0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/chandlery_menu.gd": {
+   "sha": "3b23d76bd1ef2610",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/chart_plotter.gd": {
+   "sha": "323268798a3a3641",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/confirm_dialog.gd": {
+   "sha": "bbb4419200262f72",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/cooking_menu.gd": {
+   "sha": "b474b6acbf7b676d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/dev_guides_menu.gd": {
+   "sha": "bf781211bd6f3dd9",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/fishing_menu.gd": {
+   "sha": "be4c2d8eb50c5cf6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/fishmonger_menu.gd": {
+   "sha": "72e2541cfd7c5ad7",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/go_ashore_menu.gd": {
+   "sha": "e841c575d3dcefe1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/grocery_menu.gd": {
+   "sha": "5ebec79cb4d7bf5e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/hat_badge.gd": {
+   "sha": "debcc2db31dc2766",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/haul_out_panel.gd": {
+   "sha": "36ba7fa68dbda54d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/haul_out_scene.gd": {
+   "sha": "ecbfbfa941ccc25b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/hud.gd": {
+   "sha": "1414c3a6525871a3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/language_picker.gd": {
+   "sha": "5174b4aa42a259ea",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/loading_screen.gd": {
+   "sha": "28149d1e928f8389",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/main_menu.gd": {
+   "sha": "d0658dd78d228e31",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/markdown_lite.gd": {
+   "sha": "a4bd5f14035e173c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/modal_panel.gd": {
+   "sha": "545f2cc9104cad69",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/modal_stack.gd": {
+   "sha": "29a33a25c860b1df",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/new_game_menu.gd": {
+   "sha": "29570140f252e6ef",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/passage_panel.gd": {
+   "sha": "f70ca42a7c40c5c3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/pause_menu.gd": {
+   "sha": "9fff1c9562abf1c3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/provisions_menu.gd": {
+   "sha": "0048b26b1806f0f1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/publish_menu.gd": {
+   "sha": "c52542d59fcdf660",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/radar_panel.gd": {
+   "sha": "fdc26df5aac167ad",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/reel_dial.gd": {
+   "sha": "07855b87c8f876dc",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/rescue_dialog.gd": {
+   "sha": "4744edd8a4a648e2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/sail_trim_panel.gd": {
+   "sha": "6db2ba3ee7ff6391",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/sailing_panel.gd": {
+   "sha": "351d82bc24c92b8e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/sailmaker_menu.gd": {
+   "sha": "474b15e36f92d318",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/save_load_menu.gd": {
+   "sha": "7685e088d8d02cfd",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/settings_menu.gd": {
+   "sha": "ec233f3835fec2ed",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/simple_panel.gd": {
+   "sha": "fd078dfabae6e16d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/sleep_menu.gd": {
+   "sha": "736d30f7a51f9fb6",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/theme/ui_theme.gd": {
+   "sha": "8200cd8988a1b7ea",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/time_controls.gd": {
+   "sha": "f9f3d32d9ad81c31",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/time_passage.gd": {
+   "sha": "e8d1c5168ba46b48",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/toasts.gd": {
+   "sha": "f35506569f47485f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/trade_panel.gd": {
+   "sha": "709186869b53ca24",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/trophy_menu.gd": {
+   "sha": "c0e9ab6b5b0cdd9c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/ui_scale_layer.gd": {
+   "sha": "55de4e6cea9f3c86",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/vhf_dialog.gd": {
+   "sha": "631a0099379d3bce",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/voyage_map.gd": {
+   "sha": "c6c90beae462f3b0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/work_menu.gd": {
+   "sha": "af73498594e3d7cb",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/vessels/vessel_catalog.gd": {
+   "sha": "b51fa4224c437b56",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/vessels/vessel_definition.gd": {
+   "sha": "efd578df5df7b92e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/water/water_life.gd": {
+   "sha": "5bd4e07881db7e38",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/weather/weather_event.gd": {
+   "sha": "7eb9a0ca687426b1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/weather/weather_exposure.gd": {
+   "sha": "df88a746b30be21d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/weather/weather_model.gd": {
+   "sha": "5a5ca08a4a9d30d0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/weather/weather_sample.gd": {
+   "sha": "63db6800ca8c7942",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/weather/wind_field.gd": {
+   "sha": "f6554cf2e53b63d3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/world/day_night_watch.gd": {
+   "sha": "1d2b65743e69c6ef",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/world/daylight.gd": {
+   "sha": "8553cf8013e97662",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/benchmark.gd": {
+   "sha": "5c1d2f8f5205cb11",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/benchmark_105b.gd": {
+   "sha": "f56963dac092d0d1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/benchmark_17.gd": {
+   "sha": "4e00d8957913ce98",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/benchmark_18.gd": {
+   "sha": "3e2e133acb2727c2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/benchmark_wrs.gd": {
+   "sha": "f649484fbced933c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/cabin_light_18.gd": {
+   "sha": "f9761960c394f8e5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/helpers/art_fixtures.gd": {
+   "sha": "fd5f381f9ed9821d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/helpers/reel.gd": {
+   "sha": "098056fd7f3ba128",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/helpers/walkability.gd": {
+   "sha": "02e9ea5c3d56d093",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/pacing_18.gd": {
+   "sha": "5e9a9dd75f08d9b1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/restart_105b.gd": {
+   "sha": "707c421868ed9dff",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/restart_17.gd": {
+   "sha": "89be9b292d5fa9d9",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/restart_18.gd": {
+   "sha": "606fc657d0c04e59",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/restart_check.gd": {
+   "sha": "813a301a9d196485",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/screenshots_105b.gd": {
+   "sha": "75ee712df1846fa1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/screenshots_16.gd": {
+   "sha": "2bbe54846cf1c384",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/screenshots_17.gd": {
+   "sha": "8d20f538caf8e874",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/screenshots_18.gd": {
+   "sha": "cbf8d35276ec33ff",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/screenshots_chartroom.gd": {
+   "sha": "3aeade6e69750f5e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_anchor_life.gd": {
+   "sha": "74cec34564e9983a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_anchorage.gd": {
+   "sha": "93ebf9d74f9a5b29",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_anchorage_overlay.gd": {
+   "sha": "a64643b69e49ad6d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_atmosphere.gd": {
+   "sha": "583a9754143ea783",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_boat_care.gd": {
+   "sha": "42281edf30e6f325",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_boat_of_your_own.gd": {
+   "sha": "94bfaa298ee59fc8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_branding.gd": {
+   "sha": "1cfc07ae42343c6a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_captains_log.gd": {
+   "sha": "d53166fad920e986",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_captains_watch.gd": {
+   "sha": "293c04686a6389a1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_catamaran_cabin.gd": {
+   "sha": "438528746e1946e8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_catch_and_cove_journey.gd": {
+   "sha": "25d739f5a0ba4943",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_chart_and_pause.gd": {
+   "sha": "3593b50287d9f705",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_chartroom_ui.gd": {
+   "sha": "699e9f25255792e3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_coastal_depth.gd": {
+   "sha": "e87be42ae2076a8b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_cockpit_ui.gd": {
+   "sha": "b553e92871b420b4",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_companion_art.gd": {
+   "sha": "b6fc6e8eab29583f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_companion_deck.gd": {
+   "sha": "67c1710da370c26f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_cozy_patch.gd": {
+   "sha": "ae3214a9ef1cb04b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_cozy_polish.gd": {
+   "sha": "59d63a1bbf0b53a2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_data_model.gd": {
+   "sha": "0a1ea71d6fdcb39d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_denmark_views.gd": {
+   "sha": "31cc9f44cfeb7a6a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_dev_guides.gd": {
+   "sha": "e5d1bc1c5f3b1a8a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_diagnostics.gd": {
+   "sha": "89a389fc60d95954",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_eight_directions.gd": {
+   "sha": "52a098d0ba76c10d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_fishing.gd": {
+   "sha": "4f1763f43bee2636",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_fishing2.gd": {
+   "sha": "d7c340da556734bf",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_galley_and_anchor.gd": {
+   "sha": "e1cc9333f806f8b5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_gameplay_flow.gd": {
+   "sha": "02d31465c83eecc1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_harbour_chart.gd": {
+   "sha": "5232ff4311a12f54",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_harbour_life.gd": {
+   "sha": "c4d88be48f295ea5",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_harbours.gd": {
+   "sha": "c13b0740225f5c43",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_hat.gd": {
+   "sha": "e5bc1f38a8a77ad8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_joy_journey.gd": {
+   "sha": "085512f2ff390f1d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_life_aboard.gd": {
+   "sha": "51482aecc674ece8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_lighting.gd": {
+   "sha": "c814d41a4d0f35a0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_living.gd": {
+   "sha": "78129dd3de9bef86",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_living_world.gd": {
+   "sha": "3029a4308c8e0ada",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_localization.gd": {
+   "sha": "784334e2e42b6df4",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_long_passage.gd": {
+   "sha": "31bb52492358b058",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_magic_anchor.gd": {
+   "sha": "420d89228376e294",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_navigation_views.gd": {
+   "sha": "c36a50d31a9388d3",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_objectives.gd": {
+   "sha": "18ce94a29a9524cf",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_presentation.gd": {
+   "sha": "3be19d117d7ba4f7",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_publishing.gd": {
+   "sha": "7f8cc890fbcf0e42",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_reassessment.gd": {
+   "sha": "7f806adc99482b6e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_regions.gd": {
+   "sha": "697f192e66d8200b",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_route_wrap.gd": {
+   "sha": "c246ce76779cc0a9",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_routing.gd": {
+   "sha": "f583641e79fd93ff",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_sail_trim.gd": {
+   "sha": "d4a178c16405c4dd",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_sailing.gd": {
+   "sha": "83306273a3c5003c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_sailing_correctness.gd": {
+   "sha": "e7a1826a7098ab08",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_sailing_presentation.gd": {
+   "sha": "b4bcf1ef26e12414",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_save_manager.gd": {
+   "sha": "4d04870064bb130a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_secret_achievements.gd": {
+   "sha": "03d3f76f67943fc2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_settings_and_audio.gd": {
+   "sha": "f210800c0f7b918f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_simulation.gd": {
+   "sha": "d6a55b5008b6fc35",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_solar_panels.gd": {
+   "sha": "ee0f6fb09ef5d44d",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_soundtrack.gd": {
+   "sha": "22ff336164da2010",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_sprite_workshop.gd": {
+   "sha": "8c7062a4806df0e1",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_turbocharge.gd": {
+   "sha": "24511395031b3df7",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_upkeep.gd": {
+   "sha": "d8643e30cadf0076",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_upkeep_ui.gd": {
+   "sha": "b26b0e826d90afee",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_vessels.gd": {
+   "sha": "901413d9f3302546",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_visual_prototype.gd": {
+   "sha": "d3138974760ae08a",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_voyage_persistence.gd": {
+   "sha": "8a7b116f4bb8814e",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_weather.gd": {
+   "sha": "450f8db2095246b2",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_weather_ui.gd": {
+   "sha": "fb6921eeb5dbcf90",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_well_run_ship.gd": {
+   "sha": "808425276c89b118",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_wind.gd": {
+   "sha": "e93f2a67688db172",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_wind_overlay.gd": {
+   "sha": "fd40af7ddad8bfd0",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_world_chart_render.gd": {
+   "sha": "9f11ad3b644d6c17",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_world_voyage.gd": {
+   "sha": "d3c7811dc74bb5e8",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/test_runner.gd": {
+   "sha": "b6c1ab6282b5bbce",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tools/build_theme.gd": {
+   "sha": "0e5953be619e13ca",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tools/export_branding.gd": {
+   "sha": "e55e8cb85b55e441",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tools/navigation/world_land_to_res.gd": {
+   "sha": "b75a5694c042570c",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tools/vessels/render_art_templates.gd": {
+   "sha": "37958453cf4ec4ef",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tools/weather/measure_wind_variation.gd": {
+   "sha": "aa966e0b68d3e32f",
+   "reviewed": "2026-10-27",
+   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  }
+ }
+}

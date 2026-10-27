@@ -349,6 +349,15 @@ fields are optional):
   new evidence, status changes, implemented items with their commit and
   measured benefit. Verified bottlenecks and hypotheses stay separate; large
   reworks are recorded for the Captain's decision, never done silently.
+- **GDScript guides (the Engine Room).** Every `.gd` file has one entry in each
+  of `docs/technical/GDSCRIPT_GUIDE_EN.md`, `GDSCRIPT_GUIDE_DA.md` and
+  `GDSCRIPT_ARCHITECTURE.md`. Creating or removing a script: add or remove its
+  entry in all three. Materially changing a script: review its three entries
+  and correct what is out of date (only those entries; never regenerate a
+  whole guide for a small change). Then run
+  `python tools/docs/check_gdscript_guides.py` and record the review with
+  `--acknowledge PATH --note "..."`; a delivery leaves the checker passing.
+  The code is the authority: a stale entry is fixed, never trusted.
 
 ### Not now
 
