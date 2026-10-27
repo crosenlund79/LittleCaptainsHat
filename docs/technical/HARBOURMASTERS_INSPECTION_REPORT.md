@@ -10,8 +10,9 @@ changed.** Version stays 0.108a, save format 12.
 |---|---|
 | Starting point (I021 complete) | `04a76231581f5a6d0af22ce2c2c138842b869453` |
 | The checker | `6317dac` |
-| Checker: the Captain's original drawings exempt from the unused list | the commit after `6317dac` |
-| Documentation (this report, release readiness, testing guide, orders) | the branch head |
+| Checker: the Captain's original drawings exempt from the unused list | `76da6b3` |
+| Documentation (this report, release readiness, testing guide, orders) | `5142a3f` |
+| Final test count in this report | the branch head |
 
 No backup branch was moved or created by this pass (the three existing ones are
 unchanged); nothing was force-pushed.
@@ -134,8 +135,9 @@ line, and a broken resource path.
   harbour name ("Kuşadası") cannot crash it.
 - The 21 planted defects: 21 caught.
 - `test_dev_guides` (every link and path in the developer guides and linked
-  documents), `test_localization` and `test_wider_world`: run after this pass;
-  see the delivery note for the final count.
+  documents, including the new pages), `test_localization` and
+  `test_wider_world`, run on this pass's documentation commit: **158 checks
+  passed, 0 failed**.
 - `check_links.py` and `check_gdscript_guides.py`: pass (the checker is Python,
   so the GDScript guides needed no change).
 - The full regression of the I021 build just before this pass: 74 suites,
