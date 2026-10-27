@@ -381,6 +381,12 @@ verified checkpoint branch (`backup/post-engine-room-pre-i021`):
   `python tools/docs/check_gdscript_guides.py` and record the review with
   `--acknowledge PATH --note "..."`; a delivery leaves the checker passing.
   The code is the authority: a stale entry is fixed, never trusted.
+- **The Harbourmaster's Inspection.** Before every delivery, and after adding
+  or changing content, run `python tools/qa/check_game_content.py`: it must
+  report no FAIL. Its WARN and INFO findings are read and either fixed or
+  explained in the report; unused assets are listed for the Captain's review
+  and never deleted without his approval. Releases follow
+  `docs/technical/RELEASE_READINESS.md`.
 
 ### Not now
 
