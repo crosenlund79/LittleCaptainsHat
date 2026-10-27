@@ -18,7 +18,8 @@ below was run on Linux (Godot 4.7.2).
 | Special harbours on the chart | `6d6bf66` |
 | Fish and their art | `1864d62` |
 | Cabin things | `631c234` |
-| Tests, version, guides, documentation, integration | @@FINAL@@ |
+| Tests, version, guides, documentation, screenshots | `cc70f75` |
+| Test and benchmark results (this report's final version) | the branch head after `cc70f75` |
 
 ## 2. The checkpoint before I021
 
@@ -252,11 +253,69 @@ parrot with a perch model, then the hamster with a cage fixture.
 
 ## 12. Tests
 
-@@TESTS@@
+- **Full regression** on the final code: all **74 suites, 4,762 checks passed,
+  0 failed** (headless Linux, Godot 4.7.2).
+- **New suite `test_wider_world`: 46 checks**, all passing: the 16 harbours
+  (catalogue, sentence, source, groceries, tiers, Danish), every harbour's look
+  and its image, looks by place not continent, a look's art shared, the six
+  special harbours equal to those with their own art, ordinary harbours staying
+  ordinary, the "why" in both languages, a missing picture showing the plain
+  quay, the 10 fish (art, real regions, caught where they live and not in the
+  Baltic, prices, Danish names, a record saved and loaded), the cabin things,
+  an old save and a save in Zanzibar, eight moorings in a row with the node
+  count steady (443–444), Suva and Nuku'alofa on both sides of the date line,
+  the arrival card (picture, words, never blocking, Danish), and a route across
+  the date line.
+- **Updated existing checks** where I021 changed the expected result, never to
+  hide a fault: Kiel now shows its look (`test_visual_prototype`), the small new
+  harbours have no boatyard (`test_harbour_life`), five new sea areas
+  (`test_harbours`), the trades' Danish fit check treats a row scrolled out of
+  view as scrolled (`test_boat_of_your_own`), version 0.108a (`test_branding`,
+  `test_diagnostics`).
+- **Found and fixed by the tests during the work:** the halibut, the pollack and
+  the striped bass were first drawn too like the flounder, the cod and the sea
+  bass (silhouette check); five new cabin things did not fit the two tightest
+  cabins (reduced to three).
+- **Checked against the starting commit** (a worktree at `ec84cfa`): two checks
+  that failed once in a busy, larger run (wind arrows on the chart, "Continue is
+  disabled") pass on both the starting build and the final build when run alike;
+  they were load and order effects of that run, not I021 changes.
+- Tools: `check_gdscript_guides.py` passes (281 scripts), `check_links.py`
+  passes, `tools/i18n/check.py` passes (2,373 messages, all translated).
+- Earlier in the same session, the Engine Room's 25 repeated runs of the
+  fish-blink and companion-walk suites all passed.
 
 ## 13. Performance
 
-@@PERF@@
+Same machine, same session, rendered (llvmpipe, 1600 × 900), the `--turbo`
+probe of `benchmark_wrs`: `docs/benchmarks/i021_before_rendered.json` (the
+starting build, measured before any I021 change) and `i021_after_rendered.json`
+(the final build). Frame times in ms:
+
+| Scenario | before median | after median | before p95 | after p95 |
+|---|---|---|---|---|
+| chart_open_close_x12 | 76.6 | 70.5 | 90.1 | 91.2 |
+| chart_open_idle | 56.4 | 52.5 | 69.3 | 64.9 |
+| turbo_chart_zoom_pan | 69.0 | 62.0 | 89.2 | 82.8 |
+| turbo_dream_map_idle | 116.8 | 99.9 | 132.0 | 116.4 |
+| walk_deck_harbour_day | 65.8 | 55.3 | 79.3 | 66.2 |
+| harbour_night_still | 64.2 | 53.4 | 75.9 | 61.9 |
+| walk_cabin_day | 79.2 | 67.1 | 91.8 | 79.9 |
+| turbo_fishing_rod | 75.0 | 66.3 | 88.0 | 78.3 |
+| sailing_1x | 42.0 | 38.9 | 49.6 | 45.9 |
+| long_passage_12h_per_s | 71.8 | 65.8 | 84.7 | 82.7 |
+| sleep_4h_across_sunrise | 78.0 | 75.0 | 94.7 | 96.1 |
+| daynight_harbour_walk_20x | 72.3 | 62.1 | 164.7 | 141.7 |
+
+Everything is equal or faster after I021, which the work cannot explain (no
+I021 change touches chart drawing or deck frames beyond one dictionary lookup
+per drawn pin): this machine drifts 3–10 % between runs (see the Performance
+Opportunity Register), so the honest reading is **no measurable regression**.
+Memory at the end of a 20-round session: 234.9 MB vs 234.8 MB, 3,022 vs 3,002
+objects, nodes equal. The harbour art is one shared texture per look, loaded on
+first use and kept (at most nine looks plus six special views); mooring eight
+times in a row leaves the node count steady (`test_wider_world`). Nothing new
+runs per frame. No optimisation was needed or attempted.
 
 ## 14. Known limitations and deferred content
 
