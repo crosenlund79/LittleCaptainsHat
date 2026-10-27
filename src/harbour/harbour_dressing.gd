@@ -4,7 +4,8 @@ extends Node2D
 ## prototype): a hand-drawn guest pontoon with mooring lines and cleats, a
 ## stone quay beyond it, gentle variation in the water, wooden signs for the
 ## services the harbour has (the grocery store; the boatyard with repairs) and
-## the harbour's optional landmark illustrations (HarbourArt).
+## the harbour's illustration beyond the quay: its own landmarks (HarbourArt)
+## or the illustration of its look (HarbourLooks, I021).
 ##
 ## Art only. BoatArea adds it to the deck's Surroundings/Mooring, so it is
 ## shown only in port, above the water and below the boat. It reads the
@@ -12,8 +13,8 @@ extends Node2D
 ## deck's stations for its positions, so it fits every boat's deck without
 ## changing any collision, station, spawn point or the mooring itself. While
 ## the Artwork setting is Classic it hides itself and the original pontoon
-## drawing shows instead. Harbours without HarbourArt get the same generic
-## harbour, without landmarks.
+## drawing shows instead. A harbour with neither its own art nor a look gets
+## the generic harbour, without an illustration.
 
 const INK := Color("#342c26")
 const PLANK := Color("#a98b62")
@@ -112,7 +113,8 @@ func refresh() -> void:
 		sign_label.text = facility[0] if illustrated else classic[0]
 		sign_label.label_settings = _sign_text_settings() if illustrated else classic[1]
 	_port_id = GameSession.get_location_id()
-	_art = HarbourArt.for_port(_port_id)
+	# The harbour's own landmarks, else the illustration of its look (I021).
+	_art = HarbourLooks.get_default().art_for(_port_id)
 	_landmarks = _art.get_landmarks() if _art else ([] as Array[HarbourLandmark])
 	_signs.clear()
 	var stations := _area.get_node_or_null(^"Layout/Stations")

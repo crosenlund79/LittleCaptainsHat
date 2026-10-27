@@ -1155,7 +1155,11 @@ func get_pending_vhf() -> Dictionary:
 
 func _on_arrived(port_id: StringName) -> void:
 	hud.hide_warning()
-	notify(Loc.t("Arrived in %s.") % PortCatalog.get_default().get_display_name(port_id))
+	# The arrival card (I021): the harbour's picture, the arrival and one line
+	# about the place. Notices go to the same corner, so it never blocks.
+	var port := PortCatalog.get_default().get_port(port_id)
+	toasts.show_card(Loc.t("Arrived in %s.") % PortCatalog.get_default().get_display_name(port_id),
+		port.get_description() if port else "", HarbourLooks.get_default().picture_for(port_id))
 	# Sleeping through the arrival, the captain wakes in the cabin as always.
 	if is_instance_valid(voyage_map):
 		_dock_after_map = true  # after the voyage map, when the captain comes aboard
