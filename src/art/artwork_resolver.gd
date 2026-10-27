@@ -101,10 +101,10 @@ static func _ensure_index() -> void:
 		for row in read_manifest(manifest):
 			var id := StringName(row.asset_id)
 			if _entries.has(id):
-				_warn(id, "Duplicate asset_id %s in %s (first kept: %s)." % [id, manifest, _entries[id].path])
+				_warn(id, Loc.t("Duplicate asset_id %s in %s (first kept: %s).") % [id, manifest, _entries[id].path])
 				continue
 			if paths.has(row.path):
-				_warn(id, "Duplicate output file %s for %s and %s." % [row.path, paths[row.path], id])
+				_warn(id, Loc.t("Duplicate output file %s for %s and %s.") % [row.path, paths[row.path], id])
 				continue
 			paths[row.path] = id
 			_entries[id] = row
@@ -167,7 +167,7 @@ static func _resolve(asset_id: StringName) -> Texture2D:
 		return null
 	var path := String(entry.path)
 	if not path.to_lower().ends_with(".png"):
-		_warn(asset_id, "%s: replacements must be PNG files (%s)." % [asset_id, path.get_file()])
+		_warn(asset_id, Loc.t("%s: replacements must be PNG files (%s).") % [asset_id, path.get_file()])
 		return null
 	var image: Image = null
 	if ResourceLoader.exists(path):
@@ -180,11 +180,11 @@ static func _resolve(asset_id: StringName) -> Texture2D:
 	else:
 		return null  # Not drawn yet: the original art stays, silently.
 	if image == null or image.is_empty():
-		_warn(asset_id, "%s: %s could not be read as an image; the original art is kept." % [asset_id, path.get_file()])
+		_warn(asset_id, Loc.t("%s: %s could not be read as an image; the original art is kept.") % [asset_id, path.get_file()])
 		return null
 	var problem := validate_size(entry, image.get_width(), image.get_height())
 	if problem != "":
-		_warn(asset_id, "%s: %s %s; the original art is kept." % [asset_id, path.get_file(), problem])
+		_warn(asset_id, Loc.t("%s: %s %s; the original art is kept.") % [asset_id, path.get_file(), problem])
 		return null
 	if image.is_compressed():
 		image.decompress()
@@ -201,10 +201,10 @@ static func validate_size(entry: Dictionary, width: int, height: int) -> String:
 	var ratio := float(width) / float(maxi(height, 1))
 	var want_ratio := want_w / want_h
 	if absf(ratio - want_ratio) / want_ratio > ASPECT_TOLERANCE:
-		return "is %dx%d, but should have the shape of %dx%d (aspect %.3f, not %.3f)" % [width, height, roundi(want_w), roundi(want_h), want_ratio, ratio]
+		return Loc.format("is %dx%d, but should have the shape of %dx%d (aspect %.3f, not %.3f)", [width, height, roundi(want_w), roundi(want_h), want_ratio, ratio])
 	var scale := float(width) / want_w
 	if scale < MIN_SCALE or scale > MAX_SCALE:
-		return "is %dx%d: draw it at about %dx%d (the 2x source size)" % [width, height, roundi(want_w), roundi(want_h)]
+		return Loc.t("is %dx%d: draw it at about %dx%d (the 2x source size)") % [width, height, roundi(want_w), roundi(want_h)]
 	return ""
 
 

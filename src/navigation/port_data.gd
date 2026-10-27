@@ -7,7 +7,11 @@ extends Resource
 
 ## Stable identifier used in saves and routes. Never rename once shipped.
 @export var id: StringName
-@export var display_name := ""
+## Shown in the current language (I019): the catalogue's English name is the
+## message key; most harbours keep their own name.
+@export var display_name := "":
+	get:
+		return Loc.t(display_name, "place")
 @export var country := ""
 @export_range(-90.0, 90.0, 0.0001) var latitude := 0.0
 @export_range(-180.0, 180.0, 0.0001) var longitude := 0.0

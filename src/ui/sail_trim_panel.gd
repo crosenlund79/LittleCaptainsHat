@@ -74,14 +74,14 @@ func refresh() -> void:
 	_slider.set_value_no_signal(float(trim.value))
 	_auto.set_pressed_no_signal(bool(trim.auto))
 	var angle := propulsion.true_wind_angle
-	_wind.text = "Wind %d kn, %d° on the %s (%s)" % [roundi(propulsion.wind_speed_kn), roundi(absf(angle)),
+	_wind.text = Loc.t("Wind %d kn, %d° on the %s (%s)") % [roundi(propulsion.wind_speed_kn), roundi(absf(angle)),
 		PropulsionState.wind_side(angle), PropulsionState.point_of_sail_name(angle).to_lower()]
 	if propulsion.is_motoring():
 		_feedback.text = "Under engine: the sails are not drawing."
 	else:
 		var word := SailTrim.feedback(trim.auto, trim.value, angle, propulsion.wind_speed_kn)
 		var pct := SailTrim.percent(trim.auto, trim.value, angle, propulsion.wind_speed_kn)
-		_feedback.text = word if trim.auto else "%s  ·  speed %+d %%" % [word, pct]
+		_feedback.text = word if trim.auto else Loc.t("%s  ·  speed %+d %%") % [word, pct]
 	_sketch.queue_redraw()
 
 

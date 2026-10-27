@@ -63,12 +63,12 @@ static func imagine(destination_id: StringName) -> Dictionary:
 	var result := {"ok": true, "text": "", "nm": 0.0, "stops": [] as Array[StringName], "hours": 0.0,
 		"path": PackedVector2Array(), "tone": tone}
 	if destination_id == origin_port:
-		result.text = "%s. I'm already here, and it's lovely." % destination.display_name
+		result.text = Loc.t("%s. I'm already here, and it's lovely.") % destination.display_name
 		return _remember(key, result)
 	var planned := SeaRouter.get_default().plan_route(origin_port, here, [] as Array[Vector2], destination_id)
 	if not planned.is_ok():
 		result.ok = false
-		result.text = "%s... I can't see a way there by sea from here." % destination.display_name
+		result.text = Loc.t("%s... I can't see a way there by sea from here.") % destination.display_name
 		return _remember(key, result)
 	var path: PackedVector2Array = planned.route.path
 	var nm := GeoMath.path_length_nm(path)
@@ -151,7 +151,7 @@ static func _place(id: StringName) -> String:
 	var country := port.country
 	if home and home.country == country:
 		return port.display_name
-	return "%s in %s" % [port.display_name, country] if not country.is_empty() else port.display_name
+	return Loc.t("%s in %s") % [port.display_name, country] if not country.is_empty() else port.display_name
 
 
 ## The few lines of thought (authored templates; see the class notes).
@@ -164,29 +164,29 @@ static func compose(destination: PortData, nm: float, stops: Array[StringName], 
 		names.append(_place(id))
 	match names.size():
 		0:
-			lines.append("Mostly open water the whole way." if nm >= SHORT_ROUTE_NM else "A straightforward sail.")
+			lines.append(Loc.t("Mostly open water the whole way.") if nm >= SHORT_ROUTE_NM else Loc.t("A straightforward sail."))
 		1:
-			lines.append("I could stop at %s on the way." % names[0])
+			lines.append(Loc.t("I could stop at %s on the way.") % names[0])
 		2:
-			lines.append("I could make my way toward %s, then stop at %s." % [names[0], names[1]])
+			lines.append(Loc.t("I could make my way toward %s, then stop at %s.") % [names[0], names[1]])
 		_:
-			lines.append("I could make my way toward %s, stop at %s, and rest a while in %s before the last stretch." % [names[0], names[1], names[2]])
+			lines.append(Loc.t("I could make my way toward %s, stop at %s, and rest a while in %s before the last stretch.") % [names[0], names[1], names[2]])
 	var hours := float(readiness.get("hours", 0.0))
 	if hours > PassageReadiness.OCEAN_PASSAGE_HOURS:
-		lines.append("Weeks at sea, by the look of it.")
+		lines.append(Loc.t("Weeks at sea, by the look of it."))
 	elif hours > PassageReadiness.LONG_PASSAGE_HOURS:
-		lines.append("Several days at sea.")
+		lines.append(Loc.t("Several days at sea."))
 	elif hours > PassageReadiness.OVERNIGHT_HOURS:
-		lines.append("An overnight sail.")
+		lines.append(Loc.t("An overnight sail."))
 	# A gentle word from Passage Readiness, only about things the game knows.
 	for item: Dictionary in readiness.get("items", []):
 		if int(item.level) != PassageReadiness.CONSIDER:
 			continue
 		if String(item.topic) in ["stores", "stores_capacity"]:
-			lines.append("I'd want to stock up properly first.")
+			lines.append(Loc.t("I'd want to stock up properly first."))
 			break
 		if String(item.topic) == "hull":
-			lines.append("And the boat would want some care before a trip like that.")
+			lines.append(Loc.t("And the boat would want some care before a trip like that."))
 			break
 	lines.append(CLOSINGS[tone])
 	return " ".join(lines)

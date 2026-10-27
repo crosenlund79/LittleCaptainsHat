@@ -68,14 +68,14 @@ static func describe_trophies() -> String:
 	var catalog := FishingCatalog.get_default()
 	var fishing := GameSession.get_fishing()
 	if fishing.trophies.is_empty():
-		return "No catches yet. The rod is on the stern rail."
+		return Loc.t("No catches yet. The rod is on the stern rail.")
 	var lines := PackedStringArray()
 	for i in fishing.trophies.size():
 		var fish: Dictionary = fishing.trophies[i]
 		var day := Time.get_datetime_dict_from_unix_time(int(fish.caught_at))
-		lines.append("%d.  %s, %.1f kg  ·  %s  ·  %d %s%s" % [i + 1, catalog.get_species_name(fish.species), float(fish.kg),
-			catalog.rarity_name(fish.species), day.day, MONTHS[day.month - 1],
-			(", " + String(fish.where)) if String(fish.get("where", "")) != "" else ""])
+		lines.append(Loc.format("%d.  %s, %.1f kg  ·  %s  ·  %d %s%s", [i + 1, catalog.get_species_name(fish.species), float(fish.kg),
+			catalog.rarity_name(fish.species), day.day, Loc.month_short(day.month),
+			(", " + String(fish.where)) if String(fish.get("where", "")) != "" else ""]))
 	return "\n".join(lines)
 
 
@@ -85,6 +85,6 @@ static func describe_record() -> String:
 	var species := PackedStringArray()
 	for id: String in fishing.records:
 		var best := float(fishing.records[id].best_kg)
-		species.append("%s %d%s" % [catalog.get_species_name(id), int(fishing.records[id].count), (" (best %.1f kg)" % best) if best > 0.0 else ""])
-	return "Caught %d fish of %d species  ·  released %d  ·  sold %d%s.%s" % [fishing.total_caught, fishing.records.size(),
-		fishing.released, fishing.sold, ("  ·  %d shark%s swam free" % [fishing.sharks_released, "" if fishing.sharks_released == 1 else "s"]) if fishing.sharks_released > 0 else "", ("\n" + ", ".join(species)) if not species.is_empty() else ""]
+		species.append("%s %d%s" % [catalog.get_species_name(id), int(fishing.records[id].count), (Loc.format(" (best %.1f kg)", best)) if best > 0.0 else ""])
+	return Loc.t("Caught %d fish of %d species  ·  released %d  ·  sold %d%s.%s") % [fishing.total_caught, fishing.records.size(),
+		fishing.released, fishing.sold, (Loc.n("  ·  %d shark swam free", "  ·  %d sharks swam free", fishing.sharks_released) % fishing.sharks_released) if fishing.sharks_released > 0 else "", ("\n" + ", ".join(species)) if not species.is_empty() else ""]

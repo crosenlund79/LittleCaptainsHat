@@ -58,9 +58,9 @@ func get_hull_type_name() -> String:
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()
 	if id.is_empty():
-		problems.append("no id")
+		problems.append(Loc.t("no id"))
 	if performance == null:
-		problems.append("no performance profile")
+		problems.append(Loc.t("no performance profile"))
 	if deck_scene == null or cabin_scene == null:
-		problems.append("missing deck or cabin scene")
+		problems.append(Loc.t("missing deck or cabin scene"))
 	return problems

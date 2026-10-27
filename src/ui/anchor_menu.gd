@@ -72,7 +72,7 @@ func _ready() -> void:
 	_scope = OptionButton.new()
 	_scope.name = "Scope"
 	for scope in AnchorState.SCOPES:
-		_scope.add_item("%d × the depth%s" % [scope, {3: " (short)", 5: " (usual)", 7: " (long, holds best)"}[scope]])
+		_scope.add_item(Loc.t("%d × the depth%s") % [scope, {3: Loc.t(" (short)"), 5: Loc.t(" (usual)"), 7: Loc.t(" (long, holds best)")}[scope]])
 	_scope.select(1)
 	_scope.item_selected.connect(_on_scope_selected)
 	row.add_child(_scope)
@@ -97,7 +97,7 @@ func _ready() -> void:
 	_set_button.pressed.connect(func() -> void: catch_set())
 	_set_box.add_child(_set_button)
 	_build_magic_box()
-	_limits = _label("Limits", "Depths are GAME ESTIMATES, for play, not navigation. The normal anchor reaches %d-%d m; shelter is judged from the open water upwind, and the bottom is taken to be ordinary mixed ground everywhere." % [
+	_limits = _label("Limits", Loc.t("Depths are GAME ESTIMATES, for play, not navigation. The normal anchor reaches %d-%d m; shelter is judged from the open water upwind, and the bottom is taken to be ordinary mixed ground everywhere.") % [
 		roundi(AnchorSite.MIN_DEPTH_M), roundi(AnchorSite.NORMAL_MAX_DEPTH_M)], &"MutedLabel")
 	_button("CloseButton", "Close", close)
 	_ack = _button("AckButton", "Alarm seen", _on_ack)
@@ -119,11 +119,11 @@ func refresh() -> void:
 		var anchor := GameSession.get_anchor()
 		var site := GameSession.evaluate_anchorage()
 		var wind := Simulation.get_weather_at_vessel()
-		_site.text = "At anchor on %d × the depth of chain, %s. %s" % [anchor.scope, String(site.get("shelter", "")),
+		_site.text = Loc.t("At anchor on %d × the depth of chain, %s. %s") % [anchor.scope, String(site.get("shelter", "")),
 			Hud.describe_wind(wind) + "."]
 		if anchor.dragged_nm > 0.0:
-			_site.text += "  Dragged %.2f nm so far." % anchor.dragged_nm
-		_holding.text = AnchorSite.holding_text(anchor.holding) + ("  ·  ALARM" if anchor.alarm else "")
+			_site.text += Loc.format("  Dragged %.2f nm so far.", anchor.dragged_nm)
+		_holding.text = AnchorSite.holding_text(anchor.holding) + (Loc.t("  ·  ALARM") if anchor.alarm else "")
 		UiTheme.tint(_holding, HOLDING_ROLES.get(anchor.holding, &""))
 		_scope.select(AnchorState.SCOPES.find(anchor.scope))
 	else:
@@ -139,9 +139,9 @@ func refresh() -> void:
 	_magic.disabled = busy or GameSession.anchoring_refusal(AnchorState.KIND_MAGIC) != ""
 	_magic.tooltip_text = GameSession.anchoring_refusal(AnchorState.KIND_MAGIC) if _magic.disabled and not busy else GameSession.MAGIC_ANCHOR_TEXT
 	if anchored and GameSession.get_anchor().kind == AnchorState.KIND_MAGIC:
-		_site.text = "The %s holds. %s" % [GameSession.MAGIC_ANCHOR_NAME, _site.text]
+		_site.text = Loc.t("The %s holds. %s") % [GameSession.MAGIC_ANCHOR_NAME, _site.text]
 	if anchored and GameSession.get_anchor().depth_m > 0.0:
-		_site.text += "  Depth here %s (GAME ESTIMATE)." % DepthService.describe_depth(GameSession.get_anchor().depth_m)
+		_site.text += Loc.t("  Depth here %s (GAME ESTIMATE).") % DepthService.describe_depth(GameSession.get_anchor().depth_m)
 	_raise.visible = anchored
 	_raise.disabled = busy
 	_reset.visible = anchored
@@ -178,7 +178,7 @@ func _on_scope_selected(index: int) -> void:
 	AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
 	SessionLog.write("anchor", {"action": "scope", "scope": AnchorState.SCOPES[index], "holding": String(holding)})
 	time_requested.emit(ADJUST_MINUTES)
-	notify("%d × the depth of chain out: %s." % [AnchorState.SCOPES[index], AnchorSite.holding_text(holding).to_lower()])
+	notify(Loc.t("%d × the depth of chain out: %s.") % [AnchorState.SCOPES[index], AnchorSite.holding_text(holding).to_lower()])
 	refresh()
 
 
@@ -244,14 +244,14 @@ func catch_set(at := -1.0) -> Dictionary:
 			notify(result.error)
 		else:
 			time_requested.emit(DROP_MINUTES)
-			notify("The anchor is down and %s: %s." % ["well set" if quality >= 0.7 else ("set" if quality >= 0.35 else "barely set"),
+			notify(Loc.t("The anchor is down and %s: %s.") % [Loc.t("well set") if quality >= 0.7 else ("set" if quality >= 0.35 else Loc.t("barely set")),
 				AnchorSite.holding_text(result.holding).to_lower()])
 	else:
 		var holding := GameSession.adjust_anchor(get_scope(), quality)
 		result = {"error": "", "holding": holding}
 		SessionLog.write("anchor", {"action": "reset", "scope": get_scope(), "set": snappedf(quality, 0.01), "holding": String(holding)})
 		time_requested.emit(ADJUST_MINUTES)
-		notify("Set again: %s." % AnchorSite.holding_text(holding).to_lower())
+		notify(Loc.t("Set again: %s.") % AnchorSite.holding_text(holding).to_lower())
 	result["set_quality"] = quality
 	refresh()
 	return result
@@ -271,7 +271,7 @@ func _on_raise() -> void:
 	AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
 	SessionLog.write("anchor", {"action": "raise"})
 	time_requested.emit(RAISE_MINUTES)
-	notify("Anchor up. The voyage continues.")
+	notify(Loc.t("Anchor up. The voyage continues."))
 	refresh()
 
 
@@ -366,8 +366,7 @@ func _show_magic_attempt() -> void:
 	_magic_retry.visible = false
 	_magic_cancel.visible = true
 	var n := _deployment.check.checks_needed
-	_magic_feedback.text = "%d good %s to set it down%s." % [n, "turn" if n == 1 else "turns",
-		"" if n == 1 else " in this wind"]
+	_magic_feedback.text = (Loc.t("%d good turn to set it down.") % n if n == 1 else Loc.t("%d good turns to set it down in this wind.") % n)
 	_magic_cancel.grab_focus()
 
 
@@ -377,7 +376,7 @@ func step_magic(delta: float) -> void:
 		return
 	_deployment.check.step(delta)
 	if _deployment.failed():
-		_magic_failed("The flukes found nothing to hold before the line went slack.")
+		_magic_failed(Loc.t("The flukes found nothing to hold before the line went slack."))
 
 
 ## The captain presses (key, a click on the dial).
@@ -399,20 +398,20 @@ func press_magic() -> StringName:
 			# Hauling back a little and paying out again takes time.
 			time_requested.emit(MagicAnchorDeployment.MISS_MINUTES)
 			var left := _deployment.check.get_line_control()
-			_magic_feedback.text = "Missed - it skips over the bottom (%d min). %d %s left." % [
-				roundi(MagicAnchorDeployment.MISS_MINUTES), left, "try" if left == 1 else "tries"]
+			_magic_feedback.text = Loc.n("Missed - it skips over the bottom (%d min). %d try left.",
+				"Missed - it skips over the bottom (%d min). %d tries left.", left) % [roundi(MagicAnchorDeployment.MISS_MINUTES), left]
 	SessionLog.write("anchor", {"action": "magic_press", "outcome": String(outcome)})
 	if _deployment.succeeded():
 		_magic_bit()
 	elif _deployment.failed():
-		_magic_failed("Too many misses: the Magic Anchor has not bitten.")
+		_magic_failed(Loc.t("Too many misses: the Magic Anchor has not bitten."))
 	elif outcome != TimingCheck.PRESS_MISS:
-		_magic_feedback.text += "  %d more to go." % (_deployment.check.checks_needed - _deployment.check.hits)
+		_magic_feedback.text += Loc.t("  %d more to go.") % (_deployment.check.checks_needed - _deployment.check.hits)
 	return outcome
 
 
 func _magic_failed(why: String) -> void:
-	_magic_feedback.text = "%s The boat is not anchored and drifts with the weather. Try again, or cancel." % why
+	_magic_feedback.text = Loc.t("%s The boat is not anchored and drifts with the weather. Try again, or cancel.") % why
 	_magic_retry.visible = true
 	_magic_retry.grab_focus()
 	SessionLog.write("anchor", {"action": "magic_failed", "attempts": _deployment.attempts})
@@ -461,9 +460,9 @@ func _magic_bit() -> void:
 	_flourish = FLOURISH_SECONDS
 	AudioManager.play_sfx(FishingSounds.chain(), FishingSounds.DB)
 	time_requested.emit(DROP_MINUTES)
-	var text := "The %s is down and holding: %s." % [GameSession.MAGIC_ANCHOR_NAME, AnchorSite.holding_text(result.holding).to_lower()]
+	var text := Loc.t("The %s is down and holding: %s.") % [GameSession.MAGIC_ANCHOR_NAME, AnchorSite.holding_text(result.holding).to_lower()]
 	if bool(result.site.get("offshore", false)):
-		text += " Out here it holds the boat's position - it is no shelter from the weather."
+		text += Loc.t(" Out here it holds the boat's position - it is no shelter from the weather.")
 	notify(text)
 	refresh()
 

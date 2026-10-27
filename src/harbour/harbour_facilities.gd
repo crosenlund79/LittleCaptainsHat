@@ -106,8 +106,8 @@ func get_ids() -> Array[StringName]:
 
 ## A player-facing name for refusals: "the boatyard".
 static func describe(facility: StringName) -> String:
-	return {GROCERY: "grocery store", BOATYARD: "boatyard", GO_ASHORE: "place to go ashore",
-		HAUL_OUT: "yard that can haul boats out"}.get(facility, String(facility))
+	return {GROCERY: Loc.t("grocery store"), BOATYARD: "boatyard", GO_ASHORE: Loc.t("place to go ashore"),
+		HAUL_OUT: Loc.t("yard that can haul boats out")}.get(facility, String(facility))
 
 
 ## How each service is shown in a destination preview (Iteration 17), in
@@ -132,5 +132,5 @@ static func describe_services(port_id: StringName, brief := false) -> String:
 	for entry: Array in PREVIEW:
 		if facilities.has(entry[0]):
 			parts.append(entry[1] if brief or String(entry[2]).is_empty() else "%s (%s)" % [entry[1], entry[2]])
-	var services := "  ·  ".join(parts) if not parts.is_empty() else "no services"
+	var services := "  ·  ".join(parts) if not parts.is_empty() else Loc.t("no services")
 	return "%s: %s" % [TIER_NAMES[facilities.get_tier()], services]

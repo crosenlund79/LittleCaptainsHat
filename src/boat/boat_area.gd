@@ -566,10 +566,10 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 			elif GameSession.coffee_waits_here():
 				message_requested.emit(GameSession.pick_up_coffee())
 			else:
-				message_requested.emit("The cup holder, just the size of a mug. Make a coffee in the galley.")
+				message_requested.emit(Loc.t("The cup holder, just the size of a mug. Make a coffee in the galley."))
 		&"pet":
 			if GameSession.free_hands() == 0:
-				message_requested.emit("Snøvs gets a friendly look: your hands are full (hat and coffee).")
+				message_requested.emit(Loc.t("Snøvs gets a friendly look: your hands are full (hat and coffee)."))
 				return
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
@@ -669,7 +669,7 @@ func _update_mooring() -> void:
 		mooring.visible = not GameSession.is_underway()
 	update_fenders()
 	if mooring_label and GameSession.get_location():
-		mooring_label.text = "GUEST PONTOON · %s" % GameSession.get_location().display_name.to_upper()
+		mooring_label.text = Loc.t("GUEST PONTOON · %s") % GameSession.get_location().display_name.to_upper()
 
 
 # --- Ashore (Iteration 12) ----------------------------------------------------------
@@ -698,7 +698,7 @@ func _setup_shore() -> void:
 		var go := Interactable.new()
 		go.name = "GoAshore"
 		go.interaction_id = HarbourFacilities.GO_ASHORE
-		go.prompt = "Go ashore"
+		go.prompt = Loc.t("Go ashore")
 		go.highlight_target = ^""
 		var shape := CollisionShape2D.new()
 		shape.name = "CollisionShape2D"
@@ -1219,7 +1219,7 @@ func _update_hat_station() -> void:
 	var station := get_node_or_null(^"Layout/Stations/Hat") as Interactable
 	if station == null:
 		return
-	station.prompt = HAT_PROMPTS.get(GameSession.get_hat_status(), "Captain's hat")
+	station.prompt = HAT_PROMPTS.get(GameSession.get_hat_status(), Loc.t("Captain's hat"))
 	if player and player.get_focused_interactable() == station:
 		interaction_prompt_changed.emit(station.prompt)
 	# Its outline follows the hook (the hat, or the empty plate); deferred so

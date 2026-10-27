@@ -53,27 +53,27 @@ static func lines_for_game() -> Dictionary:
 	if not GameSession.is_active():
 		return lines
 	if not GameSession.get_pending_bite().is_empty():
-		lines.bite = ["Fish on! Reel in", AMBER, true]
+		lines.bite = [Loc.t("Fish on! Reel in"), AMBER, true]
 	if GameSession.is_anchored():
 		var anchor := GameSession.get_anchor()
 		if anchor.holding == AnchorState.HOLDING_DRAGGING:
-			lines.anchor = ["Anchor dragging! Go to the windlass", RED, false]
+			lines.anchor = [Loc.t("Anchor dragging! Go to the windlass"), RED, false]
 		else:
 			var settled := ""
 			if GameSession.is_settled_at_anchor():
 				# Life at anchor (0.102b): the badge says how the stay feels.
-				settled = {AnchorLife.PHASE_EVENING: "  ·  a quiet evening", AnchorLife.PHASE_NIGHT: "  ·  a calm night",
-					AnchorLife.PHASE_MORNING: "  ·  a still morning"}.get(GameSession.get_day_phase(), "")
-			lines.anchor = ["At anchor  ·  %s%s" % [AnchorSite.holding_text(anchor.holding), settled],
+				settled = {AnchorLife.PHASE_EVENING: Loc.t("  ·  a quiet evening"), AnchorLife.PHASE_NIGHT: Loc.t("  ·  a calm night"),
+					AnchorLife.PHASE_MORNING: Loc.t("  ·  a still morning")}.get(GameSession.get_day_phase(), "")
+			lines.anchor = [Loc.t("At anchor  ·  %s%s") % [AnchorSite.holding_text(anchor.holding), settled],
 				AMBER if anchor.holding == AnchorState.HOLDING_POOR else CALM, false]
 	if GameSession.is_line_out():
 		if GameSession.get_fishing_mode() == FishingState.MODE_TROLLING:
 			var too_fast := GameSession.get_vessel_speed_kn() > FishingCatalog.get_default().max_trolling_kn
-			lines.line = ["Line out  ·  too fast to troll" if too_fast else "Line out  ·  trolling", AMBER if too_fast else CALM, false]
+			lines.line = [Loc.t("Line out  ·  too fast to troll") if too_fast else Loc.t("Line out  ·  trolling"), AMBER if too_fast else CALM, false]
 		else:
-			lines.line = ["Line out", CALM, false]
+			lines.line = [Loc.t("Line out"), CALM, false]
 	if GameSession.is_well_fed():
-		lines.fed = ["Well fed", CALM, false]
+		lines.fed = [Loc.t("Well fed"), CALM, false]
 	return lines
 
 

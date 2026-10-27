@@ -408,7 +408,7 @@ func _sync() -> void:
 	position = _rest_position()
 	_sync_rotation()
 	update_highlight()
-	interactable.prompt = "Pet %s" % CompanionState.display_name(kind)
+	interactable.prompt = Loc.t("Pet %s") % CompanionState.display_name(kind)
 	_update_interactable()
 
 

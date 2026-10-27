@@ -330,7 +330,7 @@ func start_new_game(companion_kind: StringName = CompanionState.DEFAULT_KIND) ->
 func continue_game() -> void:
 	var slot := SaveManager.get_most_recent_valid_slot()
 	if slot == 0:
-		notify("There is no saved game to continue.")
+		notify(Loc.t("There is no saved game to continue."))
 		return
 	load_slot(slot)
 
@@ -338,8 +338,8 @@ func continue_game() -> void:
 ## Loads a slot, asking first if the current session has unsaved progress.
 func request_load(slot: int) -> void:
 	if GameSession.has_unsaved_changes():
-		var proceed: bool = await modals.confirm("Load this game?",
-			"Progress since your last save will be lost.", "Load")
+		var proceed: bool = await modals.confirm(Loc.t("Load this game?"),
+			Loc.t("Progress since your last save will be lost."), "Load")
 		if not proceed:
 			return
 	load_slot(slot)
@@ -350,11 +350,11 @@ func request_load(slot: int) -> void:
 func load_slot(slot: int) -> void:
 	var result := SaveManager.load_from_slot(slot)
 	if not result.is_ok():
-		notify("Could not load %s. %s" % [SaveManager.slot_name(slot), result.error])
+		notify(Loc.t("Could not load %s. %s") % [SaveManager.slot_name(slot), result.error])
 		return
 	modals.clear()
 	GameSession.replace_state(result.state)
-	notify("Loaded %s." % SaveManager.slot_name(slot))
+	notify(Loc.t("Loaded %s.") % SaveManager.slot_name(slot))
 	_show_current_boat_area()
 
 
@@ -372,13 +372,13 @@ var _last_quick_msec := -100000
 ## Why a quicksave cannot be taken now ("" when it can).
 func quicksave_blocker() -> String:
 	if not GameSession.is_active():
-		return "There is no game to save."
+		return Loc.t("There is no game to save.")
 	if router.is_busy() or not router.current_screen is BoatArea:
-		return "You can quicksave aboard the boat."
+		return Loc.t("You can quicksave aboard the boat.")
 	if not modals.is_empty():
-		return "Close the open window to quicksave."
+		return Loc.t("Close the open window to quicksave.")
 	if Simulation.is_passage_running():
-		return "Stop the Long Passage to quicksave."
+		return Loc.t("Stop the Long Passage to quicksave.")
 	return ""
 
 
@@ -393,9 +393,9 @@ func quicksave() -> void:
 	var err := SaveManager.save_to_slot(SaveManager.QUICKSAVE_SLOT, GameSession.get_state_snapshot())
 	if err == OK:
 		GameSession.mark_saved()
-		notify("Quicksaved (F9 to load).")
+		notify(Loc.t("Quicksaved (F9 to load)."))
 	else:
-		notify("Quicksave failed (%s). The previous quicksave was kept." % error_string(err))
+		notify(Loc.t("Quicksave failed (%s). The previous quicksave was kept.") % error_string(err))
 
 
 func quickload() -> void:
@@ -403,11 +403,11 @@ func quickload() -> void:
 		return
 	_last_quick_msec = Time.get_ticks_msec()
 	if not SaveManager.get_slot_info(SaveManager.QUICKSAVE_SLOT).is_loadable():
-		notify("No quicksave yet. Press F5 aboard to quicksave.")
+		notify(Loc.t("No quicksave yet. Press F5 aboard to quicksave."))
 		return
 	if GameSession.is_active() and GameSession.has_unsaved_changes():
-		var proceed: bool = await modals.confirm("Load the quicksave?",
-			"Progress since your last save will be lost.", "Load")
+		var proceed: bool = await modals.confirm(Loc.t("Load the quicksave?"),
+			Loc.t("Progress since your last save will be lost."), "Load")
 		if not proceed:
 			return
 	load_slot(SaveManager.QUICKSAVE_SLOT)
@@ -415,8 +415,8 @@ func quickload() -> void:
 
 func request_main_menu() -> void:
 	if GameSession.has_unsaved_changes():
-		var proceed: bool = await modals.confirm("Return to main menu?",
-			"Progress since your last save will be lost.", "Leave without saving")
+		var proceed: bool = await modals.confirm(Loc.t("Return to main menu?"),
+			Loc.t("Progress since your last save will be lost."), Loc.t("Leave without saving"))
 		if not proceed:
 			return
 	show_main_menu()
@@ -437,9 +437,9 @@ func import_legacy_saves() -> void:
 	var count := LegacySaves.count_importable()
 	if count == 0 or not modals.is_empty():
 		return
-	var go: bool = await modals.confirm("Import Next Harbor saves?",
-		"%d save%s from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten." % [
-			count, "" if count == 1 else "s"], "Import")
+	var go: bool = await modals.confirm(Loc.t("Import Next Harbor saves?"),
+		Loc.n("%d save from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten.",
+			"%d saves from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten.", count) % count, "Import")
 	if not go:
 		return
 	notify(LegacySaves.describe(LegacySaves.import_all()))
@@ -460,7 +460,7 @@ func open_chart() -> void:
 func toggle_chartplotter() -> void:
 	ChartPlotter.shown = not ChartPlotter.shown
 	if ChartPlotter.shown and not (GameSession.is_underway() and _is_on_deck()):
-		notify("The chartplotter shows on deck while underway.")
+		notify(Loc.t("The chartplotter shows on deck while underway."))
 
 
 ## The actions that make sense here, for the action wheel:
@@ -473,49 +473,49 @@ func get_wheel_actions() -> Array[Dictionary]:
 		return actions
 	var add := func(id: StringName, label: String, action: Callable) -> void:
 		actions.append({"id": id, "label": label, "action": action})
-	var go_label := "Go below" if area.area_id == SessionState.AREA_EXTERIOR else "Go on deck"
+	var go_label := Loc.t("Go below") if area.area_id == SessionState.AREA_EXTERIOR else Loc.t("Go on deck")
 	# A fish on the line comes first (Iteration 18).
 	if not GameSession.get_pending_bite().is_empty():
-		add.call(&"reel_in", "Reel in!", func() -> void: open_fishing.call_deferred())
+		add.call(&"reel_in", Loc.t("Reel in!"), func() -> void: open_fishing.call_deferred())
 	if area.area_id == SessionState.AREA_INTERIOR:
 		add.call(&"sleep", "Sleep", open_sleep_menu)
-		add.call(&"dream_map", "World map", open_dream_map)
-		add.call(&"chart", "Chart table", open_chart)
+		add.call(&"dream_map", Loc.t("World map"), open_dream_map)
+		add.call(&"chart", Loc.t("Chart table"), open_chart)
 		add.call(&"provisions", "Provisions", open_provisions)
 	else:
 		if GameSession.is_underway():
 			# On/off items show a check mark read from the setting itself (Cozy Polish).
-			add.call(&"chartplotter", "Chart plotter", toggle_chartplotter)
+			add.call(&"chartplotter", Loc.t("Chart plotter"), toggle_chartplotter)
 			actions.back().checked = func() -> bool: return ChartPlotter.shown
-			add.call(&"sailing_panel", "Sailing details", func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
+			add.call(&"sailing_panel", Loc.t("Sailing details"), func() -> void: SailingPanel.collapsed = not SailingPanel.collapsed)
 			actions.back().checked = func() -> bool: return not SailingPanel.collapsed
 			add.call(&"radar", "Radar", func() -> void: RadarPanel.shown = not RadarPanel.shown)
 			actions.back().checked = func() -> bool: return RadarPanel.shown
 			if not GameSession.is_anchored():
-				add.call(&"sail_trim", "Trim sails", func() -> void: open_sail_trim.call_deferred())
+				add.call(&"sail_trim", Loc.t("Trim sails"), func() -> void: open_sail_trim.call_deferred())
 			if GameSession.is_anchored() or GameSession.anchoring_refusal() == "" or GameSession.is_holding_at_anchorage():
 				add.call(&"anchor", "Anchor", func() -> void: open_anchor())
 			if GameSession.is_holding_at_anchorage():
-				add.call(&"sail_on", "Sail on from the anchorage", func() -> void:
+				add.call(&"sail_on", Loc.t("Sail on from the anchorage"), func() -> void:
 					var error := GameSession.sail_on_from_anchorage()
-					notify("Sailing on along the course." if error == "" else error))
+					notify(Loc.t("Sailing on along the course.") if error == "" else error))
 		elif GameSession.get_planned_route() != null:
-			add.call(&"set_sail", "Set sail", request_departure)
+			add.call(&"set_sail", Loc.t("Set sail"), request_departure)
 		add.call(&"chart", "Charts", open_chart)
 		if GameSession.get_pending_bite().is_empty():
-			add.call(&"fishing", "Fishing rod", func() -> void: open_fishing.call_deferred())
+			add.call(&"fishing", Loc.t("Fishing rod"), func() -> void: open_fishing.call_deferred())
 	add.call(&"go", go_label, func() -> void:
 		if router.current_screen == area and not router.is_busy():
 			area.begin_exit()
 			_on_area_change_requested(area.companionway_target_area, area.companionway_target_spawn))
 	# The coffee mug (Cozy Polish): set down here, take it, or drink up.
 	if GameSession.is_carrying_coffee():
-		add.call(&"coffee_down", "Coffee in the holder" if area.area_id == SessionState.AREA_EXTERIOR else "Set coffee down",
+		add.call(&"coffee_down", Loc.t("Coffee in the holder") if area.area_id == SessionState.AREA_EXTERIOR else Loc.t("Set coffee down"),
 			func() -> void: notify(GameSession.put_coffee_down()))
-		add.call(&"coffee_finish", "Finish the coffee", func() -> void: notify(GameSession.finish_coffee()))
+		add.call(&"coffee_finish", Loc.t("Finish the coffee"), func() -> void: notify(GameSession.finish_coffee()))
 	elif GameSession.coffee_waits_here():
-		add.call(&"coffee_take", "Take your coffee", func() -> void: notify(GameSession.pick_up_coffee()))
-	add.call(&"log", "log" if not GameSession.is_underway() else "Captain's Log", toggle_captains_log)
+		add.call(&"coffee_take", Loc.t("Take your coffee"), func() -> void: notify(GameSession.pick_up_coffee()))
+	add.call(&"log", "log" if not GameSession.is_underway() else Loc.t("Captain's Log"), toggle_captains_log)
 	return actions
 
 
@@ -526,7 +526,7 @@ func open_sail_trim() -> SailTrimPanel:
 	if not _hand_free():
 		return null
 	if not GameSession.is_underway() or GameSession.is_anchored():
-		notify("Sail trim is for sailing: set sail first." if not GameSession.is_underway() else "At anchor the sails are down.")
+		notify(Loc.t("Sail trim is for sailing: set sail first.") if not GameSession.is_underway() else Loc.t("At anchor the sails are down."))
 		return null
 	var panel := SailTrimPanel.new()
 	modals.push(panel)
@@ -538,8 +538,8 @@ func open_action_wheel() -> ActionWheel:
 		return null
 	var area := router.current_screen as BoatArea
 	var wheel := ActionWheel.new()
-	var title := "In the cabin" if area.area_id == SessionState.AREA_INTERIOR else (
-		"At anchor" if GameSession.is_anchored() else ("At the helm" if GameSession.is_underway() else "On deck"))
+	var title := Loc.t("In the cabin") if area.area_id == SessionState.AREA_INTERIOR else (
+		Loc.t("At anchor") if GameSession.is_anchored() else (Loc.t("At the helm") if GameSession.is_underway() else Loc.t("On deck")))
 	wheel.setup(get_wheel_actions(), title)
 	modals.push(wheel)
 	return wheel
@@ -574,9 +574,9 @@ func open_chart_from_warning() -> void:
 func close_chart() -> void:
 	var map := router.current_screen as WorldMap
 	if map and map.has_unapplied_changes():
-		var leave: bool = await modals.confirm("Leave the chart?",
-			"Your course changes have not been applied. The current course stays as it is.",
-			"Discard changes", "Keep editing")
+		var leave: bool = await modals.confirm(Loc.t("Leave the chart?"),
+			Loc.t("Your course changes have not been applied. The current course stays as it is."),
+			Loc.t("Discard changes"), Loc.t("Keep editing"))
 		if not leave:
 			return
 	_show_current_boat_area()
@@ -588,23 +588,23 @@ func close_chart() -> void:
 func request_departure() -> void:
 	var route := GameSession.get_planned_route()
 	if route == null or not route.has_path():
-		notify("Plot a course at the chart table before setting sail.")
+		notify(Loc.t("Plot a course at the chart table before setting sail."))
 		return
 	var catalog := PortCatalog.get_default()
 	var estimate := Simulation.estimate_route_seconds(route.path)
-	var waypoints := "" if route.waypoints.is_empty() else " via %d waypoint%s" % [
-		route.waypoints.size(), "" if route.waypoints.size() == 1 else "s"]
+	var waypoints := "" if route.waypoints.is_empty() else Loc.n(" via %d waypoint", " via %d waypoints",
+		route.waypoints.size()) % route.waypoints.size()
 	# Passage Readiness (Iteration 14): advice in the question, never a refusal.
 	var readiness := PassageReadiness.assess(route.path)
 	SessionLog.write("readiness", {"to": String(route.destination_port_id), "level": readiness.level,
 		"topics": readiness.items.filter(func(i: Dictionary) -> bool: return int(i.level) > 0).map(func(i: Dictionary) -> String: return String(i.topic))})
-	var go: bool = await modals.confirm("Set sail for %s?" % catalog.get_display_name(route.destination_port_id),
-		"%d nm%s, about %s with the expected wind (estimate).\n\n%s" % [roundi(route.get_distance_nm()), waypoints,
-			Simulation.format_duration(estimate), PassageReadiness.describe(readiness, 3)], "Set sail")
+	var go: bool = await modals.confirm(Loc.t("Set sail for %s?") % catalog.get_display_name(route.destination_port_id),
+		Loc.t("%d nm%s, about %s with the expected wind (estimate).\n\n%s") % [roundi(route.get_distance_nm()), waypoints,
+			Simulation.format_duration(estimate), PassageReadiness.describe(readiness, 3)], Loc.t("Set sail"))
 	if not go:
 		return
 	var error := GameSession.depart()
-	notify(error if not error.is_empty() else "Underway to %s. The autopilot holds the course." %
+	notify(error if not error.is_empty() else Loc.t("Underway to %s. The autopilot holds the course.") %
 		catalog.get_display_name(route.destination_port_id))
 
 
@@ -613,7 +613,7 @@ func request_departure() -> void:
 ## switch; the controller's minimum times still apply).
 func _on_helm_requested() -> void:
 	if GameSession.is_anchored():
-		notify("At anchor. Raise the anchor at the windlass on the foredeck before sailing on.")
+		notify(Loc.t("At anchor. Raise the anchor at the windlass on the foredeck before sailing on."))
 	elif GameSession.is_underway():
 		notify(describe_reassessment(Simulation.reassess_propulsion()))
 	else:
@@ -626,21 +626,21 @@ static func describe_reassessment(result: Dictionary) -> String:
 		return ""
 	var after: PropulsionState = result.after
 	var profile := GameSession.get_vessel_profile()
-	var conditions := "%.1f kn possible under sail in %d kn of wind" % [after.potential_kn, roundi(after.wind_speed_kn)]
+	var conditions := Loc.format("%.1f kn possible under sail in %d kn of wind", [after.potential_kn, roundi(after.wind_speed_kn)])
 	if result.changed:
 		if after.sails_set():
-			return "Sailing conditions favourable (%s). Sails set%s, engine stopped." % [conditions,
-				" with the spinnaker" if after.spinnaker else ""]
+			return Loc.t("Sailing conditions favourable (%s). Sails set%s, engine stopped.") % [conditions,
+				Loc.t(" with the spinnaker") if after.spinnaker else ""]
 		if after.engine_reason == PropulsionState.REASON_STALL:
-			return "Becalmed or head to wind (%s). Sails furled, engine started." % conditions
-		return "Insufficient sailing performance (%s). Sails furled, engine started." % conditions
+			return Loc.t("Becalmed or head to wind (%s). Sails furled, engine started.") % conditions
+		return Loc.t("Insufficient sailing performance (%s). Sails furled, engine started.") % conditions
 	if after.sails_set():
 		if after.potential_kn < profile.engine_start_below_kn:
-			return "Light wind (%s). The sails stay up a little longer; the engine starts if it does not improve." % conditions
-		return "Sails are drawing well (%s). No change needed." % conditions
+			return Loc.t("Light wind (%s). The sails stay up a little longer; the engine starts if it does not improve.") % conditions
+		return Loc.t("Sails are drawing well (%s). No change needed.") % conditions
 	if after.potential_kn > profile.engine_stop_above_kn:
-		return "The wind is filling in (%s). The engine runs a little longer before the sails go up." % conditions
-	return "Insufficient sailing performance (%s). Continuing under engine." % conditions
+		return Loc.t("The wind is filling in (%s). The engine runs a little longer before the sails go up.") % conditions
+	return Loc.t("Insufficient sailing performance (%s). Continuing under engine.") % conditions
 
 
 ## Opens the sleep dialog from the berth (cabin) or the chart's Sleep button.
@@ -652,7 +652,7 @@ func open_sleep_menu() -> void:
 	if not (router.current_screen is BoatArea or map):
 		return
 	if map and map.has_unapplied_changes():
-		notify("Apply or discard your course changes before sleeping.")
+		notify(Loc.t("Apply or discard your course changes before sleeping."))
 		return
 	var menu := sleep_menu_scene.instantiate() as SleepMenu
 	menu.sleep_requested.connect(sleep_for)
@@ -708,19 +708,19 @@ func _sleep_now(hours: float) -> Dictionary:
 static func _wake_reason(outcome: Dictionary) -> String:
 	match (outcome.result as Simulation.AdvanceResult).stopped_by:
 		Simulation.STOP_WARNING:
-			return "Woken by a weather warning"
+			return Loc.t("Woken by a weather warning")
 		Simulation.STOP_BITE:
-			return "Woken by the bell on the rod"
+			return Loc.t("Woken by the bell on the rod")
 		Simulation.STOP_ANCHOR:
-			return "Woken by the anchor alarm"
+			return Loc.t("Woken by the anchor alarm")
 		Simulation.STOP_ARRIVAL:
-			return "Woken: the boat has arrived"
+			return Loc.t("Woken: the boat has arrived")
 		Simulation.STOP_ANCHORAGE:
-			return "Woken at the anchorage"
+			return Loc.t("Woken at the anchorage")
 		Simulation.STOP_TRAFFIC:
-			return "Woken by a traffic warning"
+			return Loc.t("Woken by a traffic warning")
 		Simulation.STOP_VHF:
-			return "Woken by a call on the radio"
+			return Loc.t("Woken by a call on the radio")
 	return ""
 
 
@@ -731,25 +731,25 @@ func _after_sleep(_hours: float, outcome: Dictionary) -> void:
 		return  # the rescue has already brought the player ashore and reports itself
 	var slept := Simulation.format_duration(result.elapsed_seconds)
 	var now := Simulation.format_game_time(GameSession.get_game_time())
-	var still_paused := "  Time is still paused." if GameSession.is_paused() else ""
+	var still_paused := Loc.t("  Time is still paused.") if GameSession.is_paused() else ""
 	match result.stopped_by:
 		Simulation.STOP_WARNING:
-			notify("You were woken after %s by a weather warning. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You were woken after %s by a weather warning. It is %s.%s") % [slept, now, still_paused])
 		Simulation.STOP_BITE:
-			notify("You were woken after %s by the bell on the rod: a fish is on! Go up to the rod. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You were woken after %s by the bell on the rod: a fish is on! Go up to the rod. It is %s.%s") % [slept, now, still_paused])
 		Simulation.STOP_ANCHOR:
-			notify("You were woken after %s by the anchor alarm: %s. Go up to the windlass. It is %s.%s" % [slept,
+			notify(Loc.t("You were woken after %s by the anchor alarm: %s. Go up to the windlass. It is %s.%s") % [slept,
 				AnchorSite.holding_text(GameSession.get_anchor().holding).to_lower(), now, still_paused])
 		Simulation.STOP_ARRIVAL:
-			notify("You were woken after %s: the boat has arrived. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You were woken after %s: the boat has arrived. It is %s.%s") % [slept, now, still_paused])
 		Simulation.STOP_ANCHORAGE:
-			notify("You were woken after %s: we've arrived at our anchorage. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You were woken after %s: we've arrived at our anchorage. It is %s.%s") % [slept, now, still_paused])
 		Simulation.STOP_TRAFFIC:
-			notify("You were woken after %s by a traffic warning. Go up on deck and keep a lookout. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You were woken after %s by a traffic warning. Go up on deck and keep a lookout. It is %s.%s") % [slept, now, still_paused])
 		Simulation.STOP_VHF:
-			notify("You were woken after %s by a call for assistance on the radio. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You were woken after %s by a call for assistance on the radio. It is %s.%s") % [slept, now, still_paused])
 		_:
-			notify("You slept %s. It is %s.%s" % [slept, now, still_paused])
+			notify(Loc.t("You slept %s. It is %s.%s") % [slept, now, still_paused])
 	if not wake_line.is_empty():
 		toasts.show_message(wake_line, ANCHOR_MOMENT_SECONDS)
 
@@ -868,7 +868,7 @@ func open_grocery() -> void:
 	if not is_in_gameplay() or router.is_busy():
 		return
 	if not GameSession.is_moored_in_harbour():
-		notify("The grocery store is in harbour; you are at sea.")
+		notify(Loc.t("The grocery store is in harbour; you are at sea."))
 		return
 	if not GameSession.has_facility(HarbourFacilities.GROCERY):
 		_refuse_facility(HarbourFacilities.GROCERY)
@@ -940,7 +940,7 @@ func _on_fish_bite(_bite: Dictionary) -> void:
 	if modals.get_top() is FishingMenu:
 		return
 	_bite_wait = GameSession.BITE_WAIT_SECONDS
-	notify("Fish on! Press R to reel in (the rod is on the stern rail).")
+	notify(Loc.t("Fish on! Press R to reel in (the rod is on the stern rail)."))
 
 
 ## The fish waits a while (real time, while playing) before it gets away.
@@ -952,7 +952,7 @@ func _update_bite_wait(delta: float) -> void:
 		return
 	GameSession.expire_bite()
 	AudioManager.play_sfx(FishingSounds.snap(), FishingSounds.DB)
-	notify("The fish got away before you reached the rod. The line is still out.")
+	notify(Loc.t("The fish got away before you reached the rod. The line is still out."))
 	SessionLog.write("fishing_result", {"result": "escaped_unattended"})
 
 
@@ -978,8 +978,8 @@ func open_cooking() -> CookingMenu:
 func _on_meal_cooked(result: Dictionary) -> void:
 	var passed := Simulation.spend_time_aboard(float(result.minutes), true)
 	if passed.stopped_by != Simulation.STOP_NONE and passed.stopped_by != Simulation.STOP_RESCUE:
-		notify("While cooking: %s" % ("a fish is on the line!" if passed.stopped_by == Simulation.STOP_BITE else
-			("the anchor alarm went." if passed.stopped_by == Simulation.STOP_ANCHOR else "a weather warning came in.")))
+		notify(Loc.t("While cooking: %s") % (Loc.t("a fish is on the line!") if passed.stopped_by == Simulation.STOP_BITE else
+			(Loc.t("the anchor alarm went.") if passed.stopped_by == Simulation.STOP_ANCHOR else Loc.t("a weather warning came in."))))
 
 
 # --- The anchor (Iteration 13) --------------------------------------------------------
@@ -999,7 +999,7 @@ func show_anchorage_prompt() -> AnchoragePrompt:
 	prompt.anchor_requested.connect(func() -> void: open_anchor.call_deferred())
 	prompt.sail_on_requested.connect(func() -> void:
 		var error := GameSession.sail_on_from_anchorage()
-		notify("Sailing on along the course." if error == "" else error))
+		notify(Loc.t("Sailing on along the course.") if error == "" else error))
 	modals.push(prompt)
 	SessionLog.write("anchorage_prompt", {"site": String(GameSession.evaluate_anchorage().get("class", ""))})
 	return prompt
@@ -1049,7 +1049,7 @@ func open_work_menu() -> void:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return
 	if not GameSession.can_work_remotely():
-		notify("Remote work needs a steady connection: moor in a harbour first.")
+		notify(Loc.t("Remote work needs a steady connection: moor in a harbour first."))
 		return
 	var menu := WorkMenu.new()
 	menu.work_requested.connect(work_for)
@@ -1066,9 +1066,9 @@ func work_for(hours: int) -> void:
 	if not String(result.error).is_empty():
 		notify(result.error)
 		return
-	notify("You worked %d h and earned %s. It is %s. Funds: %s.%s" % [result.hours, GameSession.format_money(result.earned),
+	notify(Loc.t("You worked %d h and earned %s. It is %s. Funds: %s.%s") % [result.hours, GameSession.format_money(result.earned),
 		Simulation.format_game_time(GameSession.get_game_time()), GameSession.format_money(GameSession.get_funds()),
-		"  Time is still paused." if GameSession.is_paused() else ""])
+		Loc.t("  Time is still paused.") if GameSession.is_paused() else ""])
 
 
 func _on_weather_warning(warning: Dictionary) -> void:
@@ -1111,7 +1111,7 @@ func get_pending_vhf() -> Dictionary:
 
 func _on_arrived(port_id: StringName) -> void:
 	hud.hide_warning()
-	notify("Arrived in %s." % PortCatalog.get_default().get_display_name(port_id))
+	notify(Loc.t("Arrived in %s.") % PortCatalog.get_default().get_display_name(port_id))
 	# Sleeping through the arrival, the captain wakes in the cabin as always.
 	if is_instance_valid(voyage_map):
 		_dock_after_map = true  # after the voyage map, when the captain comes aboard
@@ -1147,7 +1147,7 @@ func _start_docking(deck: BoatArea) -> void:
 func _on_voyage_logged(record: Dictionary, new_harbour: bool) -> void:
 	if new_harbour:
 		var log := GameSession.get_captains_log()
-		notify("New harbour in the Captain's Log: %s (%d of %d visited)." % [
+		notify(Loc.t("New harbour in the Captain's Log: %s (%d of %d visited).") % [
 			PortCatalog.get_default().get_display_name(StringName(record.to)), log.get_distinct_harbours(),
 			PortCatalog.get_default().ports.size()])
 
@@ -1160,13 +1160,13 @@ func _on_renown_awarded(awards: Array) -> void:
 	var titles: Array[String] = []
 	for award: Dictionary in awards:
 		if award.get("secret", false):
-			notify("Secret achievement: %s. %s  +%d renown" % [award.title, award.text, int(award.reward)])
+			notify(Loc.t("Secret achievement: %s. %s  +%d renown") % [award.title, award.text, int(award.reward)])
 			AudioManager.play_sfx(achievement_sound, ACHIEVEMENT_DB)
 			continue
 		total += int(award.reward)
 		titles.append(award.title)
 	if not titles.is_empty():
-		notify("+%d renown: %s." % [total, ", ".join(titles)])
+		notify(Loc.t("+%d renown: %s.") % [total, ", ".join(titles)])
 
 
 # --- Captain's hat ------------------------------------------------------------------
@@ -1198,7 +1198,7 @@ func _on_hat_warning(text: String) -> void:
 
 
 func _on_hat_lost(info: Dictionary) -> void:
-	toasts.show_message("%s %s A new one is sold at the harbour grocery store." % [HatBadge.LOST_HEADLINE, info.text], HatBadge.LOST_SECONDS)
+	toasts.show_message(Loc.t("%s %s A new one is sold at the harbour grocery store.") % [HatBadge.LOST_HEADLINE, info.text], HatBadge.LOST_SECONDS)
 	if hud and hud.hat_badge:
 		hud.hat_badge.pulse()
 	AudioManager.play_sfx(hat_lost_sound, HAT_LOST_DB)
@@ -1280,7 +1280,7 @@ func publish_travel_update() -> void:
 	if not String(result.error).is_empty():
 		notify(result.error)
 		return
-	notify("Travel update published: %d renown earned you %s. Funds: %s." % [result.renown,
+	notify(Loc.t("Travel update published: %d renown earned you %s. Funds: %s.") % [result.renown,
 		GameSession.format_money(result.euros), GameSession.format_money(result.funds_after)])
 
 
@@ -1291,7 +1291,7 @@ func set_interaction_debug(enabled: bool) -> void:
 		var interactable := node as Interactable
 		interactable.set_process(true)
 		interactable.queue_redraw()
-	notify("Interaction areas: %s" % ("shown" if enabled else "hidden"))
+	notify(Loc.t("Interaction areas: %s") % ("shown" if enabled else "hidden"))
 
 
 ## The developer test panel (DevTools): F10 opens and closes it, in the boat or
@@ -1312,7 +1312,7 @@ func open_boatyard() -> void:
 	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
 		return
 	if not GameSession.is_moored_in_harbour():
-		notify("The boatyard is only open while you are moored in harbour.")
+		notify(Loc.t("The boatyard is only open while you are moored in harbour."))
 		return
 	if not GameSession.can_change_vessel():
 		_refuse_facility(HarbourFacilities.BOATYARD)
@@ -1379,7 +1379,7 @@ func switch_vessel(vessel_id: StringName) -> void:
 		notify(error)
 		return
 	_show_current_boat_area()
-	notify("Welcome aboard the %s." % GameSession.get_vessel_definition().display_name)
+	notify(Loc.t("Welcome aboard the %s.") % GameSession.get_vessel_definition().display_name)
 
 
 ## The developer guides (DEV_GUIDES/). Not a gameplay feature: offered only
@@ -1417,6 +1417,17 @@ func _connect_main_menu(menu: MainMenu) -> void:
 	menu.quit_requested.connect(quit_game)
 	menu.dev_guides_requested.connect(open_dev_guides)
 	menu.import_requested.connect(import_legacy_saves)
+	if not SettingsManager.has_chosen_language():
+		show_language_picker.call_deferred()
+
+
+## The first launch (I019): English or Dansk, asked once before anything else.
+func show_language_picker() -> LanguagePicker:
+	if SettingsManager.has_chosen_language() or not modals.is_empty():
+		return null
+	var picker := LanguagePicker.new()
+	modals.push(picker)
+	return picker
 
 
 func _connect_boat_area(area: BoatArea) -> void:

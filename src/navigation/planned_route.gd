@@ -74,10 +74,10 @@ func get_leg_ranges() -> Array[Vector2i]:
 ## Short summary such as "Copenhagen → Kiel  ·  152 nm".
 static func describe(route: PlannedRoute, catalog: PortCatalog) -> String:
 	if route == null:
-		return "No route planned"
-	var origin := catalog.get_display_name(route.origin_port_id) if route.origin_port_id else "Position at sea"
+		return Loc.t("No route planned")
+	var origin := catalog.get_display_name(route.origin_port_id) if route.origin_port_id else Loc.t("Position at sea")
 	var text := "%s → %s" % [origin, catalog.get_display_name(route.destination_port_id)]
-	return text + ("  ·  %d nm" % roundi(route.get_distance_nm()) if route.has_path() else "  ·  needs plotting")
+	return text + (Loc.t("  ·  %d nm") % roundi(route.get_distance_nm()) if route.has_path() else Loc.t("  ·  needs plotting"))
 
 
 func to_dict() -> Dictionary:

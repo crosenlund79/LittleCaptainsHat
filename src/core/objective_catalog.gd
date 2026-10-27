@@ -96,24 +96,24 @@ func has_objective(id: StringName) -> bool:
 ## Problems with an objective definition ("" when it is valid).
 static func validate(entry: Dictionary, ports: PortCatalog) -> String:
 	if not entry.get("id") is String or String(entry.id).is_empty():
-		return "missing id"
+		return Loc.t("missing id")
 	if StringName(entry.get("type", "")) not in TYPES:
-		return "unknown type '%s'" % entry.get("type")
+		return Loc.t("unknown type '%s'") % entry.get("type")
 	if not (entry.get("reward") is int or entry.get("reward") is float) or int(entry.reward) <= 0:
-		return "reward must be a positive number"
+		return Loc.t("reward must be a positive number")
 	match StringName(entry.type):
 		TYPE_VISIT_HARBOUR:
 			if not ports.has_port(StringName(str(entry.get("port", "")))):
-				return "unknown harbour '%s'" % entry.get("port")
+				return Loc.t("unknown harbour '%s'") % entry.get("port")
 		TYPE_WEATHER_ARRIVAL, TYPE_HAT_WEATHER_VOYAGE:
 			var hazard := int(entry.get("hazard", 0))
 			if hazard < WeatherModel.HAZARD_CAUTION or hazard > WeatherModel.HAZARD_SEVERE:
-				return "hazard must be 1-3"
+				return Loc.t("hazard must be 1-3")
 		TYPE_NEW_HARBOUR:
 			pass
 		_:
 			if not (entry.get("target") is int or entry.get("target") is float) or float(entry.target) <= 0.0:
-				return "target must be a positive number"
+				return Loc.t("target must be a positive number")
 	return ""
 
 
@@ -123,9 +123,9 @@ func _add(entry: Variant, generated: bool, ports: PortCatalog) -> void:
 		return
 	var problem := validate(entry, ports)
 	if problem.is_empty() and _by_id.has(String(entry.id)):
-		problem = "duplicate id"
+		problem = Loc.t("duplicate id")
 	if problem.is_empty() and bool(entry.get("secret", false)) and bool(entry.get("repeatable", false)):
-		problem = "a secret achievement cannot be repeatable"
+		problem = Loc.t("a secret achievement cannot be repeatable")
 	if not problem.is_empty():
 		push_error("Objective '%s' left out: %s" % [entry.get("id", "?"), problem])
 		return
@@ -176,9 +176,9 @@ static func _generate_far_harbours(settings: Dictionary, ports: PortCatalog) -> 
 		var port: PortData = far[index].port
 		var share := inverse_lerp(min_nm, maxf(longest, min_nm + 1.0), far[index].nm)
 		var reward := roundi(lerpf(float(settings.get("min_reward", 30)), float(settings.get("max_reward", 50)), clampf(share, 0.0, 1.0)))
-		result.append({"id": "visit_%s" % port.id, "title": "Far horizons: %s" % port.display_name, "type": String(TYPE_VISIT_HARBOUR),
+		result.append({"id": "visit_%s" % port.id, "title": Loc.t("Far horizons: %s") % port.display_name, "type": String(TYPE_VISIT_HARBOUR),
 			"port": String(port.id), "reward": reward, "category": "exploration",
-			"text": "Sail to %s, %s (%d nm from %s as the gull flies) and moor there." % [port.display_name, port.country,
+			"text": Loc.t("Sail to %s, %s (%d nm from %s as the gull flies) and moor there.") % [port.display_name, port.country,
 				roundi(far[index].nm), start.display_name]})
 	return result
 

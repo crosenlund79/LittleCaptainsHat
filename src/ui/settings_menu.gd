@@ -33,6 +33,7 @@ var _reduce_flashing: CheckBox
 var _flash: HSlider
 var _reduce_motion: CheckBox
 var _ui_light: OptionButton
+var _language: OptionButton
 
 @onready var _audio_grid: GridContainer = %AudioGrid
 @onready var _window_mode: OptionButton = %WindowMode
@@ -63,7 +64,7 @@ func _ready() -> void:
 	var logs := Button.new()
 	logs.name = "LogsButton"
 	logs.text = "Diagnostic logs…"
-	logs.tooltip_text = "Opens the folder with the technical session logs (for bug reports): %s" % SessionLog.get_folder()
+	logs.tooltip_text = Loc.t("Opens the folder with the technical session logs (for bug reports): %s") % SessionLog.get_folder()
 	logs.pressed.connect(func() -> void:
 		if DisplayServer.get_name() != "headless":
 			OS.shell_open(SessionLog.get_folder()))
@@ -82,9 +83,9 @@ func handle_back() -> void:
 	if not _has_unapplied_changes():
 		close()
 		return
-	var discard: bool = await stack.confirm("Discard changes?",
-		"Some settings have not been applied. Leaving now restores the previous settings.",
-		"Discard", "Keep editing")
+	var discard: bool = await stack.confirm(Loc.t("Discard changes?"),
+		Loc.t("Some settings have not been applied. Leaving now restores the previous settings."),
+		"Discard", Loc.t("Keep editing"))
 	if discard:
 		SettingsManager.restore_snapshot(_saved)
 		close()
@@ -107,7 +108,7 @@ func _build_audio_rows() -> void:
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		var test := Button.new()
 		test.text = "Test"
-		test.tooltip_text = "Play a temporary test sound on the %s bus" % BUS_LABELS[bus]
+		test.tooltip_text = Loc.t("Play a temporary test sound on the %s bus") % BUS_LABELS[bus]
 		test.pressed.connect(_play_test_sound.bind(bus))
 		for control: Control in [name_label, slider, value_label, test]:
 			_audio_grid.add_child(control)
@@ -208,6 +209,21 @@ func _build_accessibility_rows() -> void:
 		SettingsManager.set_ui_light(SettingsManager.UI_LIGHTS[index])
 		_refresh_status())
 	grid.add_child(_ui_light)
+	# I019: the game's language, switched at once.
+	var language_label := Label.new()
+	language_label.name = "LanguageLabel"
+	language_label.text = "Language"
+	grid.add_child(language_label)
+	_language = OptionButton.new()
+	_language.name = "Language"
+	_language.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED  # each language in its own words
+	for language: Array in Loc.LANGUAGES:
+		_language.add_item(language[1])
+	_language.item_selected.connect(func(index: int) -> void:
+		SettingsManager.set_language(Loc.LANGUAGES[index][0])
+		_retranslate()
+		_refresh_status())
+	grid.add_child(_language)
 
 
 func _sync_controls() -> void:
@@ -225,7 +241,19 @@ func _sync_controls() -> void:
 	_flash.set_value_no_signal(SettingsManager.get_flash_intensity())
 	_reduce_motion.set_pressed_no_signal(SettingsManager.get_reduce_motion())
 	_ui_light.select(SettingsManager.UI_LIGHTS.find(SettingsManager.get_ui_light()))
+	_language.select(SettingsManager.LANGUAGES.find(SettingsManager.get_language()))
+	_retranslate()
 	_refresh_status()
+
+
+## The texts built from sentences, again in the current language (a
+## control's own text Godot translates by itself).
+func _retranslate() -> void:
+	var logs := find_child("LogsButton", true, false) as Button
+	if logs:
+		logs.tooltip_text = Loc.t("Opens the folder with the technical session logs (for bug reports): %s") % SessionLog.get_folder()
+	for bus: StringName in SettingsManager.AUDIO_BUSES:
+		_update_volume_label(bus, SettingsManager.get_volume(bus))
 
 
 func _on_volume_changed(value: float, bus: StringName) -> void:
@@ -265,9 +293,9 @@ func _on_apply_pressed() -> void:
 	if SettingsManager.save() == OK:
 		_saved = SettingsManager.snapshot()
 		_refresh_status()
-		notify("Settings saved.")
+		notify(Loc.t("Settings saved."))
 	else:
-		notify("Settings could not be saved.")
+		notify(Loc.t("Settings could not be saved."))
 
 
 func _has_unapplied_changes() -> bool:

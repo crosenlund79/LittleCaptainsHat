@@ -254,12 +254,12 @@ func refresh() -> void:
 	var mode := GameSession.get_fishing_mode()
 	var geo := GameSession.get_vessel_position()
 	var region := FishingCatalog.region_at(geo).replace("_", " ")
-	var how := "Trolling behind the boat at %.1f kn" % GameSession.get_vessel_speed_kn() if mode == FishingState.MODE_TROLLING \
-		else ("Rod fishing from the anchored boat" if GameSession.is_anchored() else "Rod fishing from the moored boat")
+	var how := Loc.format("Trolling behind the boat at %.1f kn", GameSession.get_vessel_speed_kn()) if mode == FishingState.MODE_TROLLING \
+		else (Loc.t("Rod fishing from the anchored boat") if GameSession.is_anchored() else Loc.t("Rod fishing from the moored boat"))
 	var fit := catalog.suitability(geo, mode, fishing.lure)
-	var fit_text := "promising for this lure" if fit >= 1.0 else ("fair for this lure" if fit >= 0.7 else "not ideal for this lure")
-	_info.text = "%s. Waters: %s%s, %s.%s" % [how, region.capitalize(), " (near the coast)" if catalog.is_coastal(geo) else "",
-		fit_text, "  Line out." if fishing.line_out else ""]
+	var fit_text := Loc.t("promising for this lure") if fit >= 1.0 else (Loc.t("fair for this lure") if fit >= 0.7 else Loc.t("not ideal for this lure"))
+	_info.text = Loc.t("%s. Waters: %s%s, %s.%s") % [how, region.capitalize(), Loc.t(" (near the coast)") if catalog.is_coastal(geo) else "",
+		fit_text, Loc.t("  Line out.") if fishing.line_out else ""]
 	_lure.clear()
 	for i in catalog.lures.size():
 		var lure: Dictionary = catalog.lures[i]
@@ -286,11 +286,11 @@ func refresh() -> void:
 
 ## What the keep preferences mean, in words.
 static func describe_keep(fishing: FishingState) -> String:
-	var rarity := "every fish" if fishing.keep_min_rarity == "common" else \
-		("%s fish or rarer" % FishingCatalog.rarity_label(fishing.keep_min_rarity).to_lower() if fishing.keep_min_rarity != "very_rare" else "very rare fish only")
-	var size := "of any size" if fishing.keep_min_grade == FishingCatalog.GRADE_NONE else \
-		("that are %s specimens or better" % FishingCatalog.grade_label(fishing.keep_min_grade) if fishing.keep_min_grade != FishingCatalog.GRADE_GOLD else "that are Gold specimens")
-	return "You keep %s %s; the rest go straight back (no cool box, no trophy). Sizes are graded by weight within each species, so even a common fish can be Gold. Sharks always swim free." % [rarity, size]
+	var rarity := Loc.t("every fish") if fishing.keep_min_rarity == "common" else \
+		(Loc.t("%s fish or rarer") % FishingCatalog.rarity_label(fishing.keep_min_rarity).to_lower() if fishing.keep_min_rarity != "very_rare" else Loc.t("very rare fish only"))
+	var size := Loc.t("of any size") if fishing.keep_min_grade == FishingCatalog.GRADE_NONE else \
+		(Loc.t("that are %s specimens or better") % FishingCatalog.grade_label(fishing.keep_min_grade) if fishing.keep_min_grade != FishingCatalog.GRADE_GOLD else Loc.t("that are Gold specimens"))
+	return Loc.t("You keep %s %s; the rest go straight back (no cool box, no trophy). Sizes are graded by weight within each species, so even a common fish can be Gold. Sharks always swim free.") % [rarity, size]
 
 
 func _hold_row(fish: Dictionary, catalog: FishingCatalog, selling: bool) -> HBoxContainer:
@@ -303,7 +303,7 @@ func _hold_row(fish: Dictionary, catalog: FishingCatalog, selling: bool) -> HBox
 	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	row.add_child(picture)
 	var label := Label.new()
-	label.text = "%s, %.1f kg" % [catalog.get_species_name(fish.species), float(fish.kg)]
+	label.text = Loc.format("%s, %.1f kg", [catalog.get_species_name(fish.species), float(fish.kg)])
 	label.custom_minimum_size = Vector2(210, 0)
 	row.add_child(label)
 	var badge := CatchBadge.new()
@@ -318,11 +318,11 @@ func _hold_row(fish: Dictionary, catalog: FishingCatalog, selling: bool) -> HBox
 	row.add_child(release)
 	if selling:
 		var sell := Button.new()
-		sell.text = "Sell (%s)" % GameSession.format_money(catalog.price(fish.species, float(fish.kg)))
+		sell.text = Loc.t("Sell (%s)") % GameSession.format_money(catalog.price(fish.species, float(fish.kg)))
 		sell.pressed.connect(func() -> void:
 			var result := GameSession.sell_fish(int(fish.uid))
 			SessionLog.write("fishing_fish", {"action": "sold", "species": fish.species, "kg": fish.kg, "price": result.price, "error": result.error})
-			notify("Sold for %s." % GameSession.format_money(int(result.price)) if result.error == "" else String(result.error)))
+			notify(Loc.t("Sold for %s.") % GameSession.format_money(int(result.price)) if result.error == "" else String(result.error)))
 		row.add_child(sell)
 	return row
 
@@ -366,11 +366,11 @@ func _start_reel_if_bite() -> void:
 	_dial.timing = _reel
 	var kind := catalog.kind_of(bite.species)
 	_reel_title.text = "Something heavy is on the line!" if kind == FishingCatalog.KIND_SHARK else \
-		("Something's caught on the line..." if kind == FishingCatalog.KIND_JUNK else "Fish on!")
+		(Loc.t("Something's caught on the line...") if kind == FishingCatalog.KIND_JUNK else Loc.t("Fish on!"))
 	_reel_name.text = catalog.get_species_name(bite.species)
 	_reel_badge.set_catch(catalog.rarity_of(bite.species), &"", false)
 	_reel_portrait.set_species(bite.species)
-	_reel_feedback.text = "%d good %s to land it." % [_reel.checks_needed, "turn" if _reel.checks_needed == 1 else "turns"]
+	_reel_feedback.text = Loc.n("%d good turn to land it.", "%d good turns to land it.", _reel.checks_needed) % _reel.checks_needed
 	_show_face(&"reel")
 	SessionLog.write("fishing_reel", {"species": bite.species, "kg": bite.kg, "checks": _reel.checks_needed, "arc": _reel.arc_deg})
 
@@ -418,10 +418,10 @@ func press_reel() -> StringName:
 			AudioManager.play_sfx(FishingSounds.reel(), FishingSounds.DB)
 		ReelTiming.PRESS_MISS:
 			var left := _reel.get_line_control()
-			_reel_feedback.text = "Missed - the line slips. %d %s left." % [left, "grip" if left == 1 else "grips"] if left > 0 else "Missed..."
+			_reel_feedback.text = Loc.n("Missed - the line slips. %d grip left.", "Missed - the line slips. %d grips left.", left) % left if left > 0 else Loc.t("Missed...")
 	if not _reel.is_over() and outcome != ReelTiming.PRESS_MISS:
 		var left := _reel.checks_needed - _reel.hits
-		_reel_feedback.text += "  %d more to go." % left
+		_reel_feedback.text += Loc.t("  %d more to go.") % left
 	if _reel.is_over():
 		_finish_reel()
 	return outcome
@@ -464,7 +464,7 @@ func _finish_reel() -> void:
 		"misses": _reel.misses})
 	AudioManager.play_sfx(FishingSounds.splash() if landed else FishingSounds.snap(), FishingSounds.DB)
 	if not landed:
-		notify(String(result.text) if result.text != "" else "It got away.")
+		notify(String(result.text) if result.text != "" else Loc.t("It got away."))
 		_show_face(&"rod")
 		return
 	_show_result(result)
@@ -481,26 +481,26 @@ func _show_result(result: Dictionary) -> void:
 	var lines: Array[String] = []
 	if junk:
 		lines.append(String(result.text))
-		lines.append("Not a fish, and worth nothing. It goes in the bin.")
+		lines.append(Loc.t("Not a fish, and worth nothing. It goes in the bin."))
 	else:
-		lines.append("%.1f kg  ·  %s specimen" % [float(result.fish.kg), FishingCatalog.grade_label(StringName(result.grade))])
+		lines.append(Loc.format("%.1f kg  ·  %s specimen", [float(result.fish.kg), FishingCatalog.grade_label(StringName(result.grade))]))
 		if _reel.perfects > 0:
-			lines.append("%d Perfect %s: a little heavier for your care." % [_reel.perfects, "hit" if _reel.perfects == 1 else "hits"])
+			lines.append(Loc.n("%d Perfect hit: a little heavier for your care.", "%d Perfect hits: a little heavier for your care.", _reel.perfects) % _reel.perfects)
 		match String(result.released_reason):
 			"shark":
-				lines.append("That's quite a catch. Better let this one swim free.")
+				lines.append(Loc.t("That's quite a catch. Better let this one swim free."))
 			"preferences":
-				lines.append("Not one to keep by your preferences: back it goes.")
+				lines.append(Loc.t("Not one to keep by your preferences: back it goes."))
 			"cool_box_full":
-				lines.append("The cool box is full, so it goes back.")
+				lines.append(Loc.t("The cool box is full, so it goes back."))
 			_:
-				lines.append("Into the cool box: cook it in the galley, release it, or sell it in harbour.")
+				lines.append(Loc.t("Into the cool box: cook it in the galley, release it, or sell it in harbour."))
 		if result.new_species:
-			lines.append("A new species for your log!")
+			lines.append(Loc.t("A new species for your log!"))
 		elif result.personal_best:
-			lines.append("A new personal best!")
+			lines.append(Loc.t("A new personal best!"))
 		if result.exceptional:
-			lines.append("An exceptional fish.")
+			lines.append(Loc.t("An exceptional fish."))
 	_result_text.text = "\n".join(lines)
 	_release_button.visible = bool(result.kept)
 	_show_face(&"result")
@@ -512,7 +512,7 @@ func _on_release_last() -> void:
 		SessionLog.write("fishing_fish", {"action": "released", "species": _last_result.fish.species, "kg": _last_result.fish.kg})
 		_last_result.kept = false
 		_release_button.visible = false
-		_result_text.text += "\nYou let it go."
+		_result_text.text += Loc.t("\nYou let it go.")
 
 
 func handle_back() -> void:
@@ -530,13 +530,13 @@ func show_wait_result(result: Simulation.AdvanceResult) -> void:
 	var waited := Simulation.format_duration(result.elapsed_seconds)
 	match result.stopped_by:
 		Simulation.STOP_WARNING:
-			notify("After %s a weather warning came in. Check the conditions." % waited)
+			notify(Loc.t("After %s a weather warning came in. Check the conditions.") % waited)
 		Simulation.STOP_ANCHOR:
-			notify("After %s the anchor alarm went: %s." % [waited, AnchorSite.holding_text(GameSession.get_anchor().holding).to_lower()])
+			notify(Loc.t("After %s the anchor alarm went: %s.") % [waited, AnchorSite.holding_text(GameSession.get_anchor().holding).to_lower()])
 		Simulation.STOP_ARRIVAL:
-			notify("After %s the boat arrived." % waited)
+			notify(Loc.t("After %s the boat arrived.") % waited)
 		_:
-			notify("After %s at the rod: nothing yet." % waited)
+			notify(Loc.t("After %s at the rod: nothing yet.") % waited)
 	refresh()
 
 

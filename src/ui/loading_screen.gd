@@ -75,9 +75,9 @@ func _ready() -> void:
 	# The real work, in order. Each is what the game would otherwise do the
 	# first time it needs it.
 	_steps = [
-		{"text": "Reading the harbour list…", "work": func() -> void: PortCatalog.get_default()},
-		{"text": "Unrolling the charts of the world…", "thread": func() -> void: SeaRouter.get_default()},
-		{"text": "Making the cabin ready…", "work": func() -> void: VesselCatalog.get_default()},
+		{"text": Loc.t("Reading the harbour list…"), "work": func() -> void: PortCatalog.get_default()},
+		{"text": Loc.t("Unrolling the charts of the world…"), "thread": func() -> void: SeaRouter.get_default()},
+		{"text": Loc.t("Making the cabin ready…"), "work": func() -> void: VesselCatalog.get_default()},
 	]
 	_next_step()
 
@@ -88,9 +88,9 @@ func _next_step() -> void:
 		_finish()
 		return
 	var step: Dictionary = _steps[_step]
-	_status.text = "%s  (%d of %d)" % [step.text, _step + 1, _steps.size()]
+	_status.text = Loc.t("%s  (%d of %d)") % [step.text, _step + 1, _steps.size()]
 	if step.has("thread"):
-		_task = WorkerThreadPool.add_task(step.thread, false, "Loading: %s" % step.text)
+		_task = WorkerThreadPool.add_task(step.thread, false, Loc.t("Loading: %s") % step.text)
 	else:
 		# Quick steps run on the next frame, after the text is shown.
 		(func() -> void:

@@ -1245,6 +1245,56 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
 
+## The Captain's Watch (I019, 0.106a)
+
+Awareness at sea and a second language. Report: `docs/iterations/i019/`.
+
+- **Traffic** (`src/navigation/traffic_model.gd`, `TrafficModel`): other
+  vessels, made up where and when they are looked for, never simulated for
+  the whole world and never saved. The sea is cut into 1° cells and 3 h
+  windows; each (cell, window) holds up to 8 vessels (busier within 90 nm of
+  harbours), each on a straight track through navigable water at a steady
+  speed for its kind (cargo, tanker, ferry, fishing boat, sailing yacht),
+  cut where it would meet land and kept when at least an hour long. A vessel
+  is a pure function of (cell, window, slot, wind seed): the same ships after
+  a load, while asleep and in Long Passage. Tracks are cached (bounded at
+  4096 cells); positions are computed on demand. A ship whose track starts
+  within 12 nm is not seen in its first hour (ships come over the horizon).
+- **Collision awareness** (`Simulation.traffic_risks`, `risk_level`,
+  `TrafficModel.approach`): closest point of approach and time to it from
+  relative motion. *Collision risk*: passes within 0.3 nm in the next 30 min;
+  *caution*: within 1 nm in 45 min; *nearby*: within 6 nm. Only a moving boat
+  can be on a collision course (at anchor or moored, ships are only nearby).
+  On the evaluation grid underway (`_assess_traffic`), a ship newly at
+  collision risk is announced once per voyage (key `traffic>id` in the
+  voyage's warned conditions, saved): signal `traffic_alert`, a warning on
+  the HUD, and it stops sleep, accelerated time and Long Passage
+  (`STOP_TRAFFIC`). Awareness only: there are no collisions and no penalties.
+- **Radar** (`src/ui/radar_panel.gd`): a compact north-up scope on deck
+  (3/6/12 nm), toggled from the action wheel and shown by itself while a ship
+  is a caution or a collision risk underway; colours for nearby, caution and
+  risk; up to three lines and what to do. Asks for traffic five times a
+  second, never every frame (about 0.03–0.3 ms a query).
+- **Anchor alarms** (`AnchorState.alarm_level`, `good_since`, optional in
+  saves): 0 none, 1 holding poorly, 2 dragging. An alarm sounds only when the
+  level rises; "holding well again" is said once; after an hour of good
+  holding the next trouble is news again. Older saves take the level from the
+  alarm. Magic Anchor uses the same model.
+- **VHF calls** (`src/core/vhf_radio.gd`, `src/ui/vhf_dialog.gd`): at most one
+  call per 6 h slot of a voyage, a pure function of (departure, slot, seed):
+  a yacht asking a vessel to stand by (8 %, 16 % in hazardous weather) or a
+  fishing boat asking for the forecast (12 %). Optional: declining is fine
+  ("another vessel answers"), and a call not answered within an hour lapses.
+  Answering an assist call stands the boat by (`Voyage.standby_until`,
+  optional in saves; the simulation keeps the boat where it is until then,
+  then the voyage goes on by itself). Thanks (renown 4/6 and €120/200, or
+  renown 1 for the forecast) are paid once per call through the objective
+  progress record (`vhf:<id>`), so no save and load pays twice. An assist
+  call wakes the captain and stops Long Passage (`STOP_VHF`).
+- **Localization**: English and Dansk, see `docs/technical/LOCALIZATION.md`
+  (catalogue, `Loc` helpers, first-launch picker `LanguagePicker`, the
+  Settings switch, tools and glossary).
+
 ## The World Awaits (Iteration 16, 0.103a)
 
 How-tos: [DEV_GUIDES/CHART_REGIONS.md](../../DEV_GUIDES/CHART_REGIONS.md) (world
@@ -1855,6 +1905,12 @@ Do not serialize nodes or scene trees. Scenes rebuild themselves from the state.
 defaults. The menu (`src/ui/settings_menu.gd`) builds the five audio rows from
 `SettingsManager.AUDIO_BUSES`. Window-mode changes are skipped when headless or
 embedded in the editor.
+
+The language (I019) is a preference too: `get_language()`, `set_language()`
+(applied at once with `TranslationServer.set_locale`, signal
+`language_changed`), `has_chosen_language()` (empty until the first-launch
+picker), stored as `[interface] language`. "Restore defaults" keeps it. The
+test runner sets English before every suite.
 
 ## Integrating future systems
 

@@ -92,7 +92,7 @@ func _on_recipe_selected(_index: int) -> void:
 func refresh() -> void:
 	var refusal := GameSession.cooking_refusal()
 	var fishing := GameSession.get_fishing()
-	_rule.text = refusal if refusal != "" else "Fish in the cool box: %d  ·  Food in the stores: %s" % [fishing.hold.size(),
+	_rule.text = refusal if refusal != "" else Loc.t("Fish in the cool box: %d  ·  Food in the stores: %s") % [fishing.hold.size(),
 		Provisions.format_days(GameSession.get_food_days())]
 	UiTheme.tint(_rule, &"warning" if refusal != "" else &"")
 	for i in Recipes.LIST.size():
@@ -116,28 +116,28 @@ func select_recipe(id: String) -> void:
 func _refresh_detail() -> void:
 	if _pot:
 		# Coffee: no recipe to read, just the pot.
-		_detail.text = "A pot of coffee on the little stove.\n\nNeeds nothing special.\nTakes %d minutes.\nJust for the pleasure of it." % int(GameSession.COFFEE_MINUTES)
+		_detail.text = Loc.t("A pot of coffee on the little stove.\n\nNeeds nothing special.\nTakes %d minutes.\nJust for the pleasure of it.") % int(GameSession.COFFEE_MINUTES)
 		_cook_button.disabled = _cooking > 0.0 or _brewing > 0.0 or GameSession.recipe_refusal(get_selected_recipe().id) != "" \
 			or GameSession.cooking_refusal() != ""
-		_cook_button.text = "Cook %s" % String(get_selected_recipe().name).to_lower()
+		_cook_button.text = Loc.t("Cook %s") % String(get_selected_recipe().name).to_lower()
 		_coffee_button.disabled = _brewing > 0.0 or GameSession.coffee_refusal() != ""
 		return
 	var recipe := get_selected_recipe()
 	var needs := PackedStringArray()
 	if int(recipe.fish) > 0:
-		needs.append("%d fish from the cool box (the oldest first)" % int(recipe.fish))
+		needs.append(Loc.t("%d fish from the cool box (the oldest first)") % int(recipe.fish))
 	if float(recipe.groceries) > 0.0:
-		needs.append("%s of groceries" % Provisions.format_days(float(recipe.groceries)))
-	var gives := "Well fed for %d hours: the stores last a little longer." % roundi(float(recipe.well_fed_hours))
+		needs.append(Loc.t("%s of groceries") % Provisions.format_days(float(recipe.groceries)))
+	var gives := Loc.t("Well fed for %d hours: the stores last a little longer.") % roundi(float(recipe.well_fed_hours))
 	if int(recipe.fish) > 0:
-		gives = "Turns the catch into food for the stores (up to %s). " % Provisions.format_days(Recipes.MAX_FISH_DAYS) + gives
+		gives = Loc.t("Turns the catch into food for the stores (up to %s). ") % Provisions.format_days(Recipes.MAX_FISH_DAYS) + gives
 	var refusal := GameSession.recipe_refusal(recipe.id)
-	_detail.text = "%s\n\nNeeds: %s.\nTakes %d minutes.\n%s%s" % [recipe.text, ", ".join(needs) if not needs.is_empty() else "nothing special",
+	_detail.text = Loc.t("%s\n\nNeeds: %s.\nTakes %d minutes.\n%s%s") % [recipe.text, ", ".join(needs) if not needs.is_empty() else Loc.t("nothing special"),
 		int(recipe.minutes), gives, ("\n\n" + refusal) if refusal != "" else ""]
 	_cook_button.disabled = _cooking > 0.0 or _brewing > 0.0 or refusal != "" or GameSession.cooking_refusal() != ""
 	_coffee_button.disabled = _cooking > 0.0 or _brewing > 0.0 or GameSession.coffee_refusal() != ""
 	_coffee_button.tooltip_text = GameSession.coffee_refusal()
-	_cook_button.text = "Cook %s" % String(recipe.name).to_lower()
+	_cook_button.text = Loc.t("Cook %s") % String(recipe.name).to_lower()
 
 
 func focus_default() -> void:
@@ -205,9 +205,9 @@ func pour_coffee() -> Dictionary:
 		refresh()
 		return result
 	coffee_made.emit(result)
-	var lines := ["Coffee is ready.", String(result.text)]
+	var lines := [Loc.t("Coffee is ready."), String(result.text)]
 	if not (result.award as Dictionary).is_empty():
-		lines.append("Written in the Captain's Log: %s." % String(result.award.title))
+		lines.append(Loc.t("Written in the Captain's Log: %s.") % String(result.award.title))
 	_outcome.text = "\n".join(lines)
 	_outcome.visible = true
 	_steam_until = _time + 8.0
@@ -232,12 +232,12 @@ func serve() -> Dictionary:
 		refresh()
 		return result
 	cooked.emit(result)
-	var lines := ["%s is ready." % String(recipe.name)]
+	var lines := [Loc.t("%s is ready.") % String(recipe.name)]
 	if float(result.food_added) > 0.0:
-		lines.append("The catch adds %s of food to the stores." % Provisions.format_days(float(result.food_added)))
-	lines.append("Well fed until %s." % Simulation.format_game_time(float(result.well_fed_until)))
+		lines.append(Loc.t("The catch adds %s of food to the stores.") % Provisions.format_days(float(result.food_added)))
+	lines.append(Loc.t("Well fed until %s.") % Simulation.format_game_time(float(result.well_fed_until)))
 	if result.evening:
-		lines.append("A quiet evening at anchor. Fresh fish for supper.")
+		lines.append(Loc.t("A quiet evening at anchor. Fresh fish for supper."))
 	_outcome.text = "\n".join(lines)
 	_outcome.visible = true
 	_steam_until = _time + 6.0

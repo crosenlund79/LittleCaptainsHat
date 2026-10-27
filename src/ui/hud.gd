@@ -259,9 +259,9 @@ func refresh() -> void:
 		else:
 			_location.text = Loc.t("Underway to %s") % destination
 		_route_caption.text = "At anchor  ·  voyage paused" if GameSession.is_anchored() else \
-			"Underway  ·  %.1f kn" % GameSession.get_vessel_speed_kn()
-		_route.text = "To %s  ·  %d nm to go" % [destination, roundi(remaining)]
-		_route_detail.text = "ETA about %s (estimate)" % Simulation.format_game_time(Simulation.get_eta())
+			Loc.format("Underway  ·  %.1f kn", GameSession.get_vessel_speed_kn())
+		_route.text = Loc.t("To %s  ·  %d nm to go") % [destination, roundi(remaining)]
+		_route_detail.text = Loc.t("ETA about %s (estimate)") % Simulation.format_game_time(Simulation.get_eta())
 		_propulsion.text = propulsion.describe()
 		# Speed, sails and wind are on the sailing panel underway: the route
 		# panel keeps to the voyage (and the holding, at anchor).
@@ -274,11 +274,11 @@ func refresh() -> void:
 			_propulsion.text = "Sails down  ·  waiting at the anchorage"
 		if GameSession.is_anchored():
 			_route_detail.text = "Raise the anchor at the windlass to sail on"
-			_propulsion.text = "%s  ·  %d × the depth of chain" % [AnchorSite.holding_text(GameSession.get_anchor().holding),
+			_propulsion.text = Loc.t("%s  ·  %d × the depth of chain") % [AnchorSite.holding_text(GameSession.get_anchor().holding),
 				GameSession.get_anchor().scope]
 		var side := PropulsionState.wind_side(propulsion.true_wind_angle)
 		if not GameSession.is_anchored():
-			_wind.text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else "off the bow"]
+			_wind.text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else Loc.t("off the bow")]
 		_progress.visible = true
 		_progress.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 	else:
@@ -294,7 +294,7 @@ func refresh() -> void:
 				_planned_key = key
 				_planned_estimated_at = GameSession.get_game_time()
 				_planned_seconds = Simulation.estimate_route_seconds(planned.path)
-			_route_detail.text = "About %s with the expected wind  ·  set sail at the helm" % \
+			_route_detail.text = Loc.t("About %s with the expected wind  ·  set sail at the helm") % \
 				Simulation.format_duration(_planned_seconds)
 		else:
 			_route_detail.text = "Plot a course at the chart table"
@@ -324,9 +324,9 @@ func _set_route_lines(shown: bool) -> void:
 ## "Hull 87 % · Sound   €9,000   Food 12.5 d · Water 12.5 d".
 static func describe_status() -> String:
 	var provisions := GameSession.get_provisions()
-	return "Hull %s   %s   Food %.1f d · Water %.1f d" % [VesselCondition.describe(GameSession.get_condition()),
+	return Loc.format("Hull %s   %s   Food %.1f d · Water %.1f d", [VesselCondition.describe(GameSession.get_condition()),
 		GameSession.format_money(GameSession.get_funds()), floorf(provisions.food_days * 10.0 + 1e-6) / 10.0,
-		floorf(provisions.water_days * 10.0 + 1e-6) / 10.0]
+		floorf(provisions.water_days * 10.0 + 1e-6) / 10.0])
 
 
 ## "Wind WSW 14 kn" (where it blows from), with gusts when they stand out
@@ -334,12 +334,12 @@ static func describe_status() -> String:
 ## wind, as the boat sails with it.
 static func describe_wind(wind: WindField.Sample) -> String:
 	if wind.speed_kn < 0.5:
-		return "Wind calm"
-	var text := "Wind %s %d kn" % [WindField.compass_name(wind.from_deg), roundi(wind.speed_kn)]
+		return Loc.t("Wind calm")
+	var text := Loc.t("Wind %s %d kn") % [WindField.compass_name(wind.from_deg), roundi(wind.speed_kn)]
 	var weather := wind as WeatherSample
 	if weather:
 		if weather.gust_kn >= weather.speed_kn + 6.0:
-			text += ", gusts %d" % roundi(weather.gust_kn)
+			text += Loc.t(", gusts %d") % roundi(weather.gust_kn)
 		if weather.hazard >= WeatherModel.HAZARD_CAUTION:
 			text += "  ·  %s" % weather.get_label()
 	return text

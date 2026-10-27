@@ -47,7 +47,7 @@ func refresh() -> void:
 		var level_label := _rows[area][0] as Label
 		var text_label := _rows[area][1] as Label
 		if area == BoatCare.AREA_EQUIPMENT:
-			level_label.text = "%d fitted" % care.upgrades.size() if not care.upgrades.is_empty() else "Standard"
+			level_label.text = Loc.t("%d fitted") % care.upgrades.size() if not care.upgrades.is_empty() else Loc.t("Standard")
 			UiTheme.tint(level_label, &"")
 		else:
 			level_label.text = BoatCare.LEVEL_NAMES[level]

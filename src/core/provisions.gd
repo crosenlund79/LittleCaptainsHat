@@ -109,7 +109,7 @@ static func level_of(days: float) -> StringName:
 ## "12.5 days" (one decimal, never rounded up to look fuller than it is).
 static func format_days(days: float) -> String:
 	var shown := floorf(days * 10.0 + 1e-6) / 10.0
-	return "%.1f day%s" % [shown, "" if is_equal_approx(shown, 1.0) else "s"]
+	return (Loc.t("%.1f day") if is_equal_approx(shown, 1.0) else Loc.t("%.1f days")) % shown
 
 
 func duplicate_provisions() -> Provisions:

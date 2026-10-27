@@ -67,16 +67,16 @@ func _build_log_tab() -> Control:
 	var longest := log.longest
 	var longest_text := "—"
 	if not longest.is_empty():
-		longest_text = "%s nm  (%s)" % [_nm(longest.nm), _passage_name(longest)]
+		longest_text = Loc.t("%s nm  (%s)") % [_nm(longest.nm), _passage_name(longest)]
 	var catalog := PortCatalog.get_default()
 	var stats := [
-		["Distance sailed", "%s nm" % _nm(GameSession.get_total_nm_sailed()), "DistanceValue"],
-		["Voyages completed", str(log.voyages_completed), "VoyagesValue"],
-		["Harbours visited", "%d of %d" % [log.get_distinct_harbours(), catalog.ports.size()], "HarboursValue"],
-		["Harbour arrivals", str(log.arrivals), "ArrivalsValue"],
-		["Longest passage", longest_text, "LongestValue"],
+		[Loc.t("Distance sailed"), Loc.t("%s nm") % _nm(GameSession.get_total_nm_sailed()), "DistanceValue"],
+		[Loc.t("Voyages completed"), str(log.voyages_completed), "VoyagesValue"],
+		[Loc.t("Harbours visited"), Loc.t("%d of %d") % [log.get_distinct_harbours(), catalog.ports.size()], "HarboursValue"],
+		[Loc.t("Harbour arrivals"), str(log.arrivals), "ArrivalsValue"],
+		[Loc.t("Longest passage"), longest_text, "LongestValue"],
 		["Rescues", str(GameSession.get_rescue_count()), "RescuesValue"],
-		["Renown", "%d  (%d unpublished)" % [GameSession.get_lifetime_renown(), GameSession.get_unpublished_renown()], "RenownValue"],
+		["Renown", Loc.t("%d  (%d unpublished)") % [GameSession.get_lifetime_renown(), GameSession.get_unpublished_renown()], "RenownValue"],
 	]
 	for stat: Array in stats:
 		var name_label := Label.new()
@@ -95,7 +95,7 @@ func _build_log_tab() -> Control:
 	var quote := GameSession.get_publish_quote()
 	var publish := Button.new()
 	publish.name = "PublishButton"
-	publish.text = "Publish travel update (%s)…" % GameSession.format_money(int(quote.euros)) if int(quote.euros) > 0 else "Publish travel update…"
+	publish.text = Loc.t("Publish travel update (%s)…") % GameSession.format_money(int(quote.euros)) if int(quote.euros) > 0 else Loc.t("Publish travel update…")
 	publish.disabled = not String(quote.error).is_empty()
 	publish.tooltip_text = quote.error
 	publish.pressed.connect(publish_requested.emit)
@@ -106,10 +106,10 @@ func _build_log_tab() -> Control:
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hint.text = quote.error if not String(quote.error).is_empty() else \
-		"Turns your %d unpublished renown into income (%s per renown)." % [quote.renown, GameSession.format_money(int(quote.rate))]
+		Loc.t("Turns your %d unpublished renown into income (%s per renown).") % [quote.renown, GameSession.format_money(int(quote.rate))]
 	renown_row.add_child(hint)
 	if GameSession.is_underway():
-		_add_text(list, "UnderwayNote", "Under way to %s: %s nm sailed on this voyage so far." % [
+		_add_text(list, "UnderwayNote", Loc.t("Under way to %s: %s nm sailed on this voyage so far.") % [
 			catalog.get_display_name(GameSession.get_voyage_destination_id()), _nm(GameSession.get_voyage_sailed_nm())], &"MutedLabel")
 	_add_text(list, "RecentTitle", "Recent passages", HEADING)
 	var passages := VBoxContainer.new()
@@ -144,8 +144,8 @@ func _build_log_tab() -> Control:
 static func describe_passage(record: Dictionary) -> String:
 	var vessel := VesselCatalog.get_default().get_vessel(StringName(record.vessel))
 	var vessel_name: String = vessel.display_name if vessel else String(record.vessel)
-	var outcome := "arrived" if record.outcome == String(CaptainsLog.OUTCOME_ARRIVED) else "lost at sea, crew rescued"
-	return "%s  ·  %s  ·  %s nm  ·  %s  ·  %s, %s" % [_passage_name(record), Simulation.format_duration(float(record.ended) - float(record.departed)),
+	var outcome := "arrived" if record.outcome == String(CaptainsLog.OUTCOME_ARRIVED) else Loc.t("lost at sea, crew rescued")
+	return Loc.t("%s  ·  %s  ·  %s nm  ·  %s  ·  %s, %s") % [_passage_name(record), Simulation.format_duration(float(record.ended) - float(record.departed)),
 		_nm(record.nm), vessel_name, outcome, Simulation.format_game_time(record.ended, false)]
 
 
@@ -156,7 +156,7 @@ static func _passage_name(record: Dictionary) -> String:
 
 
 static func _nm(value: Variant) -> String:
-	return "%.1f" % float(value)
+	return Loc.decimal(float(value))
 
 
 # --- Harbours tab -----------------------------------------------------------------
@@ -165,7 +165,7 @@ func _build_harbours_tab() -> Control:
 	var list := _tab_page("Harbours")
 	var log := GameSession.get_captains_log()
 	var catalog := PortCatalog.get_default()
-	_add_text(list, "HarbourSummary", "You have visited %d of the %d harbours on the chart. A harbour counts once you arrive and moor there." % [
+	_add_text(list, "HarbourSummary", Loc.t("You have visited %d of the %d harbours on the chart. A harbour counts once you arrive and moor there.") % [
 		log.get_distinct_harbours(), catalog.ports.size()], &"MutedLabel")
 	# Iteration 17: by country, collapsible, with All / Visited / Not visited.
 	var filters := HBoxContainer.new()
@@ -173,7 +173,7 @@ func _build_harbours_tab() -> Control:
 	filters.add_theme_constant_override("separation", 6)
 	list.add_child(filters)
 	var group := ButtonGroup.new()
-	for spec in [[FILTER_ALL, "All"], [FILTER_VISITED, "Visited"], [FILTER_NOT_VISITED, "Not visited"]]:
+	for spec in [[FILTER_ALL, "All"], [FILTER_VISITED, "Visited"], [FILTER_NOT_VISITED, Loc.t("Not visited")]]:
 		var button := Button.new()
 		button.name = "Filter_%s" % spec[0]
 		button.text = spec[1]
@@ -217,7 +217,7 @@ func _fill_harbours(countries: VBoxContainer) -> void:
 	var log := GameSession.get_captains_log()
 	var by_country := {}
 	for port in PortCatalog.get_default().ports:
-		var country := port.country if not port.country.is_empty() else "Other"
+		var country := port.country if not port.country.is_empty() else Loc.t("Other")
 		if not by_country.has(country):
 			by_country[country] = []
 		by_country[country].append(port)
@@ -243,7 +243,7 @@ func _fill_harbours(countries: VBoxContainer) -> void:
 		header.name = "Country_%s" % key
 		header.flat = true
 		header.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		header.text = "%s %s  ·  %d of %d visited" % ["▾" if open else "▸", country, visited, ports.size()]
+		header.text = Loc.t("%s %s  ·  %d of %d visited") % ["▾" if open else "▸", country, visited, ports.size()]
 		countries.add_child(header)
 		var box := VBoxContainer.new()
 		box.name = "Harbours_%s" % key
@@ -257,18 +257,18 @@ func _fill_harbours(countries: VBoxContainer) -> void:
 			_add_text(box, "Harbour_%s" % port.id, _describe_harbour(port, log), &"" if log.has_visited(port.id) else &"MutedLabel")
 	if shown == 0:
 		_add_text(countries, "NoHarbours", "No harbours visited yet: arrive and moor somewhere new." if harbour_filter == FILTER_VISITED
-			else "None: you have been everywhere on the chart.", &"MutedLabel")
+			else Loc.t("None: you have been everywhere on the chart."), &"MutedLabel")
 
 
 static func _describe_harbour(port: PortData, log: CaptainsLog) -> String:
 	var place := "%s, %s" % [port.display_name, port.country]
 	if not log.has_visited(port.id):
-		return "%s  ·  not visited yet" % place
+		return Loc.t("%s  ·  not visited yet") % place
 	var entry: Dictionary = log.visited[String(port.id)]
 	var first: float = entry.first
-	var when := "before the log was kept" if first < 0.0 else "first %s" % Simulation.format_game_time(first, false)
+	var when := Loc.t("before the log was kept") if first < 0.0 else Loc.t("first %s") % Simulation.format_game_time(first, false)
 	var arrivals := int(entry.arrivals)
-	var visits := "start harbour" if arrivals == 0 and first >= 0.0 else "%d arrival%s" % [arrivals, "" if arrivals == 1 else "s"]
+	var visits := Loc.t("start harbour") if arrivals == 0 and first >= 0.0 else Loc.n("%d arrival", "%d arrivals", arrivals) % arrivals
 	return "%s  ·  %s  ·  %s" % [place, when, visits]
 
 
@@ -279,7 +279,7 @@ func _build_objectives_tab() -> Control:
 	var catalog := ObjectiveCatalog.get_default()
 	var progress := GameSession.get_objective_progress()
 	var log := GameSession.get_captains_log()
-	_add_text(list, "RenownSummary", "Renown: %d earned in all, %d not yet published. Objectives are tracked automatically and pay renown when a voyage completes them." % [
+	_add_text(list, "RenownSummary", Loc.t("Renown: %d earned in all, %d not yet published. Objectives are tracked automatically and pay renown when a voyage completes them.") % [
 		progress.lifetime_renown, progress.unpublished_renown], &"MutedLabel")
 	_add_text(list, "OpenTitle", "Objectives", HEADING)
 	var open := VBoxContainer.new()
@@ -300,8 +300,8 @@ func _build_objectives_tab() -> Control:
 		if count > 0:
 			var entry: Dictionary = progress.completed[objective.id]
 			var when := Simulation.format_game_time(float(entry.first), false)
-			var times := "  ·  %d times" % count if count > 1 else ""
-			_add_text(done, "Done_%s" % objective.id, "%s  ·  %d renown  ·  first %s%s" % [objective.title, objective.reward, when, times])
+			var times := Loc.t("  ·  %d times") % count if count > 1 else ""
+			_add_text(done, "Done_%s" % objective.id, Loc.t("%s  ·  %d renown  ·  first %s%s") % [objective.title, objective.reward, when, times])
 	_add_text(list, "CompletedTitle", "Completed", HEADING)
 	list.add_child(done)
 	if done.get_child_count() == 0:
@@ -331,11 +331,11 @@ func _build_secrets(list: VBoxContainer, secrets: Array[Dictionary], progress: O
 		found.add_theme_constant_override("separation", 2)
 		box.add_child(found)
 		_add_text(found, "Title", objective.title, NAME)
-		_add_text(found, "Detail", "%s  ·  %d renown  ·  found %s" % [objective.text, objective.reward,
+		_add_text(found, "Detail", Loc.t("%s  ·  %d renown  ·  found %s") % [objective.text, objective.reward,
 			Simulation.format_game_time(float(entry.first), false)], &"MutedLabel")
 	if hidden > 0:
-		_add_text(box, "SecretsHidden", "%s still to discover. They are not described here: you will know one when you find it." % (
-			"One secret achievement is" if hidden == 1 else "%d secret achievements are" % hidden), &"MutedLabel")
+		_add_text(box, "SecretsHidden", Loc.t("%s still to discover. They are not described here: you will know one when you find it.") % (
+			Loc.t("One secret achievement is") if hidden == 1 else Loc.t("%d secret achievements are") % hidden), &"MutedLabel")
 	else:
 		_add_text(box, "SecretsHidden", "You have found every secret achievement.", &"MutedLabel")
 
@@ -346,23 +346,23 @@ func _add_objective(parent: Control, objective: Dictionary, status: String) -> v
 	box.add_theme_constant_override("separation", 2)
 	parent.add_child(box)
 	var repeat := "  (repeatable)" if objective.repeatable else ""
-	_add_text(box, "Title", "%s  ·  %d renown%s" % [objective.title, objective.reward, repeat])
+	_add_text(box, "Title", Loc.t("%s  ·  %d renown%s") % [objective.title, objective.reward, repeat])
 	_add_text(box, "Detail", "%s  %s" % [objective.text, status], &"MutedLabel")
 
 
 ## The progress line for an objective in the list.
 static func describe_progress(objective: Dictionary, log: CaptainsLog, count: int) -> String:
 	if objective.repeatable and count > 0:
-		return "Completed %d time%s so far." % [count, "" if count == 1 else "s"]
+		return Loc.n("Completed %d time so far.", "Completed %d times so far.", count) % count
 	var value := ObjectiveCatalog.get_progress(objective, log, GameSession.get_total_nm_sailed())
 	match objective.type:
 		ObjectiveCatalog.TYPE_TOTAL_DISTANCE:
-			return "Progress: %s of %s nm." % [_nm(minf(value[0], value[1])), _nm(value[1])]
+			return Loc.t("Progress: %s of %s nm.") % [_nm(minf(value[0], value[1])), _nm(value[1])]
 		ObjectiveCatalog.TYPE_VOYAGE_COUNT, ObjectiveCatalog.TYPE_VISIT_COUNT:
-			return "Progress: %d of %d." % [mini(int(value[0]), int(value[1])), int(value[1])]
+			return Loc.t("Progress: %d of %d.") % [mini(int(value[0]), int(value[1])), int(value[1])]
 		ObjectiveCatalog.TYPE_PASSAGE_LENGTH:
-			return "Longest passage so far: %s nm." % _nm(value[0])
-	return "Not yet achieved."
+			return Loc.t("Longest passage so far: %s nm.") % _nm(value[0])
+	return Loc.t("Not yet achieved.")
 
 
 # --- Helpers ----------------------------------------------------------------------
@@ -375,7 +375,7 @@ func _build_boat_tab() -> Control:
 	var vessel := GameSession.get_vessel_definition()
 	var care := GameSession.get_boat_care()
 	var overall := BoatCare.overall_level(care, GameSession.get_condition(), GameSession.get_game_time())
-	var heading := _add_text(list, "BoatHeading", "The %s: %s" % [vessel.display_name, BoatCare.LEVEL_NAMES[overall].to_lower()], HEADING)
+	var heading := _add_text(list, "BoatHeading", Loc.t("The %s: %s") % [vessel.display_name, BoatCare.LEVEL_NAMES[overall].to_lower()], HEADING)
 	UiTheme.tint(heading, BoatCare.LEVEL_ROLES[overall])
 	var view := BoatCareView.new()
 	view.name = "Overview"

@@ -52,6 +52,48 @@ static func weekday_short(index_0: int) -> String:
 	return t(WEEKDAYS_SHORT[posmod(index_0, 7)], "weekday")
 
 
+## `text` in the current language, formatted with `values` (one value or an
+## Array), decimals with the language's mark: Loc.format("%.1f nm", 5.5) is
+## "5.5 nm" / "5,5 sm". For texts with decimal placeholders (%.1f).
+static func format(text: String, values: Variant, context := "") -> String:
+	return format_translated(t(text, context), values)
+
+
+static func format_plural(singular: String, plural: String, count: int, values: Variant, context := "") -> String:
+	return format_translated(n(singular, plural, count, context), values)
+
+
+## Formats an already translated text, each decimal placeholder with the
+## language's decimal mark.
+static func format_translated(text: String, values: Variant) -> String:
+	var args: Array = values if values is Array else [values]
+	if not is_danish():
+		return text % args
+	var out := ""
+	var last := 0
+	var index := 0
+	for m in _placeholder().search_all(text):
+		out += text.substr(last, m.get_start() - last)
+		var spec := m.get_string()
+		if spec == "%%":
+			out += "%"
+		else:
+			var piece := spec % [args[index]]
+			out += piece.replace(".", ",") if spec.ends_with("f") else piece
+			index += 1
+		last = m.get_end()
+	return out + text.substr(last)
+
+
+static var _placeholder_re: RegEx
+
+
+static func _placeholder() -> RegEx:
+	if _placeholder_re == null:
+		_placeholder_re = RegEx.create_from_string("%(?:[-+ 0#]*\\d*(?:\\.\\d+)?[sdifxXc]|%)")
+	return _placeholder_re
+
+
 static func is_danish() -> bool:
 	return TranslationServer.get_locale().begins_with("da")
 

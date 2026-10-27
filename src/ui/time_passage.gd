@@ -114,13 +114,13 @@ func is_running() -> bool:
 ## "7 May 2026" (the ship's clock, UTC, like the HUD).
 static func date_text(unix_time: float) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(int(unix_time))
-	return "%d %s %d" % [d.day, MONTHS[d.month - 1], d.year]
+	return Loc.t("%d %s %d", "date") % [d.day, Loc.month(d.month), d.year]
 
 
 ## "a Thursday", or "a Thursday evening".
 static func weekday_phrase(unix_time: float, evening := false) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(int(unix_time))
-	return "a %s%s" % [WEEKDAYS[d.weekday], " evening" if evening else ""]
+	return (Loc.t("a %s evening") if evening else Loc.t("a %s")) % Loc.weekday(d.weekday)
 
 
 ## "22:00".

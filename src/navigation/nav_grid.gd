@@ -101,7 +101,7 @@ static func load_world(world_mask := WORLD_MASK, world_meta := WORLD_META, europ
 	var link: Dictionary = world.meta.get("europe", {})
 	if europe and not link.is_empty():
 		europe.region_id = "europe"
-		europe.region_name = "Europe"
+		europe.region_name = Loc.t("Europe")
 		europe.factor = int(link.factor)
 		europe.base_cell = Vector2i(int(link.base_cells.column), int(link.base_cells.row))
 		europe.base_size = Vector2i(int(link.base_cells.columns), int(link.base_cells.rows))

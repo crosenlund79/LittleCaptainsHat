@@ -33,7 +33,7 @@ func _ready() -> void:
 	UiTheme.palette_changed.connect(_on_palette_changed)
 	if guides.is_empty():
 		_title.text = "No developer guides"
-		_content.text = "The guides are read from %s, which is not available in this build. Open the project in Godot (or run it with godot --path .) to read them." % DevGuides.guides_dir
+		_content.text = Loc.t("The guides are read from %s, which is not available in this build. Open the project in Godot (or run it with godot --path .) to read them.") % DevGuides.guides_dir
 	else:
 		show_guide(guides[0].path)
 
@@ -46,7 +46,7 @@ func show_guide(path: String) -> void:
 	var text := DevGuides.read(path)
 	if text.is_empty():
 		_title.text = path.get_file()
-		_content.text = "This guide could not be read: %s" % path
+		_content.text = Loc.t("This guide could not be read: %s") % path
 		return
 	_title.text = DevGuides.title_of(text, path.get_file())
 	_shown_path = path

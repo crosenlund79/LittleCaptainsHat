@@ -13,16 +13,16 @@ var _publish: Button
 func _ready() -> void:
 	var quote := GameSession.get_publish_quote()
 	_build("Publish travel update")
-	_label("Info", "Share your recent passages online. Unpublished renown becomes income at %s per renown point. Your lifetime renown stays as it is." %
+	_label("Info", Loc.t("Share your recent passages online. Unpublished renown becomes income at %s per renown point. Your lifetime renown stays as it is.") %
 		GameSession.format_money(int(quote.rate)), &"MutedLabel")
-	_label("Renown", "Unpublished renown: %d   ·   lifetime renown: %d" % [quote.renown, GameSession.get_lifetime_renown()])
-	_label("Earnings", "%d renown × %s = %s" % [quote.renown, GameSession.format_money(int(quote.rate)), GameSession.format_money(int(quote.euros))],
+	_label("Renown", Loc.t("Unpublished renown: %d   ·   lifetime renown: %d") % [quote.renown, GameSession.get_lifetime_renown()])
+	_label("Earnings", Loc.t("%d renown × %s = %s") % [quote.renown, GameSession.format_money(int(quote.rate)), GameSession.format_money(int(quote.euros))],
 		&"HeaderLabel")
-	_label("Funds", "Funds %s → %s" % [GameSession.format_money(int(quote.funds)), GameSession.format_money(int(quote.funds_after))])
+	_label("Funds", Loc.t("Funds %s → %s") % [GameSession.format_money(int(quote.funds)), GameSession.format_money(int(quote.funds_after))])
 	if not String(quote.error).is_empty():
 		_label("Note", quote.error, &"MutedLabel")
 	_button("CancelButton", "Cancel", close)
-	_publish = _button("PublishButton", "Publish for %s" % GameSession.format_money(int(quote.euros)), publish_confirmed.emit, 220.0)
+	_publish = _button("PublishButton", Loc.t("Publish for %s") % GameSession.format_money(int(quote.euros)), publish_confirmed.emit, 220.0)
 	_publish.disabled = not String(quote.error).is_empty()
 
 

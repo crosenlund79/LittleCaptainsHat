@@ -145,8 +145,8 @@ func _build_panel() -> void:
 	box.add_child(row)
 	for i in Simulation.PASSAGE_RATES.size():
 		var rate: float = Simulation.PASSAGE_RATES[i]
-		var button := _add_button(row, "Rate%d" % i, PassagePanel.RATE_LABELS[i], "Let %d hour%s pass every second." % [
-			roundi(rate / 3600.0), "" if rate <= 3600.0 else "s"])
+		var button := _add_button(row, "Rate%d" % i, PassagePanel.RATE_LABELS[i], Loc.n("Let %d hour pass every second.", "Let %d hours pass every second.",
+			roundi(rate / 3600.0)) % roundi(rate / 3600.0))
 		button.toggle_mode = true
 		button.pressed.connect(_set_rate.bind(rate))
 		_rate_buttons.append(button)
@@ -316,12 +316,12 @@ func _refresh() -> void:
 	var voyage := GameSession.get_voyage()
 	var catalog := PortCatalog.get_default()
 	var destination_id: StringName = voyage.route.destination_port_id if voyage else GameSession.get_location_id()
-	_title.text = "Long passage to %s" % catalog.get_display_name(destination_id)
+	_title.text = Loc.t("Long passage to %s") % catalog.get_display_name(destination_id)
 	_when.text = "%s  ·  %s" % [TimePassage.date_text(GameSession.get_game_time()), Simulation.format_game_time(GameSession.get_game_time()).get_slice(", ", 1)]
 	if voyage and GameSession.is_underway():
 		var remaining := GameSession.get_voyage_remaining_nm()
 		var total := GameSession.get_voyage_total_nm()
-		_distance.text = "%s nm to go  ·  arriving about %s" % [PassagePanel._thousands(roundi(remaining)),
+		_distance.text = Loc.t("%s nm to go  ·  arriving about %s") % [PassagePanel._thousands(roundi(remaining)),
 			Simulation.format_game_time(Simulation.get_eta())]
 		_progress.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 		_update_route(voyage)

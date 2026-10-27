@@ -41,7 +41,10 @@ const NM_PER_DEGREE := 60.0
 var id: StringName
 var kind: StringName
 ## Shown to the player: "Strong winds", "Thunderstorm", "Tropical storm Alba".
-var display_name := ""
+## Shown in the current language (I019); storms keep their given names.
+var display_name := "":
+	get:
+		return Loc.t(display_name)
 var start_time := 0.0
 var lifetime := 3600.0
 ## Centre at start_time.
@@ -262,14 +265,14 @@ func cyclone_wind(geo: Vector2, time: float) -> Array:
 func cyclone_category(time: float) -> String:
 	var v := peak_kn * life_factor(time)
 	if v < 34.0:
-		return "Tropical depression"
+		return Loc.t("Tropical depression")
 	if v < 64.0:
-		return "Tropical storm"
+		return Loc.t("Tropical storm")
 	var category := 1
 	for limit in [83.0, 96.0, 113.0, 137.0]:
 		if v >= limit:
 			category += 1
-	return "Hurricane (category %d)" % category
+	return Loc.t("Hurricane (category %d)") % category
 
 
 ## Plain data for debugging and tests.

@@ -118,7 +118,7 @@ static func describe(risks: Array[Dictionary]) -> String:
 	var lines := PackedStringArray()
 	for info in risks.slice(0, 3):
 		var where := Loc.t("%s %s nm %s") % [TrafficModel.kind_name(info.kind), Loc.decimal(float(info.distance_nm)),
-			Loc.t(WindField.compass_name(float(info.bearing)), "compass")]
+			WindField.compass_name(float(info.bearing))]
 		if float(info.tcpa_h) > 0.0 and float(info.tcpa_h) < 2.0:
 			where += Loc.t(", passes %s nm off in %d min") % [Loc.decimal(float(info.cpa_nm)), maxi(roundi(float(info.tcpa_h) * 60.0), 1)]
 		lines.append(where)
@@ -146,7 +146,7 @@ func _draw_scope() -> void:
 	for f in [0.5, 1.0]:
 		_scope.draw_arc(centre, half * f - 1.0, 0.0, TAU, 48, RING, 1.0, true)
 	_scope.draw_string(ThemeDB.fallback_font, Vector2(half - 4.0, 14.0), Loc.t("N", "compass"), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, RING * 2.0)
-	_scope.draw_string(ThemeDB.fallback_font, Vector2(half + 4.0, half - half * 0.5 + 12.0), "%s nm" % Loc.decimal(get_range_nm() / 2.0, 1 if get_range_nm() < 4.0 else 0),
+	_scope.draw_string(ThemeDB.fallback_font, Vector2(half + 4.0, half - half * 0.5 + 12.0), Loc.t("%s nm") % Loc.decimal(get_range_nm() / 2.0, 1 if get_range_nm() < 4.0 else 0),
 		HORIZONTAL_ALIGNMENT_LEFT, -1, 11, RING * 2.0)
 	# Our boat, along its heading when underway.
 	var heading := deg_to_rad(Simulation.get_current_heading()) if GameSession.is_underway() else 0.0

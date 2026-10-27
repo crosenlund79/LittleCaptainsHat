@@ -196,7 +196,7 @@ func get_snapshot_time() -> float:
 func snapshot_label() -> String:
 	if _offset == 0:
 		return "NOW"
-	return "FORECAST" if _offset > 0 else "PAST MODEL SNAPSHOT"
+	return "FORECAST" if _offset > 0 else Loc.t("PAST MODEL SNAPSHOT")
 
 
 ## True when the selected snapshot is fully sampled and shown for the view.

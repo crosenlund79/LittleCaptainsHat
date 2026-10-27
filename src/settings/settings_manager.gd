@@ -14,6 +14,8 @@ signal art_style_changed(style: StringName)
 signal course_view_changed(enabled: bool)
 ## The interface light (Captain's Chartroom): "auto", "day" or "night".
 signal ui_light_changed(mode: StringName)
+## The game's language (I019): "en" or "da".
+signal language_changed(locale: StringName)
 
 const DEFAULT_PATH := "user://settings.cfg"
 
@@ -56,6 +58,11 @@ const UI_LIGHT_NIGHT := &"night"
 const UI_LIGHTS: Array[StringName] = [UI_LIGHT_AUTO, UI_LIGHT_DAY, UI_LIGHT_NIGHT]
 const DEFAULT_UI_LIGHT := UI_LIGHT_AUTO
 
+## The game's language (I019): English or Dansk (Loc.LANGUAGES). Empty until
+## the player has chosen (the first launch asks).
+const LANGUAGES: Array[StringName] = [&"en", &"da"]
+const DEFAULT_LANGUAGE := &"en"
+
 ## Window size used when (re)entering windowed mode. Clamped to the screen.
 const WINDOWED_SIZE := Vector2i(1600, 900)
 
@@ -72,6 +79,7 @@ var _reduce_flashing := DEFAULT_REDUCE_FLASHING
 var _flash_intensity := DEFAULT_FLASH_INTENSITY
 var _reduce_motion := DEFAULT_REDUCE_MOTION
 var _ui_light: StringName = DEFAULT_UI_LIGHT
+var _language: StringName = &""
 
 
 func _ready() -> void:
@@ -210,6 +218,34 @@ func set_ui_light(mode: StringName) -> void:
 	settings_applied.emit()
 
 
+## The game's language ("en" or "da"); English until one is chosen.
+func get_language() -> StringName:
+	return _language if _language != &"" else DEFAULT_LANGUAGE
+
+
+## Whether the player has chosen a language (the first launch asks once).
+func has_chosen_language() -> bool:
+	return _language != &""
+
+
+## Switches the language at once: Godot re-translates every control's own
+## text, and screens built from sentences refresh on language_changed.
+func set_language(locale: StringName) -> void:
+	if locale not in LANGUAGES:
+		push_warning("Unknown language: %s" % locale)
+		return
+	var changed := locale != get_language()
+	_language = locale
+	_apply_language()
+	if changed:
+		language_changed.emit(locale)
+	settings_applied.emit()
+
+
+func _apply_language() -> void:
+	TranslationServer.set_locale(String(get_language()))
+
+
 ## Lightning flash brightness, 0-100 %.
 func get_flash_intensity() -> int:
 	return _flash_intensity
@@ -246,6 +282,7 @@ func snapshot() -> Dictionary:
 		"flash_intensity": _flash_intensity,
 		"reduce_motion": _reduce_motion,
 		"ui_light": _ui_light,
+		"language": _language,
 	}
 
 
@@ -267,7 +304,14 @@ func restore_snapshot(data: Dictionary) -> void:
 	var light_changed := light != _ui_light and light in UI_LIGHTS
 	if light in UI_LIGHTS:
 		_ui_light = light
+	# The language is kept by "Restore defaults" (it is not a default to undo).
+	var language := StringName(data.get("language", _language))
+	var language_changed_now := (language if language != &"" else DEFAULT_LANGUAGE) != get_language()
+	if language in LANGUAGES or language == &"":
+		_language = language
 	apply_all()
+	if language_changed_now:
+		language_changed.emit(get_language())
 	if light_changed:
 		ui_light_changed.emit(_ui_light)
 	if style_changed:
@@ -294,6 +338,8 @@ func save() -> Error:
 	config.set_value("accessibility", "flash_intensity", _flash_intensity)
 	config.set_value("accessibility", "reduce_motion", _reduce_motion)
 	config.set_value("interface", "ui_light", String(_ui_light))
+	if _language != &"":
+		config.set_value("interface", "language", String(_language))
 	config.set_value("gameplay", "sleep_hours", _sleep_hours)
 	var err := config.save(settings_path)
 	if err != OK:
@@ -332,12 +378,15 @@ func load_settings() -> void:
 	loaded["reduce_motion"] = motion if motion is bool else DEFAULT_REDUCE_MOTION
 	var light := StringName(str(config.get_value("interface", "ui_light", DEFAULT_UI_LIGHT)))
 	loaded["ui_light"] = light if light in UI_LIGHTS else DEFAULT_UI_LIGHT
+	var language := StringName(str(config.get_value("interface", "language", "")))
+	loaded["language"] = language if language in LANGUAGES else &""
 	var sleep: Variant = config.get_value("gameplay", "sleep_hours", DEFAULT_SLEEP_HOURS)
 	_sleep_hours = clampi(int(sleep), SLEEP_HOURS_MIN, SLEEP_HOURS_MAX) if _is_number(sleep) else DEFAULT_SLEEP_HOURS
 	restore_snapshot(loaded)
 
 
 func apply_all() -> void:
+	_apply_language()
 	for bus: StringName in AUDIO_BUSES:
 		_apply_bus_volume(bus)
 	_apply_window_mode()

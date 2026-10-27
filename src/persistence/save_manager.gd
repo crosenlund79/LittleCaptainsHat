@@ -72,7 +72,7 @@ func get_slot_info(slot: int) -> SlotInfo:
 	info.area_name = SessionState.get_area_display_name(state.boat_area)
 	info.game_time = state.game_time
 	if state.voyage:
-		info.location_name = "At sea"
+		info.location_name = Loc.t("At sea")
 		info.destination_name = catalog.get_display_name(state.voyage.route.destination_port_id)
 	else:
 		info.location_name = catalog.get_display_name(state.location_id)
@@ -167,11 +167,11 @@ func save_to_slot(slot: int, state: SessionState) -> Error:
 func load_from_slot(slot: int) -> LoadResult:
 	var result := LoadResult.new()
 	if not _is_valid_slot(slot):
-		result.error = "Invalid save slot."
+		result.error = Loc.t("Invalid save slot.")
 		return result
 	var path := _resolve_readable_path(slot)
 	if path.is_empty():
-		result.error = "Slot %d is empty." % slot
+		result.error = Loc.t("Slot %d is empty.") % slot
 		SessionLog.write("load", {"slot": slot, "result": "failed", "error": result.error})
 		return result
 	var read := _read_and_validate(path)
@@ -194,7 +194,7 @@ func is_slot_free(slot: int) -> bool:
 ## Next Harbor): {"status": Status, "error", "saved_at_unix", "state"}.
 func check_file(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
-		return {"status": Status.EMPTY, "error": "No file.", "saved_at_unix": 0.0, "state": null}
+		return {"status": Status.EMPTY, "error": Loc.t("No file."), "saved_at_unix": 0.0, "state": null}
 	var read := _read_and_validate(path)
 	return {"status": read.status, "error": read.error, "saved_at_unix": read.saved_at_unix, "state": read.state}
 
@@ -258,33 +258,33 @@ func _read_and_validate(path: String) -> _ReadResult:
 	var read := _ReadResult.new()
 	var text := FileAccess.get_file_as_string(path)
 	if text.is_empty():
-		read.error = "The save file is empty or unreadable."
+		read.error = Loc.t("The save file is empty or unreadable.")
 		return read
 	var json := JSON.new()
 	if json.parse(text) != OK:
-		read.error = "The save file is damaged (line %d: %s)." % [json.get_error_line(), json.get_error_message()]
+		read.error = Loc.t("The save file is damaged (line %d: %s).") % [json.get_error_line(), json.get_error_message()]
 		return read
 	var data: Variant = json.data
 	if not data is Dictionary or data.get("format") != FORMAT_ID:
-		read.error = "This is not a Little Captain's Hat (or Next Harbor) save file."
+		read.error = Loc.t("This is not a Little Captain's Hat (or Next Harbor) save file.")
 		return read
 	var version: Variant = data.get("version")
 	if not (version is int or version is float):
-		read.error = "The save file has no version."
+		read.error = Loc.t("The save file has no version.")
 		return read
 	if int(version) > SAVE_VERSION or int(version) < 1:
 		read.status = Status.UNSUPPORTED
-		read.error = "Save version %d is not supported by this version of the game." % int(version)
+		read.error = Loc.t("Save version %d is not supported by this version of the game.") % int(version)
 		return read
 	data = _migrate(data, int(version))
 	var saved_at: Variant = data.get("saved_at_unix")
 	if not (saved_at is int or saved_at is float):
-		read.error = "The save file has no timestamp."
+		read.error = Loc.t("The save file has no timestamp.")
 		return read
 	var errors: Array[String] = []
 	var state := SessionState.from_dict(data.get("session"), errors)
 	if state == null:
-		read.error = "The save data is invalid: %s." % ", ".join(errors)
+		read.error = Loc.t("The save data is invalid: %s.") % ", ".join(errors)
 		return read
 	read.status = Status.VALID
 	read.state = state
@@ -567,4 +567,4 @@ func _is_valid_slot(slot: int) -> bool:
 
 ## "slot 2" or "the quicksave", for messages.
 static func slot_name(slot: int) -> String:
-	return "the quicksave" if slot == QUICKSAVE_SLOT else "slot %d" % slot
+	return Loc.t("the quicksave") if slot == QUICKSAVE_SLOT else Loc.t("slot %d") % slot

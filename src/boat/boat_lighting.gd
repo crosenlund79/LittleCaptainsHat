@@ -101,7 +101,7 @@ static func pool_texture() -> GradientTexture2D:
 
 func setup(boat_area: BoatArea) -> void:
 	area = boat_area
-	name = "Lighting"
+	name = Loc.t("Lighting")
 	_modulate = CanvasModulate.new()
 	_modulate.name = "Ambient"
 	area.add_child(_modulate)

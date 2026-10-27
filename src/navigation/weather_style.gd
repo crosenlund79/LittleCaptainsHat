@@ -30,7 +30,7 @@ static func label(event: WeatherEvent, time: float) -> String:
 		WeatherEvent.KIND_GALE:
 			return event.display_name.to_upper()
 		WeatherEvent.KIND_THUNDERSTORM:
-			return "SEVERE SQUALLS" if event.peak_kn + event.gust_kn >= WeatherModel.SEVERE_STORM_KN else "THUNDERSTORM"
+			return Loc.t("SEVERE SQUALLS") if event.peak_kn + event.gust_kn >= WeatherModel.SEVERE_STORM_KN else "THUNDERSTORM"
 		WeatherEvent.KIND_CYCLONE:
 			return ("%s %s" % [event.cyclone_category(time).get_slice(" (", 0), event.display_name]).to_upper()
 	return style(event.kind).label

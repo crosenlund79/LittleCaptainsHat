@@ -21,7 +21,7 @@ var _work: Button
 
 func _ready() -> void:
 	_build("Remote work")
-	_label("Info", "Work online from the boat while moored: %s per completed hour. Time passes while you work, and food and water are used as usual." %
+	_label("Info", Loc.t("Work online from the boat while moored: %s per completed hour. Time passes while you work, and food and water are used as usual.") %
 		GameSession.format_money(GameSession.REMOTE_WORK_PAY_PER_HOUR), &"MutedLabel")
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -49,7 +49,7 @@ func _ready() -> void:
 	_button("CancelButton", "Cancel", close)
 	var publish := _button("PublishButton", "Publish travel update…", publish_requested.emit, 200.0)
 	publish.disabled = GameSession.get_unpublished_renown() <= 0
-	publish.tooltip_text = "%d unpublished renown" % GameSession.get_unpublished_renown()
+	publish.tooltip_text = Loc.t("%d unpublished renown") % GameSession.get_unpublished_renown()
 	_work = _button("WorkButton", "Work", func() -> void: work_requested.emit(hours), 200.0)
 	_update()
 
@@ -70,11 +70,11 @@ func change_hours(delta: int) -> void:
 
 func _update() -> void:
 	var pay := hours * GameSession.REMOTE_WORK_PAY_PER_HOUR
-	_duration.text = "%d hour%s" % [hours, "" if hours == 1 else "s"]
+	_duration.text = Loc.n("%d hour", "%d hours", hours) % hours
 	_decrease.disabled = hours <= GameSession.REMOTE_WORK_MIN_HOURS
 	_increase.disabled = hours >= GameSession.REMOTE_WORK_MAX_HOURS
-	_work.text = "Work %d h for %s" % [hours, GameSession.format_money(pay)]
-	_detail.text = "You finish at about %s.\nFunds now %s, afterwards %s.\nFood and water used: %s each." % [
+	_work.text = Loc.t("Work %d h for %s") % [hours, GameSession.format_money(pay)]
+	_detail.text = Loc.t("You finish at about %s.\nFunds now %s, afterwards %s.\nFood and water used: %s each.") % [
 		Simulation.format_game_time(GameSession.get_game_time() + hours * 3600.0),
 		GameSession.format_money(GameSession.get_funds()), GameSession.format_money(GameSession.get_funds() + pay),
 		Provisions.format_days(hours / 24.0)]

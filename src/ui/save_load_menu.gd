@@ -65,7 +65,7 @@ func _create_slot_entry(info: SaveManager.SlotInfo) -> Button:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var title := Label.new()
 	title.theme_type_variation = &"HeaderLabel"
-	title.text = "Quicksave (F5)" if info.slot == SaveManager.QUICKSAVE_SLOT else "Slot %d" % info.slot
+	title.text = "Quicksave (F5)" if info.slot == SaveManager.QUICKSAVE_SLOT else Loc.t("Slot %d") % info.slot
 	var details := Label.new()
 	details.theme_type_variation = &"MutedLabel"
 	details.text = describe_slot(info)
@@ -82,14 +82,14 @@ func _create_slot_entry(info: SaveManager.SlotInfo) -> Button:
 static func describe_slot(info: SaveManager.SlotInfo) -> String:
 	match info.status:
 		SaveManager.Status.EMPTY:
-			return "Empty slot"
+			return Loc.t("Empty slot")
 		SaveManager.Status.CORRUPTED:
-			return "Damaged save — cannot be loaded. %s" % info.problem
+			return Loc.t("Damaged save — cannot be loaded. %s") % info.problem
 		SaveManager.Status.UNSUPPORTED:
-			return "Unsupported save — %s" % info.problem
+			return Loc.t("Unsupported save — %s") % info.problem
 	var parts := [format_timestamp(info.saved_at_unix), info.area_name, info.location_name]
 	if not info.destination_name.is_empty():
-		parts.append("Route to %s" % info.destination_name)
+		parts.append(Loc.t("Route to %s") % info.destination_name)
 	return "  ·  ".join(parts)
 
 
@@ -104,14 +104,14 @@ func _on_slot_pressed(info: SaveManager.SlotInfo) -> void:
 		load_requested.emit(info.slot)
 		return
 	if info.status != SaveManager.Status.EMPTY:
-		var overwrite: bool = await stack.confirm("Overwrite slot %d?" % info.slot,
-			"The saved game in slot %d will be replaced by your current game." % info.slot, "Overwrite")
+		var overwrite: bool = await stack.confirm(Loc.t("Overwrite slot %d?") % info.slot,
+			Loc.t("The saved game in slot %d will be replaced by your current game.") % info.slot, "Overwrite")
 		if not overwrite:
 			return
 	var err := SaveManager.save_to_slot(info.slot, GameSession.get_state_snapshot())
 	if err == OK:
 		GameSession.mark_saved()
-		notify("Game saved to slot %d." % info.slot)
+		notify(Loc.t("Game saved to slot %d.") % info.slot)
 		close()
 	else:
-		notify("Saving failed (%s). Your previous save was kept." % error_string(err))
+		notify(Loc.t("Saving failed (%s). Your previous save was kept.") % error_string(err))

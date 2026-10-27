@@ -55,11 +55,11 @@ static func factor(auto: bool, trim: float, angle_deg: float, wind_kn: float) ->
 ## or "Too loose".
 static func feedback(auto: bool, trim: float, angle_deg: float, wind_kn: float) -> String:
 	if auto:
-		return "Trimmed by the crew"
+		return Loc.t("Trimmed by the crew")
 	var e := error(trim, angle_deg, wind_kn)
 	if absf(e) <= WELL:
-		return "Well trimmed"
-	return "Too tight" if e > 0.0 else "Too loose"
+		return Loc.t("Well trimmed")
+	return Loc.t("Too tight") if e > 0.0 else Loc.t("Too loose")
 
 
 ## The effect in whole percent (+6 ... -10; 0 with the crew's trim).

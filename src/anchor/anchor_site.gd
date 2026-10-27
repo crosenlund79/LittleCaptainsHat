@@ -82,7 +82,7 @@ static func evaluate(geo: Vector2, sample: WindField.Sample, magic := false, at_
 		"normal_ok": false, "magic_ok": false, "offshore": false, "approach": PackedVector2Array()}
 	var coast := CoastalGeography.get_default()
 	if not coast.is_water(geo):
-		result.reason = "Land or unsuitable water."
+		result.reason = Loc.t("Land or unsuitable water.")
 		return result
 	result.water = true
 	var depth := DepthService.get_default().sample(geo)
@@ -93,11 +93,11 @@ static func evaluate(geo: Vector2, sample: WindField.Sample, magic := false, at_
 	result.offshore = result.land_nm >= COASTAL_NM
 	if not at_boat:
 		if not coast.is_clear(geo) or result.land_nm < MIN_SHORE_NM:
-			result.reason = "Too close to the shore for the boat: keep a little further off."
+			result.reason = Loc.t("Too close to the shore for the boat: keep a little further off.")
 			return result
 		result.approach = coast.approach(geo)
 		if result.approach.is_empty():
-			result.reason = "No safe approach: the boat cannot get in there from open water."
+			result.reason = Loc.t("No safe approach: the boat cannot get in there from open water.")
 			return result
 	result.reachable = true
 	var fetch: float = coast.fetch_nm(geo, sample.from_deg) if not result.offshore else MAX_FETCH_NM
@@ -112,15 +112,15 @@ static func evaluate(geo: Vector2, sample: WindField.Sample, magic := false, at_
 		result.kind = KIND_MAGIC
 	if result.kind == &"":
 		if sample.speed_kn > (MAX_MAGIC_WIND_KN if magic else MAX_ANCHORING_WIND_KN):
-			result.reason = "Too much wind to anchor safely (%d kn)." % roundi(sample.speed_kn)
+			result.reason = Loc.t("Too much wind to anchor safely (%d kn).") % roundi(sample.speed_kn)
 		elif result.depth_m < MIN_DEPTH_M:
-			result.reason = "Too shallow for the boat here."
+			result.reason = Loc.t("Too shallow for the boat here.")
 		elif sample.speed_kn > MAX_ANCHORING_WIND_KN:
-			result.reason = "Too much wind for the normal anchor (%d kn)." % roundi(sample.speed_kn)
+			result.reason = Loc.t("Too much wind for the normal anchor (%d kn).") % roundi(sample.speed_kn)
 		else:
-			result.reason = "Deep water (%s, %s): too deep for the normal anchor to reach the bottom.%s" % [
+			result.reason = Loc.t("Deep water (%s, %s): too deep for the normal anchor to reach the bottom.%s") % [
 				DepthService.describe_depth(result.depth_m), result.depth_label,
-				"" if magic else " A Magic Anchor could hold here."]
+				"" if magic else Loc.t(" A Magic Anchor could hold here.")]
 		return result
 	result.ok = true
 	result.class = {SHELTERED: CLASS_GOOD, PARTLY: CLASS_FAIR, EXPOSED: CLASS_POOR}[result.shelter]
@@ -184,23 +184,23 @@ static func holding_margin(scope: int, set_quality: float, shelter: StringName, 
 
 
 static func holding_text(holding: StringName) -> String:
-	return {AnchorState.HOLDING_WELL: "Holding well", AnchorState.HOLDING_FAIR: "Fair holding",
-		AnchorState.HOLDING_POOR: "Poor holding", AnchorState.HOLDING_DRAGGING: "Anchor dragging"}.get(holding, "")
+	return {AnchorState.HOLDING_WELL: Loc.t("Holding well"), AnchorState.HOLDING_FAIR: Loc.t("Fair holding"),
+		AnchorState.HOLDING_POOR: Loc.t("Poor holding"), AnchorState.HOLDING_DRAGGING: Loc.t("Anchor dragging")}.get(holding, "")
 
 
 static func describe(site: Dictionary) -> String:
 	var depth := "%s, %s" % [DepthService.describe_depth(float(site.get("depth_m", 0.0))), site.get("depth_label", "")]
 	var magic := StringName(site.get("kind", &"")) == KIND_MAGIC
-	var prefix := "Magic Anchor: " if magic else ""
+	var prefix := Loc.t("Magic Anchor: ") if magic else ""
 	if magic and bool(site.get("offshore", false)):
-		return "Magic Anchor, open sea (%s): it will hold the boat's position, but there is no shelter out here from wind or waves." % depth
+		return Loc.t("Magic Anchor, open sea (%s): it will hold the boat's position, but there is no shelter out here from wind or waves.") % depth
 	match StringName(site.class):
 		CLASS_GOOD:
-			return "%sA good anchorage: sheltered from this wind (depth %s; land %.1f nm away)." % [prefix, depth, float(site.land_nm)]
+			return Loc.format("%sA good anchorage: sheltered from this wind (depth %s; land %.1f nm away).", [prefix, depth, float(site.land_nm)])
 		CLASS_FAIR:
-			return "%sA fair anchorage: partly sheltered from this wind (depth %s; land %.1f nm away)." % [prefix, depth, float(site.land_nm)]
+			return Loc.format("%sA fair anchorage: partly sheltered from this wind (depth %s; land %.1f nm away).", [prefix, depth, float(site.land_nm)])
 		CLASS_POOR:
-			return "%sAn exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor (depth %s)." % [prefix, float(site.fetch_nm), depth]
+			return Loc.format("%sAn exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor (depth %s).", [prefix, float(site.fetch_nm), depth])
 	return String(site.reason)
 
 
@@ -209,20 +209,20 @@ static func describe(site: Dictionary) -> String:
 ## it came from, and the shelter in the current wind (advisory).
 static func describe_for_chart(site: Dictionary, magic_owned: bool) -> String:
 	if not bool(site.get("water", false)):
-		return "Land or unsuitable water."
-	var depth := "Depth %s (%s)." % [DepthService.describe_depth(float(site.depth_m)), site.depth_label]
+		return Loc.t("Land or unsuitable water.")
+	var depth := Loc.t("Depth %s (%s).") % [DepthService.describe_depth(float(site.depth_m)), site.depth_label]
 	if not bool(site.get("reachable", false)):
 		if String(site.reason).begins_with("Too close"):
-			return "Too close to the shore for the boat. " + depth
-		return "No safe approach from open water. " + depth
-	var shelter: String = {SHELTERED: "Sheltered from the current wind.", PARTLY: "Partly sheltered from the current wind.",
-		EXPOSED: "Coast exposed to the current wind."}.get(site.shelter, "")
+			return Loc.t("Too close to the shore for the boat. ") + depth
+		return Loc.t("No safe approach from open water. ") + depth
+	var shelter: String = {SHELTERED: Loc.t("Sheltered from the current wind."), PARTLY: Loc.t("Partly sheltered from the current wind."),
+		EXPOSED: Loc.t("Coast exposed to the current wind.")}.get(site.shelter, "")
 	if bool(site.get("offshore", false)):
-		shelter = "Open sea: no shelter."
+		shelter = Loc.t("Open sea: no shelter.")
 	var deep: bool = float(site.depth_m) > NORMAL_MAX_DEPTH_M
 	if bool(site.get("normal_ok", false)):
-		return "Suitable for ordinary anchoring. %s %s" % [depth, shelter]
+		return Loc.t("Suitable for ordinary anchoring. %s %s") % [depth, shelter]
 	if deep:
-		var how := "" if magic_owned else " (fit one free at any boatyard)"
-		return "Deep water: Magic Anchor required%s. %s %s" % [how, depth, shelter]
+		var how := "" if magic_owned else Loc.t(" (fit one free at any boatyard)")
+		return Loc.t("Deep water: Magic Anchor required%s. %s %s") % [how, depth, shelter]
 	return "%s %s" % [String(site.reason), depth]

@@ -358,9 +358,9 @@ func get_harbour_facilities() -> HarbourFacilities:
 ## Why `facility` cannot be used here, or "" when it can.
 func facility_refusal(facility: StringName) -> String:
 	if not is_moored_in_harbour():
-		return "The %s is only reachable while moored in harbour." % HarbourFacilities.describe(facility)
+		return Loc.t("The %s is only reachable while moored in harbour.") % HarbourFacilities.describe(facility)
 	if not get_harbour_facilities().has(facility):
-		return "There is no %s in %s." % [HarbourFacilities.describe(facility), get_location().display_name]
+		return Loc.t("There is no %s in %s.") % [HarbourFacilities.describe(facility), get_location().display_name]
 	return ""
 
 
@@ -372,16 +372,16 @@ func facility_refusal(facility: StringName) -> String:
 ## average from the old boat's performance carries over.
 func switch_vessel(vessel_id: StringName) -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if is_underway():
-		return "You can only change boats in harbour, not during a passage."
+		return Loc.t("You can only change boats in harbour, not during a passage.")
 	if get_location() == null:
-		return "The boatyard is only available in harbour."
+		return Loc.t("The boatyard is only available in harbour.")
 	if not can_change_vessel():
 		return facility_refusal(HarbourFacilities.BOATYARD)
 	var vessel := VesselCatalog.get_default().get_vessel(vessel_id)
 	if vessel == null:
-		return "Unknown boat '%s'." % vessel_id
+		return Loc.t("Unknown boat '%s'.") % vessel_id
 	if vessel_id == _state.vessel_id:
 		return ""
 	_state.vessel_id = vessel_id
@@ -409,7 +409,7 @@ func _check_vessel() -> void:
 	_state.spawn_point = &"start"
 	_state.has_player_position = false
 	push_warning("Unknown vessel id '%s' in the loaded game; using '%s'." % [unknown, _state.vessel_id])
-	notice.emit.call_deferred("The saved boat '%s' is not available; you are aboard the %s." % [unknown, catalog.get_starter().display_name])
+	notice.emit.call_deferred(Loc.t("The saved boat '%s' is not available; you are aboard the %s.") % [unknown, catalog.get_starter().display_name])
 
 
 ## A copy of the propulsion state (mode, potential speed, wind, sails).
@@ -428,7 +428,7 @@ func is_motoring() -> bool:
 ## this answer (0.105b). Returns "" when the engine may run.
 func engine_start_refusal() -> String:
 	if is_anchored():
-		return "Let's raise the anchor before starting the engine."
+		return Loc.t("Let's raise the anchor before starting the engine.")
 	return ""
 
 
@@ -495,12 +495,12 @@ func get_planned_route() -> PlannedRoute:
 ## it the planned route. Returns "" on success, otherwise the reason.
 func plan_route_to(destination_id: StringName, waypoints: Array[Vector2] = []) -> String:
 	if _state == null or is_underway():
-		return "A course can only be planned in port."
+		return Loc.t("A course can only be planned in port.")
 	var location := get_location()
 	if location == null:
-		return "The vessel is not in a port."
+		return Loc.t("The vessel is not in a port.")
 	if destination_id == location.id and waypoints.is_empty():
-		return "The vessel is already in %s." % location.display_name
+		return Loc.t("The vessel is already in %s.") % location.display_name
 	var result := SeaRouter.get_default().plan_route(location.id, location.get_geo_position(), waypoints, destination_id)
 	if not result.is_ok():
 		return result.error
@@ -511,11 +511,11 @@ func plan_route_to(destination_id: StringName, waypoints: Array[Vector2] = []) -
 ## against the chart. Returns "" on success, otherwise the reason.
 func set_planned_route(route: PlannedRoute) -> String:
 	if _state == null or is_underway():
-		return "A course can only be planned in port."
+		return Loc.t("A course can only be planned in port.")
 	var location := get_location()
 	if location == null or route.origin_port_id != location.id \
 			or not route.origin_position.is_equal_approx(location.get_geo_position()):
-		return "The course must start from %s." % (location.display_name if location else "the vessel")
+		return Loc.t("The course must start from %s.") % (location.display_name if location else Loc.t("the vessel"))
 	var problem := SeaRouter.get_default().validate_route(route)
 	if not problem.is_empty():
 		return problem
@@ -579,17 +579,17 @@ func get_voyage_revision() -> int:
 ## Sets sail on the planned route. Returns "" on success, otherwise the reason.
 func depart() -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if is_underway():
-		return "The vessel is already underway."
+		return Loc.t("The vessel is already underway.")
 	var route := _state.planned_route
 	if route == null or not route.has_path():
-		return "Plot a course at the chart table first."
+		return Loc.t("Plot a course at the chart table first.")
 	if _state.provisions.is_empty():
-		return "You are out of food or water. Buy provisions at the grocery store before setting sail."
+		return Loc.t("You are out of food or water. Buy provisions at the grocery store before setting sail.")
 	var location := get_location()
 	if location == null or route.origin_port_id != location.id:
-		return "The planned course does not start here."
+		return Loc.t("The planned course does not start here.")
 	var problem := SeaRouter.get_default().validate_route(route)
 	if not problem.is_empty():
 		return problem
@@ -617,7 +617,7 @@ func depart() -> String:
 ## `anchorages` (Iteration 18): which of `waypoints` are anchorages.
 func change_course(destination_id: StringName, waypoints: Array[Vector2], anchorages: Array[bool] = []) -> String:
 	if not is_underway():
-		return "The vessel is not underway."
+		return Loc.t("The vessel is not underway.")
 	var origin := _state.vessel_position
 	var result := SeaRouter.get_default().plan_route(&"", origin, waypoints, destination_id)
 	if not result.is_ok():
@@ -919,7 +919,7 @@ func _wear(elapsed: float, nm: float) -> void:
 		boat_care_changed.emit()
 		for i in 2:
 			if after[i] == BoatCare.LEVEL_RECOMMENDED and before[i] != after[i]:
-				notice.emit.call_deferred("Boat care: %s could do with a service at the next boatyard. (Captain's Log, Boat tab)" % \
+				notice.emit.call_deferred(Loc.t("Boat care: %s could do with a service at the next boatyard. (Captain's Log, Boat tab)") % \
 					BoatCare.AREA_NAMES[[BoatCare.AREA_RIG, BoatCare.AREA_ENGINE][i]].to_lower())
 
 
@@ -932,9 +932,9 @@ static func service_facility(service: StringName) -> StringName:
 ## Why a service cannot be had here now, or "".
 func service_refusal(service: StringName) -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if not is_moored_in_harbour():
-		return "Boatyard work is done while moored in harbour."
+		return Loc.t("Boatyard work is done while moored in harbour.")
 	var facility := service_facility(service)
 	if not has_facility(facility):
 		return facility_refusal(facility)
@@ -942,16 +942,16 @@ func service_refusal(service: StringName) -> String:
 	match service:
 		BoatCare.SERVICE_REPAIR:
 			if get_condition() >= VesselCondition.FULL:
-				return "The %s is already in perfect condition." % get_vessel_definition().display_name
+				return Loc.t("The %s is already in perfect condition.") % get_vessel_definition().display_name
 		BoatCare.SERVICE_ENGINE:
 			if care.engine_hours < 1.0:
-				return "The engine was serviced recently."
+				return Loc.t("The engine was serviced recently.")
 		BoatCare.SERVICE_RIG:
 			if care.rig_wear < 1.0:
-				return "The rigging and sails are in fine order."
+				return Loc.t("The rigging and sails are in fine order.")
 	var quote := service_quote(service)
 	if int(quote.cost) > _state.funds:
-		return "Not enough money: %s needed." % format_money(int(quote.cost))
+		return Loc.t("Not enough money: %s needed.") % format_money(int(quote.cost))
 	return ""
 
 
@@ -990,7 +990,7 @@ func perform_service(service: StringName) -> Dictionary:
 	result.cost = int(quote.cost)
 	result.minutes = float(quote.minutes)
 	if service == BoatCare.SERVICE_HAUL_OUT:
-		var award := _award_once("care:first_haul_out", "First haul-out: %s" % get_location().display_name, 2)
+		var award := _award_once("care:first_haul_out", Loc.t("First haul-out: %s") % get_location().display_name, 2)
 		result.first = not award.is_empty()
 		if result.first:
 			renown_awarded.emit([award])
@@ -1045,10 +1045,10 @@ func haul_out(extras: Array[StringName] = []) -> Dictionary:
 	var allowed := get_haul_out_extras()
 	for extra in extras:
 		if result.error == "" and not extra in allowed:
-			result.error = "That work is not needed now."
+			result.error = Loc.t("That work is not needed now.")
 	var quote := haul_out_quote(extras)
 	if result.error == "" and int(quote.cost) > _state.funds:
-		result.error = "Not enough money: %s needed." % format_money(int(quote.cost))
+		result.error = Loc.t("Not enough money: %s needed.") % format_money(int(quote.cost))
 	if result.error != "":
 		return result
 	var care := _state.get_boat_care(_state.vessel_id)
@@ -1078,20 +1078,20 @@ func haul_out(extras: Array[StringName] = []) -> Dictionary:
 ## Why an upgrade cannot be fitted here now, or "".
 func upgrade_refusal(id: String) -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	var upgrade := BoatCare.get_upgrade(id)
 	if upgrade.is_empty():
-		return "Unknown equipment."
+		return Loc.t("Unknown equipment.")
 	if has_upgrade(id):
-		return "The %s already has it." % get_vessel_definition().display_name
+		return Loc.t("The %s already has it.") % get_vessel_definition().display_name
 	if not is_moored_in_harbour():
-		return "Equipment is fitted while moored in harbour."
+		return Loc.t("Equipment is fitted while moored in harbour.")
 	var facility := HarbourFacilities.HAUL_OUT if upgrade.get("yard", "boatyard") == "haul_out" else HarbourFacilities.BOATYARD
 	if not has_facility(facility):
 		return facility_refusal(facility)
 	var price := upgrade_price(id)
 	if price > _state.funds:
-		return "Not enough money: %s needed." % format_money(price)
+		return Loc.t("Not enough money: %s needed.") % format_money(price)
 	return ""
 
 
@@ -1183,9 +1183,9 @@ func get_publish_quote() -> Dictionary:
 	var renown := get_unpublished_renown()
 	var error := ""
 	if not is_moored_in_harbour():
-		error = "Publishing needs a steady connection: moor in a harbour first."
+		error = Loc.t("Publishing needs a steady connection: moor in a harbour first.")
 	elif renown <= 0:
-		error = "No unpublished renown yet: sail, explore and complete objectives to earn some."
+		error = Loc.t("No unpublished renown yet: sail, explore and complete objectives to earn some.")
 	return {"renown": renown, "rate": rate, "euros": renown * rate, "funds": get_funds(),
 		"funds_after": get_funds() + renown * rate, "error": error}
 
@@ -1196,7 +1196,7 @@ func get_publish_quote() -> Dictionary:
 ## harbour only. Returns {"error", "renown", "euros", "funds_after"}.
 func publish_travel_update() -> Dictionary:
 	if _state == null:
-		return {"error": "No game is running.", "renown": 0, "euros": 0, "funds_after": 0}
+		return {"error": Loc.t("No game is running."), "renown": 0, "euros": 0, "funds_after": 0}
 	var quote := get_publish_quote()
 	if not String(quote.error).is_empty():
 		return {"error": quote.error, "renown": 0, "euros": 0, "funds_after": _state.funds}
@@ -1240,13 +1240,13 @@ func _award_world_firsts(record: Dictionary, destination: PortData) -> Array[Dic
 	if international:
 		SessionLog.write("international_arrival", {"port": String(destination.id), "region": destination.region, "nm": snappedf(float(record.nm), 0.1)})
 	var firsts := [
-		[_beyond_danish_waters(to), "world:beyond_denmark", "Beyond Danish waters: %s" % destination.display_name, 3],
-		[international, "world:first_international", "Your first international destination: %s" % destination.display_name, 4],
-		[float(record.nm) >= OFFSHORE_CROSSING_NM, "world:offshore_crossing", "Your first offshore crossing: %d nm to %s" % [roundi(float(record.nm)), destination.display_name], 4],
-		[_is_atlantic_crossing(from, to), "world:atlantic_crossing", "Across the Atlantic to %s" % destination.display_name, 6],
-		[destination.region == "pacific", "world:pacific_arrival", "Into the Pacific: %s" % destination.display_name, 5],
-		[destination.country == "French Polynesia", "world:french_polynesia", "French Polynesia: %s" % destination.display_name, 5],
-		[destination.country == "New Zealand", "world:new_zealand", "New Zealand: %s" % destination.display_name, 5],
+		[_beyond_danish_waters(to), "world:beyond_denmark", Loc.t("Beyond Danish waters: %s") % destination.display_name, 3],
+		[international, "world:first_international", Loc.t("Your first international destination: %s") % destination.display_name, 4],
+		[float(record.nm) >= OFFSHORE_CROSSING_NM, "world:offshore_crossing", Loc.t("Your first offshore crossing: %d nm to %s") % [roundi(float(record.nm)), destination.display_name], 4],
+		[_is_atlantic_crossing(from, to), "world:atlantic_crossing", Loc.t("Across the Atlantic to %s") % destination.display_name, 6],
+		[destination.region == "pacific", "world:pacific_arrival", Loc.t("Into the Pacific: %s") % destination.display_name, 5],
+		[destination.country == "French Polynesia", "world:french_polynesia", Loc.t("French Polynesia: %s") % destination.display_name, 5],
+		[destination.country == "New Zealand", "world:new_zealand", Loc.t("New Zealand: %s") % destination.display_name, 5],
 	]
 	for first: Array in firsts:
 		if first[0]:
@@ -1320,14 +1320,14 @@ func get_fishing_mode() -> StringName:
 ## Why the line cannot go out now, or "".
 func fishing_refusal(lure_id: String) -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if not _state.fishing.rod:
-		return "You have no fishing rod."
+		return Loc.t("You have no fishing rod.")
 	if _state.fishing.get_lure_count(lure_id) <= 0:
-		return "You have no %s left. The harbour grocery store sells lures." % FishingCatalog.get_default().get_lure(lure_id).get("name", "lure").to_lower()
+		return Loc.t("You have no %s left. The harbour grocery store sells lures.") % FishingCatalog.get_default().get_lure(lure_id).get("name", "lure").to_lower()
 	if get_fishing_mode() == FishingState.MODE_TROLLING and get_vessel_speed_kn() > FishingCatalog.get_default().max_trolling_kn:
-		return "Too fast to troll: %.1f kn. A trolled lure only works below %d kn; wait for a gentler stretch or anchor." % [
-			get_vessel_speed_kn(), roundi(FishingCatalog.get_default().max_trolling_kn)]
+		return Loc.format("Too fast to troll: %.1f kn. A trolled lure only works below %d kn; wait for a gentler stretch or anchor.", [
+			get_vessel_speed_kn(), roundi(FishingCatalog.get_default().max_trolling_kn)])
 	return ""
 
 
@@ -1335,7 +1335,7 @@ func fishing_refusal(lure_id: String) -> String:
 ## Returns "" or the reason it cannot.
 func set_line(out: bool, lure_id := "") -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	var fishing := _state.fishing
 	if not out:
 		if fishing.line_out:
@@ -1375,7 +1375,7 @@ func apply_fish_check(tick: float) -> bool:
 		if _warned_too_fast:
 			return false
 		_warned_too_fast = true
-		fishing_warning.emit({"kind": "too_fast", "text": "The line is skipping on the surface at %.1f kn: too fast to troll. Bring it in, or wait for a gentler stretch." % speed})
+		fishing_warning.emit({"kind": "too_fast", "text": Loc.format("The line is skipping on the surface at %.1f kn: too fast to troll. Bring it in, or wait for a gentler stretch.", speed)})
 		return false
 	_warned_too_fast = false
 	var rng := RandomNumberGenerator.new()
@@ -1464,7 +1464,7 @@ func finish_fight(landed: bool, line_broke := false, perfects := 0) -> Dictionar
 			fishing.lures[bite.lure] = maxi(fishing.get_lure_count(bite.lure) - 1, 0)
 			if fishing.get_lure_count(bite.lure) <= 0:
 				fishing.line_out = false
-			result.text = "Snap! The line broke and the %s went with the fish." % String(catalog.get_lure(bite.lure).get("name", "lure")).to_lower()
+			result.text = Loc.t("Snap! The line broke and the %s went with the fish.") % String(catalog.get_lure(bite.lure).get("name", "lure")).to_lower()
 		else:
 			result.text = "It got away."
 		_has_unsaved_changes = true
@@ -1476,7 +1476,7 @@ func finish_fight(landed: bool, line_broke := false, perfects := 0) -> Dictionar
 		fishing.junk_caught += 1
 		result.fish = {"species": species, "kg": 0.0}
 		result.released_reason = "junk"
-		result.text = "%s. %s" % [name, String(catalog.get_junk(species).get("text", "Into the bin with it."))]
+		result.text = "%s. %s" % [name, String(catalog.get_junk(species).get("text", Loc.t("Into the bin with it.")))]
 		_has_unsaved_changes = true
 		fishing_changed.emit()
 		fish_landed.emit(result.duplicate(true))
@@ -1522,23 +1522,23 @@ func finish_fight(landed: bool, line_broke := false, perfects := 0) -> Dictionar
 	# Milestones pay renown once; ordinary fish do not.
 	var awards: Array[Dictionary] = []
 	if result.first:
-		awards.append(_award_once("fish:first", "Your first fish: %s" % name, 3))
+		awards.append(_award_once("fish:first", Loc.t("Your first fish: %s") % name, 3))
 	if result.new_species:
-		awards.append(_award_once("fish:species:%s" % species, "A new species: %s" % name, 2))
+		awards.append(_award_once("fish:species:%s" % species, Loc.t("A new species: %s") % name, 2))
 	if result.exceptional:
-		awards.append(_award_once("fish:exceptional:%s" % species, "An exceptional fish: %s, %.1f kg" % [name, kg], 4))
+		awards.append(_award_once("fish:exceptional:%s" % species, Loc.format("An exceptional fish: %s, %.1f kg", [name, kg]), 4))
 	if result.personal_best:
 		_state.progress.mark(StringName("fish:best:%s" % species), _state.game_time)
 	awards = awards.filter(func(a: Dictionary) -> bool: return not a.is_empty())
 	result.awards = awards
-	var weight := "%s, %.1f kg" % [name, kg]
+	var weight := Loc.format("%s, %.1f kg", [name, kg])
 	match result.released_reason:
 		"shark":
-			result.text = "%s. That's quite a catch. Better let this one swim free." % weight
+			result.text = Loc.t("%s. That's quite a catch. Better let this one swim free.") % weight
 		"preferences":
-			result.text = "%s. Not one to keep by your preferences, so it goes back." % weight
+			result.text = Loc.t("%s. Not one to keep by your preferences, so it goes back.") % weight
 		"cool_box_full":
-			result.text = "%s. The cool box is full, so it goes back." % weight
+			result.text = Loc.t("%s. The cool box is full, so it goes back.") % weight
 		_:
 			result.text = weight
 	_has_unsaved_changes = true
@@ -1615,12 +1615,12 @@ func release_fish(uid: int) -> bool:
 ## {"error", "price"}.
 func sell_fish(uid: int) -> Dictionary:
 	if _state == null:
-		return {"error": "No game is running.", "price": 0}
+		return {"error": Loc.t("No game is running."), "price": 0}
 	if not has_facility(HarbourFacilities.GROCERY):
-		return {"error": "Fish can be sold at a harbour grocery store, while moored.", "price": 0}
+		return {"error": Loc.t("Fish can be sold at a harbour grocery store, while moored."), "price": 0}
 	var index := _state.fishing.find_in_hold(uid)
 	if index < 0:
-		return {"error": "That fish is no longer aboard.", "price": 0}
+		return {"error": Loc.t("That fish is no longer aboard."), "price": 0}
 	var fish: Dictionary = _state.fishing.hold[index]
 	var price := FishingCatalog.get_default().price(fish.species, float(fish.kg))
 	_state.fishing.hold.remove_at(index)
@@ -1635,15 +1635,15 @@ func sell_fish(uid: int) -> Dictionary:
 ## Buys one lure at the harbour grocery store. Returns "" or the reason.
 func buy_lure(lure_id: String) -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if not has_facility(HarbourFacilities.GROCERY):
 		return facility_refusal(HarbourFacilities.GROCERY)
 	var lure := FishingCatalog.get_default().get_lure(lure_id)
 	if lure.is_empty():
-		return "Unknown lure."
+		return Loc.t("Unknown lure.")
 	var price := int(lure.price)
 	if price > _state.funds:
-		return "Not enough money: %s needed." % format_money(price)
+		return Loc.t("Not enough money: %s needed.") % format_money(price)
 	_state.funds -= price
 	_state.fishing.lures[lure_id] = _state.fishing.get_lure_count(lure_id) + 1
 	_has_unsaved_changes = true
@@ -1673,14 +1673,14 @@ func is_well_fed() -> bool:
 ## anchor always; underway only in moderate conditions (one simple rule).
 func cooking_refusal() -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if not is_underway():
 		return ""
 	if is_anchored():
-		return "The anchor is dragging: see to it first." if _state.anchor.holding == AnchorState.HOLDING_DRAGGING else ""
+		return Loc.t("The anchor is dragging: see to it first.") if _state.anchor.holding == AnchorState.HOLDING_DRAGGING else ""
 	var here := Simulation.get_weather_at_vessel()
 	if here.speed_kn >= get_calm_cooking_wind_kn() or here.hazard >= WeatherModel.HAZARD_CAUTION:
-		return "Too lively for the stove (wind %d kn). Wait for calmer water, or anchor somewhere sheltered." % roundi(here.speed_kn)
+		return Loc.t("Too lively for the stove (wind %d kn). Wait for calmer water, or anchor somewhere sheltered.") % roundi(here.speed_kn)
 	return ""
 
 ## Underway the stove is used only in winds below this (knots).
@@ -1702,7 +1702,7 @@ func coffee_refusal() -> String:
 	if refusal != "":
 		return refusal
 	if _state.provisions.water_days <= 0.0:
-		return "There is no fresh water left aboard for coffee."
+		return Loc.t("There is no fresh water left aboard for coffee.")
 	return ""
 
 
@@ -1717,20 +1717,20 @@ func make_coffee() -> Dictionary:
 	if is_anchored() and _settled and morning:
 		result.context = "anchor_morning"
 		result.text = "Coffee by the open hatch, the anchor chain quiet in the water. The day can wait a little."
-		result.award = _award_once("coffee:morning_at_anchor", "Morning coffee at anchor", 2)
+		result.award = _award_once("coffee:morning_at_anchor", Loc.t("Morning coffee at anchor"), 2)
 		if not result.award.is_empty():
 			renown_awarded.emit([result.award])
 	elif is_anchored():
 		result.context = "anchor"
 		result.text = "A hot mug at anchor. The boat swings gently around it." if phase != AnchorLife.PHASE_NIGHT \
-			else "A late coffee by the lamp. The anchorage is dark and still."
+			else Loc.t("A late coffee by the lamp. The anchorage is dark and still.")
 	elif is_underway():
 		result.context = "underway"
 		result.text = "A mug of coffee at the helm, held carefully. The miles go by a little easier."
 	else:
 		result.context = "harbour"
 		result.text = "Coffee aboard while the harbour wakes around you." if morning \
-			else "Coffee aboard. Halyards tap along the pontoon."
+			else Loc.t("Coffee aboard. Halyards tap along the pontoon.")
 	result.minutes = COFFEE_MINUTES
 	# The coffee goes into the captain's hand, in the one mug aboard.
 	_set_coffee(COFFEE_CARRIED)
@@ -1769,38 +1769,38 @@ func free_hands() -> int:
 func hands_refusal() -> String:
 	if free_hands() > 0:
 		return ""
-	return "Your hands are full: the hat and a mug of coffee. Put your hat back on (H) or set the coffee down first."
+	return Loc.t("Your hands are full: the hat and a mug of coffee. Put your hat back on (H) or set the coffee down first.")
 
 
 ## Puts the carried mug in the cup holder by the helm (on deck) or on the
 ## cabin table. Returns the message for the player.
 func put_coffee_down() -> String:
 	if not is_carrying_coffee():
-		return "You have no coffee in hand."
+		return Loc.t("You have no coffee in hand.")
 	if get_boat_area() == SessionState.AREA_EXTERIOR:
 		_set_coffee(COFFEE_HOLDER)
-		return "You set your coffee in the cup holder by the helm."
+		return Loc.t("You set your coffee in the cup holder by the helm.")
 	_set_coffee(COFFEE_TABLE)
-	return "You set your coffee down on the table."
+	return Loc.t("You set your coffee down on the table.")
 
 
 ## Takes the mug from where it stands here (holder on deck, table below).
 func pick_up_coffee() -> String:
 	var here := COFFEE_HOLDER if get_boat_area() == SessionState.AREA_EXTERIOR else COFFEE_TABLE
 	if get_coffee() != here:
-		return "There is no coffee here."
+		return Loc.t("There is no coffee here.")
 	if free_hands() == 0:
-		return "Your hands are full. Put your hat back on (H) first."
+		return Loc.t("Your hands are full. Put your hat back on (H) first.")
 	_set_coffee(COFFEE_CARRIED)
-	return "You pick up your coffee. Still warm enough."
+	return Loc.t("You pick up your coffee. Still warm enough.")
 
 
 ## Drinks up: the mug is empty and goes back to the galley.
 func finish_coffee() -> String:
 	if not is_carrying_coffee():
-		return "You have no coffee in hand."
+		return Loc.t("You have no coffee in hand.")
 	_set_coffee(COFFEE_NONE)
-	return "You finish your coffee. Lovely."
+	return Loc.t("You finish your coffee. Lovely.")
 
 
 ## Whether the mug stands here, to be picked up (holder on deck, table below).
@@ -1820,11 +1820,11 @@ func _set_coffee(place: StringName) -> void:
 func recipe_refusal(recipe_id: String) -> String:
 	var recipe := Recipes.get_recipe(recipe_id)
 	if recipe.is_empty():
-		return "Unknown dish."
+		return Loc.t("Unknown dish.")
 	if _state.fishing.hold.size() < int(recipe.fish):
-		return "Needs %d fish from the cool box." % int(recipe.fish)
+		return Loc.t("Needs %d fish from the cool box.") % int(recipe.fish)
 	if _state.provisions.food_days + 1e-9 < float(recipe.groceries):
-		return "Not enough food in the stores."
+		return Loc.t("Not enough food in the stores.")
 	return ""
 
 
@@ -1838,7 +1838,7 @@ func cook(recipe_id: String) -> Dictionary:
 	var result := {"error": "", "recipe": recipe_id, "minutes": 0, "food_added": 0.0, "fish": [], "well_fed_until": 0.0,
 		"awards": [], "evening": false}
 	if _state == null:
-		result.error = "No game is running."
+		result.error = Loc.t("No game is running.")
 		return result
 	result.error = cooking_refusal()
 	if result.error == "":
@@ -1862,13 +1862,13 @@ func cook(recipe_id: String) -> Dictionary:
 	result.minutes = int(recipe.minutes)
 	result.fish = used
 	result.well_fed_until = galley.well_fed_until
-	var awards: Array[Dictionary] = [_award_once("cook:first", "Your first meal from the galley: %s" % String(recipe.name).to_lower(), 2)]
+	var awards: Array[Dictionary] = [_award_once("cook:first", Loc.t("Your first meal from the galley: %s") % String(recipe.name).to_lower(), 2)]
 	if not used.is_empty():
-		awards.append(_award_once("cook:own_catch", "Supper from your own catch", 3))
+		awards.append(_award_once("cook:own_catch", Loc.t("Supper from your own catch"), 3))
 		# The little story of the day: caught, anchored safely, cooked it.
 		if is_anchored() and _state.anchor.holding != AnchorState.HOLDING_DRAGGING:
 			result.evening = true
-			awards.append(_award_once("evening:catch_anchor_cook", "A quiet evening at anchor. Fresh fish for supper.", 5))
+			awards.append(_award_once("evening:catch_anchor_cook", Loc.t("A quiet evening at anchor. Fresh fish for supper."), 5))
 	awards = awards.filter(func(a: Dictionary) -> bool: return not a.is_empty())
 	result.awards = awards
 	_has_unsaved_changes = true
@@ -1903,26 +1903,26 @@ func get_anchor() -> AnchorState:
 ## anchors aboard (the Magic Anchor if the captain has it).
 func evaluate_anchorage() -> Dictionary:
 	if _state == null:
-		return {"class": AnchorSite.CLASS_UNSUITABLE, "ok": false, "reason": "No game is running."}
+		return {"class": AnchorSite.CLASS_UNSUITABLE, "ok": false, "reason": Loc.t("No game is running.")}
 	return AnchorSite.evaluate(_state.vessel_position, Simulation.get_weather_at_vessel(), has_magic_anchor())
 
 
 ## Why `kind` of anchor (normal / magic) cannot go down here, or "".
 func anchoring_refusal(kind: StringName = AnchorState.KIND_NORMAL) -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if is_anchored():
-		return "The anchor is already down."
+		return Loc.t("The anchor is already down.")
 	if not is_underway():
-		return "In harbour the boat is moored: anchoring is for the coast between harbours."
+		return Loc.t("In harbour the boat is moored: anchoring is for the coast between harbours.")
 	if kind == AnchorState.KIND_MAGIC and not has_magic_anchor():
-		return "There is no Magic Anchor aboard."
+		return Loc.t("There is no Magic Anchor aboard.")
 	var site := evaluate_anchorage()
 	if kind == AnchorState.KIND_MAGIC:
 		return "" if site.magic_ok else String(site.reason)
 	if site.normal_ok:
 		return ""
-	return String(site.reason) if not site.magic_ok else "Deep water (%s, %s): too deep for the normal anchor to reach the bottom. The Magic Anchor could hold here." % [
+	return String(site.reason) if not site.magic_ok else Loc.t("Deep water (%s, %s): too deep for the normal anchor to reach the bottom. The Magic Anchor could hold here.") % [
 		DepthService.describe_depth(float(site.depth_m)), site.depth_label]
 
 
@@ -1944,9 +1944,9 @@ func has_magic_anchor() -> bool:
 ## at any boatyard. Returns "" or why not.
 func fit_magic_anchor() -> String:
 	if _state == null:
-		return "No game is running."
+		return Loc.t("No game is running.")
 	if has_magic_anchor():
-		return "The Magic Anchor is already aboard."
+		return Loc.t("The Magic Anchor is already aboard.")
 	_state.progress.mark(MAGIC_ANCHOR_MARK, _state.game_time)
 	_has_unsaved_changes = true
 	boat_care_changed.emit()
@@ -1984,7 +1984,7 @@ func _let_go(kind: StringName, scope: int, set_quality: float, perfects: int) ->
 	if refusal != "":
 		return {"error": refusal, "holding": &"", "site": {}}
 	if not scope in AnchorState.SCOPES:
-		return {"error": "Choose 3, 5 or 7 times the depth of chain.", "holding": &"", "site": {}}
+		return {"error": Loc.t("Choose 3, 5 or 7 times the depth of chain."), "holding": &"", "site": {}}
 	var site := evaluate_anchorage()
 	var anchor := _state.anchor
 	anchor.active = true
@@ -2014,7 +2014,7 @@ func _let_go(kind: StringName, scope: int, set_quality: float, perfects: int) ->
 	anchor.holding = AnchorSite.holding(scope, anchor.set_quality, site.shelter, Simulation.get_weather_at_vessel(), _holding_bonus())
 	_has_unsaved_changes = true
 	if anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
-		var award := _award_once("anchor:first", "Your first anchorage", 3)
+		var award := _award_once("anchor:first", Loc.t("Your first anchorage"), 3)
 		if not award.is_empty():
 			renown_awarded.emit([award])
 	anchor_changed.emit()
@@ -2044,7 +2044,7 @@ func adjust_anchor(scope: int, set_quality := -1.0) -> StringName:
 	anchor.alarm = anchor.holding in [AnchorState.HOLDING_POOR, AnchorState.HOLDING_DRAGGING] and anchor.alarm
 	if was_dragging and anchor.holding in [AnchorState.HOLDING_WELL, AnchorState.HOLDING_FAIR]:
 		anchor.dragged_this_stay = false
-		var award := _award_once("anchor:drag_handled", "You stopped the anchor dragging", 4)
+		var award := _award_once("anchor:drag_handled", Loc.t("You stopped the anchor dragging"), 4)
 		if not award.is_empty():
 			renown_awarded.emit([award])
 	_has_unsaved_changes = true
@@ -2103,12 +2103,12 @@ func can_answer_vhf(call: Dictionary) -> bool:
 func answer_vhf(call: Dictionary, accept: bool) -> Dictionary:
 	var result := {"answered": false, "text": "", "renown": 0, "money": 0}
 	if not accept or not can_answer_vhf(call):
-		result.text = Loc.t("Another vessel answers the call. The radio goes quiet.") if not accept \
+		result.text = "Another vessel answers the call. The radio goes quiet." if not accept \
 			else Loc.t("The call has been answered by another vessel.")
 		return result
 	var award := _award_once("vhf:" + String(call.id), Loc.t("Answered a call on channel 16: %s") % String(call.vessel), int(call.renown))
 	if award.is_empty():
-		result.text = Loc.t("The call has been answered by another vessel.")
+		result.text = "The call has been answered by another vessel."
 		return result
 	result.answered = true
 	result.renown = int(call.renown)
@@ -2119,7 +2119,7 @@ func answer_vhf(call: Dictionary, accept: bool) -> Dictionary:
 		result.text = Loc.t("You answer and heave to nearby. The crew of %s wave across the water. The coastguard expects to be there in about %d hours.") % [String(call.vessel), int(call.hours)]
 		funds_changed.emit(_state.funds)
 	else:
-		result.text = Loc.t("You read them the forecast. \"Thank you, skipper. Fair winds.\"")
+		result.text = "You read them the forecast. \"Thank you, skipper. Fair winds.\""
 	_has_unsaved_changes = true
 	renown_awarded.emit([award])
 	return result
@@ -2157,7 +2157,7 @@ func reach_anchorage_at(progress_nm: float) -> bool:
 ## sails on along the course. Returns "" or why not.
 func sail_on_from_anchorage() -> String:
 	if not is_holding_at_anchorage():
-		return "The boat is not waiting at an anchorage."
+		return Loc.t("The boat is not waiting at an anchorage.")
 	_state.voyage.anchorages_done.append(_state.voyage.holding_at)
 	_state.voyage.holding_at = -1
 	_has_unsaved_changes = true
@@ -2179,11 +2179,11 @@ static func anchorage_spot(geo: Vector2, magic := false) -> Dictionary:
 	if not site.ok:
 		result.reason = String(site.reason)
 	elif site.kind == AnchorSite.KIND_MAGIC:
-		result.reason = "Deep water (%s, %s): only the Magic Anchor will hold here.%s" % [DepthService.describe_depth(site.depth_m), site.depth_label,
-			" Open sea: no shelter from wind or waves." if site.offshore else ""]
+		result.reason = Loc.t("Deep water (%s, %s): only the Magic Anchor will hold here.%s") % [DepthService.describe_depth(site.depth_m), site.depth_label,
+			Loc.t(" Open sea: no shelter from wind or waves.") if site.offshore else ""]
 	else:
-		result.reason = "Good for the normal anchor (%s, %s; land %.1f nm away). How sheltered it is depends on the wind when you arrive." % [
-			DepthService.describe_depth(site.depth_m), site.depth_label, float(site.land_nm)]
+		result.reason = Loc.format("Good for the normal anchor (%s, %s; land %.1f nm away). How sheltered it is depends on the wind when you arrive.", [
+			DepthService.describe_depth(site.depth_m), site.depth_label, float(site.land_nm)])
 	return result
 
 
@@ -2215,7 +2215,7 @@ static func nearest_anchorage_spot(geo: Vector2, max_nm := 12.0, magic := false)
 ## Weighs anchor: the voyage continues along its course from where it paused.
 func raise_anchor() -> String:
 	if not is_anchored():
-		return "The anchor is not down."
+		return Loc.t("The anchor is not down.")
 	_state.anchor.active = false
 	_state.anchor.alarm = false
 	_state.anchor.alarm_level = 0
@@ -2280,7 +2280,7 @@ func apply_anchor_check(tick: float) -> String:
 	if before != anchor.holding:
 		anchor_changed.emit()
 	if tick - anchor.anchored_at >= NIGHT_AT_ANCHOR_S and not anchor.dragged_this_stay:
-		var award := _award_once("anchor:night", "A night at anchor", 3)
+		var award := _award_once("anchor:night", Loc.t("A night at anchor"), 3)
 		if not award.is_empty():
 			renown_awarded.emit([award])
 	_has_unsaved_changes = true
@@ -2314,31 +2314,31 @@ func get_aboard_moments() -> Array[Dictionary]:
 		var text := ""
 		var time := float(entry.first)
 		if key == "fish:first":
-			text = "Caught my first fish"
+			text = Loc.t("Caught my first fish")
 		elif key.begins_with("fish:species:"):
-			text = "First %s caught" % catalog.get_species_name(key.get_slice(":", 2)).to_lower()
+			text = Loc.t("First %s caught") % catalog.get_species_name(key.get_slice(":", 2)).to_lower()
 		elif key.begins_with("fish:exceptional:"):
-			text = "An exceptional %s" % catalog.get_species_name(key.get_slice(":", 2)).to_lower()
+			text = Loc.t("An exceptional %s") % catalog.get_species_name(key.get_slice(":", 2)).to_lower()
 		elif key.begins_with("fish:best:"):
 			var species := key.get_slice(":", 2)
-			text = "New personal best: %s, %.1f kg" % [catalog.get_species_name(species), float(_state.fishing.records.get(species, {}).get("best_kg", 0.0))]
+			text = Loc.format("New personal best: %s, %.1f kg", [catalog.get_species_name(species), float(_state.fishing.records.get(species, {}).get("best_kg", 0.0))])
 			time = float(entry.last_event)
 		elif key == "cook:first":
-			text = "First meal cooked in the galley"
+			text = Loc.t("First meal cooked in the galley")
 		elif key == "cook:own_catch":
-			text = "Supper from my own catch"
+			text = Loc.t("Supper from my own catch")
 		elif key == "evening:catch_anchor_cook":
-			text = "A quiet evening at anchor. Fresh fish for supper."
+			text = Loc.t("A quiet evening at anchor. Fresh fish for supper.")
 		elif key == "anchor:first":
-			text = "First anchorage of my own"
+			text = Loc.t("First anchorage of my own")
 		elif key == "anchor:night":
-			text = "A night at anchor"
+			text = Loc.t("A night at anchor")
 		elif key == "anchor:drag_handled":
-			text = "Stopped the anchor dragging"
+			text = Loc.t("Stopped the anchor dragging")
 		elif key == "coffee:morning_at_anchor":
-			text = "Morning coffee at anchor. The day could wait a little."
+			text = Loc.t("Morning coffee at anchor. The day could wait a little.")
 		elif key == "care:first_haul_out":
-			text = "First haul-out: the bottom scrubbed clean"
+			text = Loc.t("First haul-out: the bottom scrubbed clean")
 		if text != "":
 			moments.append({"time": time, "text": text})
 	return moments
@@ -2383,26 +2383,26 @@ func get_shore_event() -> Dictionary:
 func apply_shore_choice(event_id: String, choice_index: int) -> Dictionary:
 	var result := {"error": "", "cost": 0, "minutes": 0, "renown": 0, "outcome": "", "title": ""}
 	if _state == null or not has_facility(HarbourFacilities.GO_ASHORE):
-		result.error = facility_refusal(HarbourFacilities.GO_ASHORE) if _state else "No game is running."
+		result.error = facility_refusal(HarbourFacilities.GO_ASHORE) if _state else Loc.t("No game is running.")
 		return result
 	var offer := get_shore_event()
 	if offer.get("resting", false):
-		result.error = "You have just been ashore. Come back a little later."
+		result.error = Loc.t("You have just been ashore. Come back a little later.")
 		return result
 	var event: Dictionary = offer.get("event", {})
 	if event.is_empty() or event.id != event_id or choice_index < 0 or choice_index >= event.choices.size():
-		result.error = "That outing is not on offer here."
+		result.error = Loc.t("That outing is not on offer here.")
 		return result
 	var choice: Dictionary = event.choices[choice_index]
 	var cost := int(choice.cost)
 	if cost > _state.funds:
-		result.error = "Not enough money: %s needed, you have %s." % [format_money(cost), format_money(_state.funds)]
+		result.error = Loc.t("Not enough money: %s needed, you have %s.") % [format_money(cost), format_money(_state.funds)]
 		return result
 	var port := _state.location_id
 	var harbour_name := get_location().display_name
 	var key := StringName(ShoreEvents.record_id(port, event_id))
 	var first := not _state.progress.is_completed(key)
-	var title := "Ashore in %s: %s" % [harbour_name, event.title]
+	var title := Loc.t("Ashore in %s: %s") % [harbour_name, event.title]
 	var renown := int(choice.renown) if first else 0
 	if cost > 0:
 		_state.funds -= cost
@@ -2448,7 +2448,7 @@ func get_shore_moments() -> Array[Dictionary]:
 		var event := ShoreEvents.find(StringName(parts[1]), parts[2])
 		var harbour := PortCatalog.get_default().get_display_name(StringName(parts[1]))
 		if not event.is_empty():
-			moments.append({"time": float(_state.progress.completed[key].first), "text": "Ashore in %s: %s" % [harbour, event.title]})
+			moments.append({"time": float(_state.progress.completed[key].first), "text": Loc.t("Ashore in %s: %s") % [harbour, event.title]})
 	moments.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.time < b.time)
 	return moments
 
@@ -2478,14 +2478,10 @@ func get_funds() -> int:
 	return _state.funds if _state else 0
 
 
+## "€1,200" (Danish: "1.200 €").
 static func format_money(euros: int) -> String:
-	var digits := str(absi(euros))
-	var grouped := ""
-	for i in digits.length():
-		if i > 0 and (digits.length() - i) % 3 == 0:
-			grouped += ","
-		grouped += digits[i]
-	return "€%s" % grouped
+	var grouped := Loc.thousands(absi(euros))
+	return Loc.t("€%s", "money") % grouped
 
 
 # --- Provisions -----------------------------------------------------------------------
@@ -2539,15 +2535,15 @@ func get_passage_store_days() -> float:
 ## money is not enough. Returns "" on success, otherwise the reason.
 func buy_provisions(target := Provisions.CAPACITY_DAYS) -> String:
 	if not is_moored_in_harbour():
-		return "The grocery store is only reachable while moored in harbour."
+		return Loc.t("The grocery store is only reachable while moored in harbour.")
 	if not has_facility(HarbourFacilities.GROCERY):
 		return facility_refusal(HarbourFacilities.GROCERY)
 	target = minf(target, get_passage_store_days())
 	if _state.provisions.is_full(target):
-		return "Food and water are already full."
+		return Loc.t("Food and water are already full.")
 	var price := get_provisions_price(target)
 	if price > _state.funds:
-		return "Not enough money: %s needed, you have %s." % [format_money(price), format_money(_state.funds)]
+		return Loc.t("Not enough money: %s needed, you have %s.") % [format_money(price), format_money(_state.funds)]
 	_state.funds -= price
 	_state.provisions.restock(target)
 	_has_unsaved_changes = true
@@ -2594,11 +2590,11 @@ func _check_provisions() -> void:
 	var text := ""
 	match needed:
 		Provisions.WARN_LOW:
-			text = "Provisions are running low: %s of food and water left." % Provisions.format_days(_state.provisions.endurance_days())
+			text = Loc.t("Provisions are running low: %s of food and water left.") % Provisions.format_days(_state.provisions.endurance_days())
 		Provisions.WARN_CRITICAL:
-			text = "Provisions are critically low: less than a day of food or water left."
+			text = Loc.t("Provisions are critically low: less than a day of food or water left.")
 		_:
-			text = "You have run out of food or water. Head for a harbour and buy provisions before the next passage."
+			text = Loc.t("You have run out of food or water. Head for a harbour and buy provisions before the next passage.")
 	provisions_changed.emit()
 	provisions_warning.emit(needed, text)
 
@@ -2638,11 +2634,11 @@ func use_hat_hook() -> String:
 	match _state.hat.status:
 		HatState.STORED:
 			_set_hat_status(HatState.WORN)
-			return "You put on your captain's hat. Very distinguished."
+			return Loc.t("You put on your captain's hat. Very distinguished.")
 		HatState.WORN, HatState.CARRIED:
 			_set_hat_status(HatState.STORED)
-			return "You hang your captain's hat on its hook."
-	return "An empty hat hook. Replacement captain's hats are sold at the harbour grocery store (%s)." % format_money(get_hat_price())
+			return Loc.t("You hang your captain's hat on its hook.")
+	return Loc.t("An empty hat hook. Replacement captain's hats are sold at the harbour grocery store (%s).") % format_money(get_hat_price())
 
 
 ## The hat key (H): takes a worn hat off (it is tucked under the arm, safe from
@@ -2656,13 +2652,13 @@ func toggle_hat() -> String:
 			if free_hands() == 0:
 				return hands_refusal()
 			_set_hat_status(HatState.CARRIED)
-			return "You take off your captain's hat and tuck it under your arm."
+			return Loc.t("You take off your captain's hat and tuck it under your arm.")
 		HatState.CARRIED:
 			_set_hat_status(HatState.WORN)
-			return "You put your captain's hat back on."
+			return Loc.t("You put your captain's hat back on.")
 		HatState.STORED:
-			return "Your captain's hat hangs on its hook in the cabin."
-	return "You have no captain's hat. The harbour grocery store sells replacements (%s)." % format_money(get_hat_price())
+			return Loc.t("Your captain's hat hangs on its hook in the cabin.")
+	return Loc.t("You have no captain's hat. The harbour grocery store sells replacements (%s).") % format_money(get_hat_price())
 
 
 ## The worn hat is out in the wind: on deck. (Simulation also treats sleeping
@@ -2714,8 +2710,8 @@ func apply_hat_check(time: float, strain_per_min: float, sample: WeatherSample, 
 	if not hat.warned:
 		hat.warned = true
 		hat.warned_at = time
-		hat_warning.emit("Better hold onto your hat! The wind is %d kn%s. Go below, or press H to take it off." % [
-			roundi(sample.speed_kn), ", gusting %d" % roundi(sample.gust_kn) if sample.gust_kn >= sample.speed_kn + 6.0 else ""])
+		hat_warning.emit(Loc.t("Better hold onto your hat! The wind is %d kn%s. Go below, or press H to take it off.") % [
+			roundi(sample.speed_kn), Loc.t(", gusting %d") % roundi(sample.gust_kn) if sample.gust_kn >= sample.speed_kn + 6.0 else ""])
 		return &"warned"
 	hat.strain += strain_per_min * config.check_interval_s / 60.0
 	if hat.strain < config.threshold_for(_state.wind_seed, hat.serial):
@@ -2757,14 +2753,14 @@ func _lose_hat(time: float, sample: WeatherSample, position: Vector2) -> void:
 ## when the money is not enough. Returns "" on success, otherwise the reason.
 func buy_hat() -> String:
 	if not is_moored_in_harbour():
-		return "Captain's hats are sold at the harbour grocery store, while moored in harbour."
+		return Loc.t("Captain's hats are sold at the harbour grocery store, while moored in harbour.")
 	if not has_facility(HarbourFacilities.GROCERY):
 		return facility_refusal(HarbourFacilities.GROCERY)
 	if _state.hat.is_owned():
-		return "You already have your captain's hat."
+		return Loc.t("You already have your captain's hat.")
 	var price := get_hat_price()
 	if price > _state.funds:
-		return "Not enough money: %s needed, you have %s." % [format_money(price), format_money(_state.funds)]
+		return Loc.t("Not enough money: %s needed, you have %s.") % [format_money(price), format_money(_state.funds)]
 	var hat := _state.hat
 	_state.funds -= price
 	hat.status = HatState.CARRIED
@@ -2775,9 +2771,9 @@ func buy_hat() -> String:
 	hat.strain = 0.0
 	hat.warned = false
 	var place := get_location()
-	hat.add_history(_state.game_time, HatState.EVENT_BOUGHT, "Bought a new captain's hat in %s for %s%s." % [
+	hat.add_history(_state.game_time, HatState.EVENT_BOUGHT, Loc.t("Bought a new captain's hat in %s for %s%s.") % [
 		place.display_name if place else "harbour", format_money(price),
-		"" if hat.bought_count == 1 else " (hat number %d)" % hat.serial])
+		"" if hat.bought_count == 1 else Loc.t(" (hat number %d)") % hat.serial])
 	var awards := _award_hat_objectives({"kind": ObjectiveCatalog.HAT_EVENT_BOUGHT, "time": _state.game_time})
 	_has_unsaved_changes = true
 	funds_changed.emit(_state.funds)
@@ -2811,7 +2807,7 @@ func _complete_legacy_route() -> void:
 		_state.planned_route = result.route
 	else:
 		_state.planned_route = null
-		notice.emit.call_deferred("The saved course to %s could not be recalculated and was removed." %
+		notice.emit.call_deferred(Loc.t("The saved course to %s could not be recalculated and was removed.") %
 			PortCatalog.get_default().get_display_name(route.destination_port_id))
 
 
@@ -2912,10 +2908,10 @@ func _report_recovery(info: Dictionary) -> void:
 	if info.get("failed", false):  # (a recovery itself is logged as "location_recovered")
 		SessionLog.write("invalid_position", info)
 	location_recovered.emit.call_deferred(info)
-	var text := "The chart has been updated. Your course was re-planned." if info.get("replanned", false) \
-		else "The chart has been updated. Please plot your course again."
+	var text := Loc.t("The chart has been updated. Your course was re-planned.") if info.get("replanned", false) \
+		else Loc.t("The chart has been updated. Please plot your course again.")
 	if info.get("kind") == "voyage" and float(info.get("moved_nm", 0.0)) > 0.0:
-		text = "The chart has been updated. The boat has been moved %.1f nm to nearby open water." % float(info.moved_nm)
+		text = Loc.format("The chart has been updated. The boat has been moved %.1f nm to nearby open water.", float(info.moved_nm))
 	notice.emit.call_deferred(text)
 
 

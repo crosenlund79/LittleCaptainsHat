@@ -216,13 +216,13 @@ func _describe() -> String:
 	var lines := PackedStringArray()
 	var turn := WorldMap.get_next_turn()
 	if GameSession.is_anchored():
-		lines.append("At anchor")
+		lines.append(Loc.t("At anchor"))
 	elif turn.is_empty():
-		lines.append("No course")
+		lines.append(Loc.t("No course"))
 	elif float(turn.next_course) < 0.0:
-		lines.append("Destination %.1f nm  ·  course %03d°" % [float(turn.nm), roundi(turn.course)])
+		lines.append(Loc.format("Destination %.1f nm  ·  course %03d°", [float(turn.nm), roundi(turn.course)]))
 	else:
-		lines.append("Next turn %.1f nm  ·  then %03d°" % [float(turn.nm), roundi(turn.next_course)])
-		lines.append("Course now %03d°" % roundi(turn.course))
-	lines.append("%s  ·  range %d nm" % [Hud.describe_wind(wind), roundi(get_range_nm())])
+		lines.append(Loc.format("Next turn %.1f nm  ·  then %03d°", [float(turn.nm), roundi(turn.next_course)]))
+		lines.append(Loc.t("Course now %03d°") % roundi(turn.course))
+	lines.append(Loc.t("%s  ·  range %d nm") % [Hud.describe_wind(wind), roundi(get_range_nm())])
 	return "\n".join(lines)

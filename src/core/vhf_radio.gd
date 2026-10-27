@@ -61,7 +61,7 @@ static func call_for_slot(departed_at: float, slot: int, seed: int, hazardous: b
 
 ## What is heard on the radio.
 static func describe(call: Dictionary) -> String:
-	var where := Loc.t(WindField.compass_name(float(call.bearing)), "compass")
+	var where := WindField.compass_name(float(call.bearing))
 	if call.kind == KIND_ASSIST:
 		return Loc.t("PAN-PAN, PAN-PAN. This is the sailing yacht %s, %s nm to the %s of you. We have %s and are drifting. No one is hurt. We ask a vessel nearby to stand by until the coastguard's boat arrives, about %d hours.") % [
 			call.vessel, Loc.decimal(float(call.distance_nm)), where, Loc.t(PROBLEMS[int(call.problem)]), int(call.hours)]

@@ -29,7 +29,7 @@ func _ready() -> void:
 	else:
 		_info.text = "The boat is moored. Time passes while you sleep."
 	if GameSession.is_paused():
-		_info.text += " The game is paused: sleeping moves time on by the hours you choose, and it stays paused afterwards."
+		_info.text += Loc.t(" The game is paused: sleeping moves time on by the hours you choose, and it stays paused afterwards.")
 	_decrease.pressed.connect(change_hours.bind(-1))
 	_increase.pressed.connect(change_hours.bind(1))
 	_sleep.pressed.connect(func() -> void:
@@ -56,11 +56,11 @@ func change_hours(delta: int) -> void:
 
 
 func _update() -> void:
-	_duration.text = "%d hour%s" % [hours, "" if hours == 1 else "s"]
+	_duration.text = Loc.n("%d hour", "%d hours", hours) % hours
 	_decrease.disabled = hours <= MIN_HOURS
 	_increase.disabled = hours >= MAX_HOURS
-	_sleep.text = "Sleep %d hour%s" % [hours, "" if hours == 1 else "s"]
-	_wake.text = "Wake at about %s\nin the V-berth." % Simulation.format_game_time(GameSession.get_game_time() + hours * 3600.0)
+	_sleep.text = Loc.n("Sleep %d hour", "Sleep %d hours", hours) % hours
+	_wake.text = Loc.t("Wake at about %s\nin the V-berth.") % Simulation.format_game_time(GameSession.get_game_time() + hours * 3600.0)
 
 
 func focus_default() -> void:

@@ -28,7 +28,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_NONE
 	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	tooltip_text = "Click (or press E / Space) when the needle is in the green arc."
+	tooltip_text = Loc.t("Click (or press E / Space) when the needle is in the green arc.")
 
 
 func _gui_input(event: InputEvent) -> void:

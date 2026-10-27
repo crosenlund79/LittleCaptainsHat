@@ -30,8 +30,8 @@ func _ready() -> void:
 	%DevGuidesButton.visible = DevGuides.is_available()
 	%DevGuidesButton.pressed.connect(dev_guides_requested.emit)
 	%ImportButton.pressed.connect(import_requested.emit)
-	%Version.text = "Version %s" % (GameVersion.describe() if OS.is_debug_build() else GameVersion.DISPLAY)
 	SaveManager.slots_changed.connect(refresh_saves)
+	SettingsManager.language_changed.connect(func(_locale: StringName) -> void: refresh_saves())
 	refresh_saves()
 	focus_default.call_deferred()
 
@@ -41,6 +41,7 @@ func focus_default() -> void:
 
 
 func refresh_saves() -> void:
+	%Version.text = Loc.t("Version %s") % (GameVersion.describe() if OS.is_debug_build() else GameVersion.DISPLAY)
 	%ImportButton.visible = LegacySaves.count_importable() > 0
 	var slot := SaveManager.get_most_recent_valid_slot()
 	_continue.disabled = slot == 0
@@ -49,7 +50,7 @@ func refresh_saves() -> void:
 		_continue_info.text = "No saved game yet"
 	else:
 		var info := SaveManager.get_slot_info(slot)
-		_continue_info.text = "Slot %d  ·  %s  ·  %s" % [
+		_continue_info.text = Loc.t("Slot %d  ·  %s  ·  %s") % [
 			slot, SaveLoadMenu.format_timestamp(info.saved_at_unix), info.location_name]
 
 

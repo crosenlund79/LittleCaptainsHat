@@ -20,7 +20,7 @@ var _time := 0.0
 
 func _ready() -> void:
 	var place := GameSession.get_location()
-	_build("Ashore in %s" % (place.display_name if place else "harbour"), 660.0)
+	_build(Loc.t("Ashore in %s") % (place.display_name if place else "harbour"), 660.0)
 	var row := HBoxContainer.new()
 	row.name = "EventRow"
 	row.add_theme_constant_override(&"separation", 18)
@@ -51,8 +51,8 @@ func _ready() -> void:
 	if _offer.get("resting", false):
 		heading.text = "A pleasant stroll"
 		_icon_id = "bench"
-		_text.text = "You have had a good look around %s for now. Come back in a few hours, or see what the next harbour holds." % \
-			(place.display_name if place else "the harbour")
+		_text.text = Loc.t("You have had a good look around %s for now. Come back in a few hours, or see what the next harbour holds.") % \
+			(place.display_name if place else Loc.t("the harbour"))
 	elif _offer.has("event"):
 		var event: Dictionary = _offer.event
 		heading.text = event.title
@@ -68,7 +68,7 @@ func _ready() -> void:
 			button.pressed.connect(choice_made.emit.bind(String(event.id), i))
 			_choices.add_child(button)
 		if _offer.get("seen", false):
-			_label("Seen", "You have enjoyed everything %s has to offer before. It is still lovely." % place.display_name, &"MutedLabel")
+			_label("Seen", Loc.t("You have enjoyed everything %s has to offer before. It is still lovely.") % place.display_name, &"MutedLabel")
 	else:
 		heading.text = "Nothing ashore"
 		_text.text = GameSession.facility_refusal(HarbourFacilities.GO_ASHORE)
@@ -90,7 +90,7 @@ func _process(delta: float) -> void:
 ## "Coffee and a pastry  ·  €6  ·  40 min" (free choices say so).
 static func _describe_choice(choice: Dictionary) -> String:
 	var cost := int(choice.cost)
-	return "%s  ·  %s  ·  %d min" % [choice.label, GameSession.format_money(cost) if cost > 0 else "free", int(choice.minutes)]
+	return Loc.t("%s  ·  %s  ·  %d min") % [choice.label, GameSession.format_money(cost) if cost > 0 else "free", int(choice.minutes)]
 
 
 ## Shows what happened; only Return remains.
@@ -107,9 +107,9 @@ func show_outcome(result: Dictionary) -> void:
 	var details := PackedStringArray()
 	if int(result.cost) > 0:
 		details.append("−%s" % GameSession.format_money(int(result.cost)))
-	details.append("%d min" % int(result.minutes))
+	details.append(Loc.t("%d min") % int(result.minutes))
 	if int(result.renown) > 0:
-		details.append("+%d renown · a notable moment in the Captain's Log" % int(result.renown))
+		details.append(Loc.t("+%d renown · a notable moment in the Captain's Log") % int(result.renown))
 	lines.append("  ·  ".join(details))
 	_text.text = "\n\n".join(lines)
 	(find_child("ReturnButton", true, false) as Button).grab_focus()

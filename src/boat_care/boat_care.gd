@@ -167,19 +167,19 @@ static func describe_area(area: StringName, care: BoatCareState, condition: floa
 	match area:
 		AREA_HULL:
 			var growth := fouling(care, now)
-			var bottom := "bottom clean" if growth < FOULING_COSMETIC else ("some weed on the bottom" if growth < FOULING_RECOMMENDED
-				else ("a good deal of growth on the bottom" if growth < FOULING_NEEDED else "the bottom is badly fouled"))
+			var bottom := Loc.t("bottom clean") if growth < FOULING_COSMETIC else (Loc.t("some weed on the bottom") if growth < FOULING_RECOMMENDED
+				else (Loc.t("a good deal of growth on the bottom") if growth < FOULING_NEEDED else Loc.t("the bottom is badly fouled")))
 			var days := floori(maxf(now - care.hull_cleaned_at, 0.0) / 86400.0)
-			return "Hull %s, %s (%d day%s since the last haul-out)" % [VesselCondition.describe(condition), bottom, days, "" if days == 1 else "s"]
+			return Loc.n("Hull %s, %s (%d day since the last haul-out)", "Hull %s, %s (%d days since the last haul-out)", days) % [VesselCondition.describe(condition), bottom, days]
 		AREA_RIG:
-			return "Rig wear %d %%%s" % [roundi(care.rig_wear), " (stainless rigging)" if care.has_upgrade("stainless_rigging") else ""]
+			return Loc.t("Rig wear %d %%%s") % [roundi(care.rig_wear), Loc.t(" (stainless rigging)") if care.has_upgrade("stainless_rigging") else ""]
 		AREA_ENGINE:
-			return "%d engine hours since the last service" % roundi(care.engine_hours)
+			return Loc.t("%d engine hours since the last service") % roundi(care.engine_hours)
 		AREA_EQUIPMENT:
 			var names := PackedStringArray()
 			for id in care.upgrades:
 				names.append(String(get_upgrade(id).get("name", id)))
-			return ", ".join(names) if not names.is_empty() else "Standard equipment"
+			return ", ".join(names) if not names.is_empty() else Loc.t("Standard equipment")
 	return ""
 
 
@@ -245,10 +245,10 @@ static func advice(area: StringName, level: StringName) -> String:
 	if level == LEVEL_GOOD or area == AREA_EQUIPMENT:
 		return ""
 	if level == LEVEL_COSMETIC:
-		return "Nothing urgent."
-	return {AREA_HULL: "A haul-out cleans the bottom; any boatyard can repair the hull.",
-		AREA_RIG: "Any boatyard can service the rigging and sails.",
-		AREA_ENGINE: "Any boatyard can service the engine."}.get(area, "")
+		return Loc.t("Nothing urgent.")
+	return {AREA_HULL: Loc.t("A haul-out cleans the bottom; any boatyard can repair the hull."),
+		AREA_RIG: Loc.t("Any boatyard can service the rigging and sails."),
+		AREA_ENGINE: Loc.t("Any boatyard can service the engine.")}.get(area, "")
 
 
 ## One line for a care history entry: "Haul out, Copenhagen, €260".
@@ -256,10 +256,10 @@ static func history_text(entry: Dictionary) -> String:
 	var kind := String(entry.get("kind", ""))
 	var what := ""
 	if kind.begins_with("upgrade:"):
-		what = "Fitted: %s" % String(get_upgrade(kind.get_slice(":", 1)).get("name", kind.get_slice(":", 1)))
+		what = Loc.t("Fitted: %s") % String(get_upgrade(kind.get_slice(":", 1)).get("name", kind.get_slice(":", 1)))
 	elif kind.begins_with("haul_out_extra:"):
 		var extra := kind.get_slice(":", 1)
-		what = "While out: %s" % (String(get_upgrade(extra).get("name", extra)) if not get_upgrade(extra).is_empty()
+		what = Loc.t("While out: %s") % (String(get_upgrade(extra).get("name", extra)) if not get_upgrade(extra).is_empty()
 			else String(SERVICE_NAMES.get(StringName(extra), extra)).to_lower())
 	else:
 		what = String(SERVICE_NAMES.get(StringName(kind), kind))

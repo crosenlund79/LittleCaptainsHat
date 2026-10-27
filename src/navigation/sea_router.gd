@@ -199,27 +199,27 @@ func is_afloat(geo: Vector2) -> bool:
 ## link that starts or ends exactly at a port coordinate.
 func validate_route(route: PlannedRoute) -> String:
 	if route == null:
-		return "There is no route."
+		return Loc.t("There is no route.")
 	var path := route.path
 	if path.size() < 2:
-		return "The route has no course."
+		return Loc.t("The route has no course.")
 	var destination := catalog.get_port(route.destination_port_id)
 	if destination == null:
-		return "The destination is unknown."
+		return Loc.t("The destination is unknown.")
 	if not GeoMath.same_position(path[0], route.origin_position):
-		return "The route does not start at the vessel's position."
+		return Loc.t("The route does not start at the vessel's position.")
 	if not GeoMath.same_position(path[path.size() - 1], destination.get_geo_position()):
-		return "The route does not end at the destination."
+		return Loc.t("The route does not end at the destination.")
 	var ports: Array[Vector2] = [destination.get_geo_position()]
 	var origin := catalog.get_port(route.origin_port_id)
 	if origin:
 		ports.append(origin.get_geo_position())
 	for waypoint in route.waypoints:
 		if not is_point_reachable(waypoint):
-			return "A waypoint is on land or too close to the coast."
+			return Loc.t("A waypoint is on land or too close to the coast.")
 	for i in range(1, path.size()):
 		if not _is_segment_allowed(path[i - 1], path[i], ports):
-			return "Leg %d of the course crosses land." % i
+			return Loc.t("Leg %d of the course crosses land.") % i
 	return ""
 
 
@@ -314,10 +314,10 @@ func plan_route(origin_port_id: StringName, origin_position: Vector2, waypoints:
 	var result := RouteResult.new()
 	var destination := catalog.get_port(destination_port_id)
 	if destination == null:
-		result.error = "Choose a destination port."
+		result.error = Loc.t("Choose a destination port.")
 		return result
 	if origin_port_id == destination_port_id and waypoints.is_empty():
-		result.error = "The vessel is already in %s." % destination.display_name
+		result.error = Loc.t("The vessel is already in %s.") % destination.display_name
 		return result
 	var stops: Array[Vector2] = [origin_position]
 	stops.append_array(waypoints)
@@ -792,19 +792,19 @@ func _project(geo: Vector2) -> Vector3:
 
 
 func _describe_leg_failure(leg_number: int, leg_count: int, code: String) -> String:
-	var where := "" if leg_count == 1 else " (leg %d)" % leg_number
+	var where := "" if leg_count == 1 else Loc.t(" (leg %d)") % leg_number
 	match code:
 		"start_blocked":
-			return "Waypoint %d is on land or too close to the coast." % (leg_number - 1) if leg_number > 1 \
-				else "The vessel's position is not in navigable water."
+			return Loc.t("Waypoint %d is on land or too close to the coast.") % (leg_number - 1) if leg_number > 1 \
+				else Loc.t("The vessel's position is not in navigable water.")
 		"end_blocked":
-			return "Waypoint %d is on land or too close to the coast." % leg_number
+			return Loc.t("Waypoint %d is on land or too close to the coast.") % leg_number
 		"start_port":
-			return "The departure harbour has no water access in the chart data."
+			return Loc.t("The departure harbour has no water access in the chart data.")
 		"end_port":
-			return "The destination harbour cannot be reached in the chart data."
+			return Loc.t("The destination harbour cannot be reached in the chart data.")
 		_:
-			return "No sea route found%s. The waters may not be connected in the chart data." % where
+			return Loc.t("No sea route found%s. The waters may not be connected in the chart data.") % where
 
 
 static func _dedupe(path: PackedVector2Array) -> PackedVector2Array:

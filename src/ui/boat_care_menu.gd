@@ -42,7 +42,7 @@ func _ready() -> void:
 	_view.name = "Overview"
 	body.add_child(_view)
 	body.add_child(HSeparator.new())
-	body.add_child(_heading("At this boatyard"))
+	body.add_child(_heading(Loc.t("At this boatyard")))
 	var services := GridContainer.new()
 	services.name = "Services"
 	services.columns = 3
@@ -112,7 +112,7 @@ func _add_upgrade_row(grid: GridContainer, upgrade: Dictionary) -> void:
 ## Iteration 20 - fitted free at any boatyard, kept by the captain on every boat.
 func _add_magic_anchor_row(grid: GridContainer) -> void:
 	var title := _cell("%s\n(%s)" % [GameSession.MAGIC_ANCHOR_NAME, GameSession.MAGIC_ANCHOR_LONG_NAME], 260.0, &"HeaderLabel")
-	var text := _cell(GameSession.MAGIC_ANCHOR_TEXT + " Prototype: fitted free for now; its price comes with the chandlery.", 380.0, &"MutedLabel")
+	var text := _cell(GameSession.MAGIC_ANCHOR_TEXT + Loc.t(" Prototype: fitted free for now; its price comes with the chandlery."), 380.0, &"MutedLabel")
 	_magic = Button.new()
 	_magic.name = "Fit_magic_anchor"
 	_magic.custom_minimum_size = Vector2(230, 0)
@@ -128,7 +128,7 @@ func _on_magic_anchor() -> void:
 		notify(error)
 		return
 	SessionLog.write("upgrade_fitted", {"upgrade": "magic_anchor", "cost": 0, "port": String(GameSession.get_location_id())})
-	notify("The %s is aboard (prototype, free). Choose it at the windlass when the water is too deep for the normal anchor." % GameSession.MAGIC_ANCHOR_NAME)
+	notify(Loc.t("The %s is aboard (prototype, free). Choose it at the windlass when the water is too deep for the normal anchor.") % GameSession.MAGIC_ANCHOR_NAME)
 	refresh()
 
 
@@ -140,13 +140,13 @@ func refresh() -> void:
 	if not is_inside_tree():
 		return
 	if _magic:
-		_magic.text = "Aboard" if GameSession.has_magic_anchor() else "Fit it (free prototype)"
+		_magic.text = "Aboard" if GameSession.has_magic_anchor() else Loc.t("Fit it (free prototype)")
 		_magic.disabled = GameSession.has_magic_anchor()
 	var facilities := GameSession.get_harbour_facilities()
 	var location := GameSession.get_location()
-	_header.text = "The %s in %s · %s%s · %s available" % [GameSession.get_vessel_definition().display_name,
+	_header.text = Loc.t("The %s in %s · %s%s · %s available") % [GameSession.get_vessel_definition().display_name,
 		location.display_name if location else "harbour", HarbourFacilities.TIER_NAMES[facilities.get_tier()],
-		" (this yard can haul boats out)" if facilities.has(HarbourFacilities.HAUL_OUT) else "",
+		Loc.t(" (this yard can haul boats out)") if facilities.has(HarbourFacilities.HAUL_OUT) else "",
 		GameSession.format_money(GameSession.get_funds())]
 	_view.refresh()
 	for service: StringName in _services:
@@ -156,12 +156,12 @@ func refresh() -> void:
 		var refusal := GameSession.service_refusal(service)
 		if service == BoatCare.SERVICE_HAUL_OUT:
 			note.text = "Out of the water for a day: the bottom scrubbed, the hull seen to. Other work can be done while she is out."
-			button.text = "Haul out… (from %s)" % GameSession.format_money(int(quote.cost))
+			button.text = Loc.t("Haul out… (from %s)") % GameSession.format_money(int(quote.cost))
 			button.disabled = refusal != ""
 			button.tooltip_text = refusal
 			continue
-		note.text = refusal if refusal != "" else "%s · about %s" % [GameSession.format_money(int(quote.cost)), _duration(float(quote.minutes))]
-		button.text = "Have it done" if refusal == "" else "Not needed" if not refusal.begins_with("Not enough") else "Too expensive"
+		note.text = refusal if refusal != "" else Loc.t("%s · about %s") % [GameSession.format_money(int(quote.cost)), _duration(float(quote.minutes))]
+		button.text = "Have it done" if refusal == "" else "Not needed" if not refusal.begins_with("Not enough") else Loc.t("Too expensive")
 		button.disabled = refusal != ""
 	for id: String in _upgrades:
 		var button := _upgrades[id] as Button
@@ -170,7 +170,7 @@ func refresh() -> void:
 			button.disabled = true
 			continue
 		var refusal := GameSession.upgrade_refusal(id)
-		button.text = "Fit it (%s)" % GameSession.format_money(GameSession.upgrade_price(id))
+		button.text = Loc.t("Fit it (%s)") % GameSession.format_money(GameSession.upgrade_price(id))
 		button.disabled = refusal != ""
 		button.tooltip_text = refusal
 
@@ -187,7 +187,7 @@ func _on_service(service: StringName) -> void:
 	time_requested.emit(float(result.minutes))
 	SessionLog.write("boat_service", {"service": String(service), "cost": result.cost, "minutes": result.minutes,
 		"port": String(GameSession.get_location_id())})
-	notify("%s done: %s, %s." % [BoatCare.SERVICE_NAMES[service], GameSession.format_money(int(result.cost)), _duration(float(result.minutes))])
+	notify(Loc.t("%s done: %s, %s.") % [BoatCare.SERVICE_NAMES[service], GameSession.format_money(int(result.cost)), _duration(float(result.minutes))])
 	refresh()
 
 
@@ -198,7 +198,7 @@ func _on_upgrade(id: String) -> void:
 		return
 	time_requested.emit(float(result.minutes))
 	SessionLog.write("upgrade_fitted", {"upgrade": id, "cost": result.cost, "port": String(GameSession.get_location_id())})
-	notify("%s fitted for %s." % [BoatCare.get_upgrade(id).name, GameSession.format_money(int(result.cost))])
+	notify(Loc.t("%s fitted for %s.") % [BoatCare.get_upgrade(id).name, GameSession.format_money(int(result.cost))])
 	refresh()
 
 
@@ -220,10 +220,10 @@ func focus_default() -> void:
 
 static func _duration(minutes: float) -> String:
 	if minutes >= 24.0 * 60.0:
-		return "%d day%s" % [roundi(minutes / 1440.0), "" if roundi(minutes / 1440.0) == 1 else "s"]
+		return Loc.n("%d day", "%d days", roundi(minutes / 1440.0)) % roundi(minutes / 1440.0)
 	if minutes >= 90.0:
-		return "%s hours" % (str(roundi(minutes / 60.0)) if fmod(minutes, 60.0) < 15.0 or fmod(minutes, 60.0) > 45.0 else "%.1f" % (minutes / 60.0))
-	return "%d minutes" % roundi(minutes)
+		return Loc.t("%s hours") % (str(roundi(minutes / 60.0)) if fmod(minutes, 60.0) < 15.0 or fmod(minutes, 60.0) > 45.0 else "%.1f" % (minutes / 60.0))
+	return Loc.t("%d minutes") % roundi(minutes)
 
 
 static func _heading(text: String) -> Label:

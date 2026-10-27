@@ -74,6 +74,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_well_run_ship.gd"),
 	preload("res://tests/suites/test_turbocharge.gd"),
 	preload("res://tests/suites/test_captains_watch.gd"),
+	preload("res://tests/suites/test_localization.gd"),
 	preload("res://tests/suites/test_galley_and_anchor.gd"),
 	preload("res://tests/suites/test_eight_directions.gd"),
 	preload("res://tests/suites/test_catch_and_cove_journey.gd"),
@@ -127,12 +128,17 @@ func _run() -> void:
 	# presentation switch it back on).
 	TimePassage.enabled = false
 	SettingsManager.load_settings()
+	# The suites check the English text; the language suite switches itself.
+	SettingsManager.set_language(&"en")
 	for script in SUITES:
 		if Array(skip).any(func(part: String) -> bool: return script.resource_path.get_file().contains(part)):
 			continue
 		if not only.is_empty() and not Array(only.split(",")).any(func(part: String) -> bool: return script.resource_path.get_file().contains(part)):
 			continue
 		use_calm_wind()
+		Simulation.sea_encounters = script.resource_path.get_file() in ["test_captains_watch.gd", "test_localization.gd"]
+		if not SettingsManager.has_chosen_language() or SettingsManager.get_language() != &"en":
+			SettingsManager.set_language(&"en")  # a suite before may have reset the settings
 		var suite: Object = script.new()
 		current_suite = script.resource_path.get_file().get_basename()
 		print("\n=== %s ===" % current_suite)

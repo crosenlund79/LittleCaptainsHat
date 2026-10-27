@@ -77,7 +77,7 @@ func _ready() -> void:
 	for i in Simulation.PASSAGE_RATES.size():
 		var rate: float = Simulation.PASSAGE_RATES[i]
 		var button := _make_button(row, "Rate%d" % i, RATE_LABELS[i],
-			"Let %d hour%s pass every second. Stops by itself when something needs you." % [roundi(rate / 3600.0), "" if rate <= 3600.0 else "s"])
+			Loc.n("Let %d hour pass every second. Stops by itself when something needs you.", "Let %d hours pass every second. Stops by itself when something needs you.", roundi(rate / 3600.0)) % roundi(rate / 3600.0))
 		button.toggle_mode = true
 		button.button_group = group
 		button.pressed.connect(_on_rate.bind(rate))
@@ -126,11 +126,11 @@ func _on_rate(rate: float) -> void:
 
 
 func _on_interrupted(_reason: StringName, text: String) -> void:
-	_stopped.text = "Normal time: %s" % text
+	_stopped.text = Loc.t("Normal time: %s") % text
 	# Fish that nibbled and swam off meanwhile (Iteration 18), said once.
 	var nibbles := GameSession.take_quiet_nibbles()
 	if nibbles > 0:
-		_stopped.text += "  (%d fish nibbled and swam off on the way.)" % nibbles
+		_stopped.text += Loc.t("  (%d fish nibbled and swam off on the way.)") % nibbles
 
 
 func refresh() -> void:
@@ -139,26 +139,26 @@ func refresh() -> void:
 	var catalog := PortCatalog.get_default()
 	var voyage := GameSession.get_voyage()
 	var destination := catalog.get_display_name(GameSession.get_voyage_destination_id())
-	_title.text = "Long passage to %s" % destination
+	_title.text = Loc.t("Long passage to %s") % destination
 	var days_at_sea := (GameSession.get_game_time() - voyage.departed_at) / 86400.0
-	_lines.position.text = "%s  ·  day %d at sea" % [GeoMath.format_position(GameSession.get_vessel_position()), floori(days_at_sea) + 1]
+	_lines.position.text = Loc.t("%s  ·  day %d at sea") % [GeoMath.format_position(GameSession.get_vessel_position()), floori(days_at_sea) + 1]
 	var remaining := GameSession.get_voyage_remaining_nm()
 	var total := GameSession.get_voyage_total_nm()
 	var eta := Simulation.get_eta()
-	_lines.distance.text = "%s nm to go  ·  ETA about %s" % [_thousands(roundi(remaining)), Simulation.format_game_time(eta)]
+	_lines.distance.text = Loc.t("%s nm to go  ·  ETA about %s") % [_thousands(roundi(remaining)), Simulation.format_game_time(eta)]
 	_progress.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 	var wind := Simulation.get_wind_at(GameSession.get_vessel_position())
-	_lines.wind.text = "%.1f kn  ·  %s" % [GameSession.get_vessel_speed_kn(), Hud.describe_wind(wind)]
+	_lines.wind.text = Loc.format("%.1f kn  ·  %s", [GameSession.get_vessel_speed_kn(), Hud.describe_wind(wind)])
 	_lines.outlook.text = _outlook()
 	var stores := GameSession.get_provisions().endurance_days()
 	var days_left := maxf(eta - GameSession.get_game_time(), 0.0) / 86400.0
-	_lines.stores.text = "Stores %s  ·  about %s of sailing left%s" % [Provisions.format_days(stores), Provisions.format_days(days_left),
-		"" if stores >= days_left + 2.0 else ("  ·  tight" if stores >= days_left else "  ·  not enough")]
+	_lines.stores.text = Loc.t("Stores %s  ·  about %s of sailing left%s") % [Provisions.format_days(stores), Provisions.format_days(days_left),
+		"" if stores >= days_left + 2.0 else (Loc.t("  ·  tight") if stores >= days_left else Loc.t("  ·  not enough"))]
 	var stores_style := &"WarningLabel" if stores < days_left + 2.0 else &""
 	if _lines.stores.theme_type_variation != stores_style:
 		_lines.stores.theme_type_variation = stores_style
 	var care := _care_note()
-	_lines.boat.text = "Boat: hull %s%s" % [VesselCondition.describe(GameSession.get_condition()), care]
+	_lines.boat.text = Loc.t("Boat: hull %s%s") % [VesselCondition.describe(GameSession.get_condition()), care]
 	_lines.boat.visible = care != "" or GameSession.get_condition() <= 60.0
 	var running := Simulation.passage_rate
 	_normal.set_pressed_no_signal(running <= 0.0)
@@ -175,11 +175,11 @@ func _outlook() -> String:
 		_outlook_at = GameSession.get_game_time()
 		var hazards := Simulation.get_hazards_ahead()
 		if hazards.is_empty():
-			_outlook_text = "Outlook: no hazards in the next %d hours" % roundi(Simulation.DISPLAY_HORIZON_HOURS)
+			_outlook_text = Loc.t("Outlook: no hazards in the next %d hours") % roundi(Simulation.DISPLAY_HORIZON_HOURS)
 		else:
 			var first: Dictionary = hazards[0]
-			_outlook_text = "Outlook: %s in about %d h" % [String(first.label).to_lower(), maxi(roundi(float(first.hours)), 1)]
-		_outlook_text += "; further on, not yet known."
+			_outlook_text = Loc.t("Outlook: %s in about %d h") % [String(first.label).to_lower(), maxi(roundi(float(first.hours)), 1)]
+		_outlook_text += Loc.t("; further on, not yet known.")
 	return _outlook_text
 
 

@@ -30,8 +30,8 @@ var _sell_catch: Button
 
 func _ready() -> void:
 	var place := GameSession.get_location()
-	_build("Grocery store" + (" · %s" % place.display_name if place else ""))
-	_label("Info", "Fresh food and water, filled up to %d days each. %s per missing day of food or of water." % [
+	_build(Loc.t("Grocery store") + (" · %s" % place.display_name if place else ""))
+	_label("Info", Loc.t("Fresh food and water, filled up to %d days each. %s per missing day of food or of water.") % [
 		roundi(Provisions.CAPACITY_DAYS), GameSession.format_money(GameSession.PROVISIONS_PRICE_PER_DAY)], &"MutedLabel")
 	_stores = _label("Stores", "")
 	_price = _label("Price", "", &"HeaderLabel")
@@ -116,12 +116,12 @@ func refresh() -> void:
 	var provisions := GameSession.get_provisions()
 	var price := GameSession.get_provisions_price()
 	var funds := GameSession.get_funds()
-	_stores.text = "Aboard: food %s, water %s. Missing: %.1f days in all." % [Provisions.format_days(provisions.food_days),
-		Provisions.format_days(provisions.water_days), GameSession.get_missing_provision_days()]
-	_price.text = "Price %s  ·  Funds %s" % [GameSession.format_money(price), GameSession.format_money(funds)]
+	_stores.text = Loc.format("Aboard: food %s, water %s. Missing: %.1f days in all.", [Provisions.format_days(provisions.food_days),
+		Provisions.format_days(provisions.water_days), GameSession.get_missing_provision_days()])
+	_price.text = Loc.t("Price %s  ·  Funds %s") % [GameSession.format_money(price), GameSession.format_money(funds)]
 	if price > 0 and price <= funds:
 		_price.text += " → %s" % GameSession.format_money(funds - price)
-	_buy.text = "Buy for %s" % GameSession.format_money(price)
+	_buy.text = Loc.t("Buy for %s") % GameSession.format_money(price)
 	var harbour := GameSession.is_moored_in_harbour()
 	_buy.disabled = not harbour or provisions.is_full() or price > funds
 	if not harbour:
@@ -129,10 +129,10 @@ func refresh() -> void:
 	elif provisions.is_full():
 		_note.text = "Food and water are already full."
 	elif price > funds:
-		_note.text = "Not enough money: you need %s. Remote work at the boat's work station earns %s an hour." % [
+		_note.text = Loc.t("Not enough money: you need %s. Remote work at the boat's work station earns %s an hour.") % [
 			GameSession.format_money(price), GameSession.format_money(GameSession.REMOTE_WORK_PAY_PER_HOUR)]
 	else:
-		_note.text = "Food and water will be full (%d days each)." % roundi(Provisions.CAPACITY_DAYS)
+		_note.text = Loc.t("Food and water will be full (%d days each).") % roundi(Provisions.CAPACITY_DAYS)
 	_refresh_stock_up(harbour, funds)
 	_refresh_hat(harbour, funds)
 	_refresh_tackle(harbour)
@@ -143,13 +143,13 @@ func _refresh_stock_up(harbour: bool, funds: int) -> void:
 	var days := GameSession.get_passage_store_days()
 	var price := GameSession.get_provisions_price(days)
 	var full := GameSession.get_provisions().is_full(days)
-	_stock_up.text = "Stock up (%s)" % GameSession.format_money(price)
+	_stock_up.text = Loc.t("Stock up (%s)") % GameSession.format_money(price)
 	_stock_up.disabled = not harbour or full or price > funds
 	var vessel := GameSession.get_vessel_definition().display_name
 	if full:
-		_stock_note.text = "Long passage: the %s is stocked for %d days, all she can stow." % [vessel, roundi(days)]
+		_stock_note.text = Loc.t("Long passage: the %s is stocked for %d days, all she can stow.") % [vessel, roundi(days)]
 	else:
-		_stock_note.text = "Long passage: stow food and water for %d days each, all the %s can carry." % [roundi(days), vessel]
+		_stock_note.text = Loc.t("Long passage: stow food and water for %d days each, all the %s can carry.") % [roundi(days), vessel]
 
 
 func _refresh_tackle(harbour: bool) -> void:
@@ -159,16 +159,16 @@ func _refresh_tackle(harbour: bool) -> void:
 	var total := 0
 	for fish in fishing.hold:
 		total += catalog.price(fish.species, float(fish.kg))
-	_catch_info.text = "Your catch: %d fish in the cool box." % fishing.hold.size() if not fishing.hold.is_empty() \
-		else "Your catch: the cool box is empty."
-	_sell_catch.text = "Sell the catch (%s)" % GameSession.format_money(total)
+	_catch_info.text = Loc.t("Your catch: %d fish in the cool box.") % fishing.hold.size() if not fishing.hold.is_empty() \
+		else Loc.t("Your catch: the cool box is empty.")
+	_sell_catch.text = Loc.t("Sell the catch (%s)") % GameSession.format_money(total)
 	_sell_catch.disabled = not harbour or fishing.hold.is_empty()
 
 
 func _on_buy_lure() -> void:
 	var lure: Dictionary = FishingCatalog.get_default().lures[maxi(_tackle.selected, 0)]
 	var error := GameSession.buy_lure(lure.id)
-	notify(error if not error.is_empty() else "Bought a %s. You have %d." % [String(lure.name).to_lower(), GameSession.get_fishing().get_lure_count(lure.id)])
+	notify(error if not error.is_empty() else Loc.t("Bought a %s. You have %d.") % [String(lure.name).to_lower(), GameSession.get_fishing().get_lure_count(lure.id)])
 	refresh()
 
 
@@ -183,21 +183,21 @@ func _on_sell_catch() -> void:
 			count += 1
 	if count > 0:
 		SessionLog.write("fishing_sold", {"count": count, "price": total, "port": String(GameSession.get_location_id())})
-		notify("Sold %d fish for %s." % [count, GameSession.format_money(total)])
+		notify(Loc.t("Sold %d fish for %s.") % [count, GameSession.format_money(total)])
 	refresh()
 
 
 func _refresh_hat(harbour: bool, funds: int) -> void:
 	var price := GameSession.get_hat_price()
 	var owned := GameSession.get_hat().is_owned()
-	_buy_hat.text = "Buy captain's hat (%s)" % GameSession.format_money(price)
+	_buy_hat.text = Loc.t("Buy captain's hat (%s)") % GameSession.format_money(price)
 	_buy_hat.disabled = not harbour or owned or price > funds
 	if owned:
 		_hat_info.text = "Captain's hats: you already have yours."
 	elif price > funds:
-		_hat_info.text = "Captain's hats, %s. Not enough money right now." % GameSession.format_money(price)
+		_hat_info.text = Loc.t("Captain's hats, %s. Not enough money right now.") % GameSession.format_money(price)
 	else:
-		_hat_info.text = "A replacement captain's hat, %s. Hold onto this one." % GameSession.format_money(price)
+		_hat_info.text = Loc.t("A replacement captain's hat, %s. Hold onto this one.") % GameSession.format_money(price)
 
 
 func get_buy_button() -> Button:
@@ -211,14 +211,14 @@ func get_buy_hat_button() -> Button:
 func _on_buy_hat() -> void:
 	var price := GameSession.get_hat_price()
 	var error := GameSession.buy_hat()
-	notify(error if not error.is_empty() else "Bought a new captain's hat for %s. Press H to put it on." % GameSession.format_money(price))
+	notify(error if not error.is_empty() else Loc.t("Bought a new captain's hat for %s. Press H to put it on.") % GameSession.format_money(price))
 	refresh()
 
 
 func _on_buy() -> void:
 	var price := GameSession.get_provisions_price()
 	var error := GameSession.buy_provisions()
-	notify(error if not error.is_empty() else "Bought food and water for %s. Stores full: %s each." % [
+	notify(error if not error.is_empty() else Loc.t("Bought food and water for %s. Stores full: %s each.") % [
 		GameSession.format_money(price), Provisions.format_days(Provisions.CAPACITY_DAYS)])
 	refresh()
 
@@ -231,7 +231,7 @@ func _on_stock_up() -> void:
 	var days := GameSession.get_passage_store_days()
 	var price := GameSession.get_provisions_price(days)
 	var error := GameSession.buy_provisions(days)
-	notify(error if not error.is_empty() else "Stocked up for a long passage for %s: %s of food and water." % [
+	notify(error if not error.is_empty() else Loc.t("Stocked up for a long passage for %s: %s of food and water.") % [
 		GameSession.format_money(price), Provisions.format_days(days)])
 	refresh()
 

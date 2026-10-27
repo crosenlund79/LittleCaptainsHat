@@ -84,7 +84,7 @@ func set_state(state: StringName) -> void:
 	_label.text = AT_RISK_TEXT if state == STATE_AT_RISK else MISSING_TEXT
 	UiTheme.tint(_label, &"caution" if state == STATE_AT_RISK else &"")
 	_key.visible = state == STATE_AT_RISK
-	tooltip_text = MISSING_TIP if state == STATE_MISSING else "Press H to take your hat off, or go below."
+	tooltip_text = MISSING_TIP if state == STATE_MISSING else Loc.t("Press H to take your hat off, or go below.")
 
 
 func get_state() -> StringName:

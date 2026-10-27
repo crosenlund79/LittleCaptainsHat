@@ -59,7 +59,7 @@ func _ready() -> void:
 			var on: bool = (items[i].checked as Callable).call()
 			button.icon = get_theme_icon(&"checked" if on else &"unchecked", &"CheckBox")
 			button.set_meta(&"checked", on)
-			button.tooltip_text = ("On" if on else "Off") + ": choose to switch it " + ("off" if on else "on")
+			button.tooltip_text = "On: choose to switch it off" if on else "Off: choose to switch it on"
 		button.size = ITEM_SIZE
 		button.custom_minimum_size = ITEM_SIZE
 		button.pressed.connect(choose.bind(i))

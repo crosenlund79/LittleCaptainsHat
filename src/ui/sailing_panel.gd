@@ -65,7 +65,7 @@ func _ready() -> void:
 		caption.theme_type_variation = &"MutedLabel"
 		caption.add_theme_font_size_override(&"font_size", 16)
 		caption.text = {"speed": "Speed", "heading": "Heading", "wind": "Wind now", "trim": "Sail trim", "next_leg": "Next leg",
-			"turn": "Next turn", "remaining": "To go"}[key]
+			"turn": Loc.t("Next turn"), "remaining": Loc.t("To go")}[key]
 		row.add_child(caption)
 		var value := Label.new()
 		value.name = "Value"
@@ -112,55 +112,55 @@ func refresh() -> void:
 	var turn := WorldMap.get_next_turn()
 	if GameSession.is_anchored():
 		_title.text = "At anchor"
-		_show_row("speed", "0 kn  ·  at anchor")
+		_show_row("speed", Loc.t("0 kn  ·  at anchor"))
 		_show_row("heading", "—", false)
 		_show_row("wind", Hud.describe_wind(wind).trim_prefix("Wind "))
 		_show_row("trim", "", false)
 		_show_row("next_leg", "", false)
-		_show_row("turn", "Raise the anchor to sail on", true)
+		_show_row("turn", Loc.t("Raise the anchor to sail on"), true)
 		_show_row("remaining", "", false)
 		return
 	if GameSession.is_holding_at_anchorage():
 		_title.text = "At the anchorage"
-		_show_row("speed", "0 kn  ·  waiting at the anchorage")
+		_show_row("speed", Loc.t("0 kn  ·  waiting at the anchorage"))
 		_show_row("heading", "—", false)
 		_show_row("wind", Hud.describe_wind(wind).trim_prefix("Wind "))
 		_show_row("trim", "", false)
 		_show_row("next_leg", "", false)
-		_show_row("turn", "Drop the anchor, or sail on (Q)", true)
+		_show_row("turn", Loc.t("Drop the anchor, or sail on (Q)"), true)
 		_show_row("remaining", "", false)
 		return
-	_title.text = "Sailing to %s" % catalog.get_display_name(GameSession.get_voyage_destination_id())
-	_show_row("speed", "%.1f kn  ·  %s" % [speed, "under engine" if GameSession.is_motoring() else "under sail"])
+	_title.text = Loc.t("Sailing to %s") % catalog.get_display_name(GameSession.get_voyage_destination_id())
+	_show_row("speed", Loc.format("%.1f kn  ·  %s", [speed, Loc.t("under engine") if GameSession.is_motoring() else Loc.t("under sail")]))
 	var heading := Simulation.get_current_heading()
-	_show_row("heading", "%03d°  ·  on the planned course" % roundi(heading))
+	_show_row("heading", Loc.t("%03d°  ·  on the planned course") % roundi(heading))
 	_check_course_change(turn, heading)
 	var propulsion := GameSession.get_propulsion()
 	var side := PropulsionState.wind_side(propulsion.true_wind_angle)
 	var wind_text := Hud.describe_wind(wind).trim_prefix("Wind ")
 	if wind.speed_kn >= 0.5:
-		wind_text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else "off the bow"]
+		wind_text += "  ·  %d° %s" % [roundi(absf(propulsion.true_wind_angle)), side if side else Loc.t("off the bow")]
 	_show_row("wind", wind_text)
 	_show_row("trim", describe_trim(propulsion))
 	if turn.is_empty() or float(turn.next_course) < 0.0:
 		_show_row("next_leg", "", false)
 		var destination := catalog.get_display_name(GameSession.get_voyage_destination_id())
-		var arrive := "No more turns: %s ahead" % destination
+		var arrive := Loc.t("No more turns: %s ahead") % destination
 		if not turn.is_empty():
-			arrive += ", %.1f nm" % float(turn.nm)
+			arrive += Loc.format(", %.1f nm", float(turn.nm))
 		_show_row("turn", arrive)
 	elif not GameSession.get_next_anchorage().is_empty() and float(GameSession.get_next_anchorage().nm) <= float(turn.nm) + 1e-6:
 		# The next waypoint is tonight's anchorage.
 		_show_row("next_leg", "", false)
 		var nm := float(GameSession.get_next_anchorage().nm)
-		_show_row("turn", "Anchorage in %s, %.1f nm" % [Simulation.format_duration(nm / speed * 3600.0), nm] if speed > 0.3 else "Anchorage %.1f nm ahead" % nm)
+		_show_row("turn", Loc.format("Anchorage in %s, %.1f nm", [Simulation.format_duration(nm / speed * 3600.0), nm]) if speed > 0.3 else Loc.format("Anchorage %.1f nm ahead", nm))
 	else:
 		_show_row("next_leg", _next_leg_text(turn, speed), not collapsed)
-		var eta_turn := "in %s, %.1f nm" % [Simulation.format_duration(float(turn.nm) / speed * 3600.0), float(turn.nm)] \
-			if speed > 0.3 else "%.1f nm ahead" % float(turn.nm)
+		var eta_turn := Loc.format("in %s, %.1f nm", [Simulation.format_duration(float(turn.nm) / speed * 3600.0), float(turn.nm)]) \
+			if speed > 0.3 else Loc.format("%.1f nm ahead", float(turn.nm))
 		_show_row("turn", "%s  →  %03d°" % [eta_turn, roundi(turn.next_course)])
 	var remaining := GameSession.get_voyage_remaining_nm()
-	_show_row("remaining", "%d nm  ·  ETA %s (estimate)" % [roundi(remaining), _short_time(Simulation.get_eta())], false)
+	_show_row("remaining", Loc.t("%d nm  ·  ETA %s (estimate)") % [roundi(remaining), _short_time(Simulation.get_eta())], false)
 
 
 ## "Thu 21 May, 07:25" (the year and zone are in the clock bar).
@@ -168,11 +168,11 @@ func refresh() -> void:
 ## and the key that opens the trim.
 static func describe_trim(propulsion: PropulsionState) -> String:
 	if propulsion.is_motoring():
-		return "under engine  ·  T to trim"
+		return Loc.t("under engine  ·  T to trim")
 	var trim := GameSession.get_sail_trim()
 	var word := SailTrim.feedback(trim.auto, trim.value, propulsion.true_wind_angle, propulsion.wind_speed_kn)
 	if trim.auto:
-		return "%s  ·  T to trim by hand" % word.to_lower()
+		return Loc.t("%s  ·  T to trim by hand") % word.to_lower()
 	return "%s  ·  %+d %%  ·  T" % [word.to_lower(), SailTrim.percent(trim.auto, trim.value, propulsion.true_wind_angle, propulsion.wind_speed_kn)]
 
 
@@ -192,8 +192,8 @@ func _next_leg_text(turn: Dictionary, speed: float) -> String:
 		var hours := float(turn.nm) / maxf(speed, 1.0)
 		var now := GameSession.get_game_time()
 		var at := Simulation.get_weather_at(turn.geo, now + hours * 3600.0, now)
-		var wind := "calm" if at.speed_kn < 0.5 else "%s %d kn" % [WindField.compass_name(at.from_deg), roundi(at.speed_kn)]
-		_forecast_text = "%03d°  ·  forecast %s (estimate)" % [roundi(turn.next_course), wind]
+		var wind := "calm" if at.speed_kn < 0.5 else Loc.t("%s %d kn") % [WindField.compass_name(at.from_deg), roundi(at.speed_kn)]
+		_forecast_text = Loc.t("%03d°  ·  forecast %s (estimate)") % [roundi(turn.next_course), wind]
 	return _forecast_text
 
 

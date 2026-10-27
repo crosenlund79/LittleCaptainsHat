@@ -35,7 +35,7 @@ func _ready() -> void:
 		button.focus_mode = Control.FOCUS_NONE
 		button.custom_minimum_size = Vector2(40, 0)
 		button.theme_type_variation = &"MapButton"
-		button.tooltip_text = ["Normal time", "Accelerated time", "Fast time"][SessionState.TIME_SCALES.find(scale)]
+		button.tooltip_text = ["Normal time", "Accelerated time", Loc.t("Fast time")][SessionState.TIME_SCALES.find(scale)]
 		button.pressed.connect(GameSession.set_time_scale.bind(scale))
 		add_child(button)
 		_buttons[scale] = button

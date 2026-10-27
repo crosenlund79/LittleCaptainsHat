@@ -52,15 +52,15 @@ func sails_set() -> bool:
 static func point_of_sail_name(angle: float) -> String:
 	var a := absf(angle)
 	if a < 40.0:
-		return "head to wind"
+		return Loc.t("head to wind")
 	if a < 60.0:
-		return "close hauled"
+		return Loc.t("close hauled")
 	if a < 80.0:
-		return "close reach"
+		return Loc.t("close reach")
 	if a < 105.0:
-		return "beam reach"
+		return Loc.t("beam reach")
 	if a < 150.0:
-		return "broad reach"
+		return Loc.t("broad reach")
 	return "running"
 
 
@@ -74,10 +74,10 @@ static func wind_side(angle: float) -> String:
 ## One-line description for the HUD: "Under sail · broad reach · 6.8 kn".
 func describe() -> String:
 	if is_motoring():
-		var why := "becalmed or head to wind" if engine_reason == REASON_STALL else "insufficient sailing performance"
-		return "Motoring · %s · %.1f kn" % [why, speed_kn]
-	var text := "Under sail · %s · %.1f kn" % [point_of_sail_name(true_wind_angle), speed_kn]
-	return text + " · spinnaker set" if spinnaker else text
+		var why := Loc.t("becalmed or head to wind") if engine_reason == REASON_STALL else Loc.t("insufficient sailing performance")
+		return Loc.format("Motoring · %s · %.1f kn", [why, speed_kn])
+	var text := Loc.format("Under sail · %s · %.1f kn", [point_of_sail_name(true_wind_angle), speed_kn])
+	return text + Loc.t(" · spinnaker set") if spinnaker else text
 
 
 func duplicate_state() -> PropulsionState:

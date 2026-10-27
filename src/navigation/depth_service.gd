@@ -139,18 +139,18 @@ static func _hash01(x: int, y: int) -> float:
 static func source_label(source: StringName) -> String:
 	match source:
 		SOURCE_REGIONAL:
-			return "regional depth data (modelled)"
+			return Loc.t("regional depth data (modelled)")
 		SOURCE_GLOBAL:
-			return "global depth model (mostly interpolated)"
+			return Loc.t("global depth model (mostly interpolated)")
 		SOURCE_ESTIMATE:
-			return "GAME ESTIMATE"
+			return Loc.t("GAME ESTIMATE")
 	return ""
 
 
 ## "about 9 m" / "about 85 m": rounded, never a false precision.
 static func describe_depth(depth_m: float) -> String:
 	if depth_m < 10.0:
-		return "about %d m" % maxi(roundi(depth_m), 1)
+		return Loc.t("about %d m") % maxi(roundi(depth_m), 1)
 	if depth_m < 100.0:
-		return "about %d m" % (roundi(depth_m / 5.0) * 5)
-	return "about %d m" % (roundi(depth_m / 50.0) * 50)
+		return Loc.t("about %d m") % (roundi(depth_m / 5.0) * 5)
+	return Loc.t("about %d m") % (roundi(depth_m / 50.0) * 50)

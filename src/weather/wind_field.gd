@@ -144,10 +144,10 @@ static func relative_angle(heading_deg: float, wind_from_deg: float) -> float:
 	return 180.0 if is_equal_approx(angle, -180.0) else angle
 
 
-## 16-point compass name for a direction ("WSW").
+## 16-point compass name for a direction ("WSW"; Danish "VSV").
 static func compass_name(degrees: float) -> String:
 	const NAMES := ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-	return NAMES[roundi(fposmod(degrees, 360.0) / 22.5) % 16]
+	return Loc.t(NAMES[roundi(fposmod(degrees, 360.0) / 22.5) % 16], "compass")
 
 
 ## The wind at `geo` (Vector2(lon, lat)) at `game_time` (UTC seconds).

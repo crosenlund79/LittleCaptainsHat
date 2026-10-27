@@ -153,7 +153,7 @@ func grade(species_id: String, kg: float) -> StringName:
 
 
 static func grade_label(g: StringName) -> String:
-	return String(g).capitalize() if g != GRADE_NONE else "Ordinary"
+	return String(g).capitalize() if g != GRADE_NONE else Loc.t("Ordinary")
 
 
 ## 0 (ordinary) to 3 (gold).

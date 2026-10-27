@@ -129,24 +129,24 @@ static func hazard_name(level: int) -> String:
 static func class_label(classification: StringName) -> String:
 	match classification:
 		CLASS_CALM:
-			return "Calm"
+			return Loc.t("Calm")
 		CLASS_STRONG_WIND:
-			return "Strong winds"
+			return Loc.t("Strong winds")
 		CLASS_GALE:
-			return "Gale"
+			return Loc.t("Gale")
 		CLASS_STORM:
-			return "Storm"
+			return Loc.t("Storm")
 		CLASS_THUNDER_RISK:
-			return "Thunderstorm risk"
+			return Loc.t("Thunderstorm risk")
 		CLASS_THUNDERSTORM:
-			return "Thunderstorm"
+			return Loc.t("Thunderstorm")
 		CLASS_SQUALL:
-			return "Severe squalls"
+			return Loc.t("Severe squalls")
 		CLASS_TROPICAL_STORM:
-			return "Tropical storm"
+			return Loc.t("Tropical storm")
 		CLASS_HURRICANE:
-			return "Hurricane"
-	return "Fair"
+			return Loc.t("Hurricane")
+	return Loc.t("Fair")
 
 
 ## The hazard level for a sustained wind and gust (knots).
@@ -553,7 +553,7 @@ func _make_gale(zone: Dictionary, index: int, slot: int, rng: RandomNumberGenera
 	event.flow_from_deg = fposmod(rng.randf_range(float(flow[0]), float(flow[1]) + (360.0 if float(flow[1]) < float(flow[0]) else 0.0)), 360.0)
 	event.shape = _random_shape(rng, 0.22)
 	event.shape_drift = rng.randf_range(-0.04, 0.04)
-	event.display_name = "Gale" if event.peak_kn >= SUSTAINED_LIMITS[1] else "Strong winds"
+	event.display_name = Loc.t("Gale") if event.peak_kn >= SUSTAINED_LIMITS[1] else Loc.t("Strong winds")
 	return event
 
 
@@ -574,7 +574,7 @@ func _make_risk(zone: Dictionary, index: int, slot: int, rng: RandomNumberGenera
 	event.radius_nm = _range(rng, c.radius_nm)
 	event.shape = _random_shape(rng, 0.28)
 	event.shape_drift = rng.randf_range(-0.05, 0.05)
-	event.display_name = "Thunderstorm risk"
+	event.display_name = Loc.t("Thunderstorm risk")
 	return event
 
 
@@ -617,7 +617,7 @@ func _cells_of(risk: WeatherEvent) -> Array[WeatherEvent]:
 		cell.shape = _random_shape(rng, 0.3)
 		cell.shape_drift = rng.randf_range(-0.2, 0.2)
 		cell.seed = hash("%d|%s" % [risk.seed, cell.id])
-		cell.display_name = "Severe thunderstorm" if cell.peak_kn + cell.gust_kn >= SEVERE_STORM_KN else "Thunderstorm"
+		cell.display_name = Loc.t("Severe thunderstorm") if cell.peak_kn + cell.gust_kn >= SEVERE_STORM_KN else Loc.t("Thunderstorm")
 		cells.append(cell)
 	_cell_cache[key] = cells
 	return cells

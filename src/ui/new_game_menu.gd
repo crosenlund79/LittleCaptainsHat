@@ -29,9 +29,9 @@ func select(kind: StringName) -> void:
 	_cat.set_pressed_no_signal(kind == CompanionState.KIND_CAT)
 	_dog.set_pressed_no_signal(kind == CompanionState.KIND_DOG)
 	_preview.show_kind(kind)
-	_description.text = "A ship's cat: likes the settee, the chart table and your berth. Purrs when petted." \
+	_description.text = Loc.t("A ship's cat: likes the settee, the chart table and your berth. Purrs when petted.") \
 		if kind == CompanionState.KIND_CAT else \
-		"A ship's dog: naps on the cabin sole, by the steps or next to the settee. Pants happily when petted."
+		Loc.t("A ship's dog: naps on the cabin sole, by the steps or next to the settee. Pants happily when petted.")
 
 
 func focus_default() -> void:

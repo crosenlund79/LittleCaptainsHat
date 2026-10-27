@@ -1,0 +1,7058 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: da\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Project-Id-Version: Little Captain's Hat\n"
+
+msgid "A bigger anchor on heavier chain. Holds about 5 knots more wind before dragging."
+msgstr "Et større anker på tungere kæde. Holder ca. 5 knob mere vind, før det glider."
+
+msgid "A long-lasting bottom coating, applied with the boat out of the water. Weed and barnacles grow at less than half the speed."
+msgstr "En holdbar bundmaling, påført med båden på land. Alger og rurer vokser under halvt så hurtigt."
+
+msgid "A small receiver for marine weather broadcasts. Warnings about weather on your route come up to 10 hours ahead instead of 6."
+msgstr "En lille modtager til søvejrmeldinger. Varsler om vejret på din rute kommer op til 10 timer før i stedet for 6."
+
+msgid "A stove that swings level with the boat. Underway you can cook in winds up to 26 knots instead of 18."
+msgstr "Et komfur, der svinger i vater med båden. Under sejlads kan du lave mad i op til 26 knob i stedet for 18."
+
+msgid "Fresh wire and fittings. The rig wears half as fast and the boat takes a little less weather damage."
+msgstr "Ny wire og nye beslag. Riggen slides halvt så hurtigt, og båden tager lidt mindre skade af vejret."
+
+msgid "Gimballed stove"
+msgstr "Kardansk komfur"
+
+msgid "Hard antifouling coating"
+msgstr "Hård bundmaling"
+
+msgid "Heavier anchor and chain"
+msgstr "Tungere anker og kæde"
+
+msgid "Large cool box"
+msgstr "Stor køleboks"
+
+msgid "New stainless rigging"
+msgstr "Ny rustfri rigning"
+
+msgid "Room for 10 fish instead of 6."
+msgstr "Plads til 10 fisk i stedet for 6."
+
+msgid "Weather receiver"
+msgstr "Vejrmodtager"
+
+msgid "A flash of silver that most small predators chase."
+msgstr "Et sølvglimt, som de fleste små rovfisk jagter."
+
+msgid "A knot no sailor would claim. Into the bin with it."
+msgstr "En knude, ingen sømand vil kendes ved. Ud med den."
+
+msgid "A soft rubber shrimp, for fish feeding near the bottom."
+msgstr "En blød gummireje til fisk, der æder nær bunden."
+
+msgid "A tin that once held sardines. Long, long ago."
+msgstr "En dåse, der engang rummede sardiner. For længe siden."
+
+msgid "A wobbling spoon, good for trolling and sea trout."
+msgstr "Et vuggende blink, godt til trolling og havørred."
+
+msgid "Atlantic bonito"
+msgstr "Rygstribet pelamide"
+
+msgid "Blacktip reef shark"
+msgstr "Sortspidset revhaj"
+
+msgid "Blue shark"
+msgstr "Blåhaj"
+
+msgid "Cod"
+msgstr "Torsk"
+
+msgid "Flounder"
+msgstr "Skrubbe"
+
+msgid "Garfish"
+msgstr "Hornfisk"
+
+msgid "Gilt-head bream"
+msgstr "Guldbrasen"
+
+msgid "Heavy enough to reach cod and bream lower down."
+msgstr "Tung nok til at nå torsk og brasen længere nede."
+
+msgid "Herring"
+msgstr "Sild"
+
+msgid "Mackerel"
+msgstr "Makrel"
+
+msgid "Mahi-mahi"
+msgstr "Guldmakrel"
+
+msgid "Old boot"
+msgstr "Gammel støvle"
+
+msgid "Perch"
+msgstr "Aborre"
+
+msgid "Red snapper"
+msgstr "Rød snapper"
+
+msgid "Rusty tin"
+msgstr "Rusten dåse"
+
+msgid "Sea bass"
+msgstr "Havbars"
+
+msgid "Sea trout"
+msgstr "Havørred"
+
+msgid "Skipjack tuna"
+msgstr "Bugstribet bonit"
+
+msgid "Small spinner"
+msgstr "Lille spinner"
+
+msgid "Soft bait"
+msgstr "Gummiagn"
+
+msgid "Someone's left boot. Not your size, and full of seaweed."
+msgstr "Nogens venstre støvle. Ikke din størrelse og fuld af tang."
+
+msgid "Spoon lure"
+msgstr "Blink"
+
+msgid "Tangled rope"
+msgstr "Filtret tov"
+
+msgid "Weighted jig"
+msgstr "Tung jig"
+
+msgid "Yellowfin tuna"
+msgstr "Gulfinnet tun"
+
+msgid "Nyhavn"
+msgstr "Nyhavn"
+
+msgid "Bab-el-Mandeb"
+msgstr "Bab-el-Mandeb"
+
+msgid "Kiel Canal"
+msgstr "Kielerkanalen"
+
+msgid "Suez Canal"
+msgstr "Suezkanalen"
+
+msgid "The Kiel Canal (Nord-Ostsee-Kanal) from Kiel-Holtenau on the Baltic to Brunsbuettel on the Elbe and the North Sea."
+msgstr "Kielerkanalen (Nord-Ostsee-Kanal) fra Kiel-Holtenau ved Østersøen til Brunsbüttel ved Elben og Nordsøen."
+
+msgid "The Suez Canal from Port Said on the Mediterranean to Port Tewfik (Suez), continued down the Gulf of Suez past the Strait of Gubal into the open Red Sea: on the world chart the Gulf of Suez is a strip of water not connected at Gubal."
+msgstr "Suezkanalen fra Port Said ved Middelhavet til Port Tewfik (Suez), videre ned gennem Suezbugten forbi Gubalstrædet ud i Det Røde Hav: på verdenskortet er Suezbugten en vandstribe uden forbindelse ved Gubal."
+
+msgid "The strait between the Red Sea and the Gulf of Aden, through its western channel past Perim island. On the world chart it is narrower than a cell, so the Red Sea would otherwise be closed."
+msgstr "Strædet mellem Det Røde Hav og Adenbugten, gennem den vestlige rende forbi øen Perim. På verdenskortet er det smallere end en celle, så Det Røde Hav ellers ville være lukket."
+
+msgid "Fine coastal raster (anchoring)"
+msgstr "Fint kystraster (ankring)"
+
+msgid "Adriatic Sea"
+msgstr "Adriaterhavet"
+
+msgid "Aegean Sea"
+msgstr "Ægæerhavet"
+
+msgid "Atlantic Ocean"
+msgstr "Atlanterhavet"
+
+msgid "Balearic Sea"
+msgstr "Det Baleariske Hav"
+
+msgid "Baltic Sea"
+msgstr "Østersøen"
+
+msgid "Bay of Biscay"
+msgstr "Biscayabugten"
+
+msgid "Black Sea"
+msgstr "Sortehavet"
+
+msgid "Celtic Sea"
+msgstr "Det Keltiske Hav"
+
+msgid "English Channel"
+msgstr "Den Engelske Kanal"
+
+msgid "Europe"
+msgstr "Europa"
+
+msgid "Great Belt"
+msgstr "Storebælt"
+
+msgid "Gulf of Bothnia"
+msgstr "Den Botniske Bugt"
+
+msgid "Ionian Sea"
+msgstr "Det Joniske Hav"
+
+msgid "Irish Sea"
+msgstr "Det Irske Hav"
+
+msgid "Kattegat"
+msgstr "Kattegat"
+
+msgid "Kiel Bay"
+msgstr "Kieler Bugt"
+
+msgid "Mediterranean Sea"
+msgstr "Middelhavet"
+
+msgid "North Sea"
+msgstr "Nordsøen"
+
+msgid "Norwegian Sea"
+msgstr "Norskehavet"
+
+msgid "Skagerrak"
+msgstr "Skagerrak"
+
+msgid "Strait of Gibraltar"
+msgstr "Gibraltarstrædet"
+
+msgid "Tyrrhenian Sea"
+msgstr "Det Tyrrhenske Hav"
+
+msgid "UNITED KINGDOM"
+msgstr "STORBRITANNIEN"
+
+msgid "Øresund"
+msgstr "Øresund"
+
+msgid "A Coruña, a harbour on the Atlantic coast of Iberia."
+msgstr "A Coruña, en havn ved Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "A Coruña"
+msgstr "A Coruña"
+
+msgid "Aarhus, a harbour on the Baltic Sea."
+msgstr "Aarhus, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Aarhus"
+msgstr "Aarhus"
+
+msgid "Aberdeen, a harbour on the North Sea."
+msgstr "Aberdeen, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Aberdeen"
+msgstr "Aberdeen"
+
+msgid "Ærøskøbing, a cobbled old town on the island of Ærø."
+msgstr "Ærøskøbing, en gammel by med brosten på Ærø."
+
+msgctxt "place"
+msgid "Ærøskøbing"
+msgstr "Ærøskøbing"
+
+msgid "Ajaccio, an island harbour on the Mediterranean."
+msgstr "Ajaccio, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Ajaccio"
+msgstr "Ajaccio"
+
+msgid "Ålesund, a harbour on the Norwegian coast."
+msgstr "Ålesund, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Ålesund"
+msgstr "Ålesund"
+
+msgid "Alghero, an island harbour on the Mediterranean."
+msgstr "Alghero, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Alghero"
+msgstr "Alghero"
+
+msgid "Almería, a harbour on the Mediterranean."
+msgstr "Almería, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Almería"
+msgstr "Almería"
+
+msgid "Ancona, a harbour on the Adriatic Sea."
+msgstr "Ancona, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Ancona"
+msgstr "Ancona"
+
+msgid "Arcachon, a harbour on the Bay of Biscay."
+msgstr "Arcachon, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "Arcachon"
+msgstr "Arcachon"
+
+msgid "Arendal, a harbour on the Norwegian coast."
+msgstr "Arendal, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Arendal"
+msgstr "Arendal"
+
+msgid "Arrecife on Lanzarote, the easternmost of the Canary Islands."
+msgstr "Arrecife på Lanzarote, den østligste af De Kanariske Øer."
+
+msgctxt "place"
+msgid "Arrecife"
+msgstr "Arrecife"
+
+msgid "Atuona on Hiva Oa in the Marquesas."
+msgstr "Atuona på Hiva Oa i Marquesasøerne."
+
+msgctxt "place"
+msgid "Atuona"
+msgstr "Atuona"
+
+msgid "Auckland, the City of Sails, on the Hauraki Gulf."
+msgstr "Auckland, sejlenes by, ved Haurakibugten."
+
+msgctxt "place"
+msgid "Auckland"
+msgstr "Auckland"
+
+msgid "Avarua on Rarotonga, in the Cook Islands."
+msgstr "Avarua på Rarotonga i Cookøerne."
+
+msgctxt "place"
+msgid "Avarua"
+msgstr "Avarua"
+
+msgid "Bar, a harbour on the Adriatic Sea."
+msgstr "Bar, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Bar"
+msgstr "Bar"
+
+msgid "Catalonia's capital on the Balearic Sea, with a large old harbour."
+msgstr "Cataloniens hovedstad ved Det Baleariske Hav, med en stor gammel havn."
+
+msgctxt "place"
+msgid "Barcelona"
+msgstr "Barcelona"
+
+msgid "Bari, a harbour on the Adriatic Sea."
+msgstr "Bari, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Bari"
+msgstr "Bari"
+
+msgid "Bastia, an island harbour on the Mediterranean."
+msgstr "Bastia, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Bastia"
+msgstr "Bastia"
+
+msgid "Belfast, a harbour in the British Isles."
+msgstr "Belfast, en havn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Belfast"
+msgstr "Belfast"
+
+msgid "Port Elizabeth on Bequia, in the Grenadines."
+msgstr "Port Elizabeth på Bequia i Grenadinerne."
+
+msgctxt "place"
+msgid "Port Elizabeth"
+msgstr "Port Elizabeth"
+
+msgid "Hanseatic harbour town in western Norway, gateway to the fjords."
+msgstr "Hansestad i Vestnorge, porten til fjordene."
+
+msgctxt "place"
+msgid "Bergen"
+msgstr "Bergen"
+
+msgid "Bodø, a harbour on the Norwegian coast."
+msgstr "Bodø, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Bodø"
+msgstr "Bodø"
+
+msgid "Bodrum, a harbour on the Aegean Sea."
+msgstr "Bodrum, en havn ved Ægæerhavet."
+
+msgctxt "place"
+msgid "Bodrum"
+msgstr "Bodrum"
+
+msgid "Bonifacio, an island harbour on the Mediterranean."
+msgstr "Bonifacio, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Bonifacio"
+msgstr "Bonifacio"
+
+msgid "Bora Bora, its lagoon under the peak of Otemanu."
+msgstr "Bora Bora med sin lagune under tinden Otemanu."
+
+msgctxt "place"
+msgid "Bora Bora"
+msgstr "Bora Bora"
+
+msgid "Boulogne-sur-Mer, a harbour on the English Channel."
+msgstr "Boulogne-sur-Mer, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Boulogne-sur-Mer"
+msgstr "Boulogne-sur-Mer"
+
+msgid "Bremerhaven, a harbour on the North Sea."
+msgstr "Bremerhaven, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Bremerhaven"
+msgstr "Bremerhaven"
+
+msgid "Breton port in a great natural roadstead near the western tip of France."
+msgstr "Bretonsk havn på en stor naturlig red nær Frankrigs vestspids."
+
+msgctxt "place"
+msgid "Brest"
+msgstr "Brest"
+
+msgid "Brindisi, a harbour on the Adriatic Sea."
+msgstr "Brindisi, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Brindisi"
+msgstr "Brindisi"
+
+msgid "Cagliari, an island harbour on the Mediterranean."
+msgstr "Cagliari, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Cagliari"
+msgstr "Cagliari"
+
+msgid "Calais, a harbour on the English Channel."
+msgstr "Calais, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Calais"
+msgstr "Calais"
+
+msgid "Calvi, an island harbour on the Mediterranean."
+msgstr "Calvi, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Calvi"
+msgstr "Calvi"
+
+msgid "Cannes, a harbour on the Mediterranean."
+msgstr "Cannes, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Cannes"
+msgstr "Cannes"
+
+msgid "Capri, an island harbour on the Mediterranean."
+msgstr "Capri, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Capri"
+msgstr "Capri"
+
+msgid "Cartagena, a harbour on the Mediterranean."
+msgstr "Cartagena, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Cartagena"
+msgstr "Cartagena"
+
+msgid "Castries, the harbour of Saint Lucia in the Windward Islands."
+msgstr "Castries, Saint Lucias havn i De Små Antiller."
+
+msgctxt "place"
+msgid "Castries"
+msgstr "Castries"
+
+msgid "Catania, an island harbour on the Mediterranean."
+msgstr "Catania, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Catania"
+msgstr "Catania"
+
+msgid "Çeşme, a harbour on the Aegean Sea."
+msgstr "Çeşme, en havn ved Ægæerhavet."
+
+msgctxt "place"
+msgid "Çeşme"
+msgstr "Çeşme"
+
+msgid "Chania, an island harbour on the Aegean Sea."
+msgstr "Chania, en øhavn i Ægæerhavet."
+
+msgctxt "place"
+msgid "Chania"
+msgstr "Chania"
+
+msgid "Cherbourg, a harbour on the English Channel."
+msgstr "Cherbourg, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Cherbourg"
+msgstr "Cherbourg"
+
+msgid "Chios, an island harbour on the Aegean Sea."
+msgstr "Chios, en øhavn i Ægæerhavet."
+
+msgctxt "place"
+msgid "Chios"
+msgstr "Chios"
+
+msgid "Civitavecchia, a harbour on the Mediterranean."
+msgstr "Civitavecchia, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Civitavecchia"
+msgstr "Civitavecchia"
+
+msgid "Colón, at the Caribbean end of the Panama Canal."
+msgstr "Colón, ved Panamakanalens caribiske ende."
+
+msgctxt "place"
+msgid "Colón"
+msgstr "Colón"
+
+msgid "Concarneau, a harbour on the Bay of Biscay."
+msgstr "Concarneau, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "Concarneau"
+msgstr "Concarneau"
+
+msgid "Capital of Denmark, on the Øresund. Guest berths in the city's inner harbour."
+msgstr "Danmarks hovedstad ved Øresund. Gæstepladser i byens inderhavn."
+
+msgctxt "place"
+msgid "Copenhagen"
+msgstr "København"
+
+msgid "Corfu, an island harbour on the Ionian Sea."
+msgstr "Korfu, en øhavn i Det Joniske Hav."
+
+msgctxt "place"
+msgid "Corfu"
+msgstr "Korfu"
+
+msgid "Cuxhaven, a harbour on the North Sea."
+msgstr "Cuxhaven, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Cuxhaven"
+msgstr "Cuxhaven"
+
+msgid "Den Helder, a harbour on the North Sea."
+msgstr "Den Helder, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Den Helder"
+msgstr "Den Helder"
+
+msgid "Dieppe, a harbour on the English Channel."
+msgstr "Dieppe, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Dieppe"
+msgstr "Dieppe"
+
+msgid "Douglas, an island harbour in the British Isles."
+msgstr "Douglas, en øhavn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Douglas"
+msgstr "Douglas"
+
+msgid "Dragør, an old skipper town on Amager, on the Øresund."
+msgstr "Dragør, en gammel skipperby på Amager ved Øresund."
+
+msgctxt "place"
+msgid "Dragør"
+msgstr "Dragør"
+
+msgid "Capital of Ireland at the mouth of the Liffey on the Irish Sea."
+msgstr "Irlands hovedstad ved Liffeys udløb i Det Irske Hav."
+
+msgctxt "place"
+msgid "Dublin"
+msgstr "Dublin"
+
+msgid "Dubrovnik, a harbour on the Adriatic Sea."
+msgstr "Dubrovnik, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Dubrovnik"
+msgstr "Dubrovnik"
+
+msgid "Dunkirk, a harbour on the English Channel."
+msgstr "Dunkerque, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Dunkirk"
+msgstr "Dunkerque"
+
+msgid "Ebeltoft, on Djursland, home of the frigate Jylland."
+msgstr "Ebeltoft på Djursland, hjemsted for fregatten Jylland."
+
+msgctxt "place"
+msgid "Ebeltoft"
+msgstr "Ebeltoft"
+
+msgid "Faaborg, on south Funen, looking out over the archipelago."
+msgstr "Faaborg på Sydfyn med udsigt over øhavet."
+
+msgctxt "place"
+msgid "Faaborg"
+msgstr "Faaborg"
+
+msgid "Fakarava, a coral atoll of the Tuamotu."
+msgstr "Fakarava, en koralatol i Tuamotu."
+
+msgctxt "place"
+msgid "Fakarava"
+msgstr "Fakarava"
+
+msgid "Falmouth Harbour on the south coast of Antigua."
+msgstr "Falmouth Harbour på Antiguas sydkyst."
+
+msgctxt "place"
+msgid "Falmouth Harbour"
+msgstr "Falmouth Harbour"
+
+msgid "Faro, a harbour on the Atlantic coast of Iberia."
+msgstr "Faro, en havn ved Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "Faro"
+msgstr "Faro"
+
+msgid "Florø, a harbour on the Norwegian coast."
+msgstr "Florø, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Florø"
+msgstr "Florø"
+
+msgid "Fort-de-France, the capital of Martinique, on its wide bay."
+msgstr "Fort-de-France, Martiniques hovedstad, ved den brede bugt."
+
+msgctxt "place"
+msgid "Fort-de-France"
+msgstr "Fort-de-France"
+
+msgid "Funchal, the harbour of Madeira, at the foot of green mountains."
+msgstr "Funchal, Madeiras havn, ved foden af grønne bjerge."
+
+msgctxt "place"
+msgid "Funchal"
+msgstr "Funchal"
+
+msgid "Gdynia, a harbour on the Baltic Sea."
+msgstr "Gdynia, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Gdynia"
+msgstr "Gdynia"
+
+msgid "Genoa, a harbour on the Mediterranean."
+msgstr "Genova, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Genoa"
+msgstr "Genova"
+
+msgid "The Rock at the narrow gateway between the Atlantic and the Mediterranean."
+msgstr "Klippen ved den smalle port mellem Atlanterhavet og Middelhavet."
+
+msgctxt "place"
+msgid "Gibraltar"
+msgstr "Gibraltar"
+
+msgid "Gijón, a harbour on the Bay of Biscay."
+msgstr "Gijón, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "Gijón"
+msgstr "Gijón"
+
+msgid "Gilleleje, a fishing harbour on Zealand's north coast, facing the Kattegat."
+msgstr "Gilleleje, en fiskerihavn på Sjællands nordkyst ud mod Kattegat."
+
+msgctxt "place"
+msgid "Gilleleje"
+msgstr "Gilleleje"
+
+msgid "Sweden's west-coast port at the mouth of the Göta älv, sheltered by the archipelago."
+msgstr "Sveriges vestkysthavn ved Göta älvs udløb, i læ af skærgården."
+
+msgctxt "place"
+msgid "Gothenburg"
+msgstr "Göteborg"
+
+msgid "Grenaa, on Djursland's Kattegat coast."
+msgstr "Grenaa på Djurslands kattegatkyst."
+
+msgctxt "place"
+msgid "Grenaa"
+msgstr "Grenaa"
+
+msgid "Hammerfest, a harbour on the Norwegian coast."
+msgstr "Hammerfest, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Hammerfest"
+msgstr "Hammerfest"
+
+msgid "Harlingen, a harbour on the North Sea."
+msgstr "Harlingen, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Harlingen"
+msgstr "Harlingen"
+
+msgid "Haugesund, a harbour on the Norwegian coast."
+msgstr "Haugesund, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Haugesund"
+msgstr "Haugesund"
+
+msgid "Helsingør, at the narrowest point of the Øresund, under Kronborg."
+msgstr "Helsingør, hvor Øresund er smallest, under Kronborg."
+
+msgctxt "place"
+msgid "Helsingør"
+msgstr "Helsingør"
+
+msgid "Capital of Finland on the Gulf of Finland, surrounded by islands."
+msgstr "Finlands hovedstad ved Den Finske Bugt, omgivet af øer."
+
+msgctxt "place"
+msgid "Helsinki"
+msgstr "Helsinki"
+
+msgid "Heraklion, an island harbour on the Aegean Sea."
+msgstr "Heraklion, en øhavn i Ægæerhavet."
+
+msgctxt "place"
+msgid "Heraklion"
+msgstr "Heraklion"
+
+msgid "Honningsvåg, an island harbour on the Norwegian coast."
+msgstr "Honningsvåg, en øhavn på den norske kyst."
+
+msgctxt "place"
+msgid "Honningsvåg"
+msgstr "Honningsvåg"
+
+msgid "Honolulu on O'ahu, in the middle of the North Pacific."
+msgstr "Honolulu på O'ahu midt i det nordlige Stillehav."
+
+msgctxt "place"
+msgid "Honolulu"
+msgstr "Honolulu"
+
+msgid "Horta on Faial in the Azores, a famous mid-Atlantic stop for sailors."
+msgstr "Horta på Faial i Azorerne, et berømt stop midt i Atlanten."
+
+msgctxt "place"
+msgid "Horta"
+msgstr "Horta"
+
+msgid "Hvar, an island harbour on the Adriatic Sea."
+msgstr "Hvar, en øhavn i Adriaterhavet."
+
+msgctxt "place"
+msgid "Hvar"
+msgstr "Hvar"
+
+msgid "Hydra, an island harbour on the Aegean Sea."
+msgstr "Hydra, en øhavn i Ægæerhavet."
+
+msgctxt "place"
+msgid "Hydra"
+msgstr "Hydra"
+
+msgid "Ibiza, an island harbour on the Mediterranean."
+msgstr "Ibiza, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Ibiza"
+msgstr "Ibiza"
+
+msgid "IJmuiden, a harbour on the North Sea."
+msgstr "IJmuiden, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "IJmuiden"
+msgstr "IJmuiden"
+
+msgid "İzmir, a harbour on the Aegean Sea."
+msgstr "İzmir, en havn ved Ægæerhavet."
+
+msgctxt "place"
+msgid "İzmir"
+msgstr "İzmir"
+
+msgid "Juelsminde, a small harbour on Jutland's east coast."
+msgstr "Juelsminde, en lille havn på Jyllands østkyst."
+
+msgctxt "place"
+msgid "Juelsminde"
+msgstr "Juelsminde"
+
+msgid "Kalamata, a harbour on the Ionian Sea."
+msgstr "Kalamata, en havn ved Det Joniske Hav."
+
+msgctxt "place"
+msgid "Kalamata"
+msgstr "Kalamata"
+
+msgid "Kalmar, a harbour on the Baltic Sea."
+msgstr "Kalmar, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Kalmar"
+msgstr "Kalmar"
+
+msgid "Kalundborg, at the head of its fjord on west Zealand."
+msgstr "Kalundborg, inderst i sin fjord på Vestsjælland."
+
+msgctxt "place"
+msgid "Kalundborg"
+msgstr "Kalundborg"
+
+msgid "Karlskrona, a harbour on the Baltic Sea."
+msgstr "Karlskrona, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Karlskrona"
+msgstr "Karlskrona"
+
+msgid "Kavala, a harbour on the Aegean Sea."
+msgstr "Kavala, en havn ved Ægæerhavet."
+
+msgctxt "place"
+msgid "Kavala"
+msgstr "Kavala"
+
+msgid "Kerteminde, a fishing town on Funen's east coast."
+msgstr "Kerteminde, en fiskerby på Fyns østkyst."
+
+msgctxt "place"
+msgid "Kerteminde"
+msgstr "Kerteminde"
+
+msgid "German sailing hub at the head of the Kiel Fjord, at the Baltic end of the Kiel Canal."
+msgstr "Tysk sejlercentrum inderst i Kieler Förde, ved Kielerkanalens østersøende."
+
+msgctxt "place"
+msgid "Kiel"
+msgstr "Kiel"
+
+msgid "Kirkwall, an island harbour in the British Isles."
+msgstr "Kirkwall, en øhavn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Kirkwall"
+msgstr "Kirkwall"
+
+msgid "Korčula, an island harbour on the Adriatic Sea."
+msgstr "Korčula, en øhavn i Adriaterhavet."
+
+msgctxt "place"
+msgid "Korčula"
+msgstr "Korčula"
+
+msgid "Korsør, on Zealand's side of the Great Belt."
+msgstr "Korsør, på Sjællands side af Storebælt."
+
+msgctxt "place"
+msgid "Korsør"
+msgstr "Korsør"
+
+msgid "Kotka, a harbour on the Baltic Sea."
+msgstr "Kotka, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Kotka"
+msgstr "Kotka"
+
+msgid "Kristiansand, a harbour on the Norwegian coast."
+msgstr "Kristiansand, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Kristiansand"
+msgstr "Kristiansand"
+
+msgid "Kristiansund, a harbour on the Norwegian coast."
+msgstr "Kristiansund, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Kristiansund"
+msgstr "Kristiansund"
+
+msgid "Kuşadası, a harbour on the Aegean Sea."
+msgstr "Kuşadası, en havn ved Ægæerhavet."
+
+msgctxt "place"
+msgid "Kuşadası"
+msgstr "Kuşadası"
+
+msgid "La Rochelle, a harbour on the Bay of Biscay."
+msgstr "La Rochelle, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "La Rochelle"
+msgstr "La Rochelle"
+
+msgid "La Spezia, a harbour on the Mediterranean."
+msgstr "La Spezia, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "La Spezia"
+msgstr "La Spezia"
+
+msgid "Lagos, a harbour on the Atlantic coast of Iberia."
+msgstr "Lagos, en havn ved Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "Lagos"
+msgstr "Lagos"
+
+msgid "Larnaca, an island harbour in the eastern Mediterranean."
+msgstr "Larnaca, en øhavn i det østlige Middelhav."
+
+msgctxt "place"
+msgid "Larnaca"
+msgstr "Larnaca"
+
+msgid "Larvik, a harbour on the Norwegian coast."
+msgstr "Larvik, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Larvik"
+msgstr "Larvik"
+
+msgid "Las Palmas de Gran Canaria, where many Atlantic crossings begin."
+msgstr "Las Palmas de Gran Canaria, hvor mange atlanterhavskrydsninger begynder."
+
+msgctxt "place"
+msgid "Las Palmas"
+msgstr "Las Palmas"
+
+msgid "Lautoka on the west coast of Viti Levu, Fiji."
+msgstr "Lautoka på Viti Levus vestkyst, Fiji."
+
+msgctxt "place"
+msgid "Lautoka"
+msgstr "Lautoka"
+
+msgid "Le Havre, a harbour on the English Channel."
+msgstr "Le Havre, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Le Havre"
+msgstr "Le Havre"
+
+msgid "Le Marin in the south of Martinique, a sheltered bay full of yachts."
+msgstr "Le Marin på det sydlige Martinique, en lun bugt fuld af sejlbåde."
+
+msgctxt "place"
+msgid "Le Marin"
+msgstr "Le Marin"
+
+msgid "Leith, a harbour on the North Sea."
+msgstr "Leith, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Leith"
+msgstr "Leith"
+
+msgid "Lerwick, an island harbour in the British Isles."
+msgstr "Lerwick, en øhavn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Lerwick"
+msgstr "Lerwick"
+
+msgid "Les Sables-d'Olonne, a harbour on the Bay of Biscay."
+msgstr "Les Sables-d'Olonne, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "Les Sables-d'Olonne"
+msgstr "Les Sables-d'Olonne"
+
+msgid "Liepāja, a harbour on the Baltic Sea."
+msgstr "Liepāja, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Liepāja"
+msgstr "Liepāja"
+
+msgid "Limassol, an island harbour in the eastern Mediterranean."
+msgstr "Limassol, en øhavn i det østlige Middelhav."
+
+msgctxt "place"
+msgid "Limassol"
+msgstr "Limassol"
+
+msgid "Lipari, an island harbour on the Mediterranean."
+msgstr "Lipari, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Lipari"
+msgstr "Lipari"
+
+msgid "Portugal's capital on the broad estuary of the Tagus."
+msgstr "Portugals hovedstad ved Tejos brede udmunding."
+
+msgctxt "place"
+msgid "Lisbon"
+msgstr "Lissabon"
+
+msgid "Liverpool, a harbour in the British Isles."
+msgstr "Liverpool, en havn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Liverpool"
+msgstr "Liverpool"
+
+msgid "Livorno, a harbour on the Mediterranean."
+msgstr "Livorno, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Livorno"
+msgstr "Livorno"
+
+msgid "Lohals, a small harbour at the north end of the island of Langeland."
+msgstr "Lohals, en lille havn på nordspidsen af Langeland."
+
+msgctxt "place"
+msgid "Lohals"
+msgstr "Lohals"
+
+msgid "Lorient, a harbour on the Bay of Biscay."
+msgstr "Lorient, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "Lorient"
+msgstr "Lorient"
+
+msgid "Luleå, a harbour on the Baltic Sea."
+msgstr "Luleå, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Luleå"
+msgstr "Luleå"
+
+msgid "Málaga, a harbour on the Mediterranean."
+msgstr "Málaga, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Málaga"
+msgstr "Málaga"
+
+msgid "Malmö, a harbour on the Baltic Sea."
+msgstr "Malmö, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Malmö"
+msgstr "Malmö"
+
+msgid "Mariehamn, an island harbour on the Baltic Sea."
+msgstr "Mariehamn, en øhavn i Østersøen."
+
+msgctxt "place"
+msgid "Mariehamn"
+msgstr "Mariehamn"
+
+msgid "Marmaris, a harbour in the eastern Mediterranean."
+msgstr "Marmaris, en havn i det østlige Middelhav."
+
+msgctxt "place"
+msgid "Marmaris"
+msgstr "Marmaris"
+
+msgid "France's oldest city, its Vieux-Port open to the Gulf of Lion."
+msgstr "Frankrigs ældste by, med Vieux-Port ud mod Løvebugten."
+
+msgctxt "place"
+msgid "Marseille"
+msgstr "Marseille"
+
+msgid "Marstal, Ærø's seafaring town."
+msgstr "Marstal, Ærøs søfartsby."
+
+msgctxt "place"
+msgid "Marstal"
+msgstr "Marstal"
+
+msgid "Messina, an island harbour on the Mediterranean."
+msgstr "Messina, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Messina"
+msgstr "Messina"
+
+msgid "Middelfart, on Funen at the narrows of the Little Belt."
+msgstr "Middelfart, på Fyn ved Lillebælts smalleste sted."
+
+msgctxt "place"
+msgid "Middelfart"
+msgstr "Middelfart"
+
+msgid "Milford Haven, a harbour in the British Isles."
+msgstr "Milford Haven, en havn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Milford Haven"
+msgstr "Milford Haven"
+
+msgid "Mindelo on São Vicente, Cape Verde: a last stop before the trade winds."
+msgstr "Mindelo på São Vicente, Kap Verde: sidste stop før passaten."
+
+msgctxt "place"
+msgid "Mindelo"
+msgstr "Mindelo"
+
+msgid "Mykonos, an island harbour on the Aegean Sea."
+msgstr "Mykonos, en øhavn i Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Mykonos"
+msgstr "Mykonos"
+
+msgid "Mytilene, an island harbour on the Aegean Sea."
+msgstr "Mytilene, en øhavn i Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Mytilene"
+msgstr "Mytilene"
+
+msgid "Nafplio, a harbour on the Aegean Sea."
+msgstr "Nafplio, en havn ved Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Nafplio"
+msgstr "Nafplio"
+
+msgid "Busy harbour on the Bay of Naples beneath Vesuvius."
+msgstr "Travl havn ved Napolibugten under Vesuv."
+
+msgctxt "place"
+msgid "Naples"
+msgstr "Neapel"
+
+msgid "Narvik, a harbour on the Norwegian coast."
+msgstr "Narvik, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Narvik"
+msgstr "Narvik"
+
+msgid "Nassau, the harbour of New Providence in the Bahamas."
+msgstr "Nassau, havnen på New Providence i Bahamas."
+
+msgctxt "place"
+msgid "Nassau"
+msgstr "Nassau"
+
+msgid "Naxos, an island harbour on the Aegean Sea."
+msgstr "Naxos, en øhavn i Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Naxos"
+msgstr "Naxos"
+
+msgid "Nelson, at the top of New Zealand's South Island."
+msgstr "Nelson, på toppen af New Zealands Sydø."
+
+msgctxt "place"
+msgid "Nelson"
+msgstr "Nelson"
+
+msgid "Nice, a harbour on the Mediterranean."
+msgstr "Nice, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Nice"
+msgstr "Nice"
+
+msgid "Nouméa, New Caledonia, inside the great lagoon."
+msgstr "Nouméa, Ny Kaledonien, inde i den store lagune."
+
+msgctxt "place"
+msgid "Nouméa"
+msgstr "Nouméa"
+
+msgid "Nuku'alofa on Tongatapu, the capital of Tonga."
+msgstr "Nuku'alofa på Tongatapu, Tongas hovedstad."
+
+msgctxt "place"
+msgid "Nuku'alofa"
+msgstr "Nuku'alofa"
+
+msgid "Nyborg, on Funen's side of the Great Belt."
+msgstr "Nyborg, på Fyns side af Storebælt."
+
+msgctxt "place"
+msgid "Nyborg"
+msgstr "Nyborg"
+
+msgid "Nynäshamn, a harbour on the Baltic Sea."
+msgstr "Nynäshamn, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Nynäshamn"
+msgstr "Nynäshamn"
+
+msgid "Nysted, a quiet harbour on Lolland's south coast."
+msgstr "Nysted, en stille havn på Lollands sydkyst."
+
+msgctxt "place"
+msgid "Nysted"
+msgstr "Nysted"
+
+msgid "Oban, a harbour in the British Isles."
+msgstr "Oban, en havn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Oban"
+msgstr "Oban"
+
+msgid "Olbia, an island harbour on the Mediterranean."
+msgstr "Olbia, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Olbia"
+msgstr "Olbia"
+
+msgid "Oulu, a harbour on the Baltic Sea."
+msgstr "Oulu, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Oulu"
+msgstr "Oulu"
+
+msgid "Pago Pago, a deep harbour on Tutuila, American Samoa."
+msgstr "Pago Pago, en dyb havn på Tutuila, Amerikansk Samoa."
+
+msgctxt "place"
+msgid "Pago Pago"
+msgstr "Pago Pago"
+
+msgid "Palermo, an island harbour on the Mediterranean."
+msgstr "Palermo, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Palermo"
+msgstr "Palermo"
+
+msgid "Palma, an island harbour on the Mediterranean."
+msgstr "Palma, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Palma"
+msgstr "Palma"
+
+msgid "Panama City, at the Pacific end of the Panama Canal."
+msgstr "Panama City, ved Panamakanalens stillehavsende."
+
+msgctxt "place"
+msgid "Panama City"
+msgstr "Panama City"
+
+msgid "Papeete, the harbour town of Tahiti."
+msgstr "Papeete, havnebyen på Tahiti."
+
+msgctxt "place"
+msgid "Papeete"
+msgstr "Papeete"
+
+msgid "Pärnu, a harbour on the Baltic Sea."
+msgstr "Pärnu, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Pärnu"
+msgstr "Pärnu"
+
+msgid "Paros, an island harbour on the Aegean Sea."
+msgstr "Paros, en øhavn i Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Paros"
+msgstr "Paros"
+
+msgid "Patras, a harbour on the Ionian Sea."
+msgstr "Patras, en havn ved Det Joniske Hav."
+
+msgctxt "place"
+msgid "Patras"
+msgstr "Patras"
+
+msgid "Peniche, a harbour on the Atlantic coast of Iberia."
+msgstr "Peniche, en havn på Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "Peniche"
+msgstr "Peniche"
+
+msgid "Peterhead, a harbour on the North Sea."
+msgstr "Peterhead, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Peterhead"
+msgstr "Peterhead"
+
+msgid "Port of Athens on the Saronic Gulf, gateway to the Aegean islands."
+msgstr "Athens havn ved Saroniske Bugt, porten til De Ægæiske Øer."
+
+msgctxt "place"
+msgid "Piraeus"
+msgstr "Piræus"
+
+msgid "Ponta Delgada on São Miguel, the largest harbour of the Azores."
+msgstr "Ponta Delgada på São Miguel, Azorernes største havn."
+
+msgctxt "place"
+msgid "Ponta Delgada"
+msgstr "Ponta Delgada"
+
+msgid "Port of Spain, Trinidad, at the southern end of the Antilles."
+msgstr "Port of Spain, Trinidad, i Antillernes sydlige ende."
+
+msgctxt "place"
+msgid "Port of Spain"
+msgstr "Port of Spain"
+
+msgid "Portimão, a harbour on the Atlantic coast of Iberia."
+msgstr "Portimão, en havn på Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "Portimão"
+msgstr "Portimão"
+
+msgid "Porto (Leixões), a harbour on the Atlantic coast of Iberia."
+msgstr "Porto (Leixões), en havn på Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "Porto (Leixões)"
+msgstr "Porto (Leixões)"
+
+msgid "Portoferraio, an island harbour on the Mediterranean."
+msgstr "Portoferraio, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Portoferraio"
+msgstr "Portoferraio"
+
+msgid "Historic naval harbour on the Solent, facing the Isle of Wight."
+msgstr "Historisk flådehavn ved Solent, over for Isle of Wight."
+
+msgctxt "place"
+msgid "Portsmouth"
+msgstr "Portsmouth"
+
+msgid "Puerto Ayora on Santa Cruz, in the Galápagos Islands."
+msgstr "Puerto Ayora på Santa Cruz, på Galápagosøerne."
+
+msgctxt "place"
+msgid "Puerto Ayora"
+msgstr "Puerto Ayora"
+
+msgid "Pula, a harbour on the Adriatic Sea."
+msgstr "Pula, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Pula"
+msgstr "Pula"
+
+msgid "Uturoa on Raiatea, in the Society Islands."
+msgstr "Uturoa på Raiatea, på Selskabsøerne."
+
+msgctxt "place"
+msgid "Uturoa"
+msgstr "Uturoa"
+
+msgid "Iceland's capital on Faxaflói bay, far out in the North Atlantic."
+msgstr "Islands hovedstad ved Faxaflói, langt ude i Nordatlanten."
+
+msgctxt "place"
+msgid "Reykjavík"
+msgstr "Reykjavík"
+
+msgid "Rijeka, a harbour on the Adriatic Sea."
+msgstr "Rijeka, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Rijeka"
+msgstr "Rijeka"
+
+msgid "Rimini, a harbour on the Adriatic Sea."
+msgstr "Rimini, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Rimini"
+msgstr "Rimini"
+
+msgid "Rødvig, a small harbour on the Stevns coast of Zealand."
+msgstr "Rødvig, en lille havn på Stevns på Sjælland."
+
+msgctxt "place"
+msgid "Rødvig"
+msgstr "Rødvig"
+
+msgid "Rønne, the main harbour of Bornholm."
+msgstr "Rønne, Bornholms hovedhavn."
+
+msgctxt "place"
+msgid "Rønne"
+msgstr "Rønne"
+
+msgid "Rovinj, a harbour on the Adriatic Sea."
+msgstr "Rovinj, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Rovinj"
+msgstr "Rovinj"
+
+msgid "Rudkøbing, on the west side of Langeland."
+msgstr "Rudkøbing, på Langelands vestside."
+
+msgctxt "place"
+msgid "Rudkøbing"
+msgstr "Rudkøbing"
+
+msgid "Saint-Malo, a harbour on the English Channel."
+msgstr "Saint-Malo, en havn ved Den Engelske Kanal."
+
+msgctxt "place"
+msgid "Saint-Malo"
+msgstr "Saint-Malo"
+
+msgid "Saint-Nazaire, a harbour on the Bay of Biscay."
+msgstr "Saint-Nazaire, en havn ved Biscayabugten."
+
+msgctxt "place"
+msgid "Saint-Nazaire"
+msgstr "Saint-Nazaire"
+
+msgid "San Juan, Puerto Rico, under the old fortress walls."
+msgstr "San Juan, Puerto Rico, under de gamle fæstningsmure."
+
+msgctxt "place"
+msgid "San Juan"
+msgstr "San Juan"
+
+msgid "Santorini, an island harbour on the Aegean Sea."
+msgstr "Santorini, en øhavn i Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Santorini"
+msgstr "Santorini"
+
+msgid "Sète, a harbour on the Mediterranean."
+msgstr "Sète, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Sète"
+msgstr "Sète"
+
+msgid "Šibenik, a harbour on the Adriatic Sea."
+msgstr "Šibenik, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Šibenik"
+msgstr "Šibenik"
+
+msgid "Sines, a harbour on the Atlantic coast of Iberia."
+msgstr "Sines, en havn på Iberiens atlanterhavskyst."
+
+msgctxt "place"
+msgid "Sines"
+msgstr "Sines"
+
+msgid "Skagen, at the very top of Jutland, where two seas meet."
+msgstr "Skagen, på Jyllands yderste spids, hvor to have mødes."
+
+msgctxt "place"
+msgid "Skagen"
+msgstr "Skagen"
+
+msgid "Skiathos, an island harbour on the Aegean Sea."
+msgstr "Skiathos, en øhavn i Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Skiathos"
+msgstr "Skiathos"
+
+msgid "Sønderborg, on Als by the castle."
+msgstr "Sønderborg, på Als ved slottet."
+
+msgctxt "place"
+msgid "Sønderborg"
+msgstr "Sønderborg"
+
+msgid "Split, a harbour on the Adriatic Sea."
+msgstr "Split, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Split"
+msgstr "Split"
+
+msgid "St. George's, the old harbour town of Bermuda, alone in the western Atlantic."
+msgstr "St. George's, Bermudas gamle havneby, alene i det vestlige Atlanterhav."
+
+msgctxt "place"
+msgid "St. George's"
+msgstr "St. George's"
+
+msgid "St Helier, an island harbour on the English Channel."
+msgstr "St Helier, en øhavn i Den Engelske Kanal."
+
+msgctxt "place"
+msgid "St Helier"
+msgstr "St Helier"
+
+msgid "St Peter Port, an island harbour on the English Channel."
+msgstr "St Peter Port, en øhavn i Den Engelske Kanal."
+
+msgctxt "place"
+msgid "St Peter Port"
+msgstr "St Peter Port"
+
+msgid "Stavanger, a harbour on the Norwegian coast."
+msgstr "Stavanger, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Stavanger"
+msgstr "Stavanger"
+
+msgid "Stege, the little town of the island of Møn."
+msgstr "Stege, den lille by på Møn."
+
+msgctxt "place"
+msgid "Stege"
+msgstr "Stege"
+
+msgid "Strömstad, a harbour on the Norwegian coast."
+msgstr "Strömstad, en havn tæt på den norske kyst."
+
+msgctxt "place"
+msgid "Strömstad"
+msgstr "Strömstad"
+
+msgid "Sundsvall, a harbour on the Baltic Sea."
+msgstr "Sundsvall, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Sundsvall"
+msgstr "Sundsvall"
+
+msgid "Suva, the capital of Fiji, on Viti Levu."
+msgstr "Suva, Fijis hovedstad, på Viti Levu."
+
+msgctxt "place"
+msgid "Suva"
+msgstr "Suva"
+
+msgid "Svendborg, the sailing town of the South Funen Archipelago."
+msgstr "Svendborg, sejlerbyen i Det Sydfynske Øhav."
+
+msgctxt "place"
+msgid "Svendborg"
+msgstr "Svendborg"
+
+msgid "Svolvær, an island harbour on the Norwegian coast."
+msgstr "Svolvær, en øhavn ved den norske kyst."
+
+msgctxt "place"
+msgid "Svolvær"
+msgstr "Svolvær"
+
+msgid "Swansea, a harbour in the British Isles."
+msgstr "Swansea, en havn på De Britiske Øer."
+
+msgctxt "place"
+msgid "Swansea"
+msgstr "Swansea"
+
+msgid "Świnoujście, a harbour on the Baltic Sea."
+msgstr "Świnoujście, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Świnoujście"
+msgstr "Świnoujście"
+
+msgid "Syracuse, an island harbour on the Mediterranean."
+msgstr "Syrakus, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Syracuse"
+msgstr "Syrakus"
+
+msgid "Taiohae on Nuku Hiva, the landfall in the Marquesas after the long Pacific crossing."
+msgstr "Taiohae på Nuku Hiva, landkendingen på Marquesasøerne efter den lange tur over Stillehavet."
+
+msgctxt "place"
+msgid "Taiohae"
+msgstr "Taiohae"
+
+msgid "Tallinn, a harbour on the Baltic Sea."
+msgstr "Tallinn, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Tallinn"
+msgstr "Tallinn"
+
+msgid "Taranto, a harbour on the Ionian Sea."
+msgstr "Taranto, en havn ved Det Joniske Hav."
+
+msgctxt "place"
+msgid "Taranto"
+msgstr "Taranto"
+
+msgid "Thessaloniki, a harbour on the Aegean Sea."
+msgstr "Thessaloniki, en havn ved Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Thessaloniki"
+msgstr "Thessaloniki"
+
+msgid "Tórshavn, an island harbour in the North Atlantic."
+msgstr "Tórshavn, en øhavn i Nordatlanten."
+
+msgctxt "place"
+msgid "Tórshavn"
+msgstr "Tórshavn"
+
+msgid "Toulon, a harbour on the Mediterranean."
+msgstr "Toulon, en havn ved Middelhavet."
+
+msgctxt "place"
+msgid "Toulon"
+msgstr "Toulon"
+
+msgid "Trapani, an island harbour on the Mediterranean."
+msgstr "Trapani, en øhavn i Middelhavet."
+
+msgctxt "place"
+msgid "Trapani"
+msgstr "Trapani"
+
+msgid "Tromsø, a harbour on the Norwegian coast."
+msgstr "Tromsø, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Tromsø"
+msgstr "Tromsø"
+
+msgid "Trondheim, a harbour on the Norwegian coast."
+msgstr "Trondheim, en havn på den norske kyst."
+
+msgctxt "place"
+msgid "Trondheim"
+msgstr "Trondheim"
+
+msgid "Vaasa, a harbour on the Baltic Sea."
+msgstr "Vaasa, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Vaasa"
+msgstr "Vaasa"
+
+msgid "Venice, a harbour on the Adriatic Sea."
+msgstr "Venedig, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Venice"
+msgstr "Venedig"
+
+msgid "Visby, an island harbour on the Baltic Sea."
+msgstr "Visby, en øhavn i Østersøen."
+
+msgctxt "place"
+msgid "Visby"
+msgstr "Visby"
+
+msgid "Vlissingen, a harbour on the North Sea."
+msgstr "Vlissingen, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Vlissingen"
+msgstr "Vlissingen"
+
+msgid "Vlorë, a harbour on the Adriatic Sea."
+msgstr "Vlorë, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Vlorë"
+msgstr "Vlorë"
+
+msgid "Volos, a harbour on the Aegean Sea."
+msgstr "Volos, en havn ved Det Ægæiske Hav."
+
+msgctxt "place"
+msgid "Volos"
+msgstr "Volos"
+
+msgid "Vordingborg, by the bridges to Falster and Møn."
+msgstr "Vordingborg, ved broerne til Falster og Møn."
+
+msgctxt "place"
+msgid "Vordingborg"
+msgstr "Vordingborg"
+
+msgid "Wellington, New Zealand's capital, on Cook Strait."
+msgstr "Wellington, New Zealands hovedstad, ved Cookstrædet."
+
+msgctxt "place"
+msgid "Wellington"
+msgstr "Wellington"
+
+msgid "Whangarei, up its harbour in Northland, New Zealand."
+msgstr "Whangarei, inderst i sin havn i Northland, New Zealand."
+
+msgctxt "place"
+msgid "Whangarei"
+msgstr "Whangarei"
+
+msgid "Whitby, a harbour on the North Sea."
+msgstr "Whitby, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Whitby"
+msgstr "Whitby"
+
+msgid "Wick, a harbour on the North Sea."
+msgstr "Wick, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Wick"
+msgstr "Wick"
+
+msgid "Willemstad, Curaçao, behind its colourful waterfront."
+msgstr "Willemstad, Curaçao, bag sin farverige havnefront."
+
+msgctxt "place"
+msgid "Willemstad"
+msgstr "Willemstad"
+
+msgid "Ystad, a harbour on the Baltic Sea."
+msgstr "Ystad, en havn ved Østersøen."
+
+msgctxt "place"
+msgid "Ystad"
+msgstr "Ystad"
+
+msgid "Zadar, a harbour on the Adriatic Sea."
+msgstr "Zadar, en havn ved Adriaterhavet."
+
+msgctxt "place"
+msgid "Zadar"
+msgstr "Zadar"
+
+msgid "Zakynthos, an island harbour on the Ionian Sea."
+msgstr "Zakynthos, en øhavn i Det Joniske Hav."
+
+msgctxt "place"
+msgid "Zakynthos"
+msgstr "Zakynthos"
+
+msgid "Zeebrugge, a harbour on the North Sea."
+msgstr "Zeebrugge, en havn ved Nordsøen."
+
+msgctxt "place"
+msgid "Zeebrugge"
+msgstr "Zeebrugge"
+
+msgid "Als"
+msgstr "Als"
+
+msgid "Bornholm"
+msgstr "Bornholm"
+
+msgid "Danish waters"
+msgstr "Danske farvande"
+
+msgid "Falster"
+msgstr "Falster"
+
+msgid "Fehmarn Belt"
+msgstr "Femern Bælt"
+
+msgid "Langeland"
+msgstr "Langeland"
+
+msgid "Little Belt"
+msgstr "Lillebælt"
+
+msgid "Lolland"
+msgstr "Lolland"
+
+msgid "Samsø"
+msgstr "Samsø"
+
+msgid "Smålandsfarvandet"
+msgstr "Smålandsfarvandet"
+
+msgid "South Funen Archipelago"
+msgstr "Det Sydfynske Øhav"
+
+msgid "ARCTIC OCEAN"
+msgstr "NORDLIGE ISHAV"
+
+msgid "Azores"
+msgstr "Azorerne"
+
+msgid "Canary Islands"
+msgstr "De Kanariske Øer"
+
+msgid "Cape Verde"
+msgstr "Kap Verde"
+
+msgid "Caribbean Sea"
+msgstr "Det Caribiske Hav"
+
+msgid "Cook Islands"
+msgstr "Cookøerne"
+
+msgid "Coral Sea"
+msgstr "Koralhavet"
+
+msgid "Fiji"
+msgstr "Fiji"
+
+msgid "French Polynesia"
+msgstr "Fransk Polynesien"
+
+msgid "Galápagos"
+msgstr "Galápagos"
+
+msgid "Gulf of Mexico"
+msgstr "Den Mexicanske Golf"
+
+msgid "Hawaii"
+msgstr "Hawaii"
+
+msgid "INDIAN OCEAN"
+msgstr "DET INDISKE OCEAN"
+
+msgid "Lesser Antilles"
+msgstr "De Små Antiller"
+
+msgid "Madeira"
+msgstr "Madeira"
+
+msgid "Marquesas"
+msgstr "Marquesasøerne"
+
+msgid "NEW ZEALAND"
+msgstr "NEW ZEALAND"
+
+msgid "NORTH AMERICA"
+msgstr "NORDAMERIKA"
+
+msgid "NORTH ATLANTIC OCEAN"
+msgstr "NORDATLANTEN"
+
+msgid "NORTH PACIFIC OCEAN"
+msgstr "NORDLIGE STILLEHAV"
+
+msgid "New Caledonia"
+msgstr "Ny Kaledonien"
+
+msgid "SOUTH AMERICA"
+msgstr "SYDAMERIKA"
+
+msgid "SOUTH ATLANTIC OCEAN"
+msgstr "SYDATLANTEN"
+
+msgid "SOUTH PACIFIC OCEAN"
+msgstr "SYDLIGE STILLEHAV"
+
+msgid "SOUTHERN OCEAN"
+msgstr "SYDLIGE ISHAV"
+
+msgid "Society Islands"
+msgstr "Selskabsøerne"
+
+msgid "Tasman Sea"
+msgstr "Tasmanhavet"
+
+msgid "Tonga"
+msgstr "Tonga"
+
+msgid "Tuamotu"
+msgstr "Tuamotu"
+
+msgid "The world"
+msgstr "Verden"
+
+msgid "A Captain of Distinction"
+msgstr "En fornem kaptajn"
+
+msgid "A thousand miles"
+msgstr "Tusind sømil"
+
+msgid "Across the Western Baltic"
+msgstr "Over den vestlige Østersø"
+
+msgid "Arrive safely after sailing through dangerous or severe weather."
+msgstr "Ankom sikkert efter at have sejlet i farligt eller hårdt vejr."
+
+msgid "Blue-water passage"
+msgstr "Oceanpassage"
+
+msgid "Captain No-Hat"
+msgstr "Kaptajn Uden-Hue"
+
+msgid "Cast off"
+msgstr "Kast los"
+
+msgid "Complete 5 voyages."
+msgstr "Gennemfør 5 sejladser."
+
+msgid "Complete a passage of at least 150 nm without any damage to the boat."
+msgstr "Gennemfør en passage på mindst 150 sm uden skader på båden."
+
+msgid "Complete a passage of at least 300 nm. Paid for every such passage."
+msgstr "Gennemfør en passage på mindst 300 sm. Betales for hver sådan passage."
+
+msgid "Complete a single passage of at least 200 nm."
+msgstr "Gennemfør en enkelt passage på mindst 200 sm."
+
+msgid "Complete a single passage of at least 500 nm."
+msgstr "Gennemfør en enkelt passage på mindst 500 sm."
+
+msgid "Complete your first voyage: sail from one harbour to another and moor there."
+msgstr "Gennemfør din første sejlads: sejl fra én havn til en anden, og fortøj der."
+
+msgid "Harbour hopper"
+msgstr "Havnehopper"
+
+msgid "Hat Trick"
+msgstr "Hattrick"
+
+msgid "Heavy weather"
+msgstr "Hårdt vejr"
+
+msgid "Hold Onto Your Hat"
+msgstr "Hold fast på huen"
+
+msgid "Long haul"
+msgstr "Langtur"
+
+msgid "Lost a brand-new captain's hat within five minutes of buying it."
+msgstr "Mistede en splinterny kaptajnshue under fem minutter efter købet."
+
+msgid "Lost a captain's hat at sea with no land within 20 nm. It suits the ocean."
+msgstr "Mistede en kaptajnshue på havet uden land inden for 20 sm. Den klæder havet."
+
+msgid "Moor in a harbour you have never visited before. Paid for every new harbour."
+msgstr "Fortøj i en havn, du aldrig har besøgt. Betales for hver ny havn."
+
+msgid "New horizons"
+msgstr "Nye horisonter"
+
+msgid "Not a scratch"
+msgstr "Ikke en skramme"
+
+msgid "Offshore passage"
+msgstr "Havpassage"
+
+msgid "Regular passages"
+msgstr "Faste passager"
+
+msgid "Sail 1,000 nautical miles in all."
+msgstr "Sejl 1.000 sømil i alt."
+
+msgid "Sail 100 nautical miles in all."
+msgstr "Sejl 100 sømil i alt."
+
+msgid "Sail to Kiel and moor there."
+msgstr "Sejl til Kiel, og fortøj der."
+
+msgid "Sailed through dangerous weather with your hat on deck, and arrived still owning it."
+msgstr "Sejlede gennem farligt vejr med huen på dækket og har den stadig ved ankomst."
+
+msgid "Spent €100 on replacement captain's hats. The grocer knows you by name."
+msgstr "Brugte 100 € på nye kaptajnshuer. Købmanden kender dig ved navn."
+
+msgid "Ten voyages completed without ever losing your original captain's hat."
+msgstr "Ti sejladser gennemført uden at miste din første kaptajnshue."
+
+msgid "The Hat Tax"
+msgstr "Hueskatten"
+
+msgid "The Last Straw"
+msgstr "Bægeret flød over"
+
+msgid "The Sea Wears a Hat Now"
+msgstr "Nu går havet med hue"
+
+msgid "The first hundred miles"
+msgstr "De første hundrede sømil"
+
+msgid "The sea has claimed its most important trophy."
+msgstr "Havet har taget sit vigtigste trofæ."
+
+msgid "Three captain's hats lost to the wind. The gulls have started a collection."
+msgstr "Tre kaptajnshuer tabt til vinden. Mågerne har startet en samling."
+
+msgid "Visit 10 different harbours."
+msgstr "Besøg 10 forskellige havne."
+
+msgid "Visit 5 different harbours (your start harbour counts)."
+msgstr "Besøg 5 forskellige havne (din starthavn tæller med)."
+
+msgid "Well travelled"
+msgstr "Berejst"
+
+msgid "26 ft pocket cruiser"
+msgstr "26 fods lommekrydser"
+
+msgid "40 ft cruising catamaran"
+msgstr "40 fods tursejler-katamaran"
+
+msgid "36 ft cruising trimaran"
+msgstr "36 fods tursejler-trimaran"
+
+msgid "33 ft cruising sloop"
+msgstr "33 fods tursejler-slup"
+
+msgid "Arctic Wanderer 26"
+msgstr "Arctic Wanderer 26"
+
+msgid "A small, sturdy 26 ft sloop: your first boat. A tiller, a snug cockpit and one cosy cabin. Slower than the bigger boats, but seaworthy."
+msgstr "En lille, solid 26 fods slup: din første båd. Rorpind, lun cockpit og én hyggelig kahyt. Langsommere end de større både, men sødygtig."
+
+msgid "Clam 40"
+msgstr "Clam 40"
+
+msgid "A spacious 40 ft cruising catamaran: two hulls, a wide bridgedeck saloon and room to spread out. Fast and stable reaching, less keen to point upwind."
+msgstr "En rummelig 40 fods katamaran: to skrog, bred salon på broen og plads til at brede sig. Hurtig og stabil på slør, mindre glad for kryds."
+
+msgid "Frogleap 36"
+msgstr "Frogleap 36"
+
+msgid "A light 36 ft cruising trimaran: a slim central hull between two floats. Quick in a breeze and good upwind, with a snug cabin in the main hull."
+msgstr "En let 36 fods trimaran: slankt midterskrog mellem to flydere. Hurtig i frisk vind og god på kryds, med lun kahyt i hovedskroget."
+
+msgid "Wing 33"
+msgstr "Wing 33"
+
+msgid "A sturdy 33 ft cruising sloop, a step up from the starter boat. Easy to handle, comfortable at sea and happy on every point of sail."
+msgstr "En solid 33 fods slup, et trin op fra startbåden. Let at håndtere, behagelig til søs og glad på alle kurser."
+
+msgid "Aegean (Meltemi)"
+msgstr "Ægæerhavet (Meltemi)"
+
+msgid "Atlantic doldrums"
+msgstr "Atlantiske stillebælte"
+
+msgid "Australian region"
+msgstr "Australske region"
+
+msgid "Baltic"
+msgstr "Østersøen"
+
+msgid "Bay of Bengal"
+msgstr "Den Bengalske Bugt"
+
+msgid "Bay of Biscay and Iberian Atlantic"
+msgstr "Biscayen og iberisk Atlanterhav"
+
+msgid "Bay of Biscay coast"
+msgstr "Biscayens kyst"
+
+msgid "Caribbean"
+msgstr "Caribien"
+
+msgid "Central and eastern Mediterranean"
+msgstr "Midt- og østlige Middelhav"
+
+msgid "Channel and southern North Sea"
+msgstr "Kanalen og sydlige Nordsø"
+
+msgid "Eastern North Pacific"
+msgstr "Østlige Nordstillehav"
+
+msgid "Eastern Pacific off Panama"
+msgstr "Østlige Stillehav ud for Panama"
+
+msgid "Gulf of Lion (Mistral)"
+msgstr "Lionbugten (Mistral)"
+
+msgid "North Atlantic"
+msgstr "Nordatlanten"
+
+msgid "North Atlantic approaches"
+msgstr "Nordatlantiske tilgange"
+
+msgid "North Indian Ocean"
+msgstr "Nordlige Indiske Ocean"
+
+msgid "North Pacific, east of the Date Line"
+msgstr "Nordstillehavet, øst for datolinjen"
+
+msgid "North Pacific, west of the Date Line"
+msgstr "Nordstillehavet, vest for datolinjen"
+
+msgid "North Sea and Norwegian Sea"
+msgstr "Nordsøen og Norskehavet"
+
+msgid "South Indian Ocean"
+msgstr "Sydlige Indiske Ocean"
+
+msgid "South Pacific"
+msgstr "Sydstillehavet"
+
+msgid "South Pacific convergence zone, east"
+msgstr "Sydstillehavets konvergenszone, øst"
+
+msgid "South Pacific convergence zone, west"
+msgstr "Sydstillehavets konvergenszone, vest"
+
+msgid "Southern Baltic"
+msgstr "Sydlige Østersø"
+
+msgid "Southern Ocean, South Atlantic"
+msgstr "Sydhavet, Sydatlanten"
+
+msgid "Southern Ocean, South Pacific"
+msgstr "Sydhavet, Sydstillehavet"
+
+msgid "Southern Ocean, south of Africa and Australia"
+msgstr "Sydhavet, syd for Afrika og Australien"
+
+msgid "Western Mediterranean"
+msgstr "Vestlige Middelhav"
+
+msgid "Western North Atlantic"
+msgstr "Vestlige Nordatlant"
+
+msgid "Western North Pacific"
+msgstr "Vestlige Nordstillehav"
+
+msgid "Western Pacific warm pool"
+msgstr "Vestlige Stillehavs varmepøl"
+
+msgid "Adriatic"
+msgstr "Adriaterhavet"
+
+msgid "Alboran Sea"
+msgstr "Alboranhavet"
+
+msgid "Anatolia inland"
+msgstr "Anatolien, indland"
+
+msgid "Bay of Bengal monsoon"
+msgstr "Monsun i Den Bengalske Bugt"
+
+msgid "Benguela"
+msgstr "Benguela"
+
+msgid "Bermuda (Azores high)"
+msgstr "Bermuda (Azorerhøjet)"
+
+msgid "California coast"
+msgstr "Californiens kyst"
+
+msgid "Canary Islands (Portuguese trades)"
+msgstr "De Kanariske Øer (portugisisk passat)"
+
+msgid "Cape Verde trades"
+msgstr "Kap Verde-passat"
+
+msgid "Caribbean trades"
+msgstr "Caribisk passat"
+
+msgid "Central Baltic"
+msgstr "Midterste Østersø"
+
+msgid "Central Europe inland"
+msgstr "Centraleuropa, indland"
+
+msgid "Central North Sea"
+msgstr "Midterste Nordsø"
+
+msgid "Danish belts"
+msgstr "Bælterne"
+
+msgid "Eastern Europe inland"
+msgstr "Østeuropa, indland"
+
+msgid "Faroes"
+msgstr "Færøerne"
+
+msgid "Fiji and Tonga"
+msgstr "Fiji og Tonga"
+
+msgid "Galapagos"
+msgstr "Galápagos"
+
+msgid "Galicia"
+msgstr "Galicien"
+
+msgid "Gulf of Cadiz"
+msgstr "Cádizbugten"
+
+msgid "Gulf of Finland"
+msgstr "Den Finske Bugt"
+
+msgid "Iberia inland"
+msgstr "Iberien, indland"
+
+msgid "Iceland"
+msgstr "Island"
+
+msgid "Indian Ocean south-west monsoon"
+msgstr "Indiske Ocean, sydvestmonsun"
+
+msgid "Levantine Sea"
+msgstr "Levantinske Hav"
+
+msgid "Ligurian Sea"
+msgstr "Liguriske Hav"
+
+msgid "Mid Atlantic"
+msgstr "Midtatlanten"
+
+msgid "New Zealand"
+msgstr "New Zealand"
+
+msgid "North African coast"
+msgstr "Nordafrikas kyst"
+
+msgid "North Atlantic west of Ireland"
+msgstr "Nordatlanten vest for Irland"
+
+msgid "North Cape"
+msgstr "Nordkap"
+
+msgid "Northern North Sea"
+msgstr "Nordlige Nordsø"
+
+msgid "Panama, Pacific side"
+msgstr "Panama, Stillehavssiden"
+
+msgid "Portuguese trades"
+msgstr "Portugisisk passat"
+
+msgid "Scandinavia inland"
+msgstr "Skandinavien, indland"
+
+msgid "Southern North Sea"
+msgstr "Sydlige Nordsø"
+
+msgid "Strait of Sicily"
+msgstr "Sicilienstrædet"
+
+msgid "Western Australia"
+msgstr "Vestaustralien"
+
+msgid "Western Europe inland"
+msgstr "Vesteuropa, indland"
+
+msgid "The anchor holds. The sea is quiet."
+msgstr "Ankeret holder. Havet er stille."
+
+msgid "The boat settles to her anchor."
+msgstr "Båden lægger sig til rette for sit anker."
+
+msgid "For now, there is nowhere you need to be."
+msgstr "Lige nu er der ingen steder, du skal være."
+
+msgid "A quiet evening aboard."
+msgstr "En stille aften om bord."
+
+msgid "The boat rocks gently at anchor. The light goes golden."
+msgstr "Båden vugger blidt for anker. Lyset bliver gyldent."
+
+msgid "Evening at anchor. The light goes soft over the water."
+msgstr "Aften for anker. Lyset bliver blødt over vandet."
+
+msgid "Night at anchor. Only the water talks against the hull."
+msgstr "Nat for anker. Kun vandet taler mod skroget."
+
+msgid "A new day aboard. The anchor held all night."
+msgstr "En ny dag om bord. Ankeret holdt hele natten."
+
+msgid "You wake to the slap of small waves. Still right where you left her."
+msgstr "Du vågner ved små bølgers klask. Stadig lige hvor du forlod hende."
+
+msgid "Morning at anchor. The water is bright and still."
+msgstr "Morgen for anker. Vandet er lyst og stille."
+
+msgid "The cat is curled up for the night and purrs at your touch."
+msgstr "Katten ligger sammenrullet for natten og spinder ved dit strøg."
+
+msgid "The dog thumps its tail once and goes back to dozing."
+msgstr "Hunden dunker halen én gang og døser videre."
+
+msgid "Fish%d"
+msgstr "Fisk%d"
+
+msgid "No safe approach: the boat cannot get in there from open water."
+msgstr "Ingen sikker indsejling: båden kan ikke komme derind fra åbent vand."
+
+msgid "Too much wind to anchor safely (%d kn)."
+msgstr "For meget vind til at ankre sikkert (%d kn)."
+
+msgid "Too shallow for the boat here."
+msgstr "For lavt vand til båden her."
+
+msgid "Too much wind for the normal anchor (%d kn)."
+msgstr "For meget vind til det normale anker (%d kn)."
+
+msgid "Deep water (%s, %s): too deep for the normal anchor to reach the bottom.%s"
+msgstr "Dybt vand (%s, %s): for dybt til, at det normale anker når bunden.%s"
+
+msgid " A Magic Anchor could hold here."
+msgstr " Et Magisk anker kunne holde her."
+
+msgid "Fair holding"
+msgstr "Holder nogenlunde"
+
+msgid "Holding well"
+msgstr "Holder godt"
+
+msgid "Anchor dragging"
+msgstr "Ankeret glider"
+
+msgid "Poor holding"
+msgstr "Holder dårligt"
+
+msgid "Magic Anchor: "
+msgstr "Magisk anker: "
+
+msgid "Magic Anchor, open sea (%s): it will hold the boat's position, but there is no shelter out here from wind or waves."
+msgstr "Magisk anker, åbent hav (%s): det holder bådens position, men her er intet læ for vind eller bølger."
+
+msgid "Land or unsuitable water."
+msgstr "Land eller uegnet vand."
+
+msgid "Depth %s (%s)."
+msgstr "Dybde %s (%s)."
+
+msgid "Too close"
+msgstr "For tæt på"
+
+msgid "Too close to the shore for the boat. "
+msgstr "For tæt på kysten for båden. "
+
+msgid "No safe approach from open water. "
+msgstr "Ingen sikker indsejling fra åbent vand. "
+
+msgid "Partly sheltered from the current wind."
+msgstr "Delvis i læ for den aktuelle vind."
+
+msgid "Sheltered from the current wind."
+msgstr "I læ for den aktuelle vind."
+
+msgid "Coast exposed to the current wind."
+msgstr "Kysten er åben mod den aktuelle vind."
+
+msgid "Open sea: no shelter."
+msgstr "Åbent hav: intet læ."
+
+msgid "Suitable for ordinary anchoring. %s %s"
+msgstr "Egnet til almindelig ankring. %s %s"
+
+msgid " (fit one free at any boatyard)"
+msgstr " (monteres gratis på ethvert bådeværft)"
+
+msgid "Deep water: Magic Anchor required%s. %s %s"
+msgstr "Dybt vand: Magisk anker kræves%s. %s %s"
+
+msgid "Too close to the shore for the boat: keep a little further off."
+msgstr "For tæt på kysten for båden: hold dig lidt længere ude."
+
+msgid "Sailing on along the course."
+msgstr "Sejler videre langs kursen."
+
+msgid "Remote work needs a steady connection: moor in a harbour first."
+msgstr "Fjernarbejde kræver en stabil forbindelse: fortøj i en havn først."
+
+msgid "You worked %d h and earned %s. It is %s. Funds: %s.%s"
+msgstr "Du arbejdede %d t og tjente %s. Klokken er %s. Midler: %s.%s"
+
+msgid "  Time is still paused."
+msgstr "  Tiden står stadig stille."
+
+msgid "Arrived in %s."
+msgstr "Ankommet til %s."
+
+msgid "New harbour in the Captain's Log: %s (%d of %d visited)."
+msgstr "Ny havn i Logbogen: %s (%d af %d besøgt)."
+
+msgid "Secret achievement: %s. %s  +%d renown"
+msgstr "Hemmelig bedrift: %s. %s  +%d ry"
+
+msgid "+%d renown: %s."
+msgstr "+%d ry: %s."
+
+msgid "%s %s A new one is sold at the harbour grocery store."
+msgstr "%s %s Du kan købe en ny hos havnens købmand."
+
+msgid "Travel update published: %d renown earned you %s. Funds: %s."
+msgstr "Rejseopdatering udgivet: %d ry gav dig %s. Midler: %s."
+
+msgid "Interactable"
+msgstr "Interaktivt"
+
+msgid "Interaction areas: %s"
+msgstr "Interaktionsområder: %s"
+
+msgid "The boatyard is only open while you are moored in harbour."
+msgstr "Bådeværftet har kun åbent, mens du er fortøjet i havn."
+
+msgid "Welcome aboard the %s."
+msgstr "Velkommen om bord på %s."
+
+msgid "There is no saved game to continue."
+msgstr "Der er intet gemt spil at fortsætte."
+
+msgid "Load this game?"
+msgstr "Indlæs dette spil?"
+
+msgid "Progress since your last save will be lost."
+msgstr "Fremskridt siden sidst du gemte, går tabt."
+
+msgid "Could not load %s. %s"
+msgstr "Kunne ikke indlæse %s. %s"
+
+msgid "Loaded %s."
+msgstr "Indlæste %s."
+
+msgid "There is no game to save."
+msgstr "Der er intet spil at gemme."
+
+msgid "You can quicksave aboard the boat."
+msgstr "Du kan lyngemme om bord på båden."
+
+msgid "Close the open window to quicksave."
+msgstr "Luk det åbne vindue for at lyngemme."
+
+msgid "Stop the Long Passage to quicksave."
+msgstr "Stop den Lange passage for at lyngemme."
+
+msgid "Quicksaved (F9 to load)."
+msgstr "Lyngemt (F9 for at indlæse)."
+
+msgid "Quicksave failed (%s). The previous quicksave was kept."
+msgstr "Lyngem mislykkedes (%s). Det forrige lyngem er bevaret."
+
+msgid "No quicksave yet. Press F5 aboard to quicksave."
+msgstr "Intet lyngem endnu. Tryk F5 om bord for at lyngemme."
+
+msgid "Load the quicksave?"
+msgstr "Indlæs lyngemmet?"
+
+msgid "Return to main menu?"
+msgstr "Tilbage til hovedmenuen?"
+
+msgid "Leave without saving"
+msgstr "Gå uden at gemme"
+
+msgid "Import Next Harbor saves?"
+msgstr "Importér gemte spil fra Next Harbor?"
+
+msgid "%d save from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten."
+msgid_plural "%d saves from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten."
+msgstr[0] "%d gemt spil fra Next Harbor, spillets tidligere navn, kopieres til ledige pladser. Originalerne bliver, hvor de er, og ingen brugt plads overskrives."
+msgstr[1] "%d gemte spil fra Next Harbor, spillets tidligere navn, kopieres til ledige pladser. Originalerne bliver, hvor de er, og ingen brugt plads overskrives."
+
+msgid "%d saves from Next Harbor, the game's earlier name, will be copied into free slots. The originals stay where they are, and no slot that is in use is overwritten."
+msgstr "%d gemte spil fra Next Harbor, spillets tidligere navn, kopieres til ledige pladser. Originalerne bliver, hvor de er, og ingen brugt plads overskrives."
+
+msgid "Import"
+msgstr "Importér"
+
+msgid "The chartplotter shows on deck while underway."
+msgstr "Kortplotteren vises på dækket under sejlads."
+
+msgid "Go below"
+msgstr "Gå under dæk"
+
+msgid "Go on deck"
+msgstr "Gå op på dæk"
+
+msgid "Reel in!"
+msgstr "Hal ind!"
+
+msgid "Sleep"
+msgstr "Sov"
+
+msgid "World map"
+msgstr "Verdenskort"
+
+msgid "Chart table"
+msgstr "Kortbord"
+
+msgid "Provisions"
+msgstr "Proviant"
+
+msgid "Chart plotter"
+msgstr "Kortplotter"
+
+msgid "Sailing details"
+msgstr "Sejldetaljer"
+
+msgid "Radar"
+msgstr "Radar"
+
+msgid "Trim sails"
+msgstr "Trim sejl"
+
+msgid "Anchor"
+msgstr "Anker"
+
+msgid "Sail on from the anchorage"
+msgstr "Sejl videre fra ankerpladsen"
+
+msgid "Set sail"
+msgstr "Sæt sejl"
+
+msgid "Charts"
+msgstr "Søkort"
+
+msgid "Fishing rod"
+msgstr "Fiskestang"
+
+msgid "Coffee in the holder"
+msgstr "Kaffe i holderen"
+
+msgid "Set coffee down"
+msgstr "Sæt kaffen fra dig"
+
+msgid "Finish the coffee"
+msgstr "Drik kaffen ud"
+
+msgid "Take your coffee"
+msgstr "Tag din kaffe"
+
+msgid "Captain's Log"
+msgstr "Logbogen"
+
+msgid "At anchor the sails are down."
+msgstr "For anker er sejlene nede."
+
+msgid "Sail trim is for sailing: set sail first."
+msgstr "Sejltrim er til sejlads: sæt sejl først."
+
+msgid "In the cabin"
+msgstr "I kahytten"
+
+msgid "At anchor"
+msgstr "For anker"
+
+msgid "At the helm"
+msgstr "Ved roret"
+
+msgid "On deck"
+msgstr "På dækket"
+
+msgid "Leave the chart?"
+msgstr "Forlad søkortet?"
+
+msgid "Your course changes have not been applied. The current course stays as it is."
+msgstr "Dine kursændringer er ikke anvendt. Den nuværende kurs forbliver uændret."
+
+msgid "Discard changes"
+msgstr "Kassér ændringer"
+
+msgid "Keep editing"
+msgstr "Fortsæt redigering"
+
+msgid "Plot a course at the chart table before setting sail."
+msgstr "Afsæt en kurs ved kortbordet, før du sætter sejl."
+
+msgid " via %d waypoint"
+msgid_plural " via %d waypoints"
+msgstr[0] " via %d rutepunkt"
+msgstr[1] " via %d rutepunkter"
+
+msgid "Set sail for %s?"
+msgstr "Sæt sejl mod %s?"
+
+msgid "%d nm%s, about %s with the expected wind (estimate).\n\n%s"
+msgstr "%d sm%s, cirka %s med den ventede vind (skøn).\n\n%s"
+
+msgid "Underway to %s. The autopilot holds the course."
+msgstr "På vej til %s. Autopiloten holder kursen."
+
+msgid "At anchor. Raise the anchor at the windlass on the foredeck before sailing on."
+msgstr "For anker. Let ankeret ved ankerspillet på fordækket, før du sejler videre."
+
+msgid "Sailing conditions favourable (%s). Sails set%s, engine stopped."
+msgstr "Gode sejlforhold (%s). Sejl sat%s, motor stoppet."
+
+msgid " with the spinnaker"
+msgstr " med spileren"
+
+msgid "Becalmed or head to wind (%s). Sails furled, engine started."
+msgstr "Vindstille eller vind lige imod (%s). Sejl rullet ind, motor startet."
+
+msgid "Insufficient sailing performance (%s). Sails furled, engine started."
+msgstr "For ringe sejlfart (%s). Sejl rullet ind, motor startet."
+
+msgid "Light wind (%s). The sails stay up a little longer; the engine starts if it does not improve."
+msgstr "Let vind (%s). Sejlene bliver lidt længere; motoren starter, hvis det ikke bedres."
+
+msgid "Sails are drawing well (%s). No change needed."
+msgstr "Sejlene trækker godt (%s). Ingen ændring nødvendig."
+
+msgid "The wind is filling in (%s). The engine runs a little longer before the sails go up."
+msgstr "Vinden tiltager (%s). Motoren kører lidt længere, før sejlene sættes."
+
+msgid "Insufficient sailing performance (%s). Continuing under engine."
+msgstr "For ringe sejlfart (%s). Fortsætter for motor."
+
+msgid "Apply or discard your course changes before sleeping."
+msgstr "Anvend eller kassér dine kursændringer, før du sover."
+
+msgid "Woken by a weather warning"
+msgstr "Vækket af en vejrvarsel"
+
+msgid "Woken by the bell on the rod"
+msgstr "Vækket af klokken på stangen"
+
+msgid "Woken by the anchor alarm"
+msgstr "Vækket af ankeralarmen"
+
+msgid "Woken: the boat has arrived"
+msgstr "Vækket: båden er ankommet"
+
+msgid "Woken at the anchorage"
+msgstr "Vækket ved ankerpladsen"
+
+msgid "Woken by a traffic warning"
+msgstr "Vækket af en trafikvarsel"
+
+msgid "Woken by a call on the radio"
+msgstr "Vækket af et opkald på radioen"
+
+msgid "You were woken after %s by a weather warning. It is %s.%s"
+msgstr "Du blev vækket efter %s af en vejrvarsel. Klokken er %s.%s"
+
+msgid "You were woken after %s by the bell on the rod: a fish is on! Go up to the rod. It is %s.%s"
+msgstr "Du blev vækket efter %s af klokken på stangen: fisk på! Gå op til stangen. Klokken er %s.%s"
+
+msgid "You were woken after %s by the anchor alarm: %s. Go up to the windlass. It is %s.%s"
+msgstr "Du blev vækket efter %s af ankeralarmen: %s. Gå op til ankerspillet. Klokken er %s.%s"
+
+msgid "You were woken after %s: the boat has arrived. It is %s.%s"
+msgstr "Du blev vækket efter %s: båden er ankommet. Klokken er %s.%s"
+
+msgid "You were woken after %s: we've arrived at our anchorage. It is %s.%s"
+msgstr "Du blev vækket efter %s: vi er nået frem til ankerpladsen. Klokken er %s.%s"
+
+msgid "You were woken after %s by a traffic warning. Go up on deck and keep a lookout. It is %s.%s"
+msgstr "Du blev vækket efter %s af en trafikvarsel. Gå op på dæk og hold udkig. Klokken er %s.%s"
+
+msgid "You were woken after %s by a call for assistance on the radio. It is %s.%s"
+msgstr "Du blev vækket efter %s af et nødopkald på radioen. Klokken er %s.%s"
+
+msgid "You slept %s. It is %s.%s"
+msgstr "Du sov %s. Klokken er %s.%s"
+
+msgid "The grocery store is in harbour; you are at sea."
+msgstr "Købmanden er i havnen; du er til søs."
+
+msgid "Fish on! Press R to reel in (the rod is on the stern rail)."
+msgstr "Fisk på! Tryk R for at hale ind (stangen sidder på hækrælingen)."
+
+msgid "The fish got away before you reached the rod. The line is still out."
+msgstr "Fisken slap væk, før du nåede stangen. Linen er stadig ude."
+
+msgid "While cooking: %s"
+msgstr "Mens du lavede mad: %s"
+
+msgid "a fish is on the line!"
+msgstr "en fisk hænger på linen!"
+
+msgid "a weather warning came in."
+msgstr "en vejrvarsel kom ind."
+
+msgid "the anchor alarm went."
+msgstr "ankeralarmen gik."
+
+msgid "Duplicate asset_id %s in %s (first kept: %s)."
+msgstr "Dublet-asset_id %s i %s (første beholdt: %s)."
+
+msgid "Duplicate output file %s for %s and %s."
+msgstr "Dublet-outputfil %s for %s og %s."
+
+msgid "%s lacks the column %s."
+msgstr "%s mangler kolonnen %s."
+
+msgid "%s line %d has %d fields, the header %d: skipped."
+msgstr "%s linje %d har %d felter, headeren %d: sprunget over."
+
+msgid "%s line %d has no asset_id or filename: skipped."
+msgstr "%s linje %d har intet asset_id eller filnavn: sprunget over."
+
+msgid "%s: replacements must be PNG files (%s)."
+msgstr "%s: erstatninger skal være PNG-filer (%s)."
+
+msgid "%s: %s could not be read as an image; the original art is kept."
+msgstr "%s: %s kunne ikke læses som billede; den originale grafik bevares."
+
+msgid "%s: %s %s; the original art is kept."
+msgstr "%s: %s %s; den originale grafik bevares."
+
+msgid "is %dx%d: draw it at about %dx%d (the 2x source size)"
+msgstr "er %dx%d: tegn den i cirka %dx%d (2x kildestørrelse)"
+
+msgid "Loop_%s"
+msgstr "Loop_%s"
+
+msgid "Music"
+msgstr "Musik"
+
+msgid "Ambience"
+msgstr "Stemning"
+
+msgid "OneShot%d"
+msgstr "OneShot%d"
+
+msgid "Music_"
+msgstr "Musik_"
+
+msgid "Captain's hat"
+msgstr "Kaptajnshue"
+
+msgid "Visual/BoomVisual"
+msgstr "Visual/BoomVisual"
+
+msgid "Visual/HeadSailVisual"
+msgstr "Visual/HeadSailVisual"
+
+msgid "Visual/MainSailVisual"
+msgstr "Visual/MainSailVisual"
+
+msgid "Visual/RiggingVisual"
+msgstr "Visual/RiggingVisual"
+
+msgid "Visual/SpinnakerVisual"
+msgstr "Visual/SpinnakerVisual"
+
+msgid "Companion"
+msgstr "Ledsager"
+
+msgid "The cup holder, just the size of a mug. Make a coffee in the galley."
+msgstr "Kopholderen, lige på størrelse med et krus. Lav kaffe i kabyssen."
+
+msgid "Snøvs gets a friendly look: your hands are full (hat and coffee)."
+msgstr "Snøvs får et venligt blik: dine hænder er fulde (hue og kaffe)."
+
+msgid "Take the helm"
+msgstr "Tag roret"
+
+msgid "GUEST PONTOON · %s"
+msgstr "GÆSTEPONTON · %s"
+
+msgid "Check sail configuration"
+msgstr "Tjek sejlføringen"
+
+msgid "Go ashore"
+msgstr "Gå i land"
+
+msgid "Put on captain's hat"
+msgstr "Tag kaptajnshuen på"
+
+msgid "GO ASHORE"
+msgstr "GÅ I LAND"
+
+msgid "Hang up captain's hat"
+msgstr "Hæng kaptajnshuen op"
+
+msgid "Look at the empty hat hook"
+msgstr "Se på den tomme huekrog"
+
+msgid "Fishing"
+msgstr "Fiskeri"
+
+msgid "Windlass"
+msgstr "Ankerspil"
+
+msgid "Cup holder"
+msgstr "Kopholder"
+
+msgid "Cook"
+msgstr "Lav mad"
+
+msgid "Cook a meal or make coffee"
+msgstr "Lav et måltid eller kaffe"
+
+msgid "Look at the trophy board"
+msgstr "Se på trofætavlen"
+
+msgid "Trophies"
+msgstr "Trofæer"
+
+msgid "Table"
+msgstr "Bord"
+
+msgid "Your coffee"
+msgstr "Din kaffe"
+
+msgid "Lighting"
+msgstr "Belysning"
+
+msgid "Ambient"
+msgstr "Omgivelser"
+
+msgid "Pedestal"
+msgstr "Søjle"
+
+msgid "Tiller"
+msgstr "Rorpind"
+
+msgid "Wheel"
+msgstr "Rat"
+
+msgid "Lamps"
+msgstr "Lamper"
+
+msgid "Hull"
+msgstr "Skrog"
+
+msgid "Lifeline"
+msgstr "Søgelænder"
+
+msgid "Galley"
+msgstr "Kabys"
+
+msgid "VBerth"
+msgstr "Forkahyt"
+
+msgid "Desk"
+msgstr "Pult"
+
+msgid "FOOD · WATER"
+msgstr "MAD · VAND"
+
+msgid "Mast"
+msgstr "Mast"
+
+msgid "Tack"
+msgstr "Hals"
+
+msgid "Traveller"
+msgstr "Skødevogn"
+
+msgid "Deck"
+msgstr "Dæk"
+
+msgid "Sails"
+msgstr "Sejl"
+
+msgid "Cabin"
+msgstr "Kahyt"
+
+msgid "Damage"
+msgstr "Skade"
+
+msgid "Sprite"
+msgstr "Sprite"
+
+msgid "bottom clean"
+msgstr "bunden er ren"
+
+msgid "some weed on the bottom"
+msgstr "lidt begroning på bunden"
+
+msgid "a good deal of growth on the bottom"
+msgstr "en del begroning på bunden"
+
+msgid "the bottom is badly fouled"
+msgstr "bunden er stærkt begroet"
+
+msgid "Hull %s, %s (%d day since the last haul-out)"
+msgid_plural "Hull %s, %s (%d days since the last haul-out)"
+msgstr[0] "Skrog %s, %s (%d dag siden sidste optagning)"
+msgstr[1] "Skrog %s, %s (%d dage siden sidste optagning)"
+
+msgid " (stainless rigging)"
+msgstr " (rustfri rigning)"
+
+msgid "Rig wear %d %%%s"
+msgstr "Rigslid %d %%%s"
+
+msgid "%d engine hours since the last service"
+msgstr "%d motortimer siden sidste service"
+
+msgid "Standard equipment"
+msgstr "Standardudstyr"
+
+msgid "Engine"
+msgstr "Motor"
+
+msgid "Equipment"
+msgstr "Udstyr"
+
+msgid "Hull and bottom"
+msgstr "Skrog og bund"
+
+msgid "Rigging and sails"
+msgstr "Rigning og sejl"
+
+msgid "Nothing urgent."
+msgstr "Intet hastende."
+
+msgid "A haul-out cleans the bottom; any boatyard can repair the hull."
+msgstr "En optagning renser bunden; alle bådeværfter kan reparere skroget."
+
+msgid "Any boatyard can service the rigging and sails."
+msgstr "Alle bådeværfter kan servicere rigning og sejl."
+
+msgid "Any boatyard can service the engine."
+msgstr "Alle bådeværfter kan servicere motoren."
+
+msgid "Fitted: %s"
+msgstr "Monteret: %s"
+
+msgid "While out: %s"
+msgstr "Under optagning: %s"
+
+msgid "Cosmetic wear"
+msgstr "Kosmetisk slid"
+
+msgid "Good"
+msgstr "God"
+
+msgid "Service recommended"
+msgstr "Service anbefales"
+
+msgid "Needs attention"
+msgstr "Kræver opmærksomhed"
+
+msgid "Repair hull and structure"
+msgstr "Reparér skrog og struktur"
+
+msgid "Rigging and sail service"
+msgstr "Service af rigning og sejl"
+
+msgid "Engine service"
+msgstr "Motorservice"
+
+msgid "Haul out"
+msgstr "Optagning"
+
+msgid "Food or water may run short: %s aboard for a passage of about %s."
+msgstr "Mad eller vand kan slippe op: %s om bord til en passage på cirka %s."
+
+msgid "At the grocery store you can stock up for a long passage: the %s stows up to %d days."
+msgstr "I købmanden kan du proviantere til en lang passage: %s rummer op til %d dage."
+
+msgid "This passage is longer than the %s can stow food and water for (%d days). A stop at a harbour on the way would break it up."
+msgstr "Passagen er længere end %s kan have mad og vand til (%d dage). Et stop i en havn undervejs vil dele den op."
+
+msgid "Enough food and water for the passage, with little to spare (%s)."
+msgstr "Nok mad og vand til passagen, men ikke meget i overskud (%s)."
+
+msgid "Food and water for %s."
+msgstr "Mad og vand til %s."
+
+msgid "%s expected on the route %s (wind up to %d kn). Waiting in harbour may be kinder."
+msgstr "%s ventet på ruten %s (vind op til %d kn). Det kan være rarere at vente i havn."
+
+msgid "A fresh to strong breeze on the way (up to %d kn) %s."
+msgstr "Frisk til hård vind undervejs (op til %d kn) %s."
+
+msgid "No rough weather foreseen in the next %d hours."
+msgstr "Intet hårdt vejr ventet de næste %d timer."
+
+msgid "No rough weather foreseen on the route."
+msgstr "Intet hårdt vejr ventet på ruten."
+
+msgid "The forecast reaches %d hours ahead; the weather further along the passage is not yet known."
+msgstr "Vejrudsigten rækker %d timer frem; vejret længere fremme på passagen kendes endnu ikke."
+
+msgid "An ocean passage of about %s. Long Passage time on deck lets the days go by."
+msgstr "En havpassage på cirka %s. Med Lang passage på dækket går dagene af sig selv."
+
+msgid "A passage of several days (about %s): the weather can change on the way."
+msgstr "En passage på flere dage (cirka %s): vejret kan skifte undervejs."
+
+msgid "An overnight passage (about %s). A rest before setting out helps."
+msgstr "En natsejlads (cirka %s). Lidt hvile før afgang hjælper."
+
+msgid "Ready to sail, with a few things to note."
+msgstr "Klar til at sejle, med et par ting at bemærke."
+
+msgid "Ready to sail."
+msgstr "Klar til at sejle."
+
+msgid "Worth a second thought before setting out."
+msgstr "Værd at tænke over en ekstra gang før afgang."
+
+msgid "The %s is a small boat: she is happiest making long or rough passages in settled weather."
+msgstr "%s er en lille båd: hun trives bedst med lange eller hårde passager i stabilt vejr."
+
+msgid "The %s is sound (%d %%)."
+msgstr "%s er i god stand (%d %%)."
+
+msgid "The hull is worn (%d %%). Fine for a short hop; a boatyard repair would be wise before a long passage."
+msgstr "Skroget er slidt (%d %%). Fint til et kort hop; en reparation på værftet er klog før en lang passage."
+
+msgid "The hull is damaged (%d %%). Rough weather would be hard on her; a repair first would be wise."
+msgstr "Skroget er beskadiget (%d %%). Hårdt vejr vil tage hårdt på hende; reparér hellere først."
+
+msgid "Weed on the bottom is slowing her a little; a haul-out would clean it."
+msgstr "Begroning på bunden bremser hende lidt; en optagning vil rense den."
+
+msgid "The rigging and sails are due a service; they lose a little speed and take weather harder."
+msgstr "Rigning og sejl trænger til service; de mister lidt fart og tåler vejret dårligere."
+
+msgid "The engine is due a service; it is a little slower under power."
+msgstr "Motoren trænger til service; den er lidt langsommere for motor."
+
+msgid "Placement"
+msgstr "Placering"
+
+msgid "Loading"
+msgstr "Indlæsning"
+
+msgid "Behaviour"
+msgstr "Adfærd"
+
+msgid "Pet"
+msgstr "Ae"
+
+msgid "Pet %s"
+msgstr "Ae %s"
+
+msgid "That work is not needed now."
+msgstr "Det arbejde er der ikke brug for nu."
+
+msgid "Not enough money: %s needed."
+msgstr "Ikke penge nok: %s kræves."
+
+msgid "No game is running."
+msgstr "Der kører intet spil."
+
+msgid "Unknown equipment."
+msgstr "Ukendt udstyr."
+
+msgid "The %s already has it."
+msgstr "%s har det allerede."
+
+msgid "Equipment is fitted while moored in harbour."
+msgstr "Udstyr monteres, mens båden er fortøjet i havn."
+
+msgid "Publishing needs a steady connection: moor in a harbour first."
+msgstr "Udgivelse kræver en stabil forbindelse: fortøj i en havn først."
+
+msgid "No unpublished renown yet: sail, explore and complete objectives to earn some."
+msgstr "Intet uudgivet ry endnu: sejl, udforsk og fuldfør mål for at tjene noget."
+
+msgid "Beyond Danish waters: %s"
+msgstr "Uden for danske farvande: %s"
+
+msgid "Your first international destination: %s"
+msgstr "Dit første udenlandske mål: %s"
+
+msgid "Your first offshore crossing: %d nm to %s"
+msgstr "Din første havkrydsning: %d sm til %s"
+
+msgid "Across the Atlantic to %s"
+msgstr "Over Atlanten til %s"
+
+msgid "Into the Pacific: %s"
+msgstr "Ud i Stillehavet: %s"
+
+msgid "French Polynesia: %s"
+msgstr "Fransk Polynesien: %s"
+
+msgid "New Zealand: %s"
+msgstr "New Zealand: %s"
+
+msgid "You have no fishing rod."
+msgstr "Du har ingen fiskestang."
+
+msgid "You have no %s left. The harbour grocery store sells lures."
+msgstr "Du har ikke flere %s. Havnens købmand sælger blink."
+
+msgid "Snap! The line broke and the %s went with the fish."
+msgstr "Knæk! Linen sprang, og %s forsvandt med fisken."
+
+msgid "It got away."
+msgstr "Den slap væk."
+
+msgid "Into the bin with it."
+msgstr "I skraldespanden med den."
+
+msgid "Your first fish: %s"
+msgstr "Din første fisk: %s"
+
+msgid "A new species: %s"
+msgstr "En ny art: %s"
+
+msgid "%s. That's quite a catch. Better let this one swim free."
+msgstr "%s. Sikke en fangst. Lad hellere den svømme frit."
+
+msgid "%s. Not one to keep by your preferences, so it goes back."
+msgstr "%s. Ikke en at beholde efter dine valg, så den ryger ud igen."
+
+msgid "%s. The cool box is full, so it goes back."
+msgstr "%s. Køleboksen er fuld, så den ryger ud igen."
+
+msgid "Fish can be sold at a harbour grocery store, while moored."
+msgstr "Fisk kan sælges hos havnens købmand, mens du er fortøjet."
+
+msgid "That fish is no longer aboard."
+msgstr "Den fisk er ikke længere om bord."
+
+msgid "Unknown lure."
+msgstr "Ukendt blink."
+
+msgid "The anchor is dragging: see to it first."
+msgstr "Ankeret glider: tag dig af det først."
+
+msgid "Too lively for the stove (wind %d kn). Wait for calmer water, or anchor somewhere sheltered."
+msgstr "For uroligt til komfuret (vind %d kn). Vent på roligere vand, eller ankr et sted i læ."
+
+msgid "There is no fresh water left aboard for coffee."
+msgstr "Der er intet ferskvand tilbage om bord til kaffe."
+
+msgid "Coffee by the open hatch, the anchor chain quiet in the water. The day can wait a little."
+msgstr "Kaffe ved den åbne luge, ankerkæden stille i vandet. Dagen kan godt vente lidt."
+
+msgid "Morning coffee at anchor"
+msgstr "Morgenkaffe for anker"
+
+msgid "A hot mug at anchor. The boat swings gently around it."
+msgstr "Et varmt krus for anker. Båden svajer roligt om det."
+
+msgid "A late coffee by the lamp. The anchorage is dark and still."
+msgstr "En sen kaffe ved lampen. Ankerpladsen er mørk og stille."
+
+msgid "A mug of coffee at the helm, held carefully. The miles go by a little easier."
+msgstr "Et krus kaffe ved roret, holdt forsigtigt. Sømilene går lidt lettere."
+
+msgid "Coffee aboard while the harbour wakes around you."
+msgstr "Kaffe om bord, mens havnen vågner omkring dig."
+
+msgid "Coffee aboard. Halyards tap along the pontoon."
+msgstr "Kaffe om bord. Faldene klaprer langs broen."
+
+msgid "Your hands are full: the hat and a mug of coffee. Put your hat back on (H) or set the coffee down first."
+msgstr "Du har hænderne fulde: huen og et krus kaffe. Tag huen på igen (H) eller sæt kaffen fra dig først."
+
+msgid "You have no coffee in hand."
+msgstr "Du har ingen kaffe i hånden."
+
+msgid "You set your coffee in the cup holder by the helm."
+msgstr "Du sætter kaffen i kopholderen ved roret."
+
+msgid "You set your coffee down on the table."
+msgstr "Du sætter kaffen på bordet."
+
+msgid "There is no coffee here."
+msgstr "Der er ingen kaffe her."
+
+msgid "Your hands are full. Put your hat back on (H) first."
+msgstr "Du har hænderne fulde. Tag huen på igen (H) først."
+
+msgid "You pick up your coffee. Still warm enough."
+msgstr "Du tager din kaffe. Stadig varm nok."
+
+msgid "You finish your coffee. Lovely."
+msgstr "Du drikker kaffen ud. Dejligt."
+
+msgid "Unknown dish."
+msgstr "Ukendt ret."
+
+msgid "Needs %d fish from the cool box."
+msgstr "Kræver %d fisk fra køleboksen."
+
+msgid "Not enough food in the stores."
+msgstr "Ikke nok mad i forrådet."
+
+msgid "Your first meal from the galley: %s"
+msgstr "Dit første måltid fra kabyssen: %s"
+
+msgid "Supper from your own catch"
+msgstr "Aftensmad af egen fangst"
+
+msgid "A quiet evening at anchor. Fresh fish for supper."
+msgstr "En stille aften for anker. Frisk fisk til aftensmad."
+
+msgid "The anchor is already down."
+msgstr "Ankeret er allerede nede."
+
+msgid "In harbour the boat is moored: anchoring is for the coast between harbours."
+msgstr "I havn ligger båden fortøjet: ankring er til kysten mellem havnene."
+
+msgid "There is no Magic Anchor aboard."
+msgstr "Der er intet Magisk anker om bord."
+
+msgid "Deep water (%s, %s): too deep for the normal anchor to reach the bottom. The Magic Anchor could hold here."
+msgstr "Dybt vand (%s, %s): for dybt til at det normale anker når bunden. Magisk anker kan holde her."
+
+msgid "Magic Anchor"
+msgstr "Magisk anker"
+
+msgid "Multi-purpose Deep Anchor"
+msgstr "Multifunktionelt dybanker"
+
+msgid "For waters where the charts grow uncertain. A little engineering, a little seamanship, and a suspicious amount of nautical magic. Somehow it always finds a useful piece of seabed. (A fictional anchor: the game translates real-world depths into game-code magic. Not real seamanship.)"
+msgstr "Til farvande, hvor søkortene bliver usikre. Lidt ingeniørkunst, lidt sømandskab og en mistænkelig mængde maritim magi. På en eller anden måde finder det altid et brugbart stykke havbund. (Et opdigtet anker: spillet omsætter virkelige dybder til spilkode-magi. Ikke rigtigt sømandskab.)"
+
+msgid "The Magic Anchor is already aboard."
+msgstr "Magisk anker er allerede om bord."
+
+msgid "Choose 3, 5 or 7 times the depth of chain."
+msgstr "Vælg 3, 5 eller 7 gange dybden i kæde."
+
+msgid "Your first anchorage"
+msgstr "Din første ankerplads"
+
+msgid "You stopped the anchor dragging"
+msgstr "Du fik ankeret til at holde igen"
+
+msgid "Another vessel answers the call. The radio goes quiet."
+msgstr "Et andet fartøj besvarer kaldet. Radioen bliver stille."
+
+msgid "The call has been answered by another vessel."
+msgstr "Kaldet er besvaret af et andet fartøj."
+
+msgid "Answered a call on channel 16: %s"
+msgstr "Besvarede et kald på kanal 16: %s"
+
+msgid "You answer and heave to nearby. The crew of %s wave across the water. The coastguard expects to be there in about %d hours."
+msgstr "Du svarer og lægger bi tæt ved. Besætningen på %s vinker over vandet. Kystvagten venter at være der om cirka %d timer."
+
+msgid "You read them the forecast. \"Thank you, skipper. Fair winds.\""
+msgstr "Du læser vejrudsigten op for dem. \"Tak, skipper. God vind.\""
+
+msgid "The boat is not waiting at an anchorage."
+msgstr "Båden venter ikke ved en ankerplads."
+
+msgid "Deep water (%s, %s): only the Magic Anchor will hold here.%s"
+msgstr "Dybt vand (%s, %s): kun Magisk anker holder her.%s"
+
+msgid " Open sea: no shelter from wind or waves."
+msgstr " Åbent hav: ingen læ for vind og bølger."
+
+msgid "The anchor is not down."
+msgstr "Ankeret er ikke nede."
+
+msgid "The anchor is holding well again."
+msgstr "Ankeret holder godt igen."
+
+msgid "Anchor dragging! The boat is moving downwind. Let out more chain, set the anchor again or weigh anchor."
+msgstr "Ankeret glider! Båden driver med vinden. Stik mere kæde, sæt ankeret igen eller let anker."
+
+msgid "The anchor is holding poorly as the wind rises. Check it: more chain helps."
+msgstr "Ankeret holder dårligt, mens vinden tiltager. Tjek det: mere kæde hjælper."
+
+msgid "A night at anchor"
+msgstr "En nat for anker"
+
+msgid "Caught my first fish"
+msgstr "Fangede min første fisk"
+
+msgid "First %s caught"
+msgstr "Første %s fanget"
+
+msgid "An exceptional %s"
+msgstr "En enestående %s"
+
+msgid "First meal cooked in the galley"
+msgstr "Første måltid lavet i kabyssen"
+
+msgid "Supper from my own catch"
+msgstr "Aftensmad af egen fangst"
+
+msgid "First anchorage of my own"
+msgstr "Min første egen ankerplads"
+
+msgid "Stopped the anchor dragging"
+msgstr "Fik ankeret til at holde igen"
+
+msgid "Morning coffee at anchor. The day could wait a little."
+msgstr "Morgenkaffe for anker. Dagen kunne godt vente lidt."
+
+msgid "First haul-out: the bottom scrubbed clean"
+msgstr "Første optagning: bunden skrubbet ren"
+
+msgid "You have just been ashore. Come back a little later."
+msgstr "Du har lige været i land. Kom tilbage lidt senere."
+
+msgid "That outing is not on offer here."
+msgstr "Den udflugt tilbydes ikke her."
+
+msgid "Not enough money: %s needed, you have %s."
+msgstr "Ikke penge nok: %s kræves, du har %s."
+
+msgid "Ashore in %s: %s"
+msgstr "I land i %s: %s"
+
+msgctxt "money"
+msgid "€%s"
+msgstr "%s €"
+
+msgid "The grocery store is only reachable while moored in harbour."
+msgstr "Købmanden kan kun nås, mens båden er fortøjet i havn."
+
+msgid "Food and water are already full."
+msgstr "Mad og vand er allerede fyldt op."
+
+msgid "Provisions are running low: %s of food and water left."
+msgstr "Proviant er ved at slippe op: %s mad og vand tilbage."
+
+msgid "Provisions are critically low: less than a day of food or water left."
+msgstr "Proviant er kritisk lav: under en dags mad eller vand tilbage."
+
+msgid "You have run out of food or water. Head for a harbour and buy provisions before the next passage."
+msgstr "Mad eller vand er sluppet op. Sæt kurs mod en havn og køb proviant før næste passage."
+
+msgid "You put on your captain's hat. Very distinguished."
+msgstr "Du tager kaptajnshuen på. Meget fornemt."
+
+msgid "You hang your captain's hat on its hook."
+msgstr "Du hænger kaptajnshuen på dens krog."
+
+msgid "An empty hat hook. Replacement captain's hats are sold at the harbour grocery store (%s)."
+msgstr "En tom huekrog. Nye kaptajnshuer sælges hos havnens købmand (%s)."
+
+msgid "You take off your captain's hat and tuck it under your arm."
+msgstr "Du tager kaptajnshuen af og stikker den under armen."
+
+msgid "You put your captain's hat back on."
+msgstr "Du tager kaptajnshuen på igen."
+
+msgid "Your captain's hat hangs on its hook in the cabin."
+msgstr "Din kaptajnshue hænger på sin krog i kahytten."
+
+msgid "You have no captain's hat. The harbour grocery store sells replacements (%s)."
+msgstr "Du har ingen kaptajnshue. Havnens købmand sælger nye (%s)."
+
+msgid "Better hold onto your hat! The wind is %d kn%s. Go below, or press H to take it off."
+msgstr "Hold godt fast i huen! Vinden er %d kn%s. Gå under dæk, eller tryk H for at tage den af."
+
+msgid ", gusting %d"
+msgstr ", stød til %d"
+
+msgid "Captain's hats are sold at the harbour grocery store, while moored in harbour."
+msgstr "Kaptajnshuer sælges hos havnens købmand, mens båden er fortøjet i havn."
+
+msgid "You already have your captain's hat."
+msgstr "Du har allerede din kaptajnshue."
+
+msgid "Bought a new captain's hat in %s for %s%s."
+msgstr "Købte en ny kaptajnshue i %s for %s%s."
+
+msgid " (hat number %d)"
+msgstr " (hue nummer %d)"
+
+msgid "The saved course to %s could not be recalculated and was removed."
+msgstr "Den gemte kurs til %s kunne ikke genberegnes og blev fjernet."
+
+msgid "The chart has been updated. Your course was re-planned."
+msgstr "Søkortet er opdateret. Din kurs blev planlagt igen."
+
+msgid "The chart has been updated. Please plot your course again."
+msgstr "Søkortet er opdateret. Afsæt venligst din kurs igen."
+
+msgid "The %s is only reachable while moored in harbour."
+msgstr "%s kan kun nås, mens båden er fortøjet i havn."
+
+msgid "There is no %s in %s."
+msgstr "Der er ingen %s i %s."
+
+msgid "You can only change boats in harbour, not during a passage."
+msgstr "Du kan kun skifte båd i havn, ikke under en passage."
+
+msgid "The boatyard is only available in harbour."
+msgstr "Bådeværftet findes kun i havn."
+
+msgid "Unknown boat '%s'."
+msgstr "Ukendt båd '%s'."
+
+msgid "The saved boat '%s' is not available; you are aboard the %s."
+msgstr "Den gemte båd '%s' findes ikke; du er om bord på %s."
+
+msgid "Let's raise the anchor before starting the engine."
+msgstr "Lad os lette anker, før vi starter motoren."
+
+msgid "A course can only be planned in port."
+msgstr "En kurs kan kun planlægges i havn."
+
+msgid "The vessel is not in a port."
+msgstr "Fartøjet er ikke i havn."
+
+msgid "The vessel is already in %s."
+msgstr "Fartøjet er allerede i %s."
+
+msgid "The course must start from %s."
+msgstr "Kursen skal starte fra %s."
+
+msgid "the vessel"
+msgstr "fartøjet"
+
+msgid "The vessel is already underway."
+msgstr "Fartøjet er allerede undervejs."
+
+msgid "Plot a course at the chart table first."
+msgstr "Afsæt først en kurs ved kortbordet."
+
+msgid "You are out of food or water. Buy provisions at the grocery store before setting sail."
+msgstr "Du er løbet tør for mad eller vand. Køb proviant hos købmanden, før du sætter sejl."
+
+msgid "The planned course does not start here."
+msgstr "Den planlagte kurs starter ikke her."
+
+msgid "The vessel is not underway."
+msgstr "Fartøjet er ikke undervejs."
+
+msgid "Boat care: %s could do with a service at the next boatyard. (Captain's Log, Boat tab)"
+msgstr "Bådpleje: %s trænger til service på næste værft. (Logbogen, fanen Båd)"
+
+msgid "Boatyard work is done while moored in harbour."
+msgstr "Værftsarbejde udføres, mens båden er fortøjet i havn."
+
+msgid "The %s is already in perfect condition."
+msgstr "%s er allerede i perfekt stand."
+
+msgid "The engine was serviced recently."
+msgstr "Motoren er serviceret for nylig."
+
+msgid "The rigging and sails are in fine order."
+msgstr "Rigning og sejl er i fin orden."
+
+msgid "First haul-out: %s"
+msgstr "Første optagning: %s"
+
+msgctxt "month"
+msgid "Apr"
+msgstr "apr."
+
+msgctxt "month"
+msgid "April"
+msgstr "april"
+
+msgctxt "month"
+msgid "Aug"
+msgstr "aug."
+
+msgctxt "month"
+msgid "August"
+msgstr "august"
+
+msgctxt "month"
+msgid "Dec"
+msgstr "dec."
+
+msgctxt "month"
+msgid "December"
+msgstr "december"
+
+msgctxt "month"
+msgid "Feb"
+msgstr "feb."
+
+msgctxt "month"
+msgid "February"
+msgstr "februar"
+
+msgctxt "weekday"
+msgid "Fri"
+msgstr "fre."
+
+msgctxt "weekday"
+msgid "Friday"
+msgstr "fredag"
+
+msgctxt "month"
+msgid "Jan"
+msgstr "jan."
+
+msgctxt "month"
+msgid "January"
+msgstr "januar"
+
+msgctxt "month"
+msgid "Jul"
+msgstr "jul."
+
+msgctxt "month"
+msgid "July"
+msgstr "juli"
+
+msgctxt "month"
+msgid "Jun"
+msgstr "jun."
+
+msgctxt "month"
+msgid "June"
+msgstr "juni"
+
+msgctxt "month"
+msgid "Mar"
+msgstr "mar."
+
+msgctxt "month"
+msgid "March"
+msgstr "marts"
+
+msgctxt "month"
+msgid "May"
+msgstr "maj"
+
+msgctxt "weekday"
+msgid "Mon"
+msgstr "man."
+
+msgctxt "weekday"
+msgid "Monday"
+msgstr "mandag"
+
+msgctxt "month"
+msgid "Nov"
+msgstr "nov."
+
+msgctxt "month"
+msgid "November"
+msgstr "november"
+
+msgctxt "month"
+msgid "Oct"
+msgstr "okt."
+
+msgctxt "month"
+msgid "October"
+msgstr "oktober"
+
+msgctxt "weekday"
+msgid "Sat"
+msgstr "lør."
+
+msgctxt "weekday"
+msgid "Saturday"
+msgstr "lørdag"
+
+msgctxt "month"
+msgid "Sep"
+msgstr "sep."
+
+msgctxt "month"
+msgid "September"
+msgstr "september"
+
+msgctxt "weekday"
+msgid "Sun"
+msgstr "søn."
+
+msgctxt "weekday"
+msgid "Sunday"
+msgstr "søndag"
+
+msgctxt "weekday"
+msgid "Thu"
+msgstr "tors."
+
+msgctxt "weekday"
+msgid "Thursday"
+msgstr "torsdag"
+
+msgctxt "weekday"
+msgid "Tue"
+msgstr "tirs."
+
+msgctxt "weekday"
+msgid "Tuesday"
+msgstr "tirsdag"
+
+msgctxt "weekday"
+msgid "Wed"
+msgstr "ons."
+
+msgctxt "weekday"
+msgid "Wednesday"
+msgstr "onsdag"
+
+msgid "%d nm to go"
+msgstr "%d sm tilbage"
+
+msgid "Dansk"
+msgstr "Dansk"
+
+msgid "English"
+msgstr "English"
+
+msgid "April"
+msgstr "april"
+
+msgid "August"
+msgstr "august"
+
+msgid "February"
+msgstr "februar"
+
+msgid "January"
+msgstr "januar"
+
+msgid "July"
+msgstr "juli"
+
+msgid "June"
+msgstr "juni"
+
+msgid "March"
+msgstr "marts"
+
+msgid "May"
+msgstr "maj"
+
+msgid "October"
+msgstr "oktober"
+
+msgid "September"
+msgstr "september"
+
+msgid "December"
+msgstr "december"
+
+msgid "November"
+msgstr "november"
+
+msgid "Apr"
+msgstr "apr."
+
+msgid "Aug"
+msgstr "aug."
+
+msgid "Dec"
+msgstr "dec."
+
+msgid "Feb"
+msgstr "feb."
+
+msgid "Jan"
+msgstr "jan."
+
+msgid "Jul"
+msgstr "jul."
+
+msgid "Jun"
+msgstr "jun."
+
+msgid "Mar"
+msgstr "mar."
+
+msgid "Nov"
+msgstr "nov."
+
+msgid "Oct"
+msgstr "okt."
+
+msgid "Sep"
+msgstr "sep."
+
+msgid "Friday"
+msgstr "fredag"
+
+msgid "Monday"
+msgstr "mandag"
+
+msgid "Saturday"
+msgstr "lørdag"
+
+msgid "Sunday"
+msgstr "søndag"
+
+msgid "Thursday"
+msgstr "torsdag"
+
+msgid "Tuesday"
+msgstr "tirsdag"
+
+msgid "Wednesday"
+msgstr "onsdag"
+
+msgid "Fri"
+msgstr "fre."
+
+msgid "Mon"
+msgstr "man."
+
+msgid "Sat"
+msgstr "lør."
+
+msgid "Sun"
+msgstr "søn."
+
+msgid "Thu"
+msgstr "tors."
+
+msgid "Tue"
+msgstr "tirs."
+
+msgid "Wed"
+msgstr "ons."
+
+msgid "unknown type '%s'"
+msgstr "ukendt type '%s'"
+
+msgid "reward must be a positive number"
+msgstr "belønning skal være et positivt tal"
+
+msgid "unknown harbour '%s'"
+msgstr "ukendt havn '%s'"
+
+msgid "hazard must be 1-3"
+msgstr "fare skal være 1-3"
+
+msgid "target must be a positive number"
+msgstr "mål skal være et positivt tal"
+
+msgid "duplicate id"
+msgstr "dubleret id"
+
+msgid "a secret achievement cannot be repeatable"
+msgstr "en hemmelig præstation kan ikke gentages"
+
+msgid "Far horizons: %s"
+msgstr "Fjerne horisonter: %s"
+
+msgid "Sail to %s, %s (%d nm from %s as the gull flies) and moor there."
+msgstr "Sejl til %s, %s (%d sm fra %s i fugleflugt), og fortøj der."
+
+msgid "missing id"
+msgstr "manglende id"
+
+msgid "Boat care:"
+msgstr "Bådpleje:"
+
+msgid "Long Passage time is for voyages: set sail first."
+msgstr "Lang passage er til sejladser: sæt sejl først."
+
+msgid "Raise the anchor first: at anchor the voyage is paused."
+msgstr "Let anker først: for anker står sejladsen stille."
+
+msgid "The boat is waiting at the anchorage: drop the anchor, or sail on first."
+msgstr "Båden venter ved ankerpladsen: kast anker, eller sejl videre først."
+
+msgid "Unknown passage speed."
+msgstr "Ukendt passagefart."
+
+msgid "The passage is over."
+msgstr "Passagen er slut."
+
+msgid "Land ho! You have arrived at %s."
+msgstr "Land i sigte! Du er ankommet til %s."
+
+msgid "Weather ahead: %s"
+msgstr "Vejr forude: %s"
+
+msgid "A fish is on the line!"
+msgstr "Der er fisk på krogen!"
+
+msgid "The voyage ended with a rescue."
+msgstr "Sejladsen endte med en redning."
+
+msgid "The anchor alarm went."
+msgstr "Ankeralarmen gik."
+
+msgid "We've arrived at our anchorage."
+msgstr "Vi er nået frem til vores ankerplads."
+
+msgid "A call for assistance on the radio, channel 16."
+msgstr "Et kald om assistance på radioen, kanal 16."
+
+msgid "Hold on to your hat: the wind is getting up."
+msgstr "Hold på hatten: vinden tager til."
+
+msgid "The coastguard's boat has the yacht in tow. You sail on."
+msgstr "Kystvagtens båd har sejlbåden på slæb. Du sejler videre."
+
+msgid "Collision risk: the %s %s will pass very close in about %d min, from the %s. Keep a sharp lookout and give way if needed."
+msgstr "Kollisionsrisiko: %s %s passerer meget tæt på om ca. %d min, fra %s. Hold godt udkig, og vig om nødvendigt."
+
+msgid "%s at the boat: wind %s, gusts %d kn."
+msgstr "%s ved båden: vind %s, vindstød %d kn."
+
+msgid "Dangerous conditions at the boat (%s): wind %s, gusts %d kn."
+msgstr "Farlige forhold ved båden (%s): vind %s, vindstød %d kn."
+
+msgid "Severe conditions at the boat (%s): wind %s, gusts %d kn."
+msgstr "Svære forhold ved båden (%s): vind %s, vindstød %d kn."
+
+msgid "Thunderstorm risk at the boat: thunderstorms may develop nearby."
+msgstr "Risiko for tordenvejr ved båden: der kan opstå tordenvejr i nærheden."
+
+msgid "%s %d nm to the %s, moving %s."
+msgstr "%s %d sm mod %s, på vej mod %s."
+
+msgid "Severe squalls nearby:"
+msgstr "Kraftige byger i nærheden:"
+
+msgid "Thunderstorm nearby:"
+msgstr "Tordenvejr i nærheden:"
+
+msgid "%s ahead on your route %s: wind up to %d kn, gusts %d kn."
+msgstr "%s forude på din rute %s: vind op til %d kn, vindstød %d kn."
+
+msgid "Thunderstorm risk ahead on your route %s."
+msgstr "Risiko for tordenvejr forude på din rute %s."
+
+msgid "%s %d kn"
+msgstr "%s %d kn"
+
+msgid "within the hour"
+msgstr "inden for en time"
+
+msgid "in about %d–%d h"
+msgstr "om ca. %d–%d t"
+
+msgid "%d min"
+msgstr "%d min"
+
+msgid "%d h"
+msgstr "%d t"
+
+msgid "%d h %02d min"
+msgstr "%d t %02d min"
+
+msgid "%d d %d h"
+msgstr "%d d %d t"
+
+msgctxt "date"
+msgid "%s %d %s %d, %02d:%02d%s"
+msgstr "%s %d. %s %d, %02d:%02d%s"
+
+msgid "Critical"
+msgstr "Kritisk"
+
+msgid "Damaged"
+msgstr "Skadet"
+
+msgid "Sound"
+msgstr "God stand"
+
+msgid "Worn"
+msgstr "Slidt"
+
+msgid "a broken rudder line"
+msgstr "en knækket rorline"
+
+msgid "a rope around the propeller"
+msgstr "et tov i skruen"
+
+msgid "an engine that will not start"
+msgstr "en motor, der ikke vil starte"
+
+msgid "PAN-PAN, PAN-PAN. This is the sailing yacht %s, %s nm to the %s of you. We have %s and are drifting. No one is hurt. We ask a vessel nearby to stand by until the coastguard's boat arrives, about %d hours."
+msgstr "PAN-PAN, PAN-PAN. Her er sejlbåden %s, %s sm %s for dig. Vi har %s og driver. Ingen er kommet til skade. Vi beder et fartøj i nærheden om at ligge standby, til kystvagtens båd når frem, om ca. %d timer."
+
+msgid "Channel 16: the fishing boat %s, %s nm to the %s, asks if any vessel has the latest forecast for these waters."
+msgstr "Kanal 16: fiskerbåden %s, %s sm mod %s, spørger, om nogen har den nyeste vejrudsigt for farvandet."
+
+msgid "Answering means heaving to nearby for about %d hours: the voyage waits, the weather does not. Declining is fine: another vessel will answer."
+msgstr "At svare betyder at ligge underdrejet i nærheden i ca. %d timer: sejladsen venter, vejret gør ikke. Det er fint at sige nej: et andet fartøj svarer."
+
+msgid "A quick reply on the radio. Nothing else is asked of you."
+msgstr "Et hurtigt svar på radioen. Mere bliver der ikke bedt om."
+
+msgid "Little Captain's Hat"
+msgstr "Little Captain's Hat"
+
+msgid "Stage"
+msgstr "Scene"
+
+msgid "Tail"
+msgstr "Hale"
+
+msgid "Body"
+msgstr "Krop"
+
+msgid "Lid"
+msgstr "Låg"
+
+msgid "Ordinary"
+msgstr "Almindelig"
+
+msgid "Oats, a pinch of salt and something sweet on top."
+msgstr "Havregryn, en knivspids salt og noget sødt på toppen."
+
+msgid "Warm porridge"
+msgstr "Varm grød"
+
+msgid "A pot of vegetable soup and the last of the good bread."
+msgstr "En gryde grøntsagssuppe og resten af det gode brød."
+
+msgid "Bread and soup"
+msgstr "Brød og suppe"
+
+msgid "Fresh fillets in butter, a squeeze of lemon."
+msgstr "Friske fileter i smør, et pift citron."
+
+msgid "Pan-fried fish"
+msgstr "Stegt fisk"
+
+msgid "Fish stew"
+msgstr "Fiskegryde"
+
+msgid "Fish, potatoes and onions simmered slowly: it stretches a catch."
+msgstr "Fisk, kartofler og løg simret langsomt: det får en fangst til at række."
+
+msgid "A sailor's supper"
+msgstr "En sømandsaftensmad"
+
+msgid "Two fish, bread, butter and a proper sit-down at the table."
+msgstr "To fisk, brød, smør og et ordentligt måltid ved bordet."
+
+msgid "Line"
+msgstr "Line"
+
+msgid "Groceries"
+msgstr "Dagligvarer"
+
+msgid "Boatyard · Repairs"
+msgstr "Bådeværft · Reparationer"
+
+msgid "Go Ashore"
+msgstr "Gå i land"
+
+msgid "Cleat"
+msgstr "Klampe"
+
+msgid "Plank"
+msgstr "Planke"
+
+msgid "grocery store"
+msgstr "dagligvarebutik"
+
+msgid "place to go ashore"
+msgstr "sted at gå i land"
+
+msgid "yard that can haul boats out"
+msgstr "værft, der kan tage både op"
+
+msgid "food and water"
+msgstr "mad og vand"
+
+msgid "Boatyard"
+msgstr "Bådeværft"
+
+msgid "repairs, care, other boats"
+msgstr "reparationer, pleje, andre både"
+
+msgid "Haul-out"
+msgstr "Optagning"
+
+msgid "bottom cleaning, hard coating"
+msgstr "bundrens, hård belægning"
+
+msgid "no services"
+msgstr "ingen faciliteter"
+
+msgid "Larger harbour"
+msgstr "Større havn"
+
+msgid "Major service harbour"
+msgstr "Stor servicehavn"
+
+msgid "Small harbour"
+msgstr "Lille havn"
+
+msgid "Music by the water"
+msgstr "Musik ved vandet"
+
+msgid "Somewhere along the waterfront of {harbour} a band is playing, and the stalls are selling fruit you have only read about."
+msgstr "Et sted langs havnefronten i {harbour} spiller et band, og boderne sælger frugt, du kun har læst om."
+
+msgid "A fresh coconut"
+msgstr "En frisk kokosnød"
+
+msgid "You drink it straight from the shell while the music drifts over the boats."
+msgstr "Du drikker den direkte af skallen, mens musikken svæver hen over bådene."
+
+msgid "Just listen"
+msgstr "Bare lyt"
+
+msgid "Your foot starts tapping long before you notice."
+msgstr "Din fod begynder at tappe længe før, du opdager det."
+
+msgid "Ships waiting their turn"
+msgstr "Skibe venter på tur"
+
+msgid "Off {harbour} great ships lie at anchor, waiting their turn for the canal. Your boat looks very small and very proud."
+msgstr "Ud for {harbour} ligger store skibe for anker og venter på tur gennem kanalen. Din båd ser meget lille og meget stolt ud."
+
+msgid "Count the ships"
+msgstr "Tæl skibene"
+
+msgid "You lose count somewhere past twenty and decide your boat is the nicest one anyway."
+msgstr "Du mister tællingen et sted over tyve og beslutter, at din båd alligevel er den pæneste."
+
+msgid "A warm Pacific evening"
+msgstr "En varm aften i Stillehavet"
+
+msgid "The evening air in {harbour} smells of flowers and the sea. Children are swimming off the quay, shrieking happily."
+msgstr "Aftenluften i {harbour} dufter af blomster og hav. Børn bader fra kajen og hviner af glæde."
+
+msgid "Sit and watch the sunset"
+msgstr "Se solnedgangen"
+
+msgid "The sky goes gold, then pink, then the first stars come out over the masts. A long way from home, and it feels like it."
+msgstr "Himlen bliver guld, så lyserød, og de første stjerner kommer frem over masterne. Langt hjemmefra, og det føles sådan."
+
+msgid "Buy fruit at the stall"
+msgstr "Køb frugt i boden"
+
+msgid "You carry a bag of the sweetest fruit back to the boat, already planning breakfast."
+msgstr "Du bærer en pose af den sødeste frugt tilbage til båden og planlægger allerede morgenmaden."
+
+msgid "A harbour café"
+msgstr "En havnecafé"
+
+msgid "Just off the quay, a little café smells of coffee and warm bread. A few sailors sit outside with their faces in the sun."
+msgstr "Lige ved kajen dufter en lille café af kaffe og varmt brød. Et par sejlere sidder udenfor med ansigtet i solen."
+
+msgid "Coffee and a pastry"
+msgstr "Kaffe og wienerbrød"
+
+msgid "You linger over a coffee and the flakiest pastry in {harbour}. Life aboard can wait half an hour."
+msgstr "Du nyder en kaffe og det sprødeste wienerbrød i {harbour}. Livet om bord kan vente en halv time."
+
+msgid "Just a glass of water"
+msgstr "Bare et glas vand"
+
+msgid "The owner fills your glass with a smile and asks where you have sailed from."
+msgstr "Ejeren fylder dit glas med et smil og spørger, hvor du har sejlet fra."
+
+msgid "A quiet bench"
+msgstr "En stille bænk"
+
+msgid "A weathered bench looks out over the moorings. Someone has carved a small anchor into the armrest."
+msgstr "En vejrbidt bænk kigger ud over fortøjningerne. Nogen har skåret et lille anker i armlænet."
+
+msgid "Sit a while"
+msgstr "Sid lidt"
+
+msgid "You watch the boats nod on their lines. Your own looks rather fine from here."
+msgstr "Du ser bådene nikke i deres fortøjninger. Din egen ser ret flot ud herfra."
+
+msgid "A friendly sailor"
+msgstr "En venlig sejler"
+
+msgid "On the next pontoon a sailor is coiling lines. They nod at your boat: \"Come far?\""
+msgstr "På næste ponton skyder en sejler liner op. De nikker mod din båd: \"Langvejs fra?\""
+
+msgid "Swap sea stories"
+msgstr "Byt søhistorier"
+
+msgid "Their story about a goat on a ferry beats all of yours. You promise to wave if you meet at sea."
+msgstr "Deres historie om en ged på en færge slår alle dine. Du lover at vinke, hvis I mødes til søs."
+
+msgid "Ask about the weather"
+msgstr "Spørg om vejret"
+
+msgid "\"Watch the sky in the afternoon,\" they say, sounding very wise. You nod just as wisely."
+msgstr "\"Hold øje med himlen om eftermiddagen,\" siger de meget vist. Du nikker lige så vist."
+
+msgid "A small market stall"
+msgstr "En lille markedsbod"
+
+msgid "A stall by the harbour sells fruit, honey and things in jars nobody can quite name."
+msgstr "En bod ved havnen sælger frugt, honning og ting i glas, som ingen helt kan navngive."
+
+msgid "Buy a little treat"
+msgstr "Køb en lille godbid"
+
+msgid "You leave with a jar of honey and a story about the bees that made it."
+msgstr "Du går derfra med et glas honning og en historie om bierne, der lavede den."
+
+msgid "Browse and smile"
+msgstr "Kig og smil"
+
+msgid "The stallholder lets you taste a strawberry anyway."
+msgstr "Sælgeren lader dig smage et jordbær alligevel."
+
+msgid "A view over the harbour"
+msgstr "Udsigt over havnen"
+
+msgid "A short walk uphill brings you to a spot where all of {harbour}'s harbour lies below you."
+msgstr "En kort tur op ad bakken fører dig til et sted, hvor hele havnen i {harbour} ligger under dig."
+
+msgid "Take in the view"
+msgstr "Nyd udsigten"
+
+msgid "From up here your boat is a little toy among the others. You pick it out at once."
+msgstr "Herfra er din båd et lille stykke legetøj blandt de andre. Du finder den med det samme."
+
+msgid "The harbour noticeboard"
+msgstr "Havnens opslagstavle"
+
+msgid "The noticeboard is covered in notes: crew wanted, a bicycle for sale, and \"FOUND: one captain's hat, slightly damp\"."
+msgstr "Opslagstavlen er fuld af sedler: besætning søges, en cykel sælges og \"FUNDET: én kaptajnshue, lidt fugtig\"."
+
+msgid "Read every note"
+msgstr "Læs alle sedlerne"
+
+msgid "The hat turns out to be someone else's. Still, it is good to know hats do come back sometimes."
+msgstr "Huen viser sig at være en andens. Men det er godt at vide, at huer nogle gange kommer tilbage."
+
+msgid "Gulls with opinions"
+msgstr "Måger med meninger"
+
+msgid "Three gulls on a bollard are watching your sandwich with great interest."
+msgstr "Tre måger på en pullert betragter din sandwich med stor interesse."
+
+msgid "Guard your sandwich"
+msgstr "Pas på din sandwich"
+
+msgid "You win, narrowly. The gulls make a note of your face."
+msgstr "Du vinder, med nød og næppe. Mågerne lægger mærke til dit ansigt."
+
+msgid "A well-loved old boat"
+msgstr "En elsket gammel båd"
+
+msgid "Two berths down lies an old wooden boat, varnish gleaming. Its owner is polishing a brass porthole."
+msgstr "To pladser længere nede ligger en gammel træbåd med skinnende lak. Ejeren pudser et koøje af messing."
+
+msgid "Chat with the owner"
+msgstr "Snak med ejeren"
+
+msgid "She has owned it for thirty years and still finds new places to polish."
+msgstr "Hun har haft den i tredive år og finder stadig nye steder at pudse."
+
+msgid "The colourful waterfront"
+msgstr "Den farverige havnefront"
+
+msgid "The tall, colourful houses along the waterfront glow in the late light, and the cafés are filling up."
+msgstr "De høje, farverige huse langs havnefronten gløder i det sene lys, og caféerne fyldes."
+
+msgid "Stroll along the water"
+msgstr "Gå en tur langs vandet"
+
+msgid "You walk the length of the waterfront twice, just to see the colours again."
+msgstr "Du går hele havnefronten igennem to gange, bare for at se farverne igen."
+
+msgid "An ice cream on the quay"
+msgstr "En is på kajen"
+
+msgid "You eat it far too slowly and have to race the drips."
+msgstr "Du spiser den alt for langsomt og må kæmpe mod dryppene."
+
+msgid "A quiet island evening"
+msgstr "En stille ø-aften"
+
+msgid "{harbour} is a small harbour. In the evening calm you can hear halyards tapping all along the pontoon."
+msgstr "{harbour} er en lille havn. I aftenstilheden kan du høre faldene banke langs hele pontonen."
+
+msgid "Listen for a while"
+msgstr "Lyt et stykke tid"
+
+msgid "Tap, tap, tap. You count the boats by their halyards and lose count, happily."
+msgstr "Tik, tik, tik. Du tæller bådene ud fra faldene og mister glad tællingen."
+
+msgid "Fellow ocean sailors"
+msgstr "Andre havsejlere"
+
+msgid "Compare passage plans"
+msgstr "Sammenlign passageplaner"
+
+msgid "Charts come out, everyone points at the same patch of ocean, and somebody puts the kettle on."
+msgstr "Søkortene kommer frem, alle peger på den samme plet hav, og nogen sætter kedlen over."
+
+msgid " Weather otherwise pleasant."
+msgstr " Ellers behageligt vejr."
+
+msgid " It was quite a blow."
+msgstr " Det blæste ganske godt."
+
+msgid "Your captain's hat has decided to explore the ocean without you."
+msgstr "Din kaptajnshue har besluttet at udforske havet uden dig."
+
+msgid "Another captain's hat sets off on a voyage of its own."
+msgstr "Endnu en kaptajnshue drager ud på sin egen rejse."
+
+msgid "Your hat leaves without saying goodbye. The gulls seem impressed."
+msgstr "Din hue går uden at sige farvel. Mågerne virker imponerede."
+
+msgid "Somewhere out there, a fish is now very well dressed."
+msgstr "Et sted derude er en fisk nu meget velklædt."
+
+msgid "in %s harbour"
+msgstr "i havnen i %s"
+
+msgid "at sea (%s)"
+msgstr "til søs (%s)"
+
+msgid "just off %s, %s"
+msgstr "lige ud for %s, %s"
+
+msgid "about %d nm off %s, %s"
+msgstr "ca. %d sm ud for %s, %s"
+
+msgid "far out at sea, %d nm from the nearest harbour (%s)"
+msgstr "langt til søs, %d sm fra nærmeste havn (%s)"
+
+msgid "Lost another captain's hat"
+msgstr "Mistede endnu en kaptajnshue"
+
+msgid "Lost my captain's hat"
+msgstr "Mistede min kaptajnshue"
+
+msgid "Wind %d kn"
+msgstr "Vind %d kn"
+
+msgid "Highlight_%s"
+msgstr "Fremhævning_%s"
+
+msgid "Berth"
+msgstr "Kajplads"
+
+msgid "Interact"
+msgstr "Interager"
+
+msgid "regional depth data (modelled)"
+msgstr "regionale dybdedata (modelleret)"
+
+msgid "global depth model (mostly interpolated)"
+msgstr "global dybdemodel (mest interpoleret)"
+
+msgid "GAME ESTIMATE"
+msgstr "SPILLETS SKØN"
+
+msgid "about %d m"
+msgstr "ca. %d m"
+
+msgid "Region_%s_%s"
+msgstr "Region_%s_%s"
+
+msgid "Coast"
+msgstr "Kyst"
+
+msgid "BLOCKED (not applied)"
+msgstr "BLOKERET (ikke anvendt)"
+
+msgid "  (Magic Anchor)"
+msgstr "  (Magisk anker)"
+
+msgid "%d  Anchorage%s"
+msgstr "%d  Ankerplads%s"
+
+msgid "Wind"
+msgstr "Vind"
+
+msgid "Anchorages"
+msgstr "Ankerpladser"
+
+msgid "%s and %d more"
+msgstr "%s og %d mere"
+
+msgid "Colours"
+msgstr "Farver"
+
+msgid "Water"
+msgstr "Vand"
+
+msgid "East"
+msgstr "Øst"
+
+msgid "Main"
+msgstr "Hoved"
+
+msgid "West"
+msgstr "Vest"
+
+msgid "Islets"
+msgstr "Holme"
+
+msgid "No route planned"
+msgstr "Ingen rute planlagt"
+
+msgid "Position at sea"
+msgstr "Position til søs"
+
+msgid "  ·  %d nm"
+msgstr "  ·  %d sm"
+
+msgid "  ·  needs plotting"
+msgstr "  ·  skal plottes"
+
+msgid "There is no route."
+msgstr "Der er ingen rute."
+
+msgid "The route has no course."
+msgstr "Ruten har ingen kurs."
+
+msgid "The destination is unknown."
+msgstr "Destinationen er ukendt."
+
+msgid "The route does not start at the vessel's position."
+msgstr "Ruten starter ikke ved fartøjets position."
+
+msgid "The route does not end at the destination."
+msgstr "Ruten slutter ikke ved destinationen."
+
+msgid "A waypoint is on land or too close to the coast."
+msgstr "Et rutepunkt ligger på land eller for tæt på kysten."
+
+msgid "Leg %d of the course crosses land."
+msgstr "Strækning %d af kursen krydser land."
+
+msgid "Choose a destination port."
+msgstr "Vælg en destinationshavn."
+
+msgid " (leg %d)"
+msgstr " (strækning %d)"
+
+msgid "Waypoint %d is on land or too close to the coast."
+msgstr "Rutepunkt %d ligger på land eller for tæt på kysten."
+
+msgid "The vessel's position is not in navigable water."
+msgstr "Fartøjets position er ikke i sejlbart vand."
+
+msgid "The departure harbour has no water access in the chart data."
+msgstr "Afgangshavnen har ingen adgang til vandet i kortdata."
+
+msgid "The destination harbour cannot be reached in the chart data."
+msgstr "Destinationshavnen kan ikke nås i kortdata."
+
+msgid "No sea route found%s. The waters may not be connected in the chart data."
+msgstr "Ingen sørute fundet%s. Farvandene hænger måske ikke sammen i kortdata."
+
+msgid "Vessel"
+msgstr "Fartøj"
+
+msgid "Cargo ship"
+msgstr "Fragtskib"
+
+msgid "Tanker"
+msgstr "Tankskib"
+
+msgid "Ferry"
+msgstr "Færge"
+
+msgid "Fishing boat"
+msgstr "Fiskerbåd"
+
+msgid "Sailing yacht"
+msgstr "Sejlbåd"
+
+msgid "Baltic Star"
+msgstr "Baltic Star"
+
+msgid "Havørn"
+msgstr "Havørn"
+
+msgid "Kristina"
+msgstr "Kristina"
+
+msgid "Margrethe"
+msgstr "Margrethe"
+
+msgid "Nordlys"
+msgstr "Nordlys"
+
+msgid "Ocean Breeze"
+msgstr "Ocean Breeze"
+
+msgid "Polar Wind"
+msgstr "Polar Wind"
+
+msgid "Sea Swallow"
+msgstr "Sea Swallow"
+
+msgid "Atlantic Way"
+msgstr "Atlantic Way"
+
+msgid "Blue Heron"
+msgstr "Blue Heron"
+
+msgid "Freja"
+msgstr "Freja"
+
+msgid "Ingrid"
+msgstr "Ingrid"
+
+msgid "Morning Light"
+msgstr "Morning Light"
+
+msgid "Seagull"
+msgstr "Seagull"
+
+msgid "Silver Tern"
+msgstr "Silver Tern"
+
+msgid "Stella Maris"
+msgstr "Stella Maris"
+
+msgid "Westerly"
+msgstr "Westerly"
+
+msgid "Aurora"
+msgstr "Aurora"
+
+msgid "Cormorant"
+msgstr "Cormorant"
+
+msgid "Fair Wind"
+msgstr "Fair Wind"
+
+msgid "Kittiwake"
+msgstr "Kittiwake"
+
+msgid "Lighthouse"
+msgstr "Lighthouse"
+
+msgid "Southern Cross"
+msgstr "Southern Cross"
+
+msgid "Tidewater"
+msgstr "Tidewater"
+
+msgid "Sailing"
+msgstr "Sejlads"
+
+msgid "Spinnaker"
+msgstr "Spiler"
+
+msgid "Automatic propulsion"
+msgstr "Automatisk fremdrift"
+
+msgid "Seaworthiness"
+msgstr "Sødygtighed"
+
+msgid "%s in %s"
+msgstr "%s i %s"
+
+msgid "A straightforward sail."
+msgstr "En ligetil sejlads."
+
+msgid "Mostly open water the whole way."
+msgstr "Mest åbent vand hele vejen."
+
+msgid "I could stop at %s on the way."
+msgstr "Jeg kunne gøre ophold i %s på vejen."
+
+msgid "I could make my way toward %s, then stop at %s."
+msgstr "Jeg kunne sætte kurs mod %s og så gøre ophold i %s."
+
+msgid "I could make my way toward %s, stop at %s, and rest a while in %s before the last stretch."
+msgstr "Jeg kunne sætte kurs mod %s, gøre ophold i %s og hvile lidt i %s før sidste stræk."
+
+msgid "Weeks at sea, by the look of it."
+msgstr "Uger til søs, så vidt jeg kan se."
+
+msgid "Several days at sea."
+msgstr "Flere dage til søs."
+
+msgid "An overnight sail."
+msgstr "En sejlads natten over."
+
+msgid "I'd want to stock up properly first."
+msgstr "Jeg ville gerne proviantere ordentligt først."
+
+msgid "And the boat would want some care before a trip like that."
+msgstr "Og båden ville gerne have lidt pleje før sådan en tur."
+
+msgid "%s. I wonder what it's like there. About %s nautical miles by sea."
+msgstr "%s. Mon hvordan der er? Omkring %s sømil over havet."
+
+msgid "%s... quite a distance from here, about %s nautical miles."
+msgstr "%s... et godt stykke herfra, omkring %s sømil."
+
+msgid "%s. That's a long way: about %s nautical miles of sea."
+msgstr "%s. Det er langt: omkring %s sømil hav."
+
+msgid "%s! About %s nautical miles. Imagine sailing in there."
+msgstr "%s! Omkring %s sømil. Tænk at sejle ind der."
+
+msgid "%s... about %s nautical miles. Plenty of time to think on the way."
+msgstr "%s... omkring %s sømil. God tid til at tænke undervejs."
+
+msgid "%s. Only about %s nautical miles. I wonder what it's like."
+msgstr "%s. Kun omkring %s sømil. Mon hvordan der er."
+
+msgid "%s, about %s nautical miles away. Not far at all."
+msgstr "%s, omkring %s sømil væk. Slet ikke langt."
+
+msgid "%s, about %s nautical miles. An easy hop, if the weather is kind."
+msgstr "%s, omkring %s sømil. Et let hop, hvis vejret er venligt."
+
+msgid "%s! Just %s nautical miles from here."
+msgstr "%s! Kun %s sømil herfra."
+
+msgid "%s, about %s nautical miles. A gentle sail."
+msgstr "%s, cirka %s sømil. En blid sejlads."
+
+msgid "Perhaps one day..."
+msgstr "Måske en dag..."
+
+msgid "One day, maybe."
+msgstr "En dag, måske."
+
+msgid "Not today. But one day."
+msgstr "Ikke i dag. Men en dag."
+
+msgid "Now there's a thought!"
+msgstr "Det er en tanke!"
+
+msgid "Someday."
+msgstr "En skønne dag."
+
+msgid "%s. I'm already here, and it's lovely."
+msgstr "%s. Jeg er her allerede, og her er dejligt."
+
+msgid "%s... I can't see a way there by sea from here."
+msgstr "%s... Jeg kan ikke se en sejlrute dertil herfra."
+
+msgid "Strong winds / gale area (inner ring: core)"
+msgstr "Hård vind / kulingområde (indre ring: kerne)"
+
+msgid "Thunderstorm risk (storms may form)"
+msgstr "Risiko for tordenvejr (storme kan opstå)"
+
+msgid "Thunderstorm with squalls and gusts"
+msgstr "Tordenvejr med byger og vindstød"
+
+msgid "Tropical cyclone (not in European waters)"
+msgstr "Tropisk cyklon (ikke i europæiske farvande)"
+
+msgid "STRONG WINDS"
+msgstr "HÅRD VIND"
+
+msgid "THUNDERSTORM RISK"
+msgstr "RISIKO FOR TORDENVEJR"
+
+msgid "CYCLONE SEASON RISK"
+msgstr "RISIKO I CYKLONSÆSON"
+
+msgid "SEVERE SQUALLS"
+msgstr "KRAFTIGE BYGER"
+
+msgid "PAST MODEL SNAPSHOT"
+msgstr "TIDLIGERE MODELBILLEDE"
+
+msgid "%s\nWind %d° %s"
+msgstr "%s\nVind %d° %s"
+
+msgid "off the bow"
+msgstr "lige forfra"
+
+msgid "In port. The boat chooses sail or engine itself once underway."
+msgstr "I havn. Båden vælger selv sejl eller motor, når den er undervejs."
+
+msgid "%s nearby, moving %s."
+msgstr "%s i nærheden, på vej mod %s."
+
+msgid "Plot a course to see the weather along it."
+msgstr "Afsæt en kurs for at se vejret langs den."
+
+msgid "No hazardous weather expected along the next %d hours of the course."
+msgstr "Intet farligt vejr ventet de næste %d timer af kursen."
+
+msgid "Wind to %d kn, gusts %d kn."
+msgstr "Vind op til %d kn, vindstød %d kn."
+
+msgid "Thunderstorms may form there."
+msgstr "Der kan opstå tordenvejr der."
+
+msgid "%s (%s): %s, %d nm ahead. %s"
+msgstr "%s (%s): %s, %d sm forude. %s"
+
+msgid "Show where you can anchor (zoom in on a coast)"
+msgstr "Vis hvor du kan ankre (zoom ind på en kyst)"
+
+msgid "Magic Anchor (deep)"
+msgstr "Magisk anker (dybt)"
+
+msgid "Normal anchor"
+msgstr "Normalt anker"
+
+msgid "Depths are GAME ESTIMATES, for play, not navigation. Point at the water to see more."
+msgstr "Dybder er SPILLETS SKØN, til leg, ikke navigation. Peg på vandet for mere."
+
+msgid "Zoom in on a coast to see where you can anchor."
+msgstr "Zoom ind på en kyst for at se, hvor du kan ankre."
+
+msgid "Show the wind an hour earlier (up to six hours)"
+msgstr "Vis vinden en time tidligere (op til seks timer)"
+
+msgid "Now"
+msgstr "Nu"
+
+msgid "Show the wind now"
+msgstr "Vis vinden nu"
+
+msgid "Show the forecast an hour later (up to six hours)"
+msgstr "Vis vejrudsigten en time senere (op til seks timer)"
+
+msgid "Estimated conditions. Actual wind may differ."
+msgstr "Anslåede forhold. Den faktiske vind kan afvige."
+
+msgid "Zoom in to see wind details."
+msgstr "Zoom ind for at se vinddetaljer."
+
+msgid "Course"
+msgstr "Kurs"
+
+msgid "Weather"
+msgstr "Vejr"
+
+msgid "Details"
+msgstr "Detaljer"
+
+msgid "Find a harbour…"
+msgstr "Find en havn…"
+
+msgid "Result_%s"
+msgstr "Resultat_%s"
+
+msgid "This course cannot be used: %s"
+msgstr "Kurs kan ikke bruges: %s"
+
+msgid "Anchorage %d cannot be used: %s Move it, or unmark it."
+msgstr "Ankerplads %d kan ikke bruges: %s Flyt den, eller fjern mærket."
+
+msgid "Course not changed: %s Your current course is unchanged."
+msgstr "Kurs ikke ændret: %s Din nuværende kurs er uændret."
+
+msgid "Course set for %s."
+msgstr "Kurs sat mod %s."
+
+msgid "Changes discarded."
+msgstr "Ændringer kasseret."
+
+msgid "Dreamer's Map"
+msgstr "Drømmerens kort"
+
+msgid "Title"
+msgstr "Titel"
+
+msgid "Back to the cabin (Esc)"
+msgstr "Tilbage til kahytten (Esc)"
+
+msgid "Harbours"
+msgstr "Havne"
+
+msgid "Sep1"
+msgstr "Adsk1"
+
+msgid "Where shall I dream of?"
+msgstr "Hvor skal jeg drømme mig hen?"
+
+msgid "Imagine this voyage"
+msgstr "Forestil dig denne sejlads"
+
+msgid "Plan it at the chart table"
+msgstr "Planlæg den ved kortbordet"
+
+msgid "Open the navigation station's chart with this harbour selected"
+msgstr "Åbn navigationsbordets søkort med denne havn valgt"
+
+msgid "At sea, dreaming of other harbours"
+msgstr "På havet og drømmer om andre havne"
+
+msgid "In the cabin at %s, %s"
+msgstr "I kahytten i %s, %s"
+
+msgid "%d harbour visited so far"
+msgid_plural "%d harbours visited so far"
+msgstr[0] "%d havn besøgt indtil nu"
+msgstr[1] "%d havne besøgt indtil nu"
+
+msgid "No harbour selected"
+msgstr "Ingen havn valgt"
+
+msgid "Click a harbour on the map, or find one by name."
+msgstr "Klik på en havn på kortet, eller find den ved navn."
+
+msgid "Not visited yet"
+msgstr "Ikke besøgt endnu"
+
+msgid "Visited"
+msgstr "Besøgt"
+
+msgid "%s\n%s\n%s  ·  %s  ·  %d nm in a straight line"
+msgstr "%s\n%s\n%s  ·  %s  ·  %d sm i lige linje"
+
+msgid "Course set…"
+msgstr "Kurs sat…"
+
+msgid "Anchorage %d: %s"
+msgstr "Ankerplads %d: %s"
+
+msgid "Anchorage %d is no good here: %s"
+msgstr "Ankerplads %d duer ikke her: %s"
+
+msgid "Waypoint %d was on land: moved to the nearest open water."
+msgstr "Rutepunkt %d lå på land: flyttet til nærmeste åbne vand."
+
+msgid "That spot is on land, far from open water: no waypoint added there."
+msgstr "Stedet er på land, langt fra åbent vand: intet rutepunkt sat der."
+
+msgid "Found a sheltered bay? Place a waypoint near the coast and mark it as an anchorage (M). I'll stop there so you can drop the anchor."
+msgstr "Fundet en lun bugt? Sæt et rutepunkt nær kysten og markér det som ankerplads (M). Jeg stopper der, så du kan kaste anker."
+
+msgid "Anchorage"
+msgstr "Ankerplads"
+
+msgid "Make the selected waypoint tonight's anchorage (M): the boat stops there and asks you to drop the anchor."
+msgstr "Gør det valgte rutepunkt til nattens ankerplads (M): båden stopper der og beder dig kaste anker."
+
+msgid "Move it to the nearest good spot"
+msgstr "Flyt det til nærmeste gode sted"
+
+msgid "Waypoint %d is an ordinary waypoint again."
+msgstr "Rutepunkt %d er et almindeligt rutepunkt igen."
+
+msgid " There is no suitable spot nearby."
+msgstr " Der er intet egnet sted i nærheden."
+
+msgid "Not an anchorage: %s%s"
+msgstr "Ikke en ankerplads: %s%s"
+
+msgid "Waypoint %d is an anchorage. %s"
+msgstr "Rutepunkt %d er en ankerplads. %s"
+
+msgid "Waypoint %d moved to a suitable spot and made an anchorage. %s"
+msgstr "Rutepunkt %d flyttet til et egnet sted og gjort til ankerplads. %s"
+
+msgid "At anchor on the way to %s"
+msgstr "For anker på vej til %s"
+
+msgid "under engine"
+msgstr "for motor"
+
+msgid "under sail"
+msgstr "for sejl"
+
+msgid "Arrived at"
+msgstr "Ankommet til"
+
+msgid "Moored at"
+msgstr "Fortøjet i"
+
+msgid "No voyage in progress  ·  plan a course on the Course tab"
+msgstr "Ingen sejlads i gang  ·  planlæg en kurs under Kurs"
+
+msgid "%d nm to go  ·  ETA about %s"
+msgstr "%d sm tilbage  ·  ankomst cirka %s"
+
+msgid "No port selected"
+msgstr "Ingen havn valgt"
+
+msgid "Click a port on the chart to choose a destination."
+msgstr "Klik på en havn på søkortet for at vælge et mål."
+
+msgid "Plot course"
+msgstr "Afsæt kurs"
+
+msgid "%s\n%s\n%d nm away in a straight line"
+msgstr "%s\n%s\n%d sm væk i lige linje"
+
+msgid "%s\n%s  ·  %d nm in a straight line"
+msgstr "%s\n%s  ·  %d sm i lige linje"
+
+msgid "Plot course to %s"
+msgstr "Afsæt kurs mod %s"
+
+msgid "No course planned."
+msgstr "Ingen kurs planlagt."
+
+msgid "To %s"
+msgstr "Mod %s"
+
+msgid "  ·  %d nm course"
+msgstr "  ·  %d sm kurs"
+
+msgid "next turn to %03d°"
+msgstr "næste drej til %03d°"
+
+msgid "  ·  %d nm  ·  about %s with the expected wind"
+msgstr "  ·  %d sm  ·  cirka %s med den ventede vind"
+
+msgid "%d waypoint"
+msgid_plural "%d waypoints"
+msgstr[0] "%d rutepunkt"
+msgstr[1] "%d rutepunkter"
+
+msgid "NOT NAVIGABLE: %s"
+msgstr "IKKE SEJLBAR: %s"
+
+msgid "Apply course"
+msgstr "Anvend kurs"
+
+msgid "Change course"
+msgstr "Skift kurs"
+
+msgid "Sea route found. Press %s to use it."
+msgstr "Sørute fundet. Tryk på %s for at bruge den."
+
+msgid " (being sailed)"
+msgstr " (sejles nu)"
+
+msgid "Current course"
+msgstr "Nuværende kurs"
+
+msgid "Depart on the planned course"
+msgstr "Afsejl på den planlagte kurs"
+
+msgid "Weather (%d)"
+msgstr "Vejr (%d)"
+
+msgid "Passage readiness: "
+msgstr "Klar til passage: "
+
+msgid " (from the %s)"
+msgstr " (fra %s)"
+
+msgid "\nGusts %d kn  ·  %s  ·  %s"
+msgstr "\nVindstød %d kn  ·  %s  ·  %s"
+
+msgid "Destination"
+msgstr "Mål"
+
+msgid "Remove the selected waypoint (Delete, or right-click it)"
+msgstr "Fjern det valgte rutepunkt (Delete, eller højreklik)"
+
+msgid "Remove"
+msgstr "Fjern"
+
+msgid "Clear the planned course (in port)"
+msgstr "Ryd den planlagte kurs (i havn)"
+
+msgid "Clear"
+msgstr "Ryd"
+
+msgid "Drag the course line to add a waypoint; drag a waypoint to move it; right-click or Delete removes it."
+msgstr "Træk i kurslinjen for at tilføje et rutepunkt; træk et rutepunkt for at flytte det; højreklik eller Delete fjerner det."
+
+msgid "Wind at the boat"
+msgstr "Vind ved båden"
+
+msgid "Along the course"
+msgstr "Langs kursen"
+
+msgid "Warnings come when hazardous weather is within about 6 hours of sailing, or at the boat. The forecast covers weather that already exists: thunderstorms can form with little warning. Times are estimates."
+msgstr "Advarsler kommer, når farligt vejr er inden for cirka 6 timers sejlads, eller ved båden. Vejrudsigten dækker vejr, der allerede findes: tordenvejr kan opstå med kort varsel. Tider er skøn."
+
+msgid "Position"
+msgstr "Position"
+
+msgid "Europe  ·  WGS84, Mercator projection"
+msgstr "Europa  ·  WGS84, Mercator-projektion"
+
+msgid "Using the chart"
+msgstr "Brug af søkortet"
+
+msgid "Click a port, then Plot course. Drag the course line to add a waypoint, drag waypoints to move them, right-click or Delete to remove. Drag the chart to pan; scroll, + / - or the toolbar to zoom. Whole world shows the whole chart (zoom in for Europe and the detailed Danish waters); Find boat centres on the boat. The Wind switch shows or hides the wind arrows. Esc returns to the boat."
+msgstr "Klik på en havn, så Afsæt kurs. Træk i kurslinjen for at tilføje et rutepunkt, træk rutepunkter for at flytte dem, højreklik eller Delete for at fjerne. Træk i kortet for at panorere; rul, + / - eller værktøjslinjen for at zoome. Hele verden viser hele kortet (zoom ind for Europa og de detaljerede danske farvande); Find båd centrerer på båden. Vind-knappen viser eller skjuler vindpilene. Esc fører tilbage til båden."
+
+msgid "Coastlines: Natural Earth 1:10m (public domain), simplified. Weather areas are demonstration data. Not for navigation."
+msgstr "Kystlinjer: Natural Earth 1:10m (public domain), forenklet. Vejrområder er demodata. Ikke til navigation."
+
+msgid "Discard changes and keep the current course"
+msgstr "Kassér ændringer og behold den nuværende kurs"
+
+msgid "Discard"
+msgstr "Kassér"
+
+msgid "Sleep for a while (the boat sails on while you sleep). You wake in the V-berth."
+msgstr "Sov et stykke tid (båden sejler videre, mens du sover). Du vågner i forpeaken."
+
+msgid "Back to boat  (Esc)"
+msgstr "Tilbage til båden  (Esc)"
+
+msgid "Zoom in (+ / Page Up / mouse wheel)"
+msgstr "Zoom ind (+ / Page Up / musehjul)"
+
+msgid "Zoom out (- / Page Down / mouse wheel)"
+msgstr "Zoom ud (- / Page Down / musehjul)"
+
+msgid "Show the whole world"
+msgstr "Vis hele verden"
+
+msgid "World"
+msgstr "Verden"
+
+msgid "Centre the chart on the boat"
+msgstr "Centrér søkortet på båden"
+
+msgid "Find boat"
+msgstr "Find båd"
+
+msgid "Show or hide the wind arrows and speed colours"
+msgstr "Vis eller skjul vindpile og hastighedsfarver"
+
+msgid "Wind speed (knots)  ·  arrows point where the wind blows"
+msgstr "Vindhastighed (knob)  ·  pilene peger, hvor vinden blæser hen"
+
+msgid "Chart"
+msgstr "Søkort"
+
+msgid "Moored"
+msgstr "Fortøjet"
+
+msgid "slot %d"
+msgstr "plads %d"
+
+msgid "No Next Harbor saves were imported."
+msgstr "Ingen Next Harbor-gemninger blev importeret."
+
+msgid "Imported %d Next Harbor save into %s. The originals are unchanged."
+msgid_plural "Imported %d Next Harbor saves into %s. The originals are unchanged."
+msgstr[0] "Importerede %d Next Harbor-gemning til %s. Originalerne er uændrede."
+msgstr[1] "Importerede %d Next Harbor-gemninger til %s. Originalerne er uændrede."
+
+msgid "Imported %d Next Harbor saves into %s. The originals are unchanged."
+msgstr "Importerede %d Next Harbor-gemninger til %s. Originalerne er uændrede."
+
+msgid " %d could not be imported: no free slot (nothing was overwritten)."
+msgstr " %d kunne ikke importeres: ingen ledig plads (intet blev overskrevet)."
+
+msgid "Next Harbor"
+msgstr "Next Harbor"
+
+msgid "Godot"
+msgstr "Godot"
+
+msgid "Linux"
+msgstr "Linux"
+
+msgid "Invalid save slot."
+msgstr "Ugyldig gemmeplads."
+
+msgid "Slot %d is empty."
+msgstr "Plads %d er tom."
+
+msgid "No file."
+msgstr "Ingen fil."
+
+msgid "The save file is empty or unreadable."
+msgstr "Gemmefilen er tom eller ulæselig."
+
+msgid "The save file is damaged (line %d: %s)."
+msgstr "Gemmefilen er beskadiget (linje %d: %s)."
+
+msgid "This is not a Little Captain's Hat (or Next Harbor) save file."
+msgstr "Dette er ikke en gemmefil fra Little Captain's Hat (eller Next Harbor)."
+
+msgid "The save file has no version."
+msgstr "Gemmefilen har ingen version."
+
+msgid "Save version %d is not supported by this version of the game."
+msgstr "Gemmeversion %d understøttes ikke af denne version af spillet."
+
+msgid "The save file has no timestamp."
+msgstr "Gemmefilen har intet tidsstempel."
+
+msgid "The save data is invalid: %s."
+msgstr "Gemmedata er ugyldige: %s."
+
+msgid "the quicksave"
+msgstr "hurtiggemningen"
+
+msgid "At sea"
+msgstr "På havet"
+
+msgid "head to wind"
+msgstr "lige i vindøjet"
+
+msgid "close hauled"
+msgstr "bidevind"
+
+msgid "close reach"
+msgstr "halvvind, skarpt"
+
+msgid "beam reach"
+msgstr "halvvind"
+
+msgid "broad reach"
+msgstr "rumskøds"
+
+msgid "becalmed or head to wind"
+msgstr "vindstille eller lige i vindøjet"
+
+msgid "insufficient sailing performance"
+msgstr "utilstrækkelig sejlevne"
+
+msgid " · spinnaker set"
+msgstr " · spiler sat"
+
+msgid "Trimmed by the crew"
+msgstr "Trimmet af besætningen"
+
+msgid "Well trimmed"
+msgstr "Godt trimmet"
+
+msgid "Too loose"
+msgstr "For løst"
+
+msgid "Too tight"
+msgstr "For stramt"
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Key"
+msgstr "Tast"
+
+msgid "Fish on! Reel in"
+msgstr "Fisk på! Hal ind"
+
+msgid "Anchor dragging! Go to the windlass"
+msgstr "Ankeret glider! Gå til ankerspillet"
+
+msgid "  ·  a calm night"
+msgstr "  ·  en stille nat"
+
+msgid "  ·  a quiet evening"
+msgstr "  ·  en rolig aften"
+
+msgid "  ·  a still morning"
+msgstr "  ·  en stille morgen"
+
+msgid "At anchor  ·  %s%s"
+msgstr "For anker  ·  %s%s"
+
+msgid "Line out  ·  too fast to troll"
+msgstr "Line ude  ·  for hurtigt til trolling"
+
+msgid "Line out  ·  trolling"
+msgstr "Line ude  ·  trolling"
+
+msgid "Line out"
+msgstr "Line ude"
+
+msgid "Well fed"
+msgstr "Mæt"
+
+msgid "Actions"
+msgstr "Handlinger"
+
+msgid "Hint"
+msgstr "Tip"
+
+msgid "←/→ choose  ·  E or Enter use  ·  Q or Esc close"
+msgstr "←/→ vælg  ·  E eller Enter brug  ·  Q eller Esc luk"
+
+msgid "Action_%s"
+msgstr "Handling_%s"
+
+msgid "Off: choose to switch it on"
+msgstr "Fra: vælg for at slå til"
+
+msgid "On: choose to switch it off"
+msgstr "Til: vælg for at slå fra"
+
+msgid "Depths are GAME ESTIMATES, for play, not navigation. The normal anchor reaches %d-%d m; shelter is judged from the open water upwind, and the bottom is taken to be ordinary mixed ground everywhere."
+msgstr "Dybder er SPILLETS SKØN, til leg, ikke navigation. Det normale anker når %d-%d m; læ vurderes ud fra åbent vand mod vinden, og bunden regnes overalt for almindelig blandet bund."
+
+msgid "Close"
+msgstr "Luk"
+
+msgid "Alarm seen"
+msgstr "Alarm set"
+
+msgid "Set it again"
+msgstr "Sæt det igen"
+
+msgid "Raise anchor"
+msgstr "Let anker"
+
+msgid "Drop anchor"
+msgstr "Kast anker"
+
+msgid "At anchor on %d × the depth of chain, %s. %s"
+msgstr "For anker med %d × dybden i kæde, %s. %s"
+
+msgid "  ·  ALARM"
+msgstr "  ·  ALARM"
+
+msgid "A fair anchorage"
+msgstr "En rimelig ankerplads"
+
+msgid "A good anchorage"
+msgstr "En god ankerplads"
+
+msgid "The %s holds. %s"
+msgstr "%s holder. %s"
+
+msgid "  Depth here %s (GAME ESTIMATE)."
+msgstr "  Dybde her %s (SPILLETS SKØN)."
+
+msgid "%d × the depth of chain out: %s."
+msgstr "%d × dybden i kæde ude: %s."
+
+msgid "The anchor is down and %s: %s."
+msgstr "Ankeret er nede og %s: %s."
+
+msgid "barely set"
+msgstr "knap sat"
+
+msgid "well set"
+msgstr "godt sat"
+
+msgid "Set again: %s."
+msgstr "Sat igen: %s."
+
+msgid "Anchor up. The voyage continues."
+msgstr "Anker oppe. Sejladsen fortsætter."
+
+msgid "The brass flukes unfold and feel for the seabed far below. Press E (or click the dial) as the needle crosses the green arc."
+msgstr "Messingfligene folder sig ud og føler efter havbunden langt nede. Tryk E (eller klik på skiven), når nålen krydser den grønne bue."
+
+msgid "Try again"
+msgstr "Prøv igen"
+
+msgid "Cancel"
+msgstr "Annuller"
+
+msgid "The flukes found nothing to hold before the line went slack."
+msgstr "Fligene fandt intet at holde i, før linen blev slap."
+
+msgid "Perfect!"
+msgstr "Perfekt!"
+
+msgid "Good!"
+msgstr "Godt!"
+
+msgid "Too many misses: the Magic Anchor has not bitten."
+msgstr "For mange forbier: det Magiske anker har ikke bidt."
+
+msgid "  %d more to go."
+msgstr "  %d mere tilbage."
+
+msgid "%s The boat is not anchored and drifts with the weather. Try again, or cancel."
+msgstr "%s Båden er ikke ankret og driver med vejret. Prøv igen, eller annuller."
+
+msgid "It bites!"
+msgstr "Det bider!"
+
+msgid "The %s is down and holding: %s."
+msgstr "%s er nede og holder: %s."
+
+msgid " Out here it holds the boat's position - it is no shelter from the weather."
+msgstr " Herude holder det bådens position - det giver ikke læ for vejret."
+
+msgid "Site"
+msgstr "Sted"
+
+msgid "Holding"
+msgstr "Holdeevne"
+
+msgid "Chain to let out"
+msgstr "Kæde at stikke ud"
+
+msgid "Scope"
+msgstr "Kædelængde"
+
+msgid " (long, holds best)"
+msgstr " (lang, holder bedst)"
+
+msgid " (short)"
+msgstr " (kort)"
+
+msgid " (usual)"
+msgstr " (normal)"
+
+msgid "%d × the depth%s"
+msgstr "%d × dybden%s"
+
+msgid "Setting"
+msgstr "Sætning"
+
+msgid "Setting the anchor: back down gently. Press \"Set it now\" (or E) as the marker crosses the green middle."
+msgstr "Sæt ankeret: bak forsigtigt. Tryk \"Sæt det nu\" (eller E), når mærket krydser den grønne midte."
+
+msgid "Set it now"
+msgstr "Sæt det nu"
+
+msgid "Our anchorage"
+msgstr "Vores ankerplads"
+
+msgid "Question"
+msgstr "Spørgsmål"
+
+msgid "We've arrived at our anchorage. Ready to drop anchor?"
+msgstr "Vi er nået til vores ankerplads. Klar til at kaste anker?"
+
+msgid "Not yet"
+msgstr "Ikke endnu"
+
+msgid "Sail on"
+msgstr "Sejl videre"
+
+msgid "%s\nThe boat waits here; the action wheel (Q) has the anchor and \"Sail on\" whenever you are ready."
+msgstr "%s\nBåden venter her; handlingshjulet (Q) har ankeret og \"Sejl videre\", når du er klar."
+
+msgid "Fit_%s"
+msgstr "Monter_%s"
+
+msgid " Prototype: fitted free for now; its price comes with the chandlery."
+msgstr " Prototype: monteres gratis indtil videre; prisen kommer med skibshandlen."
+
+msgid "Fit_magic_anchor"
+msgstr "Monter_magisk_anker"
+
+msgid "The %s is aboard (prototype, free). Choose it at the windlass when the water is too deep for the normal anchor."
+msgstr "%s er om bord (prototype, gratis). Vælg det ved ankerspillet, når vandet er for dybt til det normale anker."
+
+msgid "Fit it (free prototype)"
+msgstr "Monter det (gratis prototype)"
+
+msgid "The %s in %s · %s%s · %s available"
+msgstr "%s i %s · %s%s · %s til rådighed"
+
+msgid " (this yard can haul boats out)"
+msgstr " (værftet kan tage både op)"
+
+msgid "Out of the water for a day: the bottom scrubbed, the hull seen to. Other work can be done while she is out."
+msgstr "Ude af vandet en dag: bunden skrubbet, skroget efterset. Andet arbejde kan klares imens."
+
+msgid "Haul out… (from %s)"
+msgstr "Optagning… (fra %s)"
+
+msgid "%s · about %s"
+msgstr "%s · cirka %s"
+
+msgid "Too expensive"
+msgstr "For dyrt"
+
+msgid "Fitted"
+msgstr "Monteret"
+
+msgid "Fit it (%s)"
+msgstr "Monter det (%s)"
+
+msgid "%s done: %s, %s."
+msgstr "%s udført: %s, %s."
+
+msgid "%s fitted for %s."
+msgstr "%s monteret for %s."
+
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d dag"
+msgstr[1] "%d dage"
+
+msgid "%s hours"
+msgstr "%s timer"
+
+msgid "%d minutes"
+msgstr "%d minutter"
+
+msgid "Boat care"
+msgstr "Bådpleje"
+
+msgid "Header"
+msgstr "Overskrift"
+
+msgid "Overview"
+msgstr "Overblik"
+
+msgid "At this boatyard"
+msgstr "På dette værft"
+
+msgid "Services"
+msgstr "Ydelser"
+
+msgid "Areas"
+msgstr "Områder"
+
+msgid "%d fitted"
+msgstr "%d monteret"
+
+msgid "Standard"
+msgstr "Standard"
+
+msgid "Your boat, the %s: hull %s  ·  %s  ·  food %s, water %s"
+msgstr "Din båd, %s: skrog %s  ·  %s  ·  mad %s, vand %s"
+
+msgid "Boat care (%s)…"
+msgstr "Bådpleje (%s)…"
+
+msgid "Grocery store (%s)…"
+msgstr "Købmand (%s)…"
+
+msgid "Grocery store…"
+msgstr "Købmand…"
+
+msgid "Condition %s"
+msgstr "Stand %s"
+
+msgid "Move aboard the %s"
+msgstr "Flyt om bord på %s"
+
+msgid "Top speed under sail"
+msgstr "Topfart for sejl"
+
+msgid "%d kn wind at %d°"
+msgstr "%d kn vind ved %d°"
+
+msgid "Under engine"
+msgstr "For motor"
+
+msgid "Preview"
+msgstr "Eksempel"
+
+msgid "  (your boat)"
+msgstr "  (din båd)"
+
+msgid "How they sail"
+msgstr "Sådan sejler de"
+
+msgid "Boat care…"
+msgstr "Bådpleje…"
+
+msgid "Move aboard"
+msgstr "Flyt om bord"
+
+msgid "Choose the boat you sail, look after your boat (repairs, services, haul-outs and equipment) or visit the grocery store. Your harbour, the time, your money and your companion stay with you."
+msgstr "Vælg den båd, du sejler, pas på din båd (reparationer, service, optagninger og udstyr) eller besøg købmanden. Din havn, tiden, dine penge og din ledsager følger med dig."
+
+msgid "Turns your %d unpublished renown into income (%s per renown)."
+msgstr "Gør dine %d ikke-udgivne ry til indtægt (%s pr. ry)."
+
+msgid "Under way to %s: %s nm sailed on this voyage so far."
+msgstr "Undervejs til %s: %s sm sejlet på denne sejlads indtil videre."
+
+msgid "Recent passages"
+msgstr "Seneste passager"
+
+msgid "Passages"
+msgstr "Passager"
+
+msgid "No passages yet. Plot a course at the chart table and set sail."
+msgstr "Ingen passager endnu. Læg en kurs ved kortbordet, og sæt sejl."
+
+msgid "Passage%d"
+msgstr "Passage%d"
+
+msgid "Notable moments"
+msgstr "Mindeværdige øjeblikke"
+
+msgid "Moments"
+msgstr "Øjeblikke"
+
+msgid "Moment%d"
+msgstr "Øjeblik%d"
+
+msgid "lost at sea, crew rescued"
+msgstr "forlist, besætningen reddet"
+
+msgid "%s  ·  %s  ·  %s nm  ·  %s  ·  %s, %s"
+msgstr "%s  ·  %s  ·  %s sm  ·  %s  ·  %s, %s"
+
+msgid "You have visited %d of the %d harbours on the chart. A harbour counts once you arrive and moor there."
+msgstr "Du har besøgt %d af de %d havne på søkortet. En havn tæller, når du ankommer og fortøjer der."
+
+msgid "Not visited"
+msgstr "Ikke besøgt"
+
+msgid "Filter_%s"
+msgstr "Filter_%s"
+
+msgid "Countries"
+msgstr "Lande"
+
+msgid "Other"
+msgstr "Andet"
+
+msgid "Country_%s"
+msgstr "Land_%s"
+
+msgid "%s %s  ·  %d of %d visited"
+msgstr "%s %s  ·  %d af %d besøgt"
+
+msgid "Harbours_%s"
+msgstr "Havne_%s"
+
+msgid "Harbour_%s"
+msgstr "Havn_%s"
+
+msgid "No harbours visited yet: arrive and moor somewhere new."
+msgstr "Ingen havne besøgt endnu: ankom og fortøj et nyt sted."
+
+msgid "None: you have been everywhere on the chart."
+msgstr "Ingen: du har været overalt på søkortet."
+
+msgid "%s  ·  not visited yet"
+msgstr "%s  ·  ikke besøgt endnu"
+
+msgid "before the log was kept"
+msgstr "før logbogen blev ført"
+
+msgid "first %s"
+msgstr "første %s"
+
+msgid "%d arrival"
+msgid_plural "%d arrivals"
+msgstr[0] "%d ankomst"
+msgstr[1] "%d ankomster"
+
+msgid "start harbour"
+msgstr "starthavn"
+
+msgid "Objectives"
+msgstr "Mål"
+
+msgid "Renown: %d earned in all, %d not yet published. Objectives are tracked automatically and pay renown when a voyage completes them."
+msgstr "Ry: %d optjent i alt, %d endnu ikke udgivet. Mål følges automatisk og giver ry, når en sejlads opfylder dem."
+
+msgid "Open"
+msgstr "Åbne"
+
+msgid "Completed"
+msgstr "Opfyldt"
+
+msgid "  ·  %d times"
+msgstr "  ·  %d gange"
+
+msgid "%s  ·  %d renown  ·  first %s%s"
+msgstr "%s  ·  %d ry  ·  første %s%s"
+
+msgid "None yet."
+msgstr "Ingen endnu."
+
+msgid "Secret achievements"
+msgstr "Hemmelige bedrifter"
+
+msgid "Secrets"
+msgstr "Hemmeligheder"
+
+msgid "Secret_%s"
+msgstr "Hemmelighed_%s"
+
+msgid "%s  ·  %d renown  ·  found %s"
+msgstr "%s  ·  %d ry  ·  fundet %s"
+
+msgid "%s still to discover. They are not described here: you will know one when you find it."
+msgstr "%s stadig skjult. De beskrives ikke her: du ved det, når du finder en."
+
+msgid "%d secret achievements are"
+msgstr "%d hemmelige bedrifter er"
+
+msgid "One secret achievement is"
+msgstr "Én hemmelig bedrift er"
+
+msgid "Tabs"
+msgstr "Faner"
+
+msgid "You have found every secret achievement."
+msgstr "Du har fundet alle hemmelige bedrifter."
+
+msgid "Objective_%s"
+msgstr "Mål_%s"
+
+msgid "%s  ·  %d renown%s"
+msgstr "%s  ·  %d ry%s"
+
+msgid "Detail"
+msgstr "Detaljer"
+
+msgid "Completed %d time so far."
+msgid_plural "Completed %d times so far."
+msgstr[0] "Opfyldt %d gang indtil videre."
+msgstr[1] "Opfyldt %d gange indtil videre."
+
+msgid "Progress: %s of %s nm."
+msgstr "Fremskridt: %s af %s sm."
+
+msgid "Progress: %d of %d."
+msgstr "Fremskridt: %d af %d."
+
+msgid "Longest passage so far: %s nm."
+msgstr "Længste passage indtil videre: %s sm."
+
+msgid "Not yet achieved."
+msgstr "Endnu ikke opnået."
+
+msgid "Boat"
+msgstr "Båd"
+
+msgid "The %s: %s"
+msgstr "%s: %s"
+
+msgid "Wear comes slowly with the miles: weed on the bottom with the days in the water, the rig with the wind, the engine with its hours. Boatyards look after it; a haul-out needs a yard that can lift boats."
+msgstr "Slid kommer langsomt med sømilene: begroning på bunden med dagene i vandet, rigningen med vinden, motoren med dens timer. Bådeværfter tager sig af det; en optagning kræver et værft, der kan løfte både."
+
+msgid "Boatyard visits"
+msgstr "Besøg på bådeværft"
+
+msgid "No boatyard work yet."
+msgstr "Intet værftsarbejde endnu."
+
+msgid "History%d"
+msgstr "Historik%d"
+
+msgid "Log"
+msgstr "Log"
+
+msgid "Statistics"
+msgstr "Statistik"
+
+msgid "%s nm  (%s)"
+msgstr "%s sm  (%s)"
+
+msgid "%s nm"
+msgstr "%s sm"
+
+msgid "Distance sailed"
+msgstr "Distance sejlet"
+
+msgid "Voyages completed"
+msgstr "Sejladser fuldført"
+
+msgid "%d of %d"
+msgstr "%d af %d"
+
+msgid "Harbours visited"
+msgstr "Havne besøgt"
+
+msgid "Harbour arrivals"
+msgstr "Havneankomster"
+
+msgid "Longest passage"
+msgstr "Længste passage"
+
+msgid "Rescues"
+msgstr "Redninger"
+
+msgid "%d  (%d unpublished)"
+msgstr "%d  (%d ikke udgivet)"
+
+msgid "Publish travel update (%s)…"
+msgstr "Udgiv rejseopdatering (%s)…"
+
+msgid "Publish travel update…"
+msgstr "Udgiv rejseopdatering…"
+
+msgid "Rarity"
+msgstr "Sjældenhed"
+
+msgid "Grade"
+msgstr "Klasse"
+
+msgid "No course"
+msgstr "Ingen kurs"
+
+msgid "Course now %03d°"
+msgstr "Kurs nu %03d°"
+
+msgid "%s  ·  range %d nm"
+msgstr "%s  ·  rækkevidde %d sm"
+
+msgid "Chartplotter"
+msgstr "Kortplotter"
+
+msgid "Closer"
+msgstr "Tættere"
+
+msgid "Farther"
+msgstr "Længere"
+
+msgid "Plot"
+msgstr "Plotter"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Confirm"
+msgstr "Bekræft"
+
+msgid "Are you sure?"
+msgstr "Er du sikker?"
+
+msgid "Message"
+msgstr "Besked"
+
+msgid "A pot of coffee on the little stove.\n\nNeeds nothing special.\nTakes %d minutes.\nJust for the pleasure of it."
+msgstr "En kande kaffe på det lille komfur.\n\nKræver intet særligt.\nTager %d minutter.\nBare for fornøjelsens skyld."
+
+msgid "Cook %s"
+msgstr "Lav %s"
+
+msgid "%d fish from the cool box (the oldest first)"
+msgstr "%d fisk fra køleboksen (de ældste først)"
+
+msgid "%s of groceries"
+msgstr "%s dagligvarer"
+
+msgid "Well fed for %d hours: the stores last a little longer."
+msgstr "Mæt i %d timer: forrådet holder lidt længere."
+
+msgid "Turns the catch into food for the stores (up to %s). "
+msgstr "Gør fangsten til mad i forrådet (op til %s). "
+
+msgid "%s\n\nNeeds: %s.\nTakes %d minutes.\n%s%s"
+msgstr "%s\n\nKræver: %s.\nTager %d minutter.\n%s%s"
+
+msgid "nothing special"
+msgstr "intet særligt"
+
+msgid "Coffee is ready."
+msgstr "Kaffen er klar."
+
+msgid "Written in the Captain's Log: %s."
+msgstr "Skrevet i Logbogen: %s."
+
+msgid "%s is ready."
+msgstr "%s er klar."
+
+msgid "The catch adds %s of food to the stores."
+msgstr "Fangsten giver %s mad til forrådet."
+
+msgid "Well fed until %s."
+msgstr "Mæt indtil %s."
+
+msgid "Rule"
+msgstr "Streg"
+
+msgid "Recipes"
+msgstr "Opskrifter"
+
+msgid "Pan"
+msgstr "Pande"
+
+msgid "Outcome"
+msgstr "Resultat"
+
+msgid "Make coffee"
+msgstr "Lav kaffe"
+
+msgid "Fish in the cool box: %d  ·  Food in the stores: %s"
+msgstr "Fisk i køleboksen: %d  ·  Mad i forrådet: %s"
+
+msgid "No developer guides"
+msgstr "Ingen udviklerguides"
+
+msgid "The guides are read from %s, which is not available in this build. Open the project in Godot (or run it with godot --path .) to read them."
+msgstr "Guiderne læses fra %s, som ikke findes i denne build. Åbn projektet i Godot (eller kør det med godot --path .) for at læse dem."
+
+msgid "This guide could not be read: %s"
+msgstr "Guiden kunne ikke læses: %s"
+
+msgid "Developer guides"
+msgstr "Udviklerguides"
+
+msgid "Practical instructions from DEV_GUIDES/ in the project folder (shown in development builds only)."
+msgstr "Praktiske vejledninger fra DEV_GUIDES/ i projektmappen (kun vist i udviklerbuilds)."
+
+msgid "Keep:"
+msgstr "Behold:"
+
+msgid "In fast time:"
+msgstr "I hurtig tid:"
+
+msgid "Posture"
+msgstr "Holdning"
+
+msgid "During Long Passage or at 20x: be stopped for every bite, or only when a fish of a rarity you keep bites (the others swim off; nothing is caught without you)."
+msgstr "Under Lang passage eller ved 20x: stop ved hvert bid, eller kun når en fisk af en sjældenhed, du beholder, bider (de andre svømmer væk; intet fanges uden dig)."
+
+msgid "Cool box"
+msgstr "Køleboks"
+
+msgid "Hold"
+msgstr "Hold"
+
+msgid "Reel"
+msgstr "Hjul"
+
+msgid "Dial"
+msgstr "Skive"
+
+msgid "Press E or Space (or click the dial) as the needle passes the green arc; the gold middle is Perfect. Three misses and it gets away. Esc lets it go."
+msgstr "Tryk E eller mellemrum (eller klik på skiven), når nålen passerer den grønne bue; den gyldne midte er Perfekt. Tre forbiere, og den slipper væk. Esc slipper den."
+
+msgid "Every fish"
+msgstr "Alle fisk"
+
+msgid "Rare or rarer"
+msgstr "Sjælden og op"
+
+msgid "Uncommon or rarer"
+msgstr "Usædvanlig og op"
+
+msgid "Very rare only"
+msgstr "Kun meget sjældne"
+
+msgid "Result"
+msgstr "Resultat"
+
+msgid "Any size"
+msgstr "Alle str."
+
+msgid "Bronze or better"
+msgstr "Bronze eller bedre"
+
+msgid "Gold only"
+msgstr "Kun guld"
+
+msgid "Silver or better"
+msgstr "Sølv eller bedre"
+
+msgid "Stop for every bite"
+msgstr "Stop ved hvert bid"
+
+msgid "Stop only for fish worth keeping"
+msgstr "Stop kun for fisk værd at beholde"
+
+msgid "Release it"
+msgstr "Sæt den fri"
+
+msgid "Put it back in the sea (it leaves the cool box and the trophy board)."
+msgstr "Sæt den tilbage i havet (den forlader køleboksen og trofætavlen)."
+
+msgid "Back to the rod"
+msgstr "Tilbage til stangen"
+
+msgid "Let it go"
+msgstr "Lad den gå"
+
+msgid "Rod fishing from the anchored boat"
+msgstr "Fiskeri med stang fra den ankrede båd"
+
+msgid "Rod fishing from the moored boat"
+msgstr "Fiskeri med stang fra den fortøjede båd"
+
+msgid "fair for this lure"
+msgstr "rimeligt til denne agn"
+
+msgid "not ideal for this lure"
+msgstr "ikke ideelt til denne agn"
+
+msgid "promising for this lure"
+msgstr "lovende til denne agn"
+
+msgid " (near the coast)"
+msgstr " (nær kysten)"
+
+msgid "%s. Waters: %s%s, %s.%s"
+msgstr "%s. Farvand: %s%s, %s.%s"
+
+msgid "  Line out."
+msgstr "  Linen er ude."
+
+msgid "Let the line out"
+msgstr "Sæt linen ud"
+
+msgid "Reel in the line"
+msgstr "Hal linen ind"
+
+msgid "Empty."
+msgstr "Tom."
+
+msgid "every fish"
+msgstr "alle fisk"
+
+msgid "%s fish or rarer"
+msgstr "%s fisk eller sjældnere"
+
+msgid "very rare fish only"
+msgstr "kun meget sjældne fisk"
+
+msgid "of any size"
+msgstr "i alle størrelser"
+
+msgid "that are %s specimens or better"
+msgstr "der er %s-eksemplarer eller bedre"
+
+msgid "that are Gold specimens"
+msgstr "der er Guld-eksemplarer"
+
+msgid "You keep %s %s; the rest go straight back (no cool box, no trophy). Sizes are graded by weight within each species, so even a common fish can be Gold. Sharks always swim free."
+msgstr "Du beholder %s %s; resten ryger lige tilbage (ingen køleboks, intet trofæ). Størrelser vurderes efter vægt inden for hver art, så selv en almindelig fisk kan være Guld. Hajer svømmer altid fri."
+
+msgid "Release"
+msgstr "Sæt fri"
+
+msgid "Sell (%s)"
+msgstr "Sælg (%s)"
+
+msgid "Sold for %s."
+msgstr "Solgt for %s."
+
+msgid "Something heavy is on the line!"
+msgstr "Der er noget tungt på linen!"
+
+msgid "Fish on!"
+msgstr "Fisk på!"
+
+msgid "Something's caught on the line..."
+msgstr "Der sidder noget fast på linen..."
+
+msgid "Not a fish, and worth nothing. It goes in the bin."
+msgstr "Ikke en fisk, og intet værd. Den ryger i skraldespanden."
+
+msgid "That's quite a catch. Better let this one swim free."
+msgstr "Sikke en fangst. Lad hellere denne svømme fri."
+
+msgid "Not one to keep by your preferences: back it goes."
+msgstr "Ikke en at beholde efter dine valg: den ryger tilbage."
+
+msgid "The cool box is full, so it goes back."
+msgstr "Køleboksen er fuld, så den ryger tilbage."
+
+msgid "Into the cool box: cook it in the galley, release it, or sell it in harbour."
+msgstr "I køleboksen: tilbered den i kabyssen, sæt den fri, eller sælg den i havn."
+
+msgid "A new species for your log!"
+msgstr "En ny art til din logbog!"
+
+msgid "A new personal best!"
+msgstr "Ny personlig rekord!"
+
+msgid "An exceptional fish."
+msgstr "En helt særlig fisk."
+
+msgid "\nYou let it go."
+msgstr "\nDu lader den gå."
+
+msgid "After %s a weather warning came in. Check the conditions."
+msgstr "Efter %s kom en vejradvarsel. Tjek forholdene."
+
+msgid "After %s the anchor alarm went: %s."
+msgstr "Efter %s gik ankeralarmen: %s."
+
+msgid "After %s the boat arrived."
+msgstr "Efter %s ankom båden."
+
+msgid "After %s at the rod: nothing yet."
+msgstr "Efter %s ved stangen: intet endnu."
+
+msgid "Rod"
+msgstr "Stang"
+
+msgid "Lure"
+msgstr "Agn"
+
+msgid "Wait for a bite"
+msgstr "Vent på et bid"
+
+msgid "Let time pass at the rod until a fish bites (at most an hour)."
+msgstr "Lad tiden gå ved stangen, til en fisk bider (højst en time)."
+
+msgid "Seen"
+msgstr "Set"
+
+msgid "+%d renown · a notable moment in the Captain's Log"
+msgstr "+%d ry · et mindeværdigt øjeblik i Logbogen"
+
+msgid "Ashore in %s"
+msgstr "I land i %s"
+
+msgid "Icon"
+msgstr "Ikon"
+
+msgid "Choices"
+msgstr "Valg"
+
+msgid "Return to the boat"
+msgstr "Tilbage til båden"
+
+msgid "A pleasant stroll"
+msgstr "En hyggelig gåtur"
+
+msgid "You have had a good look around %s for now. Come back in a few hours, or see what the next harbour holds."
+msgstr "Du har set dig godt omkring i %s for nu. Kom tilbage om nogle timer, eller se hvad næste havn byder på."
+
+msgid "the harbour"
+msgstr "havnen"
+
+msgid "Choice%d"
+msgstr "Valg%d"
+
+msgid "You have enjoyed everything %s has to offer before. It is still lovely."
+msgstr "Du har nydt alt, hvad %s har at byde på. Det er stadig dejligt."
+
+msgid "Nothing ashore"
+msgstr "Intet i land"
+
+msgid "%s  ·  %s  ·  %d min"
+msgstr "%s  ·  %s  ·  %d min"
+
+msgid "Price %s  ·  Funds %s"
+msgstr "Pris %s  ·  Midler %s"
+
+msgid "Buy for %s"
+msgstr "Køb for %s"
+
+msgid "Not enough money: you need %s. Remote work at the boat's work station earns %s an hour."
+msgstr "Ikke penge nok: du mangler %s. Fjernarbejde ved bådens arbejdsplads giver %s i timen."
+
+msgid "Food and water will be full (%d days each)."
+msgstr "Mad og vand bliver fyldt op (%d dage af hver)."
+
+msgid "Stock up (%s)"
+msgstr "Fyld op (%s)"
+
+msgid "Long passage: the %s is stocked for %d days, all she can stow."
+msgstr "Lang passage: %s har proviant til %d dage, alt hvad hun kan rumme."
+
+msgid "Long passage: stow food and water for %d days each, all the %s can carry."
+msgstr "Lang passage: stuv mad og vand til %d dage af hver, alt hvad %s kan bære."
+
+msgid "Your catch: %d fish in the cool box."
+msgstr "Din fangst: %d fisk i køleboksen."
+
+msgid "Your catch: the cool box is empty."
+msgstr "Din fangst: køleboksen er tom."
+
+msgid "Sell the catch (%s)"
+msgstr "Sælg fangsten (%s)"
+
+msgid "Bought a %s. You have %d."
+msgstr "Købte en %s. Du har %d."
+
+msgid "Sold %d fish for %s."
+msgstr "Solgte %d fisk for %s."
+
+msgid "Buy captain's hat (%s)"
+msgstr "Køb kaptajnshue (%s)"
+
+msgid "Captain's hats: you already have yours."
+msgstr "Kaptajnshuer: du har allerede din."
+
+msgid "Captain's hats, %s. Not enough money right now."
+msgstr "Kaptajnshuer, %s. Ikke penge nok lige nu."
+
+msgid "A replacement captain's hat, %s. Hold onto this one."
+msgstr "En ny kaptajnshue, %s. Hold godt fast i denne."
+
+msgid "Bought a new captain's hat for %s. Press H to put it on."
+msgstr "Købte en ny kaptajnshue for %s. Tryk H for at tage den på."
+
+msgid "Bought food and water for %s. Stores full: %s each."
+msgstr "Købte mad og vand for %s. Forråd fuldt: %s af hver."
+
+msgid "Stocked up for a long passage for %s: %s of food and water."
+msgstr "Fyldt op til en lang passage for %s: %s mad og vand."
+
+msgid "Grocery store"
+msgstr "Købmand"
+
+msgid "Fresh food and water, filled up to %d days each. %s per missing day of food or of water."
+msgstr "Frisk mad og vand, fyldt op til %d dage af hver. %s pr. manglende dag mad eller vand."
+
+msgid "Stores"
+msgstr "Forråd"
+
+msgid "Price"
+msgstr "Pris"
+
+msgid "Note"
+msgstr "Note"
+
+msgid "Buy"
+msgstr "Køb"
+
+msgid "Fishing lures"
+msgstr "Fiskeagn"
+
+msgid "Tackle"
+msgstr "Grej"
+
+msgid "Buy lure"
+msgstr "Køb agn"
+
+msgid "Hold onto your hat!"
+msgstr "Hold fast i huen!"
+
+msgid "Hat missing"
+msgstr "Hue mangler"
+
+msgid "Hat overboard!"
+msgstr "Hue over bord!"
+
+msgid "Your captain's hat blew away. The harbour grocery store sells a new one."
+msgstr "Din kaptajnshue blæste væk. Købmanden i havnen sælger en ny."
+
+msgid "Press H to take your hat off, or go below."
+msgstr "Tryk H for at tage huen af, eller gå under dæk."
+
+msgid "A day on the hard in %s: %s. Back in the water, she feels quick and light again."
+msgstr "En dag på land i %s: %s. Tilbage i vandet føles hun hurtig og let igen."
+
+msgid "Paid %s. Written in the Captain's Log (Boat).%s"
+msgstr "Betalt %s. Skrevet i Logbogen (Båd).%s"
+
+msgid "\nFirst haul-out: +2 renown."
+msgstr "\nFørste optagning: +2 ry."
+
+msgid "Back in the water"
+msgstr "Tilbage i vandet"
+
+msgid "Haul-out in %s"
+msgstr "Optagning i %s"
+
+msgid "Scene"
+msgstr "Scene"
+
+msgid "The yard lifts the %s out for a day: the bottom is scrubbed and the hull put right. While she is out, the yard can also:"
+msgstr "Værftet løfter %s op i en dag: bunden skrubbes, og skroget bliver gjort i stand. Mens hun er oppe, kan værftet også:"
+
+msgid "Options"
+msgstr "Valg"
+
+msgid "The yard lifts the %s out for a day: the bottom is scrubbed and the hull put right."
+msgstr "Værftet løfter %s op i en dag: bunden skrubbes, og skroget bliver gjort i stand."
+
+msgid "Total"
+msgstr "I alt"
+
+msgid "Not now"
+msgstr "Ikke nu"
+
+msgid "Total %s · one day ashore · you have %s"
+msgstr "I alt %s · én dag på land · du har %s"
+
+msgid "Haul out (%s)"
+msgstr "Tag op (%s)"
+
+msgid "Up she comes…"
+msgstr "Op kommer hun…"
+
+msgid "Row"
+msgstr "Række"
+
+msgid "Controls"
+msgstr "Styring"
+
+msgid "At anchor, %s  ·  bound for %s"
+msgstr "For anker, %s  ·  på vej til %s"
+
+msgid "Underway to %s"
+msgstr "Undervejs til %s"
+
+msgid "At anchor  ·  voyage paused"
+msgstr "For anker  ·  sejlads på pause"
+
+msgid "To %s  ·  %d nm to go"
+msgstr "Til %s  ·  %d sm tilbage"
+
+msgid "ETA about %s (estimate)"
+msgstr "Ankomst ca. %s (skøn)"
+
+msgid "At the anchorage  ·  0.0 kn"
+msgstr "På ankerpladsen  ·  0,0 kn"
+
+msgid "Drop the anchor, or sail on (Q)"
+msgstr "Kast anker, eller sejl videre (Q)"
+
+msgid "Sails down  ·  waiting at the anchorage"
+msgstr "Sejl nede  ·  venter på ankerpladsen"
+
+msgid "Raise the anchor at the windlass to sail on"
+msgstr "Let anker ved ankerspillet for at sejle videre"
+
+msgid "%s  ·  %d × the depth of chain"
+msgstr "%s  ·  %d × dybden i kæde"
+
+msgid "Planned route"
+msgstr "Planlagt rute"
+
+msgid "About %s with the expected wind  ·  set sail at the helm"
+msgstr "Ca. %s med den ventede vind  ·  sæt sejl ved roret"
+
+msgid "Plot a course at the chart table"
+msgstr "Læg en kurs ved kortbordet"
+
+msgid "Wind calm"
+msgstr "Vindstille"
+
+msgid "Wind %s %d kn"
+msgstr "Vind %s %d kn"
+
+msgid ", gusts %d"
+msgstr ", stød %d"
+
+msgid "WASD / ↑↓←→"
+msgstr "WASD / ↑↓←→"
+
+msgid "Esc"
+msgstr "Esc"
+
+msgid "Open the pause menu (Esc)"
+msgstr "Åbn pausemenuen (Esc)"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Weather warning"
+msgstr "Vejradvarsel"
+
+msgid "View chart"
+msgstr "Se søkort"
+
+msgid "Dismiss"
+msgstr "Luk"
+
+msgid "Hull 100 % · Sound"
+msgstr "Skrog 100 % · Sødygtig"
+
+msgid "Fri 1 May 2026, 08:00 UTC"
+msgstr "fre. 1. maj 2026, 08:00 UTC"
+
+msgid "Language  ·  Sprog"
+msgstr "Language  ·  Sprog"
+
+msgid "Choose the game's language. You can change it later in Settings.\n"
+msgstr "Vælg spillets sprog. Du kan ændre det senere under Indstillinger.\n"
+
+msgid "Intro"
+msgstr "Intro"
+
+msgid "Vælg spillets sprog. Du kan ændre det senere under Indstillinger."
+msgstr "Vælg spillets sprog. Du kan ændre det senere under Indstillinger."
+
+msgid "Language_%s"
+msgstr "Sprog_%s"
+
+msgid "Ready. Welcome aboard."
+msgstr "Klar. Velkommen om bord."
+
+msgid "Canvas"
+msgstr "Lærred"
+
+msgid "Small boat. Wide world. Hold onto your hat."
+msgstr "Lille båd. Stor verden. Hold fast i huen."
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Reading the harbour list…"
+msgstr "Læser havnelisten…"
+
+msgid "Unrolling the charts of the world…"
+msgstr "Ruller verdens søkort ud…"
+
+msgid "Making the cabin ready…"
+msgstr "Gør kahytten klar…"
+
+msgid "%s  (%d of %d)"
+msgstr "%s  (%d af %d)"
+
+msgid "Loading: %s"
+msgstr "Indlæser: %s"
+
+msgid "Version %s"
+msgstr "Version %s"
+
+msgid "No saved game yet"
+msgstr "Intet gemt spil endnu"
+
+msgid "Slot %d  ·  %s  ·  %s"
+msgstr "Plads %d  ·  %s  ·  %s"
+
+msgid "Load Game"
+msgstr "Indlæs spil"
+
+msgid "Copies your saves from Next Harbor (the game's earlier name). The originals stay where they are."
+msgstr "Kopierer dine gemte spil fra Next Harbor (spillets tidligere navn). Originalerne bliver, hvor de er."
+
+msgid "Import Next Harbor saves…"
+msgstr "Hent gemte Next Harbor-spil…"
+
+msgid "Settings"
+msgstr "Indstillinger"
+
+msgid "Quit"
+msgstr "Afslut"
+
+msgid "Coastlines: Natural Earth (public domain)  ·  Fonts: Barlow, Patrick Hand (SIL OFL)"
+msgstr "Kystlinjer: Natural Earth (public domain)  ·  Skrifttyper: Barlow, Patrick Hand (SIL OFL)"
+
+msgid "Developer guides (development builds only)"
+msgstr "Udviklerguider (kun udviklerversioner)"
+
+msgid "New Game"
+msgstr "Nyt spil"
+
+msgid "Continue"
+msgstr "Fortsæt"
+
+msgid "A ship's cat: likes the settee, the chart table and your berth. Purrs when petted."
+msgstr "En skibskat: kan lide sofaen, kortbordet og din køje. Spinder, når den bliver aet."
+
+msgid "A ship's dog: naps on the cabin sole, by the steps or next to the settee. Pants happily when petted."
+msgstr "En skibshund: sover på kahytsdørken, ved trappen eller ved sofaen. Pruster glad, når den bliver aet."
+
+msgid "Start"
+msgstr "Start"
+
+msgid "New game"
+msgstr "Nyt spil"
+
+msgid "Who sails with you? Your ship's companion lives in the cabin."
+msgstr "Hvem sejler med dig? Din skibskammerat bor i kahytten."
+
+msgid "Cat"
+msgstr "Kat"
+
+msgid "Dog"
+msgstr "Hund"
+
+msgid "Normal time: %s"
+msgstr "Normal tid: %s"
+
+msgid "  (%d fish nibbled and swam off on the way.)"
+msgstr "  (%d fisk nappede og svømmede væk undervejs.)"
+
+msgid "Long passage to %s"
+msgstr "Lang passage til %s"
+
+msgid "%s  ·  day %d at sea"
+msgstr "%s  ·  dag %d på havet"
+
+msgid "%s nm to go  ·  ETA about %s"
+msgstr "%s sm tilbage  ·  ankomst ca. %s"
+
+msgid "Stores %s  ·  about %s of sailing left%s"
+msgstr "Forråd %s  ·  ca. %s sejlads tilbage%s"
+
+msgid "  ·  not enough"
+msgstr "  ·  ikke nok"
+
+msgid "  ·  tight"
+msgstr "  ·  knapt"
+
+msgid "Boat: hull %s%s"
+msgstr "Båd: skrog %s%s"
+
+msgid "Outlook: no hazards in the next %d hours"
+msgstr "Udsigt: ingen farer de næste %d timer"
+
+msgid "Outlook: %s in about %d h"
+msgstr "Udsigt: %s om ca. %d t"
+
+msgid "; further on, not yet known."
+msgstr "; længere frem endnu ukendt."
+
+msgid "Progress"
+msgstr "Fremdrift"
+
+msgid "Stopped"
+msgstr "Stoppet"
+
+msgid "Speeds"
+msgstr "Hastigheder"
+
+msgid "Back to normal time."
+msgstr "Tilbage til normal tid."
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Normal time"
+msgstr "Normal tid"
+
+msgid "Rate%d"
+msgstr "Takt%d"
+
+msgid "Let %d hour pass every second. Stops by itself when something needs you."
+msgid_plural "Let %d hours pass every second. Stops by itself when something needs you."
+msgstr[0] "Lad %d time gå hvert sekund. Stopper selv, når noget kræver dig."
+msgstr[1] "Lad %d timer gå hvert sekund. Stopper selv, når noget kræver dig."
+
+msgid "Developer tests (F10)"
+msgstr "Udviklertest (F10)"
+
+msgid "Paused"
+msgstr "På pause"
+
+msgid "Resume"
+msgstr "Genoptag"
+
+msgid "Captain's Log (L)"
+msgstr "Logbogen (L)"
+
+msgid "Save Game"
+msgstr "Gem spil"
+
+msgid "Return to Main Menu"
+msgstr "Til hovedmenuen"
+
+msgid "Food and fresh water aboard the %s. One day of each is used per day, at sea and in harbour."
+msgstr "Mad og ferskvand om bord på %s. Der bruges en dags forbrug af hver om dagen, på havet og i havn."
+
+msgid "Underway: buy food and water at the grocery store in the next harbour."
+msgstr "Undervejs: køb mad og vand i købmanden i næste havn."
+
+msgid "There is no grocery store in %s."
+msgstr "Der er ingen købmand i %s."
+
+msgid "Food and water are full."
+msgstr "Mad og vand er fyldt op."
+
+msgid "Moored in %s: the grocery store fills both for %s."
+msgstr "Fortøjet i %s: købmanden fylder begge op for %s."
+
+msgid " You are out of supplies: you cannot set sail until you buy more."
+msgstr " Du er løbet tør for forsyninger: du kan ikke sætte sejl, før du køber mere."
+
+msgid "Food"
+msgstr "Mad"
+
+msgid "Endurance"
+msgstr "Rækkevidde"
+
+msgid "the scarcer of the two"
+msgstr "den mindste af de to"
+
+msgid "Publish travel update"
+msgstr "Udgiv rejseopdatering"
+
+msgid "Share your recent passages online. Unpublished renown becomes income at %s per renown point. Your lifetime renown stays as it is."
+msgstr "Del dine seneste passager online. Uudgivet ry bliver til indtægt med %s pr. rypoint. Dit samlede ry forbliver uændret."
+
+msgid "Unpublished renown: %d   ·   lifetime renown: %d"
+msgstr "Uudgivet ry: %d   ·   samlet ry: %d"
+
+msgid "%d renown × %s = %s"
+msgstr "%d ry × %s = %s"
+
+msgid "Funds %s → %s"
+msgstr "Midler %s → %s"
+
+msgid "Publish for %s"
+msgstr "Udgiv for %s"
+
+msgid "No vessels in range. A clear sea."
+msgstr "Ingen fartøjer i nærheden. Frit hav."
+
+msgid "%s %s nm %s"
+msgstr "%s %s sm %s"
+
+msgid ", passes %s nm off in %d min"
+msgstr ", passerer %s sm væk om %d min"
+
+msgid "Collision risk: keep a sharp lookout and give way if needed."
+msgstr "Kollisionsrisiko: hold skarpt udkig, og vig om nødvendigt."
+
+msgid "Keep an eye on it: it will pass close."
+msgstr "Hold øje med det: det passerer tæt forbi."
+
+msgctxt "compass"
+msgid "N"
+msgstr "N"
+
+msgid "Click (or press E / Space) when the needle is in the green arc."
+msgstr "Klik (eller tryk E / mellemrum), når nålen er i den grønne bue."
+
+msgid "Your boat was too badly damaged to sail on. A maritime rescue crew took you and the %s "
+msgstr "Din båd var for skadet til at sejle videre. Et søredningshold tog dig og %s "
+
+msgid "in tow and brought you both safely back to %s. The boat has been repaired and is ready to sail; "
+msgstr "på slæb og bragte jer sikkert tilbage til %s. Båden er repareret og klar til at sejle; "
+
+msgid "your companion and supplies are aboard."
+msgstr "din kammerat og dine forsyninger er om bord."
+
+msgid "Return destination: %s\nRescue fee: %s\nRemaining funds: %s"
+msgstr "Bragt til: %s\nRedningsgebyr: %s\nResterende midler: %s"
+
+msgid "Rescued at Sea"
+msgstr "Reddet på havet"
+
+msgid "Sail trim"
+msgstr "Sejltrim"
+
+msgid "Sketch"
+msgstr "Skitse"
+
+msgid "Eased"
+msgstr "Slækket"
+
+msgid "Trim"
+msgstr "Trim"
+
+msgid "Sheeted in"
+msgstr "Skødet hjem"
+
+msgid "Feedback"
+msgstr "Respons"
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Leave it to the crew"
+msgstr "Lad besætningen klare det"
+
+msgid "The crew keeps the sails sensibly trimmed: the boat sails as it always has. Trim by hand to sail a little faster (or slower)."
+msgstr "Besætningen holder sejlene fornuftigt trimmet: båden sejler som altid. Trim selv for at sejle lidt hurtigere (eller langsommere)."
+
+msgid "A / D or arrows: ease or sheet in  ·  Space: leave it to the crew  ·  T or Esc: close"
+msgstr "A / D eller pile: slæk eller skød hjem  ·  Mellemrum: overlad til besætningen  ·  T eller Esc: luk"
+
+msgid "Wind %d kn, %d° on the %s (%s)"
+msgstr "Vind %d kn, %d° om %s (%s)"
+
+msgid "Under engine: the sails are not drawing."
+msgstr "For motor: sejlene trækker ikke."
+
+msgid "%s  ·  speed %+d %%"
+msgstr "%s  ·  fart %+d %%"
+
+msgid "0 kn  ·  at anchor"
+msgstr "0 kn  ·  for anker"
+
+msgid "Wind "
+msgstr "Vind "
+
+msgid "Raise the anchor to sail on"
+msgstr "Let anker for at sejle videre"
+
+msgid "At the anchorage"
+msgstr "På ankerpladsen"
+
+msgid "0 kn  ·  waiting at the anchorage"
+msgstr "0 kn  ·  venter på ankerpladsen"
+
+msgid "Sailing to %s"
+msgstr "Sejler til %s"
+
+msgid "%03d°  ·  on the planned course"
+msgstr "%03d°  ·  på den planlagte kurs"
+
+msgid "No more turns: %s ahead"
+msgstr "Ikke flere sving: %s forude"
+
+msgid "%d nm  ·  ETA %s (estimate)"
+msgstr "%d sm  ·  ankomst %s (anslået)"
+
+msgid "under engine  ·  T to trim"
+msgstr "for motor  ·  T for trim"
+
+msgid "%s  ·  T to trim by hand"
+msgstr "%s  ·  T for at trimme selv"
+
+msgid "%03d°  ·  forecast %s (estimate)"
+msgstr "%03d°  ·  udsigt %s (anslået)"
+
+msgid "Collapse"
+msgstr "Fold sammen"
+
+msgid "Show fewer or more details"
+msgstr "Vis færre eller flere detaljer"
+
+msgid "Caption"
+msgstr "Overskrift"
+
+msgid "Heading"
+msgstr "Kurs"
+
+msgid "Next leg"
+msgstr "Næste stræk"
+
+msgid "Speed"
+msgstr "Fart"
+
+msgid "Wind now"
+msgstr "Vind nu"
+
+msgid "Next turn"
+msgstr "Næste sving"
+
+msgid "To go"
+msgstr "Tilbage"
+
+msgid "Value"
+msgstr "Værdi"
+
+msgid "Container"
+msgstr "Beholder"
+
+msgid "Overwrite slot %d?"
+msgstr "Overskriv plads %d?"
+
+msgid "The saved game in slot %d will be replaced by your current game."
+msgstr "Det gemte spil på plads %d erstattes af dit nuværende spil."
+
+msgid "Game saved to slot %d."
+msgstr "Spillet er gemt på plads %d."
+
+msgid "Saving failed (%s). Your previous save was kept."
+msgstr "Kunne ikke gemme (%s). Dit tidligere spil er bevaret."
+
+msgid "Choose a saved game to load."
+msgstr "Vælg et gemt spil at indlæse."
+
+msgid "Choose a slot to save to."
+msgstr "Vælg en plads at gemme på."
+
+msgid "Slot%d"
+msgstr "Plads%d"
+
+msgid "Slot %d"
+msgstr "Plads %d"
+
+msgid "Empty slot"
+msgstr "Tom plads"
+
+msgid "Damaged save — cannot be loaded. %s"
+msgstr "Beskadiget gemt spil — kan ikke indlæses. %s"
+
+msgid "Unsupported save — %s"
+msgstr "Ukendt gemt spil — %s"
+
+msgid "Route to %s"
+msgstr "Rute til %s"
+
+msgid "Back"
+msgstr "Tilbage"
+
+msgid "Windowed"
+msgstr "Vindue"
+
+msgid "Test"
+msgstr "Test"
+
+msgid "Play a temporary test sound on the %s bus"
+msgstr "Afspil en kort testlyd på %s-bussen"
+
+msgid "Fullscreen"
+msgstr "Fuld skærm"
+
+msgid "Artwork"
+msgstr "Grafik"
+
+msgid "The illustrated look is a prototype on every boat and in harbour; Classic shows the earlier art."
+msgstr "Det illustrerede udseende er en prototype på alle både og i havn; Klassisk viser den tidligere grafik."
+
+msgid "Borderless fullscreen"
+msgstr "Kantløs fuld skærm"
+
+msgid "Sailing view"
+msgstr "Sejlvisning"
+
+msgid "Boat faces its course"
+msgstr "Båden følger kursen"
+
+msgid "Underway the deck turns so the bow points along the course, north up. Off: the boat always points right."
+msgstr "Undervejs drejer dækket, så stævnen peger langs kursen, nord op. Fra: båden peger altid mod højre."
+
+msgid "Flashing"
+msgstr "Blink"
+
+msgid "Reduce flashing"
+msgstr "Mindre blink"
+
+msgid "Lightning shows as one soft glow, and highlights pulse once gently instead of blinking."
+msgstr "Lyn vises som et blødt skær, og fremhævninger pulserer blidt én gang i stedet for at blinke."
+
+msgid "Illustrated (prototype)"
+msgstr "Illustreret (prototype)"
+
+msgid "Lightning flash"
+msgstr "Lynglimt"
+
+msgid "Classic"
+msgstr "Klassisk"
+
+msgid "How bright lightning flashes are (0 %: thunder only)."
+msgstr "Hvor kraftige lynglimtene er (0 %: kun torden)."
+
+msgid "Motion"
+msgstr "Bevægelse"
+
+msgid "Reduce motion"
+msgstr "Mindre bevægelse"
+
+msgid "Small decorative animations stay still (a landed fish's tail flick and bobbing)."
+msgstr "Små pyntende animationer står stille (en landet fisks halesmæk og vippen)."
+
+msgid "Interface light"
+msgstr "Lys i brugerflade"
+
+msgid "Always day"
+msgstr "Altid dag"
+
+msgid "Always night"
+msgstr "Altid nat"
+
+msgid "Automatic (follows the day)"
+msgstr "Automatisk (følger dagen)"
+
+msgid "By day the chartroom's parchment and brass, by night harbour dusk and lantern light. Automatic follows the sun where the boat is."
+msgstr "Om dagen kortrummets pergament og messing, om natten havneskumring og lygtelys. Automatisk følger solen, hvor båden er."
+
+msgid "Language"
+msgstr "Sprog"
+
+msgid "Opens the folder with the technical session logs (for bug reports): %s"
+msgstr "Åbner mappen med de tekniske sessionslogs (til fejlrapporter): %s"
+
+msgid "Muted"
+msgstr "Lydløs"
+
+msgid "Settings saved."
+msgstr "Indstillinger gemt."
+
+msgid "Settings could not be saved."
+msgstr "Indstillinger kunne ikke gemmes."
+
+msgid "Unapplied changes — press Apply to keep them."
+msgstr "Ændringer ikke anvendt — tryk Anvend for at beholde dem."
+
+msgid "Diagnostic logs…"
+msgstr "Diagnoselogs…"
+
+msgid "Discard changes?"
+msgstr "Kassér ændringer?"
+
+msgid "Some settings have not been applied. Leaving now restores the previous settings."
+msgstr "Nogle indstillinger er ikke anvendt. Går du nu, gendannes de tidligere indstillinger."
+
+msgid "Master"
+msgstr "Samlet"
+
+msgid "Sound Effects"
+msgstr "Lydeffekter"
+
+msgid "UI Sounds"
+msgstr "UI-lyde"
+
+msgid "VSync"
+msgstr "VSync"
+
+msgid "Enabled"
+msgstr "Slået til"
+
+msgid "Interface scale"
+msgstr "Skalering"
+
+msgid "Restore Defaults"
+msgstr "Gendan standard"
+
+msgid "Apply"
+msgstr "Anvend"
+
+msgid "Audio"
+msgstr "Lyd"
+
+msgid "Display"
+msgstr "Skærm"
+
+msgid "Window mode"
+msgstr "Vinduestilstand"
+
+msgid "Dim"
+msgstr "Dæmp"
+
+msgid "Panel"
+msgstr "Panel"
+
+msgid "Buttons"
+msgstr "Knapper"
+
+msgid "The boat sails on while you sleep. You will be woken early on arrival or when a weather warning comes in."
+msgstr "Båden sejler videre, mens du sover. Du bliver vækket tidligt ved ankomst, eller når en vejrvarsel kommer."
+
+msgid "The boat is moored. Time passes while you sleep."
+msgstr "Båden er fortøjet. Tiden går, mens du sover."
+
+msgid " The game is paused: sleeping moves time on by the hours you choose, and it stays paused afterwards."
+msgstr " Spillet er på pause: søvn rykker tiden frem med de timer, du vælger, og det forbliver på pause bagefter."
+
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d time"
+msgstr[1] "%d timer"
+
+msgid "Sleep %d hour"
+msgid_plural "Sleep %d hours"
+msgstr[0] "Sov %d time"
+msgstr[1] "Sov %d timer"
+
+msgid "Wake at about %s\nin the V-berth."
+msgstr "Vågn ca. %s\ni forkahytten."
+
+msgid "One hour less (Left arrow)"
+msgstr "En time mindre (venstre pil)"
+
+msgid "6 hours"
+msgstr "6 timer"
+
+msgid "One hour more (Right arrow)"
+msgstr "En time mere (højre pil)"
+
+msgid "Pause"
+msgstr "Pause"
+
+msgid "Pause: stop the clock (the boat and the wind wait). Press again, or pick a speed, to continue."
+msgstr "Pause: stop uret (båden og vinden venter). Tryk igen, eller vælg en fart, for at fortsætte."
+
+msgid "Speed%d"
+msgstr "Fart%d"
+
+msgid "Fast time"
+msgstr "Hurtig tid"
+
+msgctxt "date"
+msgid "%d %s %d"
+msgstr "%d. %s %d"
+
+msgid "a %s"
+msgstr "en %s"
+
+msgid "a %s evening"
+msgstr "en %s aften"
+
+msgid "Black"
+msgstr "Sort"
+
+msgid "Card"
+msgstr "Kort"
+
+msgid "Date"
+msgstr "Dato"
+
+msgid "Phrase"
+msgstr "Frase"
+
+msgid "Clock"
+msgstr "Ur"
+
+msgid "Trophy board"
+msgstr "Trofætavle"
+
+msgid "The five most notable catches: rare fish rank above common ones, and a big fish above a small one of its kind."
+msgstr "De fem mest bemærkelsesværdige fangster: sjældne fisk over almindelige, og en stor fisk over en lille af samme art."
+
+msgid "Plaques"
+msgstr "Plader"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Record"
+msgstr "Rekord"
+
+msgid "No catches yet. The rod is on the stern rail."
+msgstr "Ingen fangster endnu. Stangen sidder på hækrælingen."
+
+msgid "Caught %d fish of %d species  ·  released %d  ·  sold %d%s.%s"
+msgstr "Fanget %d fisk af %d arter  ·  sluppet %d  ·  solgt %d%s.%s"
+
+msgid "  ·  %d shark swam free"
+msgid_plural "  ·  %d sharks swam free"
+msgstr[0] "  ·  %d haj svømmede fri"
+msgstr[1] "  ·  %d hajer svømmede fri"
+
+msgid "VHF radio, channel 16"
+msgstr "VHF-radio, kanal 16"
+
+msgid "Heard"
+msgstr "Hørt"
+
+msgid "Commitment"
+msgstr "Tilsagn"
+
+msgid "Share the forecast"
+msgstr "Del vejrudsigten"
+
+msgid "Let another vessel answer"
+msgstr "Lad et andet fartøj svare"
+
+msgid "When"
+msgstr "Hvornår"
+
+msgid "Distance"
+msgstr "Distance"
+
+msgid "Reason"
+msgstr "Årsag"
+
+msgid "Resume the passage from here."
+msgstr "Genoptag passagen herfra."
+
+msgid "Let %d hour pass every second."
+msgid_plural "Let %d hours pass every second."
+msgstr[0] "Lad %d time gå hvert sekund."
+msgstr[1] "Lad %d timer gå hvert sekund."
+
+msgid "Normal time: "
+msgstr "Normal tid: "
+
+msgid "%s nm to go  ·  arriving about %s"
+msgstr "%s sm tilbage  ·  ankomst ca. %s"
+
+msgid "Arrived."
+msgstr "Ankommet."
+
+msgid "Veil"
+msgstr "Slør"
+
+msgid "Atlas"
+msgstr "Atlas"
+
+msgid "Land"
+msgstr "Land"
+
+msgid "Track"
+msgstr "Spor"
+
+msgid "Remote work"
+msgstr "Fjernarbejde"
+
+msgid "Work online from the boat while moored: %s per completed hour. Time passes while you work, and food and water are used as usual."
+msgstr "Arbejd online fra båden, mens den er fortøjet: %s pr. fuld time. Tiden går, mens du arbejder, og mad og vand bruges som normalt."
+
+msgid "%d unpublished renown"
+msgstr "%d uudgivet ry"
+
+msgid "Work"
+msgstr "Arbejd"
+
+msgid "Work %d h for %s"
+msgstr "Arbejd %d t for %s"
+
+msgid "You finish at about %s.\nFunds now %s, afterwards %s.\nFood and water used: %s each."
+msgstr "Du er færdig ca. %s.\nMidler nu %s, bagefter %s.\nMad og vand brugt: %s af hver."
+
+msgid "CHART TABLE"
+msgstr "KORTBORD"
+
+msgid "V-BERTH"
+msgstr "FORKAHYT"
+
+msgid "GUEST PONTOON · COPENHAGEN"
+msgstr "GÆSTEBRO · KØBENHAVN"
+
+msgid "GROCERY STORE"
+msgstr "KØBMAND"
+
+msgid "GALLEY · PANTRY"
+msgstr "KABYS · SPISEKAMMER"
+
+msgid "NAV STATION"
+msgstr "NAVIGATION"
+
+msgid "OWNER'S CABIN"
+msgstr "EJERKAHYT"
+
+msgid "GUEST CABIN"
+msgstr "GÆSTEKAHYT"
+
+msgid "STEPS DOWN"
+msgstr "TRAPPE NED"
+
+msgid "TO DECK"
+msgstr "TIL DÆK"
+
+msgid "SALOON ROOF"
+msgstr "SALONTAG"
+
+msgid "PORT HULL"
+msgstr "BAGBORDS SKROG"
+
+msgid "STARBOARD HULL"
+msgstr "STYRBORDS SKROG"
+
+msgid "FLOATS: STORAGE ONLY"
+msgstr "FLYDERE: KUN OPBEVARING"
+
+msgid "PORT FLOAT"
+msgstr "BAGBORDS FLYDER"
+
+msgid "STARBOARD FLOAT"
+msgstr "STYRBORDS FLYDER"
+
+msgid "SIDE DECK"
+msgstr "SIDEDÆK"
+
+msgid "no id"
+msgstr "intet id"
+
+msgid "no performance profile"
+msgstr "ingen ydelsesprofil"
+
+msgid "missing deck or cabin scene"
+msgstr "mangler dæk- eller kahytsscene"
+
+msgid "Ama"
+msgstr "Ama"
+
+msgid "Ripple"
+msgstr "Krusning"
+
+msgid "Tropical depression"
+msgstr "Tropisk lavtryk"
+
+msgid "Tropical storm"
+msgstr "Tropisk storm"
+
+msgid "Hurricane (category %d)"
+msgstr "Orkan (kategori %d)"
+
+msgid "Unnamed"
+msgstr "Unavngivet"
+
+msgid "Caution"
+msgstr "Forsigtig"
+
+msgid "Dangerous"
+msgstr "Farlig"
+
+msgid "Severe"
+msgstr "Kraftig"
+
+msgid "Calm"
+msgstr "Stille"
+
+msgid "Strong winds"
+msgstr "Hård vind"
+
+msgid "Gale"
+msgstr "Kuling"
+
+msgid "Storm"
+msgstr "Storm"
+
+msgid "Thunderstorm risk"
+msgstr "Risiko for torden"
+
+msgid "Thunderstorm"
+msgstr "Tordenvejr"
+
+msgid "Severe squalls"
+msgstr "Kraftige byger"
+
+msgid "Hurricane"
+msgstr "Orkan"
+
+msgid "Fair"
+msgstr "Godt vejr"
+
+msgid "Severe thunderstorm"
+msgstr "Kraftigt tordenvejr"
+
+msgctxt "compass"
+msgid "E"
+msgstr "Ø"
+
+msgctxt "compass"
+msgid "ENE"
+msgstr "ØNØ"
+
+msgctxt "compass"
+msgid "ESE"
+msgstr "ØSØ"
+
+msgctxt "compass"
+msgid "NE"
+msgstr "NØ"
+
+msgctxt "compass"
+msgid "NNE"
+msgstr "NNØ"
+
+msgctxt "compass"
+msgid "NNW"
+msgstr "NNV"
+
+msgctxt "compass"
+msgid "NW"
+msgstr "NV"
+
+msgctxt "compass"
+msgid "S"
+msgstr "S"
+
+msgctxt "compass"
+msgid "SE"
+msgstr "SØ"
+
+msgctxt "compass"
+msgid "SSE"
+msgstr "SSØ"
+
+msgctxt "compass"
+msgid "SSW"
+msgstr "SSV"
+
+msgctxt "compass"
+msgid "SW"
+msgstr "SV"
+
+msgctxt "compass"
+msgid "W"
+msgstr "V"
+
+msgctxt "compass"
+msgid "WNW"
+msgstr "VNV"
+
+msgctxt "compass"
+msgid "WSW"
+msgstr "VSV"
+msgid "%.1f day"
+msgstr "%.1f dag"
+
+msgid "%.1f days"
+msgstr "%.1f dage"
+
+msgid "\nTropical cyclone season: high risk (%s)"
+msgstr "\nTropisk cyklonsæson: høj risiko (%s)"
+
+msgid "\nTropical cyclone season: some risk (%s)"
+msgstr "\nTropisk cyklonsæson: nogen risiko (%s)"
+
+msgid "%d good turn to set it down."
+msgstr "%d god omgang for at sætte det."
+
+msgid "%d good turns to set it down in this wind."
+msgstr "%d gode omgange for at sætte det i denne vind."
+
+msgid "Missed - it skips over the bottom (%d min). %d try left."
+msgid_plural "Missed - it skips over the bottom (%d min). %d tries left."
+msgstr[0] "Forbi - det springer hen over bunden (%d min). %d forsøg tilbage."
+msgstr[1] "Forbi - det springer hen over bunden (%d min). %d forsøg tilbage."
+
+msgid "%d good turn to land it."
+msgid_plural "%d good turns to land it."
+msgstr[0] "%d god omgang, så er den landet."
+msgstr[1] "%d gode omgange, så er den landet."
+
+msgid "Missed - the line slips. %d grip left."
+msgid_plural "Missed - the line slips. %d grips left."
+msgstr[0] "Forbi - linen glider. %d tag tilbage."
+msgstr[1] "Forbi - linen glider. %d tag tilbage."
+
+msgid "Missed..."
+msgstr "Forbi..."
+
+msgid "%d Perfect hit: a little heavier for your care."
+msgid_plural "%d Perfect hits: a little heavier for your care."
+msgstr[0] "%d perfekt træf: lidt tungere for din omhu."
+msgstr[1] "%d perfekte træf: lidt tungere for din omhu."
+
+msgid "Missed - it skips over the bottom (%d min). %d tries left."
+msgstr "Forbi - det springer hen over bunden (%d min). %d forsøg tilbage."

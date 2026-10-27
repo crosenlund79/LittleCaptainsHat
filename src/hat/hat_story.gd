@@ -25,7 +25,7 @@ static func describe_place(position: Vector2, location_id: StringName) -> Dictio
 	var catalog := PortCatalog.get_default()
 	var port := catalog.get_port(location_id) if not location_id.is_empty() else null
 	if port:
-		return {"text": "in %s harbour" % port.display_name, "port_id": String(port.id), "distance_nm": 0.0}
+		return {"text": Loc.t("in %s harbour") % port.display_name, "port_id": String(port.id), "distance_nm": 0.0}
 	var nearest: PortData = null
 	var best := INF
 	for candidate in catalog.ports:
@@ -34,14 +34,14 @@ static func describe_place(position: Vector2, location_id: StringName) -> Dictio
 			best = nm
 			nearest = candidate
 	if nearest == null:
-		return {"text": "at sea (%s)" % GeoMath.format_position(position), "port_id": "", "distance_nm": INF}
+		return {"text": Loc.t("at sea (%s)") % GeoMath.format_position(position), "port_id": "", "distance_nm": INF}
 	var text := ""
 	if best < JUST_OFF_NM:
-		text = "just off %s, %s" % [nearest.display_name, nearest.country]
+		text = Loc.t("just off %s, %s") % [nearest.display_name, nearest.country]
 	elif best <= NEAR_HARBOUR_NM:
-		text = "about %d nm off %s, %s" % [roundi(best), nearest.display_name, nearest.country]
+		text = Loc.t("about %d nm off %s, %s") % [roundi(best), nearest.display_name, nearest.country]
 	else:
-		text = "far out at sea, %d nm from the nearest harbour (%s)" % [roundi(best), nearest.display_name]
+		text = Loc.t("far out at sea, %d nm from the nearest harbour (%s)") % [roundi(best), nearest.display_name]
 	return {"text": text, "port_id": String(nearest.id), "distance_nm": best}
 
 
@@ -91,13 +91,13 @@ static func loss_message(lost_count: int) -> String:
 ## The Captain's Log line for a lost hat: "Lost another captain's hat about
 ## 12 nm off Skagen, Denmark. Wind 38 kn, gusting 49."
 static func loss_log_line(lost_count: int, place: Dictionary, sample: WeatherSample) -> String:
-	var what := "Lost my captain's hat" if lost_count <= 1 else "Lost another captain's hat"
-	var wind := "Wind %d kn" % roundi(sample.speed_kn)
+	var what := Loc.t("Lost my captain's hat") if lost_count <= 1 else Loc.t("Lost another captain's hat")
+	var wind := Loc.t("Wind %d kn") % roundi(sample.speed_kn)
 	if sample.gust_kn >= sample.speed_kn + 6.0:
-		wind += ", gusting %d" % roundi(sample.gust_kn)
+		wind += Loc.t(", gusting %d") % roundi(sample.gust_kn)
 	var remark := ""
 	if sample.hazard == WeatherModel.HAZARD_NORMAL:
-		remark = " Weather otherwise pleasant."
+		remark = Loc.t(" Weather otherwise pleasant.")
 	elif sample.hazard >= WeatherModel.HAZARD_DANGEROUS:
-		remark = " It was quite a blow."
+		remark = Loc.t(" It was quite a blow.")
 	return "%s %s. %s.%s" % [what, place.text, wind, remark]

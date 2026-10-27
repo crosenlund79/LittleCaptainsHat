@@ -344,27 +344,27 @@ func move_waypoint(index: int, geo: Vector2) -> void:
 ## route; at sea the voyage changes course from the vessel's current position.
 func apply_course() -> String:
 	if _draft_route == null:
-		return _set_feedback("This course cannot be used: %s" % _draft_error)
+		return _set_feedback(Loc.t("This course cannot be used: %s") % _draft_error)
 	var error := ""
 	for i in _draft_waypoints.size():
 		if _draft_anchorages[i] and not _spot(_draft_waypoints[i]).ok:
-			return _set_feedback("Anchorage %d cannot be used: %s Move it, or unmark it." % [i + 1, _spot(_draft_waypoints[i]).reason])
+			return _set_feedback(Loc.t("Anchorage %d cannot be used: %s Move it, or unmark it.") % [i + 1, _spot(_draft_waypoints[i]).reason])
 	if GameSession.is_underway():
 		error = GameSession.change_course(_draft_destination, _draft_waypoints, _draft_anchorages)
 	else:
 		error = GameSession.set_planned_route(_draft_route)
 	if not error.is_empty():
-		return _set_feedback("Course not changed: %s Your current course is unchanged." % error)
+		return _set_feedback(Loc.t("Course not changed: %s Your current course is unchanged.") % error)
 	_draft_dirty = false
 	_load_committed()
-	_set_feedback("Course set for %s." % PortCatalog.get_default().get_display_name(_draft_destination))
+	_set_feedback(Loc.t("Course set for %s.") % PortCatalog.get_default().get_display_name(_draft_destination))
 	return ""
 
 
 func discard_changes() -> void:
 	_draft_dirty = false
 	_load_committed()
-	_set_feedback("Changes discarded.")
+	_set_feedback(Loc.t("Changes discarded."))
 
 
 func clear_course() -> void:
@@ -486,23 +486,23 @@ func _refresh_dream() -> void:
 	_map.set_display(display)
 	var location := GameSession.get_location()
 	if GameSession.is_underway():
-		_set_text(_status, "At sea, dreaming of other harbours")
+		_set_text(_status, Loc.t("At sea, dreaming of other harbours"))
 	elif location:
-		_set_text(_status, "In the cabin at %s, %s" % [location.display_name, location.country])
+		_set_text(_status, Loc.t("In the cabin at %s, %s") % [location.display_name, location.country])
 	_set_text(_position, GeoMath.format_position(GameSession.get_vessel_position()))
 	var log := GameSession.get_captains_log()
-	_set_text(_voyage_label, "%d harbour%s visited so far" % [log.get_distinct_harbours(), "" if log.get_distinct_harbours() == 1 else "s"])
+	_set_text(_voyage_label, Loc.n("%d harbour visited so far", "%d harbours visited so far", log.get_distinct_harbours()) % log.get_distinct_harbours())
 	var selected := catalog.get_port(_selected_port_id)
 	if selected == null:
-		_set_text(_selection_title, "No harbour selected")
-		_set_text(_selection_details, "Click a harbour on the map, or find one by name.")
+		_set_text(_selection_title, Loc.t("No harbour selected"))
+		_set_text(_selection_details, Loc.t("Click a harbour on the map, or find one by name."))
 		_imagine_button.disabled = true
 		_plan_here_button.disabled = true
 		_daydream_label.text = ""
 		return
 	_set_text(_selection_title, "%s, %s" % [selected.display_name, selected.country])
-	var visited := "Visited" if log.has_visited(selected.id) else "Not visited yet"
-	_set_text(_selection_details, "%s\n%s\n%s  ·  %s  ·  %d nm in a straight line" % [selected.description,
+	var visited := Loc.t("Visited") if log.has_visited(selected.id) else Loc.t("Not visited yet")
+	_set_text(_selection_details, Loc.t("%s\n%s\n%s  ·  %s  ·  %d nm in a straight line") % [selected.description,
 		HarbourFacilities.describe_services(selected.id), visited,
 		GeoMath.format_position(selected.get_geo_position()),
 		roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))])
@@ -600,8 +600,8 @@ func _move_waypoint(index: int, geo: Vector2) -> void:
 	_recalculate()
 	if index < _draft_anchorages.size() and _draft_anchorages[index]:
 		var spot := _spot(geo)
-		_set_feedback(("Anchorage %d: %s" % [index + 1, spot.reason]) if spot.ok else
-			("Anchorage %d is no good here: %s" % [index + 1, spot.reason]))
+		_set_feedback((Loc.t("Anchorage %d: %s") % [index + 1, spot.reason]) if spot.ok else
+			(Loc.t("Anchorage %d is no good here: %s") % [index + 1, spot.reason]))
 
 
 func _select_waypoint(index: int) -> void:
@@ -644,10 +644,10 @@ func place_waypoint(index: int, geo: Vector2) -> void:
 	var water := router.nearest_navigable(geo, WAYPOINT_SNAP_NM)
 	if water != Vector2.INF:
 		_move_waypoint(index, water)
-		_set_feedback("Waypoint %d was on land: moved to the nearest open water." % (index + 1))
+		_set_feedback(Loc.t("Waypoint %d was on land: moved to the nearest open water.") % (index + 1))
 		return
 	remove_waypoint(index)
-	_set_feedback("That spot is on land, far from open water: no waypoint added there.")
+	_set_feedback(Loc.t("That spot is on land, far from open water: no waypoint added there."))
 
 
 func _on_committed_changed(_value: Variant = null) -> void:
@@ -721,21 +721,21 @@ func toggle_anchorage(index: int) -> String:
 		_clear_suggestion()
 		_draft_dirty = true
 		_recalculate()
-		_set_feedback("Waypoint %d is an ordinary waypoint again." % (index + 1))
+		_set_feedback(Loc.t("Waypoint %d is an ordinary waypoint again.") % (index + 1))
 		return ""
 	var spot := _spot(_draft_waypoints[index])
 	if not spot.ok:
 		var nearest := GameSession.nearest_anchorage_spot(_draft_waypoints[index], 12.0, GameSession.has_magic_anchor())
 		_anchorage_suggestion = nearest
 		_anchorage_suggestion_for = index if nearest != Vector2.INF else -1
-		var offer := " The nearest suitable spot is %.1f nm away." % GeoMath.distance_nm(_draft_waypoints[index], nearest) if nearest != Vector2.INF else " There is no suitable spot nearby."
-		_set_feedback("Not an anchorage: %s%s" % [spot.reason, offer])
+		var offer := Loc.format(" The nearest suitable spot is %.1f nm away.", GeoMath.distance_nm(_draft_waypoints[index], nearest)) if nearest != Vector2.INF else Loc.t(" There is no suitable spot nearby.")
+		_set_feedback(Loc.t("Not an anchorage: %s%s") % [spot.reason, offer])
 		return String(spot.reason)
 	_draft_anchorages[index] = true
 	_clear_suggestion()
 	_draft_dirty = true
 	_recalculate()
-	_set_feedback("Waypoint %d is an anchorage. %s" % [index + 1, spot.reason])
+	_set_feedback(Loc.t("Waypoint %d is an anchorage. %s") % [index + 1, spot.reason])
 	return ""
 
 
@@ -750,7 +750,7 @@ func use_anchorage_suggestion() -> void:
 	_clear_suggestion()
 	_draft_dirty = true
 	_recalculate()
-	_set_feedback("Waypoint %d moved to a suitable spot and made an anchorage. %s" % [index + 1, _spot(spot).reason])
+	_set_feedback(Loc.t("Waypoint %d moved to a suitable spot and made an anchorage. %s") % [index + 1, _spot(spot).reason])
 
 
 ## The anchorage rule for the anchors the captain has (0.105b: the Magic
@@ -853,12 +853,12 @@ func _refresh() -> void:
 	# Status and clock.
 	if GameSession.is_underway():
 		if GameSession.is_anchored():
-			_set_text(_status, "At anchor on the way to %s" % catalog.get_display_name(GameSession.get_voyage_destination_id()))
+			_set_text(_status, Loc.t("At anchor on the way to %s") % catalog.get_display_name(GameSession.get_voyage_destination_id()))
 		else:
-			_set_text(_status, "Underway to %s  ·  %.1f kn %s" % [catalog.get_display_name(GameSession.get_voyage_destination_id()),
-				speed, "under engine" if GameSession.is_motoring() else "under sail"])
+			_set_text(_status, Loc.format("Underway to %s  ·  %.1f kn %s", [catalog.get_display_name(GameSession.get_voyage_destination_id()),
+				speed, Loc.t("under engine") if GameSession.is_motoring() else Loc.t("under sail")]))
 	elif location:
-		var verb := "Arrived at" if GameSession.get_vessel_status() == SessionState.STATUS_ARRIVED else "Moored at"
+		var verb := Loc.t("Arrived at") if GameSession.get_vessel_status() == SessionState.STATUS_ARRIVED else Loc.t("Moored at")
 		_set_text(_status, "%s %s, %s" % [verb, location.display_name, location.country])
 	_set_text(_position, GeoMath.format_position(GameSession.get_vessel_position()))
 	_refresh_wind()
@@ -867,19 +867,19 @@ func _refresh() -> void:
 	# Always shown (also in port), so the panel below never moves on departure/arrival.
 	if not GameSession.is_underway():
 		_voyage_bar.value = 0.0
-		_set_text(_voyage_label, "No voyage in progress  ·  plan a course on the Course tab")
+		_set_text(_voyage_label, Loc.t("No voyage in progress  ·  plan a course on the Course tab"))
 	else:
 		var total := GameSession.get_voyage_total_nm()
 		var remaining := GameSession.get_voyage_remaining_nm()
 		_voyage_bar.value = 100.0 * (1.0 - remaining / total) if total > 0.0 else 100.0
 		var eta := Simulation.get_eta()
-		_set_text(_voyage_label, "%d nm to go  ·  ETA about %s" % [roundi(remaining), Simulation.format_game_time(eta)])
+		_set_text(_voyage_label, Loc.t("%d nm to go  ·  ETA about %s") % [roundi(remaining), Simulation.format_game_time(eta)])
 
 	# Selected port.
 	var selected := catalog.get_port(_selected_port_id)
 	if selected == null:
-		_set_text(_selection_title, "No port selected")
-		_set_text(_selection_details, "Click a port on the chart to choose a destination.")
+		_set_text(_selection_title, Loc.t("No port selected"))
+		_set_text(_selection_details, Loc.t("Click a port on the chart to choose a destination."))
 		_plot_button.disabled = true
 		_plot_button.text = "Plot course"
 	else:
@@ -887,43 +887,43 @@ func _refresh() -> void:
 		# Captain's Chartroom: a compact summary (the services by name and the
 		# distance); the explanations and the coordinates are in the tooltip.
 		var away := roundi(GeoMath.distance_nm(GameSession.get_vessel_position(), selected.get_geo_position()))
-		_set_text(_selection_details, "%s\n%s\n%d nm away in a straight line" % [selected.description,
+		_set_text(_selection_details, Loc.t("%s\n%s\n%d nm away in a straight line") % [selected.description,
 			HarbourFacilities.describe_services(selected.id, true), away])
-		_selection_details.tooltip_text = "%s\n%s  ·  %d nm in a straight line" % [HarbourFacilities.describe_services(selected.id),
+		_selection_details.tooltip_text = Loc.t("%s\n%s  ·  %d nm in a straight line") % [HarbourFacilities.describe_services(selected.id),
 			GeoMath.format_position(selected.get_geo_position()), away]
 		var here := location != null and selected.id == location.id and not GameSession.is_underway()
 		_plot_button.disabled = here
-		_plot_button.text = "You are here" if here else "Plot course to %s" % selected.display_name
+		_plot_button.text = "You are here" if here else Loc.t("Plot course to %s") % selected.display_name
 
 	# Course.
 	if _draft_destination.is_empty():
-		_set_text(_course_label, "No course planned.")
+		_set_text(_course_label, Loc.t("No course planned."))
 	else:
 		var distance := GeoMath.path_length_nm(_draft_route.path) if _draft_route else -1.0
 		var seconds := _draft_estimate_seconds
-		var summary := "To %s" % catalog.get_display_name(_draft_destination)
+		var summary := Loc.t("To %s") % catalog.get_display_name(_draft_destination)
 		if _draft_route == null and not _draft_dirty and GameSession.is_underway():
 			# Being sailed: distance to go and ETA are live values in the header.
-			summary += "  ·  %d nm course" % roundi(GameSession.get_voyage_total_nm())
+			summary += Loc.t("  ·  %d nm course") % roundi(GameSession.get_voyage_total_nm())
 			var turn := get_next_turn()
 			if not turn.is_empty():
-				summary += "\nSteering %03d°  ·  %s in %.1f nm" % [roundi(turn.course), "next turn to %03d°" % roundi(turn.next_course)
-					if turn.next_course >= 0.0 else "arrival", turn.nm]
+				summary += Loc.format("\nSteering %03d°  ·  %s in %.1f nm", [roundi(turn.course), Loc.t("next turn to %03d°") % roundi(turn.next_course)
+					if turn.next_course >= 0.0 else "arrival", turn.nm])
 		elif distance >= 0.0:
-			summary += "  ·  %d nm  ·  about %s with the expected wind" % [roundi(distance), Simulation.format_duration(seconds)]
+			summary += Loc.t("  ·  %d nm  ·  about %s with the expected wind") % [roundi(distance), Simulation.format_duration(seconds)]
 		if not _draft_waypoints.is_empty():
-			summary += "\n%d waypoint%s" % [_draft_waypoints.size(), "" if _draft_waypoints.size() == 1 else "s"]
+			summary += "\n" + Loc.n("%d waypoint", "%d waypoints", _draft_waypoints.size()) % _draft_waypoints.size()
 		_set_text(_course_label, summary)
 	var valid := _draft_route != null or (not _draft_dirty and not _draft_legs.is_empty())
 	var course_status := ""
 	if _draft_destination.is_empty():
 		course_status = ""
 	elif not valid:
-		course_status = "NOT NAVIGABLE: %s" % _draft_error
+		course_status = Loc.t("NOT NAVIGABLE: %s") % _draft_error
 	elif _draft_dirty:
-		course_status = "Sea route found. Press %s to use it." % ("Change course" if GameSession.is_underway() else "Apply course")
+		course_status = Loc.t("Sea route found. Press %s to use it.") % (Loc.t("Change course") if GameSession.is_underway() else Loc.t("Apply course"))
 	else:
-		course_status = "Current course" + (" (being sailed)" if GameSession.is_underway() else "")
+		course_status = Loc.t("Current course") + (Loc.t(" (being sailed)") if GameSession.is_underway() else "")
 	if not _feedback.is_empty():
 		course_status += "\n" + _feedback
 	if not _feedback_hint.is_empty():
@@ -931,21 +931,21 @@ func _refresh() -> void:
 	_set_text(_course_status, course_status)
 	_edit_help.visible = not _draft_destination.is_empty() and mode == MODE_STATION
 	_update_readiness(valid)
-	_apply_button.text = "Change course" if GameSession.is_underway() else "Apply course"
+	_apply_button.text = "Change course" if GameSession.is_underway() else Loc.t("Apply course")
 	_apply_button.disabled = not _draft_dirty or _draft_route == null
 	_discard_button.disabled = not _draft_dirty
 	_remove_button.disabled = _selected_waypoint < 0
 	_anchorage_button.disabled = _selected_waypoint < 0
-	_anchorage_button.text = "Unmark" if is_anchorage(_selected_waypoint) else "Anchorage"
+	_anchorage_button.text = "Unmark" if is_anchorage(_selected_waypoint) else Loc.t("Anchorage")
 	_suggestion_button.visible = _anchorage_suggestion != Vector2.INF
 	_clear_button.disabled = GameSession.is_underway() or GameSession.get_planned_route() == null
 	# Always in the footer; disabled (not hidden) when it cannot be used.
 	_sail_button.disabled = GameSession.is_underway() or _draft_dirty or GameSession.get_planned_route() == null
-	_sail_button.tooltip_text = "Already underway" if GameSession.is_underway() else "Depart on the planned course"
+	_sail_button.tooltip_text = "Already underway" if GameSession.is_underway() else Loc.t("Depart on the planned course")
 
 	_set_text(_weather_label, _describe_weather())
 	var warnings := _count_weather_warnings()
-	_tabs.set_tab_title(TAB_WEATHER, "Weather (%d)" % warnings if warnings > 0 else "Weather")
+	_tabs.set_tab_title(TAB_WEATHER, Loc.t("Weather (%d)") % warnings if warnings > 0 else Loc.t("Weather"))
 
 
 ## Passage Readiness for the course in harbour (Iteration 14): advisory,
@@ -966,8 +966,8 @@ func _update_readiness(valid: bool) -> void:
 	_readiness_key = key
 	readiness = PassageReadiness.assess(path)
 	# The headline and the most important note; the rest in the tooltip.
-	_set_text(_readiness_label, "Passage readiness: " + PassageReadiness.describe(readiness, 1))
-	_readiness_label.tooltip_text = "Passage readiness: " + PassageReadiness.describe(readiness, 3)
+	_set_text(_readiness_label, Loc.t("Passage readiness: ") + PassageReadiness.describe(readiness, 1))
+	_readiness_label.tooltip_text = Loc.t("Passage readiness: ") + PassageReadiness.describe(readiness, 3)
 	_readiness_label.theme_type_variation = [&"SuccessLabel", &"", &"WarningLabel"][int(readiness.level)]
 
 
@@ -990,18 +990,18 @@ func _refresh_wind() -> void:
 	var here := Simulation.get_weather_at_vessel()
 	var text := Hud.describe_wind(here)
 	if here.speed_kn >= 0.5:
-		text += " (from the %s)" % WindField.compass_name(here.from_deg)
-	text += "\nGusts %d kn  ·  %s  ·  %s" % [roundi(here.gust_kn), here.get_label(), here.get_hazard_name()]
+		text += Loc.t(" (from the %s)") % WindField.compass_name(here.from_deg)
+	text += Loc.t("\nGusts %d kn  ·  %s  ·  %s") % [roundi(here.gust_kn), here.get_label(), here.get_hazard_name()]
 	if here.cyclone_risk > 0.05:
-		text += "\nTropical cyclone season: %s risk (%s)" % ["high" if here.cyclone_risk > 0.6 else "some", here.cyclone_basin]
+		text += (Loc.t("\nTropical cyclone season: high risk (%s)") if here.cyclone_risk > 0.6 else Loc.t("\nTropical cyclone season: some risk (%s)")) % Loc.t(here.cyclone_basin)
 	_set_text(_wind_here, text)
 	if GameSession.is_underway():
 		var propulsion := GameSession.get_propulsion()
 		var side := PropulsionState.wind_side(propulsion.true_wind_angle)
-		_set_text(_propulsion, "%s\nWind %d° %s" % [propulsion.describe(), roundi(absf(propulsion.true_wind_angle)),
-			side if side else "off the bow"])
+		_set_text(_propulsion, Loc.t("%s\nWind %d° %s") % [propulsion.describe(), roundi(absf(propulsion.true_wind_angle)),
+			side if side else Loc.t("off the bow")])
 	else:
-		_set_text(_propulsion, "In port. The boat chooses sail or engine itself once underway.")
+		_set_text(_propulsion, Loc.t("In port. The boat chooses sail or engine itself once underway."))
 
 
 ## The course shown (draft or active) as one path, or empty when it is not navigable.
@@ -1041,21 +1041,21 @@ func _describe_weather() -> String:
 	var lines := PackedStringArray()
 	if GameSession.is_underway():
 		for storm in Simulation.get_storms_near(GameSession.get_vessel_position()):
-			lines.append("%s nearby, moving %s." % [WeatherStyle.label(storm, GameSession.get_game_time()).capitalize(),
+			lines.append(Loc.t("%s nearby, moving %s.") % [WeatherStyle.label(storm, GameSession.get_game_time()).capitalize(),
 				WindField.compass_name(storm.heading_at(GameSession.get_game_time()))])
 	var path := _shown_path()
 	if path.size() < 2 and not GameSession.is_underway():
-		lines.append("Plot a course to see the weather along it.")
+		lines.append(Loc.t("Plot a course to see the weather along it."))
 		return "\n".join(lines)
 	var hazards := get_route_hazards()
 	if hazards.is_empty():
-		lines.append("No hazardous weather expected along the next %d hours of the course." % roundi(Simulation.DISPLAY_HORIZON_HOURS))
+		lines.append(Loc.t("No hazardous weather expected along the next %d hours of the course.") % roundi(Simulation.DISPLAY_HORIZON_HOURS))
 	for hazard in hazards:
 		var expected := Simulation.expected_strength(hazard)
-		var outlook := "Wind to %d kn, gusts %d kn." % [roundi(expected[0]), roundi(expected[1])]
+		var outlook := Loc.t("Wind to %d kn, gusts %d kn.") % [roundi(expected[0]), roundi(expected[1])]
 		if (hazard.sample as WeatherSample).classification == WeatherModel.CLASS_THUNDER_RISK:
-			outlook = "Thunderstorms may form there."
-		lines.append("%s (%s): %s, %d nm ahead. %s" % [hazard.label, WeatherModel.hazard_name(hazard.hazard).to_lower(),
+			outlook = Loc.t("Thunderstorms may form there.")
+		lines.append(Loc.t("%s (%s): %s, %d nm ahead. %s") % [hazard.label, WeatherModel.hazard_name(hazard.hazard).to_lower(),
 			Simulation.describe_when(hazard.hours), roundi(hazard.distance_nm), outlook])
 	return "\n".join(lines)
 
@@ -1116,7 +1116,7 @@ func _build_anchorage_controls() -> void:
 	box.add_child(title)
 	var row := HBoxContainer.new()
 	box.add_child(row)
-	for entry: Array in [[AnchorageLayer.NORMAL_COLOUR, "Normal anchor"], [AnchorageLayer.MAGIC_COLOUR, "Magic Anchor (deep)"]]:
+	for entry: Array in [[AnchorageLayer.NORMAL_COLOUR, Loc.t("Normal anchor")], [AnchorageLayer.MAGIC_COLOUR, Loc.t("Magic Anchor (deep)")]]:
 		var swatch := ColorRect.new()
 		swatch.color = Color(entry[0], 0.9)
 		swatch.custom_minimum_size = Vector2(18, 18)
@@ -1163,8 +1163,8 @@ func _update_anchorage_info(delta: float) -> void:
 	if _anchor_toggle == null or not _map.anchorage_layer.shown:
 		return
 	var zoomed := _map.anchorage_layer.is_zoomed_in()
-	_anchor_note.text = ("Depths are GAME ESTIMATES, for play, not navigation. Point at the water to see more." if zoomed
-		else "Zoom in on a coast to see where you can anchor.")
+	_anchor_note.text = (Loc.t("Depths are GAME ESTIMATES, for play, not navigation. Point at the water to see more.") if zoomed
+		else Loc.t("Zoom in on a coast to see where you can anchor."))
 	if not zoomed:
 		_anchor_info.text = ""
 		return

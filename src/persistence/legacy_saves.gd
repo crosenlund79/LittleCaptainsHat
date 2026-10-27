@@ -109,17 +109,17 @@ static func describe(results: Array[Dictionary]) -> String:
 	var skipped := 0
 	for r in results:
 		if r.result == RESULT_IMPORTED:
-			imported.append("slot %d" % r.target)
+			imported.append(Loc.t("slot %d") % r.target)
 		elif r.result == RESULT_NO_FREE_SLOT:
 			skipped += 1
 	var text := ""
 	if imported.is_empty():
-		text = "No Next Harbor saves were imported."
+		text = Loc.t("No Next Harbor saves were imported.")
 	else:
-		text = "Imported %d Next Harbor save%s into %s. The originals are unchanged." % [imported.size(),
-			"" if imported.size() == 1 else "s", ", ".join(imported)]
+		text = Loc.n("Imported %d Next Harbor save into %s. The originals are unchanged.",
+			"Imported %d Next Harbor saves into %s. The originals are unchanged.", imported.size()) % [imported.size(), ", ".join(imported)]
 	if skipped > 0:
-		text += " %d could not be imported: no free slot (nothing was overwritten)." % skipped
+		text += Loc.t(" %d could not be imported: no free slot (nothing was overwritten).") % skipped
 	return text
 
 

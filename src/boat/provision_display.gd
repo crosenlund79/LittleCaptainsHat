@@ -99,7 +99,7 @@ func _draw() -> void:
 		_draw_food(FOOD_KINDS[i % FOOD_KINDS.size()], Vector2(x, -13.0), i < food_filled)
 		_draw_jug(Vector2(x, 5.0), i < water_filled)
 	var label_colour := _tint(minf(food_days, water_days), Color(0.94, 0.9, 0.8, 0.7))
-	draw_string(LABEL_FONT, Vector2(-width / 2.0 - 4.0, 22.0), "FOOD · WATER", HORIZONTAL_ALIGNMENT_LEFT, width + 8.0, 8, label_colour)
+	draw_string(LABEL_FONT, Vector2(-width / 2.0 - 4.0, 22.0), Loc.t("FOOD · WATER"), HORIZONTAL_ALIGNMENT_LEFT, width + 8.0, 8, label_colour)
 
 
 ## The food slots, left to right: what a cruising galley keeps.

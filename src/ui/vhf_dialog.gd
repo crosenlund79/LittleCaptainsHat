@@ -11,12 +11,12 @@ var call := {}
 
 
 func _ready() -> void:
-	_build(Loc.t("VHF radio, channel 16"), 640.0)
+	_build("VHF radio, channel 16", 640.0)
 	_label("Heard", VhfRadio.describe(call), &"")
 	_label("Commitment", VhfRadio.describe_commitment(call), &"MutedLabel")
 	var assist: bool = call.get("kind", &"") == VhfRadio.KIND_ASSIST
-	_button("AnswerButton", Loc.t("Answer and stand by") if assist else Loc.t("Share the forecast"), _answer.bind(true))
-	_button("DeclineButton", Loc.t("Let another vessel answer"), _answer.bind(false))
+	_button("AnswerButton", "Answer and stand by" if assist else Loc.t("Share the forecast"), _answer.bind(true))
+	_button("DeclineButton", "Let another vessel answer", _answer.bind(false))
 
 
 func _answer(accept: bool) -> void:

@@ -31,7 +31,7 @@ func _process(_delta: float) -> void:
 
 func refresh() -> void:
 	var provisions := GameSession.get_provisions()
-	_intro.text = "Food and fresh water aboard the %s. One day of each is used per day, at sea and in harbour." % \
+	_intro.text = Loc.t("Food and fresh water aboard the %s. One day of each is used per day, at sea and in harbour.") % \
 		GameSession.get_vessel_definition().display_name
 	_food.text = Provisions.format_days(provisions.food_days)
 	_water.text = Provisions.format_days(provisions.water_days)
@@ -42,19 +42,19 @@ func refresh() -> void:
 	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
 	_grocery.disabled = not store or provisions.is_full(GameSession.get_passage_store_days())
 	_grocery.visible = not harbour or store
-	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
-		if not provisions.is_full() else "Grocery store…"
+	_grocery.text = Loc.t("Grocery store (%s)…") % GameSession.format_money(GameSession.get_provisions_price()) \
+		if not provisions.is_full() else Loc.t("Grocery store…")
 	if not harbour:
 		_note.text = "Underway: buy food and water at the grocery store in the next harbour."
 	elif not store:
-		_note.text = "There is no grocery store in %s." % GameSession.get_location().display_name
+		_note.text = Loc.t("There is no grocery store in %s.") % GameSession.get_location().display_name
 	elif provisions.is_full():
 		_note.text = "Food and water are full."
 	else:
-		_note.text = "Moored in %s: the grocery store fills both for %s." % [GameSession.get_location().display_name,
+		_note.text = Loc.t("Moored in %s: the grocery store fills both for %s.") % [GameSession.get_location().display_name,
 			GameSession.format_money(GameSession.get_provisions_price())]
 	if provisions.is_empty():
-		_note.text += " You are out of supplies: you cannot set sail until you buy more."
+		_note.text += Loc.t(" You are out of supplies: you cannot set sail until you buy more.")
 
 
 func get_values() -> Dictionary:

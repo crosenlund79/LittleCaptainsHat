@@ -22,10 +22,10 @@ func setup(rescue_info: Dictionary) -> void:
 func _ready() -> void:
 	_title.text = TITLE
 	var port := PortCatalog.get_default().get_display_name(StringName(info.get("port_id", "copenhagen")))
-	_message.text = ("Your boat was too badly damaged to sail on. A maritime rescue crew took you and the %s " +
-		"in tow and brought you both safely back to %s. The boat has been repaired and is ready to sail; " +
-		"your companion and supplies are aboard.") % [GameSession.get_vessel_definition().display_name, port]
-	_details.text = "Return destination: %s\nRescue fee: %s\nRemaining funds: %s" % [port,
+	_message.text = (Loc.t("Your boat was too badly damaged to sail on. A maritime rescue crew took you and the %s ") +
+		Loc.t("in tow and brought you both safely back to %s. The boat has been repaired and is ready to sail; ") +
+		Loc.t("your companion and supplies are aboard.")) % [GameSession.get_vessel_definition().display_name, port]
+	_details.text = Loc.t("Return destination: %s\nRescue fee: %s\nRemaining funds: %s") % [port,
 		GameSession.format_money(int(info.get("fee", 0))), GameSession.format_money(int(info.get("funds_after", 0)))]
 	%ContinueButton.pressed.connect(close)
 

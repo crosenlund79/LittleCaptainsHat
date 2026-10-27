@@ -103,6 +103,10 @@ const STOP_ENDED := &"ended"
 var game_seconds_per_real_second := DEFAULT_GAME_SECONDS_PER_REAL_SECOND
 ## Tests can switch off frame-driven advancing to step time manually.
 var auto_advance := true
+## Traffic warnings and VHF calls (I019). Always on in the game; the test
+## runner turns them off as a fixture (like its calm wind) so voyage-timing
+## suites written before them stay exact; their own suites turn them on.
+var sea_encounters := true
 
 var _eta_key := ""
 var _eta_seconds := 0.0
@@ -150,7 +154,7 @@ func _ready() -> void:
 		if passage_rate > 0.0:
 			_passage_notice = {"reason": STOP_STORES, "text": text})
 	GameSession.notice.connect(func(text: String) -> void:
-		if passage_rate > 0.0 and text.begins_with("Boat care:"):
+		if passage_rate > 0.0 and (text.begins_with("Boat care:") or text.begins_with(Loc.t("Boat care:"))):
 			_passage_notice = {"reason": STOP_CARE, "text": text})
 
 
@@ -183,13 +187,13 @@ func tick(real_seconds: float) -> void:
 ## under sail or engine (not at anchor). Returns "" or why not.
 func start_passage(rate: float) -> String:
 	if not GameSession.is_underway():
-		return "Long Passage time is for voyages: set sail first."
+		return Loc.t("Long Passage time is for voyages: set sail first.")
 	if GameSession.is_anchored():
-		return "Raise the anchor first: at anchor the voyage is paused."
+		return Loc.t("Raise the anchor first: at anchor the voyage is paused.")
 	if GameSession.is_holding_at_anchorage():
-		return "The boat is waiting at the anchorage: drop the anchor, or sail on first."
+		return Loc.t("The boat is waiting at the anchorage: drop the anchor, or sail on first.")
 	if rate not in PASSAGE_RATES:
-		return "Unknown passage speed."
+		return Loc.t("Unknown passage speed.")
 	var was := passage_rate
 	passage_rate = rate
 	_passage_notice = {}
@@ -217,31 +221,31 @@ func is_passage_running() -> bool:
 ## needs the captain.
 func _passage_tick(real_seconds: float) -> void:
 	if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
-		_interrupt_passage(STOP_ENDED, "The passage is over.")
+		_interrupt_passage(STOP_ENDED, Loc.t("The passage is over."))
 		return
 	var result := advance(minf(real_seconds, 0.1) * passage_rate, true)
 	var reason: StringName = result.stopped_by
 	var text := ""
 	match reason:
 		STOP_ARRIVAL:
-			text = "Land ho! You have arrived at %s." % PortCatalog.get_default().get_display_name(result.arrived_at)
+			text = Loc.t("Land ho! You have arrived at %s.") % PortCatalog.get_default().get_display_name(result.arrived_at)
 		STOP_WARNING:
-			text = "Weather ahead: %s" % (String(result.warnings[0].get("text", "")) if not result.warnings.is_empty() else "a warning.")
+			text = Loc.t("Weather ahead: %s") % (String(result.warnings[0].get("text", "")) if not result.warnings.is_empty() else "a warning.")
 		STOP_BITE:
-			text = "A fish is on the line!"
+			text = Loc.t("A fish is on the line!")
 		STOP_RESCUE:
-			text = "The voyage ended with a rescue."
+			text = Loc.t("The voyage ended with a rescue.")
 		STOP_ANCHOR:
-			text = "The anchor alarm went."
+			text = Loc.t("The anchor alarm went.")
 		STOP_ANCHORAGE:
-			text = "We've arrived at our anchorage."
+			text = Loc.t("We've arrived at our anchorage.")
 		STOP_TRAFFIC:
 			text = describe_traffic(result.traffic)
 		STOP_VHF:
 			text = Loc.t("A call for assistance on the radio, channel 16.")
 	if reason == STOP_NONE and result.hat_warned:
 		reason = STOP_HAT
-		text = "Hold on to your hat: the wind is getting up."
+		text = Loc.t("Hold on to your hat: the wind is getting up.")
 	if reason == STOP_NONE and not _passage_notice.is_empty():
 		reason = _passage_notice.reason
 		text = _passage_notice.text
@@ -555,7 +559,7 @@ func invalidate_estimates() -> void:
 ## Returns {"error", "hours", "earned", "elapsed"}.
 func work(hours: int) -> Dictionary:
 	if not GameSession.can_work_remotely():
-		return {"error": "Remote work needs a steady connection: moor in a harbour first.", "hours": 0, "earned": 0, "elapsed": 0.0}
+		return {"error": Loc.t("Remote work needs a steady connection: moor in a harbour first."), "hours": 0, "earned": 0, "elapsed": 0.0}
 	hours = clampi(hours, GameSession.REMOTE_WORK_MIN_HOURS, GameSession.REMOTE_WORK_MAX_HOURS)
 	_hat_sheltered = true
 	var result := advance(hours * 3600.0, true)
@@ -637,7 +641,7 @@ static func risk_level(info: Dictionary, moving := true) -> int:
 ## announced once per voyage (its key is kept with the voyage, so a load,
 ## sleep or Long Passage never announces it twice). True when one was.
 func _assess_traffic(result: AdvanceResult) -> bool:
-	if not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
+	if not sea_encounters or not GameSession.is_underway() or GameSession.is_anchored() or GameSession.is_holding_at_anchorage():
 		return false
 	for info in traffic_risks(TRAFFIC_NEARBY_NM * 1.5):
 		if info.risk < RISK_DANGER:
@@ -661,7 +665,7 @@ func _assess_traffic(result: AdvanceResult) -> bool:
 ## a call for assistance (it wakes the captain and stops Long Passage).
 func _assess_vhf(result: AdvanceResult) -> bool:
 	var voyage := GameSession.get_voyage()
-	if voyage == null or GameSession.is_anchored() or GameSession.is_holding_at_anchorage() or GameSession.is_standing_by():
+	if not sea_encounters or voyage == null or GameSession.is_anchored() or GameSession.is_holding_at_anchorage() or GameSession.is_standing_by():
 		return false
 	if voyage.progress_nm < 3.0 or GameSession.get_voyage_remaining_nm() < 5.0:
 		return false  # not right at the harbour mouth
@@ -691,10 +695,10 @@ static func describe_traffic(info: Dictionary) -> String:
 	if float(info.cpa_nm) < 0.1:
 		return Loc.t("Collision risk: the %s %s will pass very close in about %d min, from the %s. Keep a sharp lookout and give way if needed.") % [
 			TrafficModel.kind_name(info.kind).to_lower(), info.name, maxi(roundi(float(info.tcpa_h) * 60.0), 1),
-			Loc.t(WindField.compass_name(float(info.bearing)), "compass")]
-	return Loc.t("Collision risk: the %s %s will pass %.1f nm off in about %d min, from the %s. Keep a sharp lookout and give way if needed.") % [
+			WindField.compass_name(float(info.bearing))]
+	return Loc.format("Collision risk: the %s %s will pass %.1f nm off in about %d min, from the %s. Keep a sharp lookout and give way if needed.", [
 		TrafficModel.kind_name(info.kind).to_lower(), info.name, float(info.cpa_nm), maxi(roundi(float(info.tcpa_h) * 60.0), 1),
-		Loc.t(WindField.compass_name(float(info.bearing)), "compass")]
+		WindField.compass_name(float(info.bearing))])
 
 
 # --- Captain's hat ------------------------------------------------------------------
@@ -873,13 +877,13 @@ func _local_warning(here: WeatherSample) -> Dictionary:
 	var text := ""
 	match here.hazard:
 		WeatherModel.HAZARD_CAUTION:
-			text = "%s at the boat: wind %s, gusts %d kn." % [what, _wind_text(here), roundi(here.gust_kn)]
+			text = Loc.t("%s at the boat: wind %s, gusts %d kn.") % [what, _wind_text(here), roundi(here.gust_kn)]
 		WeatherModel.HAZARD_DANGEROUS:
-			text = "Dangerous conditions at the boat (%s): wind %s, gusts %d kn." % [what.to_lower(), _wind_text(here), roundi(here.gust_kn)]
+			text = Loc.t("Dangerous conditions at the boat (%s): wind %s, gusts %d kn.") % [what.to_lower(), _wind_text(here), roundi(here.gust_kn)]
 		_:
-			text = "Severe conditions at the boat (%s): wind %s, gusts %d kn." % [what.to_lower(), _wind_text(here), roundi(here.gust_kn)]
+			text = Loc.t("Severe conditions at the boat (%s): wind %s, gusts %d kn.") % [what.to_lower(), _wind_text(here), roundi(here.gust_kn)]
 	if here.classification == WeatherModel.CLASS_THUNDER_RISK:
-		text = "Thunderstorm risk at the boat: thunderstorms may develop nearby."
+		text = Loc.t("Thunderstorm risk at the boat: thunderstorms may develop nearby.")
 	return _warning(here, "%s>%d" % [_event_key(here), here.hazard], text, 0.0, 0.0)
 
 
@@ -892,7 +896,7 @@ func _nearby_storm_warning() -> Dictionary:
 		var offset := storm.offset_nm(vessel, GameSession.get_game_time())
 		var bearing := WindField.compass_name(rad_to_deg(atan2(-offset.x, -offset.y)))
 		var severe := storm.peak_kn + storm.gust_kn >= WeatherModel.SEVERE_STORM_KN
-		var text := "%s %d nm to the %s, moving %s." % ["Severe squalls nearby:" if severe else "Thunderstorm nearby:",
+		var text := Loc.t("%s %d nm to the %s, moving %s.") % [Loc.t("Severe squalls nearby:") if severe else Loc.t("Thunderstorm nearby:"),
 			roundi(maxf(offset.length() - storm.radius_nm, 0.0)), bearing, WindField.compass_name(storm.heading_at(GameSession.get_game_time()))]
 		var sample := get_weather_at(storm.center_at(GameSession.get_game_time()))
 		return _warning(sample, key, text, 0.0, offset.length())
@@ -905,10 +909,10 @@ func _route_warning() -> Dictionary:
 		if _is_warned(hazard.key, hazard.hazard):
 			continue
 		var expected := expected_strength(hazard)
-		var text := "%s ahead on your route %s: wind up to %d kn, gusts %d kn." % [hazard.label, describe_when(hazard.hours),
+		var text := Loc.t("%s ahead on your route %s: wind up to %d kn, gusts %d kn.") % [hazard.label, describe_when(hazard.hours),
 			roundi(expected[0]), roundi(expected[1])]
 		if sample.classification == WeatherModel.CLASS_THUNDER_RISK:
-			text = "Thunderstorm risk ahead on your route %s." % describe_when(hazard.hours)
+			text = Loc.t("Thunderstorm risk ahead on your route %s.") % describe_when(hazard.hours)
 		var warning := _warning(sample, "%s>%d" % [hazard.key, hazard.hazard], text, hazard.hours, hazard.distance_nm)
 		warning.hazard = hazard.hazard
 		return warning
@@ -937,7 +941,7 @@ func _warning(sample: WeatherSample, key: String, text: String, hours: float, di
 
 
 static func _wind_text(sample: WeatherSample) -> String:
-	return "%s %d kn" % [WindField.compass_name(sample.from_deg), roundi(sample.speed_kn)]
+	return Loc.t("%s %d kn") % [WindField.compass_name(sample.from_deg), roundi(sample.speed_kn)]
 
 
 ## "now", "within the hour", "in about 2–3 h": forecast times are estimates,
@@ -946,25 +950,23 @@ static func describe_when(hours: float) -> String:
 	if hours < 0.25:
 		return "now"
 	if hours < 1.0:
-		return "within the hour"
-	return "in about %d–%d h" % [floori(hours), floori(hours) + 1]
+		return Loc.t("within the hour")
+	return Loc.t("in about %d–%d h") % [floori(hours), floori(hours) + 1]
 
 
 ## "4 h 50 min", "35 min", "2 d 3 h".
 static func format_duration(seconds: float) -> String:
 	var minutes := roundi(seconds / 60.0)
 	if minutes < 60:
-		return "%d min" % minutes
+		return Loc.t("%d min") % minutes
 	var hours := minutes / 60
 	if hours < 48:
-		return "%d h %02d min" % [hours, minutes % 60] if minutes % 60 else "%d h" % hours
-	return "%d d %d h" % [hours / 24, hours % 24]
+		return Loc.t("%d h %02d min") % [hours, minutes % 60] if minutes % 60 else Loc.t("%d h") % hours
+	return Loc.t("%d d %d h") % [hours / 24, hours % 24]
 
 
-## "Fri 1 May 2026, 08:00 UTC"
+## "Fri 1 May 2026, 08:00 UTC" (Danish: "fre. 1. maj 2026, 08:00 UTC").
 static func format_game_time(unix_time: float, with_zone := true) -> String:
 	var d := Time.get_datetime_dict_from_unix_time(int(unix_time))
-	const DAYS := ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-	const MONTHS := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-	return "%s %d %s %d, %02d:%02d%s" % [DAYS[d.weekday], d.day, MONTHS[d.month - 1], d.year, d.hour, d.minute,
-		" UTC" if with_zone else ""]
+	return Loc.t("%s %d %s %d, %02d:%02d%s", "date") % [Loc.weekday_short(d.weekday), d.day, Loc.month_short(d.month), d.year, d.hour,
+		d.minute, " UTC" if with_zone else ""]

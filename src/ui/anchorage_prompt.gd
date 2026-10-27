@@ -30,7 +30,7 @@ func _ready() -> void:
 static func describe_site() -> String:
 	var site := GameSession.evaluate_anchorage()
 	var text := String(site.get("reason", ""))
-	return "%s\nThe boat waits here; the action wheel (Q) has the anchor and \"Sail on\" whenever you are ready." % text
+	return Loc.t("%s\nThe boat waits here; the action wheel (Q) has the anchor and \"Sail on\" whenever you are ready.") % text
 
 
 func focus_default() -> void:

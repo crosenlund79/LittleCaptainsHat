@@ -256,7 +256,7 @@ func _draw_pins(s: float) -> void:
 			var names := PackedStringArray()
 			for id: StringName in g.ids:
 				names.append(catalog.get_port(id).display_name)
-			var text := ", ".join(names) if names.size() <= 4 else "%s and %d more" % [", ".join(names.slice(0, 3)), names.size() - 3]
+			var text := ", ".join(names) if names.size() <= 4 else Loc.t("%s and %d more") % [", ".join(names.slice(0, 3)), names.size() - 3]
 			_draw_text(text, head + Vector2(10.0, -10.0) * s, 15.0 * s, PORT_FILL, false, true)
 
 
@@ -1560,7 +1560,7 @@ func _draw_courses(s: float) -> void:
 				_overlay.draw_line(mid + Vector2(-r, -r), mid + Vector2(r, r), INVALID, 4.0 * s, true)
 				_overlay.draw_line(mid + Vector2(-r, r), mid + Vector2(r, -r), INVALID, 4.0 * s, true)
 				# A draft only: the course in use is unchanged until Apply.
-				_draw_text("BLOCKED (not applied)", mid + Vector2(14, -10) * s, 15 * s, INVALID, false, true)
+				_draw_text(Loc.t("BLOCKED (not applied)"), mid + Vector2(14, -10) * s, 15 * s, INVALID, false, true)
 				continue
 			var color := SEAFOAM if draft_is_proposal else BRASS
 			for i in range(1, points.size()):
@@ -1629,7 +1629,7 @@ func _draw_anchorage(p: Vector2, s: float, selected: bool, invalid: bool, number
 	_overlay.draw_line(p + Vector2(0, -4.5) * s, p + Vector2(0, 7) * s, BRASS, w, true)  # shank
 	_overlay.draw_line(p + Vector2(-4, -2.5) * s, p + Vector2(4, -2.5) * s, BRASS, w, true)  # stock
 	_overlay.draw_arc(p + Vector2(0, 1) * s, 6.5 * s, deg_to_rad(20.0), deg_to_rad(160.0), 12, BRASS, w, true)  # arms
-	_draw_text("%d  Anchorage%s" % [number, "  (Magic Anchor)" if magic else ""], p + Vector2(16, -8) * s, 16 * s, PORT_FILL, false, true)
+	_draw_text(Loc.t("%d  Anchorage%s") % [number, Loc.t("  (Magic Anchor)") if magic else ""], p + Vector2(16, -8) * s, 16 * s, PORT_FILL, false, true)
 	if invalid:
 		_overlay.draw_line(p + Vector2(-r, -r), p + Vector2(r, r), INVALID, 3.5 * s, true)
 		_overlay.draw_line(p + Vector2(-r, r), p + Vector2(r, -r), INVALID, 3.5 * s, true)

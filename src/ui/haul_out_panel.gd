@@ -29,14 +29,14 @@ var _result := {}
 
 func _ready() -> void:
 	var location := GameSession.get_location()
-	_build("Haul-out in %s" % (location.display_name if location else "harbour"), 720.0)
+	_build(Loc.t("Haul-out in %s") % (location.display_name if location else "harbour"), 720.0)
 	_scene = HaulOutScene.new()
 	_scene.name = "Scene"
 	_scene.catamaran = GameSession.get_vessel_definition().hull_type == VesselDefinition.HULL_CATAMARAN
 	var care := GameSession.get_boat_care()
 	_scene.fouled = BoatCare.fouling(care, GameSession.get_game_time()) / BoatCare.FOULING_NEEDED
 	_box.add_child(_scene)
-	_info = _label("Info", "The yard lifts the %s out for a day: the bottom is scrubbed and the hull put right. While she is out, the yard can also:" %
+	_info = _label("Info", Loc.t("The yard lifts the %s out for a day: the bottom is scrubbed and the hull put right. While she is out, the yard can also:") %
 		GameSession.get_vessel_definition().display_name)
 	var options := VBoxContainer.new()
 	options.name = "Options"
@@ -52,7 +52,7 @@ func _ready() -> void:
 		options.add_child(box)
 		_options[extra] = box
 	if extras.is_empty():
-		_info.text = "The yard lifts the %s out for a day: the bottom is scrubbed and the hull put right." % GameSession.get_vessel_definition().display_name
+		_info.text = Loc.t("The yard lifts the %s out for a day: the bottom is scrubbed and the hull put right.") % GameSession.get_vessel_definition().display_name
 	_total = _label("Total", "", &"HeaderLabel")
 	_cancel = _button("CancelButton", "Not now", close)
 	_confirm = _button("ConfirmButton", "Haul out", _on_confirm, 220.0)
@@ -77,9 +77,9 @@ func _update_total() -> void:
 	if _finished:
 		return
 	var quote := GameSession.haul_out_quote(get_selected_extras())
-	_total.text = "Total %s · one day ashore · you have %s" % [GameSession.format_money(int(quote.cost)),
+	_total.text = Loc.t("Total %s · one day ashore · you have %s") % [GameSession.format_money(int(quote.cost)),
 		GameSession.format_money(GameSession.get_funds())]
-	_confirm.text = "Haul out (%s)" % GameSession.format_money(int(quote.cost))
+	_confirm.text = Loc.t("Haul out (%s)") % GameSession.format_money(int(quote.cost))
 	_confirm.disabled = int(quote.cost) > GameSession.get_funds()
 
 
@@ -111,10 +111,10 @@ func _finish() -> void:
 	var done := PackedStringArray()
 	for item: String in _result.done:
 		done.append(item.to_lower())
-	_info.text = "A day on the hard in %s: %s. Back in the water, she feels quick and light again." % [
+	_info.text = Loc.t("A day on the hard in %s: %s. Back in the water, she feels quick and light again.") % [
 		location.display_name if location else "harbour", ", ".join(done)]
-	_total.text = "Paid %s. Written in the Captain's Log (Boat).%s" % [GameSession.format_money(int(_result.cost)),
-		"\nFirst haul-out: +2 renown." if _result.first else ""]
+	_total.text = Loc.t("Paid %s. Written in the Captain's Log (Boat).%s") % [GameSession.format_money(int(_result.cost)),
+		Loc.t("\nFirst haul-out: +2 renown.") if _result.first else ""]
 	_cancel.visible = false
 	_confirm.text = "Back in the water"
 	_confirm.disabled = false

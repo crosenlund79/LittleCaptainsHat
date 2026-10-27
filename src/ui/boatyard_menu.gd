@@ -63,7 +63,7 @@ func _ready() -> void:
 		button.button_group = group
 		button.custom_minimum_size = Vector2(230, 64)
 		button.text = vessel.display_name + "\n" + vessel.get_hull_type_name() \
-			+ ("  (your boat)" if vessel.id == GameSession.get_vessel_id() else "")
+			+ (Loc.t("  (your boat)") if vessel.id == GameSession.get_vessel_id() else "")
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.pressed.connect(select.bind(vessel.id))
 		_list.add_child(button)
@@ -99,17 +99,17 @@ func get_panel_rect() -> Rect2:
 func _update_services() -> void:
 	var provisions := GameSession.get_provisions()
 	var vessel := GameSession.get_vessel_definition()
-	_service_status.text = "Your boat, the %s: hull %s  ·  %s  ·  food %s, water %s" % [vessel.display_name,
+	_service_status.text = Loc.t("Your boat, the %s: hull %s  ·  %s  ·  food %s, water %s") % [vessel.display_name,
 		VesselCondition.describe(GameSession.get_condition()), GameSession.format_money(GameSession.get_funds()),
 		Provisions.format_days(provisions.food_days), Provisions.format_days(provisions.water_days)]
 	var level := BoatCare.overall_level(GameSession.get_boat_care(), GameSession.get_condition(), GameSession.get_game_time())
 	_care.disabled = not GameSession.is_moored_in_harbour()
-	_care.text = "Boat care…" if level in [BoatCare.LEVEL_GOOD, BoatCare.LEVEL_COSMETIC] else "Boat care (%s)…" % BoatCare.LEVEL_NAMES[level].to_lower()
+	_care.text = "Boat care…" if level in [BoatCare.LEVEL_GOOD, BoatCare.LEVEL_COSMETIC] else Loc.t("Boat care (%s)…") % BoatCare.LEVEL_NAMES[level].to_lower()
 	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
 	_grocery.disabled = not store or provisions.is_full(GameSession.get_passage_store_days())
 	_grocery.visible = store
-	_grocery.text = "Grocery store (%s)…" % GameSession.format_money(GameSession.get_provisions_price()) \
-		if not provisions.is_full() else "Grocery store…"
+	_grocery.text = Loc.t("Grocery store (%s)…") % GameSession.format_money(GameSession.get_provisions_price()) \
+		if not provisions.is_full() else Loc.t("Grocery store…")
 
 
 ## Refreshes the condition shown after work done in Boat care.
@@ -146,7 +146,7 @@ func select(vessel_id: StringName) -> void:
 	_name.text = vessel.display_name
 	_hull.text = vessel.get_hull_type_name()
 	_description.text = vessel.description
-	_condition.text = "Condition %s" % VesselCondition.describe(GameSession.get_vessel_condition(vessel_id))
+	_condition.text = Loc.t("Condition %s") % VesselCondition.describe(GameSession.get_vessel_condition(vessel_id))
 	for child in _specs.get_children():
 		_specs.remove_child(child)
 		child.queue_free()
@@ -162,18 +162,18 @@ func select(vessel_id: StringName) -> void:
 		cell.modulate = Color.WHITE if key[0] == vessel_id else Color(1, 1, 1, 0.55)
 	var current := vessel_id == GameSession.get_vessel_id()
 	_choose.disabled = current
-	_choose.text = "This is your boat" if current else "Move aboard the %s" % vessel.display_name
+	_choose.text = "This is your boat" if current else Loc.t("Move aboard the %s") % vessel.display_name
 	_show_preview(vessel)
 
 
 ## The comparison figures for one boat: [label, value text] rows.
 static func compare_rows(vessel: VesselDefinition) -> Array:
 	var profile := vessel.performance
-	var rows := [["Top speed under sail", "%.1f kn" % profile.max_sail_speed_kn]]
+	var rows := [[Loc.t("Top speed under sail"), Loc.format("%.1f kn", profile.max_sail_speed_kn)]]
 	for angle in COMPARE_ANGLES:
-		rows.append(["%d kn wind at %d°" % [COMPARE_WIND_KN, angle],
-			"%.1f kn" % profile.sail_speed_kn(COMPARE_WIND_KN, angle)])
-	rows.append(["Under engine", "%.1f kn" % profile.engine_speed_kn])
+		rows.append([Loc.t("%d kn wind at %d°") % [COMPARE_WIND_KN, angle],
+			Loc.format("%.1f kn", profile.sail_speed_kn(COMPARE_WIND_KN, angle))])
+	rows.append([Loc.t("Under engine"), Loc.format("%.1f kn", profile.engine_speed_kn)])
 	return rows
 
 
