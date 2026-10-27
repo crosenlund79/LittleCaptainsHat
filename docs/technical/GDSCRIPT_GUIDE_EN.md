@@ -154,7 +154,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Purpose:** The game's main "conductor": it connects the menus, the screens and the game systems so they all work together.
-- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu.
+- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game.
 - **Works with:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Keeps:** Only screen bookkeeping: whether the rescue report is open, a VHF call or anchorage question waiting to be shown, the seconds left before a hooked fish gets away, and when the companion next follows you between cabin and deck. The game itself lives in `GameSession`.
 - **When it runs:** Always: it is the main scene that starts with the game.
@@ -235,7 +235,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/game_session.gd`
 
 **Purpose:** The keeper of the running game: the only place where the game's state is changed.
-- **What it does:** Starts, ends and loads games, and offers every game action: planning a course, setting sail, arriving, rescue, money, provisions, boat care, fishing, cooking, the anchor, the captain's hat, companion moves, renown and travel updates. It announces each change with signals (messages other parts of the game listen for) and never touches screens. Since I022 boats are bought (`buy_vessel`, once, at a boatyard, never below zero money) and only boats you own can be sailed; it also keeps the difficulty, which scales food and water use, wear, boat care and provisions prices and the rescue fee.
+- **What it does:** Starts, ends and loads games, and offers every game action: planning a course, setting sail, arriving, rescue, money, provisions, boat care, fishing, cooking, the anchor, the captain's hat, companion moves, renown and travel updates. It announces each change with signals (messages other parts of the game listen for) and never touches screens. Since I022 boats are bought (`buy_vessel`, once, at a boatyard, never below zero money) and only boats you own can be sailed; it also keeps the difficulty, which scales food and water use, wear, boat care and provisions prices and the rescue fee. I022 pastimes: it keeps the postcard being made (time spent kept when interrupted, thrown away on request), puts a finished card in the scrapbook with renown the first time for each subject, and counts the little game's sessions for the hours actually worked, with a milestone renown once each and the first sales when it is released.
 - **Works with:** `SessionState` (the data it owns), `Simulation` (moves time forward and calls back into it), `SaveManager`, `App`, the HUD and menus, many catalogues (`PortCatalog`, `SeaRouter`, `VesselCatalog`, `ObjectiveCatalog`, `BoatCare`, `FishingCatalog`).
 - **Keeps:** The current `SessionState`, whether there are unsaved changes, and a few things that are not saved (a fish on the line, whether the captain is asleep, whether the boat is settled at anchor).
 - **When it runs:** Always (an autoload: a script Godot starts automatically and that always exists).
@@ -286,6 +286,24 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** When renown is earned or published; saving and loading.
 - **If you change it:** Renown, travel-update income, and the "progress" part of saves.
 
+### `src/core/pastimes.gd`
+
+**Purpose:** The rules of the captain's two pastimes aboard: Postcards from the Sea and A Game Developer at Sea (I022).
+- **What it does:** Reads `data/pastimes/postcards.json` and `data/pastimes/game_dev.json`. For postcards it finds what a card can show from the game's own records (harbours visited, fish caught, the companion, voyages made, the weather met on them, the evening light where the boat is), the captions with the names filled in, the layouts, how long a card takes (two hours) and its renown; each subject earns renown only once. For the little game it gives the title, the milestones, the tasks (2 to 4 hours each), how many points a session earns (double for the wise answer) and the order the answers are shown in.
+- **Works with:** `GameSession` (keeps the state and pays the renown), `PastimesState`, `PostcardMenu`, `PostcardView`, `GameDevMenu`, the Captain's Log, fishing records, `PortCatalog`, `Daylight`.
+- **Keeps:** Only the two data files, read once.
+- **When it runs:** When a pastime menu opens and when a card or session is finished.
+- **If you change it:** Change the texts in the data files (they are extracted for translation); keep the subjects tied to real game records so no card shows something that did not happen.
+
+### `src/core/pastimes_state.gd`
+
+**Purpose:** What the save remembers of the pastimes: the scrapbook, a postcard being made, and the little game's progress (I022).
+- **What it does:** Holds the postcards made (newest last, at most 40), the card being made with the minutes already spent on it, and the game's points, milestone, sessions, an interrupted session and the devlog. It turns them into save data and back; an older save simply has an empty scrapbook, and broken parts are left out instead of refusing the save.
+- **Works with:** `SessionState` (saved as "pastimes"), `GameSession`.
+- **Keeps:** `postcards`, `draft`, `game`.
+- **When it runs:** On saving, loading and copying the game state.
+- **If you change it:** Keep reading lenient; an interrupted card or session must survive a save so it can be finished later.
+
 ### `src/core/provisions.gd`
 
 **Purpose:** Provisions: how many days of food and water are aboard.
@@ -298,7 +316,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/session_state.gd`
 
 **Purpose:** The complete saved picture of one game, as plain data.
-- **What it does:** Holds everything a save needs (where you are aboard, the clock, the boat and its position, the voyage, money, provisions, condition per boat, the log, renown, the hat, fishing, galley, anchor, boat care, home) and turns it into save data and back, checking every part. Since I022 it also keeps which boats the captain owns and the difficulty; saves from before I022 own every boat and are Standard.
+- **What it does:** Holds everything a save needs (where you are aboard, the clock, the boat and its position, the voyage, money, provisions, condition per boat, the log, renown, the hat, fishing, galley, anchor, boat care, home) and turns it into save data and back, checking every part. Since I022 it also keeps which boats the captain owns and the difficulty; saves from before I022 own every boat and are Standard. I022: it also saves the pastimes (the scrapbook, a card being made, the little game).
 - **Works with:** `GameSession` (owns and changes it), `SaveManager` (writes and reads it), all the smaller state records in `src/core/`.
 - **Keeps:** The whole game state.
 - **When it runs:** At new game, every save and load, and as the data behind all of play.
@@ -307,7 +325,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/simulation.gd`
 
 **Purpose:** The game clock and the engine that moves the boat through time.
-- **What it does:** Every frame turns real time into game time (1 real second = 1 game minute at 1×) and moves the boat along its course, choosing sail or engine from the wind. It checks the weather, the hat, fish bites, the anchor, traffic and VHF radio calls on a fixed time grid, so the result is the same at any speed, while sleeping or during a Long Passage. Since I022 weather damage is scaled by the difficulty (the weather itself is not).
+- **What it does:** Every frame turns real time into game time (1 real second = 1 game minute at 1×) and moves the boat along its course, choosing sail or engine from the wind. It checks the weather, the hat, fish bites, the anchor, traffic and VHF radio calls on a fixed time grid, so the result is the same at any speed, while sleeping or during a Long Passage. Since I022 weather damage is scaled by the difficulty (the weather itself is not). I022: remote work also reports what stopped it early, so the time-passing screen can say so.
 - **Works with:** `GameSession` (reads and updates the game), `WeatherModel`, `PropulsionController`, `WeatherDamage`, `HatConfig`, `FishingCatalog`, `TrafficModel`, `VhfRadio`; `App` listens to its warnings.
 - **Keeps:** Not saved: the Long Passage speed, a cached arrival estimate, and whether the captain is below deck.
 - **When it runs:** Always (an autoload); it stops while the game is paused.
@@ -1483,6 +1501,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** From the grocery store's "To the fishmonger…" button, in harbours that have a fishmonger.
 - **If you change it:** How much money fishing earns and how selling feels.
 
+### `src/ui/game_dev_menu.gd`
+
+**Purpose:** A Game Developer at Sea: the captain's little game, opened from the cabin's Q wheel (I022).
+- **What it does:** Shows the game's progress towards the next milestone and the devlog of milestones reached, lets the player pick a task (each shows its 2 to 4 hours), answer its one small question, and start working; the hours are shown before starting. An interrupted session waits here with the rest of its time.
+- **Works with:** `App` (spends the time and reports the result), `GameSession`, `Pastimes`.
+- **Keeps:** The answer chosen.
+- **When it runs:** While the dialog is open.
+- **If you change it:** Keep it small; the answers change order so the wise one is not always first.
+
 ### `src/ui/go_ashore_menu.gd`
 
 **Purpose:** "Go Ashore": a small harbour moment with a little drawn picture and one or two choices.
@@ -1618,6 +1645,24 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** When you press Esc or the menu button during play.
 - **If you change it:** Saving, loading and leaving the game from play could be affected.
 
+### `src/ui/postcard_menu.gd`
+
+**Purpose:** The Postcards from the Sea dialog, opened from the cabin's Q wheel (I022).
+- **What it does:** Lets the player choose what the card shows, its words and its layout, shows the card as it will look, and says before starting that making and publishing it takes about two game hours and whether it earns renown. A card interrupted part-way comes back as it was, with the time left, and can be finished or thrown away. It also opens the scrapbook.
+- **Works with:** `App` (spends the time), `GameSession` (the draft), `Pastimes`, `PostcardView`, `ScrapbookMenu`.
+- **Keeps:** The subjects offered and the choices made.
+- **When it runs:** While the dialog is open.
+- **If you change it:** The two-hour notice must stay visible before the player starts.
+
+### `src/ui/postcard_view.gd`
+
+**Purpose:** Draws one postcard: the preview while making one, and each page of the scrapbook (I022).
+- **What it does:** Paints a paper card in one of three layouts (classic, snapshot, banner) with the caption and the place it was sent from. The picture uses the game's own art: the harbour's landmark, the fish, the companion resting; for voyages, weather and evening light it paints a small sea and sky with a sailing boat.
+- **Works with:** `PostcardMenu`, `ScrapbookMenu`, `Pastimes`, `HarbourLooks`, `FishArt`, `CompanionVisualSet`.
+- **Keeps:** The card shown and its picture.
+- **When it runs:** When a card is chosen or a page is turned.
+- **If you change it:** Keep it to plain drawing (no shaders); the words come from `Pastimes` so they stay translated.
+
 ### `src/ui/provisions_menu.gd`
 
 **Purpose:** The provisions locker: how much food and water is aboard and how long it lasts.
@@ -1698,6 +1743,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Keeps:** Whether it is in save or load mode.
 - **When it runs:** When you choose Save or Load in the pause menu or title screen.
 - **If you change it:** Saving and loading. A bug here could lose a player's progress.
+
+### `src/ui/scrapbook_menu.gd`
+
+**Purpose:** The scrapbook of postcards made (I022).
+- **What it does:** Shows the cards one page at a time, newest first, with when each was sent; the arrow buttons or Left/Right turn the pages. With no cards yet it says how to make one.
+- **Works with:** `PostcardView`, `GameSession` (the cards), `PostcardMenu` (opens it).
+- **Keeps:** The page shown.
+- **When it runs:** While it is open.
+- **If you change it:** Keep a Close button; it always closes with Esc too.
 
 ### `src/ui/settings_menu.gd`
 
@@ -1893,7 +1947,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_captains_other_life.gd`
 
 **Purpose:** Checks I022, The Captain's Other Life.
-- **What it does:** Checks boat prices, that a new game owns only the starter boat, buying a boat (never twice, never below zero money, only at a boatyard), that old saves keep every boat, the three difficulty levels (starting money, food, costs, Danish names), changing the level during a game, and the New Game and pause menus that offer it.
+- **What it does:** Checks boat prices, that a new game owns only the starter boat, buying a boat (never twice, never below zero money, only at a boatyard), that old saves keep every boat, the three difficulty levels (starting money, food, costs, Danish names), changing the level during a game, and the New Game and pause menus that offer it. I022 pastimes: postcards (real subjects, two hours, kept when interrupted, renown once), the little game (2 to 4 hour sessions, points for the share worked, milestones, release, no repeated rewards), saves and old saves, the one clock through App (two hours of the world pass, an arrival interrupts a card and it is finished later) and the menus.
 - **Works with:** `GameSession`, `SessionState`, `VesselCatalog`, `Difficulty`, `NewGameMenu`, `DifficultyMenu`, `App`.
 - **Keeps:** Nothing.
 - **When it runs:** With the other suites (`test_runner.tscn`).

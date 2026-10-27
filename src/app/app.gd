@@ -483,6 +483,8 @@ func get_wheel_actions() -> Array[Dictionary]:
 		add.call(&"chart", Loc.t("Chart table"), open_chart)
 		add.call(&"provisions", "Provisions", open_provisions)
 		add.call(&"cabin_home", "Make it home", func() -> void: open_cabin_home.call_deferred())
+		add.call(&"postcards", Loc.t("Write a postcard"), func() -> void: open_postcards.call_deferred())
+		add.call(&"game_dev", Loc.t("Work on your little game"), func() -> void: open_game_dev.call_deferred())
 	else:
 		if GameSession.is_underway():
 			# On/off items show a check mark read from the setting itself (Cozy Polish).
@@ -1105,14 +1107,144 @@ func open_work_menu() -> void:
 ## reports the pay. Like sleeping, it also works while paused and leaves the
 ## pause as it was; the player stays at the desk.
 func work_for(hours: int) -> void:
-	modals.clear()
-	var result := Simulation.work(hours)
+	if not GameSession.can_work_remotely():
+		notify(Loc.t("Remote work needs a steady connection: moor in a harbour first."))
+		return
+	var result: Dictionary = await pass_time(func() -> Dictionary: return Simulation.work(hours))
 	if not String(result.error).is_empty():
 		notify(result.error)
 		return
-	notify(Loc.t("You worked %d h and earned %s. It is %s. Funds: %s.%s") % [result.hours, GameSession.format_money(result.earned),
-		Simulation.format_game_time(GameSession.get_game_time()), GameSession.format_money(GameSession.get_funds()),
-		Loc.t("  Time is still paused.") if GameSession.is_paused() else ""])
+	if result.stopped_by == Simulation.STOP_RESCUE:
+		return
+	var stopped := interruption_reason(result.stopped_by)
+	notify((Loc.t("Interrupted: %s.") % stopped + " " if not stopped.is_empty() else "") + Loc.t("You worked %d h and earned %s. It is %s. Funds: %s.%s") % [
+		result.hours, GameSession.format_money(result.earned), Simulation.format_game_time(GameSession.get_game_time()),
+		GameSession.format_money(GameSession.get_funds()), Loc.t("  Time is still paused.") if GameSession.is_paused() else ""])
+
+
+# --- Hours-long tasks on the one clock (I022) -------------------------------------------
+
+## Spends a task's hours on the one clock: with a screen, the game fades to
+## black, `work` runs the simulation once under it (Simulation.work,
+## spend_time_aboard ...: it returns an AdvanceResult or a Dictionary with
+## "stopped_by") while the clock counts the hours, a line says why it stopped
+## early, and the game fades back in at ×1. Without a screen (tests) it all
+## happens at once. Like sleep it works while paused and leaves the pause as
+## it was. Returns what `work` returned.
+func pass_time(work: Callable) -> Variant:
+	modals.clear()
+	var outcome := {}
+	var run := func() -> float:
+		outcome.result = work.call()
+		if TimePassage.is_shown():
+			snap_light()
+		return GameSession.get_game_time()
+	if TimePassage.is_shown() and not is_instance_valid(time_passage):
+		time_passage = TimePassage.new()
+		add_child(time_passage)
+		time_passage.play_sleep(GameSession.get_game_time(), run, func() -> String:
+			var why := interruption_reason(_stopped_by(outcome.result))
+			return Loc.t("Interrupted: %s") % why if not why.is_empty() else "")
+		await time_passage.finished
+		_on_modal_stack_changed(modals.depth())
+	else:
+		run.call()
+	if GameSession.get_time_scale() > 1:
+		GameSession.set_time_scale(1)
+	return outcome.result
+
+
+static func _stopped_by(result: Variant) -> StringName:
+	if result is Simulation.AdvanceResult:
+		return result.stopped_by
+	return StringName(result.get("stopped_by", Simulation.STOP_NONE)) if result is Dictionary else Simulation.STOP_NONE
+
+
+## Why a task stopped early, in a few words ("" when it ran to the end).
+static func interruption_reason(stopped_by: StringName) -> String:
+	match stopped_by:
+		Simulation.STOP_WARNING:
+			return Loc.t("a weather warning came in")
+		Simulation.STOP_BITE:
+			return Loc.t("the bell on the rod rang: a fish is on")
+		Simulation.STOP_ANCHOR:
+			return Loc.t("the anchor alarm went")
+		Simulation.STOP_ARRIVAL:
+			return Loc.t("the boat has arrived")
+		Simulation.STOP_ANCHORAGE:
+			return Loc.t("the boat is at the anchorage")
+		Simulation.STOP_TRAFFIC:
+			return Loc.t("a traffic warning")
+		Simulation.STOP_VHF:
+			return Loc.t("a call on the radio")
+		Simulation.STOP_RESCUE:
+			return Loc.t("the rescue came")
+	return ""
+
+
+## Postcards from the Sea (I022): from the cabin.
+func open_postcards() -> PostcardMenu:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	var menu := PostcardMenu.new()
+	menu.make_requested.connect(func() -> void: make_postcard.call_deferred())
+	menu.scrapbook_requested.connect(func() -> void: modals.push(ScrapbookMenu.new()))
+	modals.push(menu)
+	return menu
+
+
+## Makes the postcard drafted in GameSession: its remaining time passes on the
+## one clock; an interruption keeps the card, with the time already given it.
+func make_postcard() -> void:
+	if GameSession.get_pastimes().draft.is_empty():
+		return
+	var minutes := GameSession.postcard_minutes_left()
+	var result: Simulation.AdvanceResult = await pass_time(func() -> Simulation.AdvanceResult: return Simulation.spend_time_aboard(minutes, true))
+	var outcome := GameSession.work_on_postcard(result.elapsed_seconds / 60.0)
+	if result.stopped_by == Simulation.STOP_RESCUE:
+		return
+	var now := Simulation.format_game_time(GameSession.get_game_time())
+	if outcome.done:
+		notify(Loc.t("Your postcard is published and in the scrapbook. It is %s.") % now)
+	else:
+		notify(Loc.t("Interrupted after %s: %s. The postcard is kept; finish it later from the cabin (Q, Write a postcard). It is %s.") % [
+			Simulation.format_duration(result.elapsed_seconds), interruption_reason(result.stopped_by), now])
+
+
+## A Game Developer at Sea (I022): from the cabin.
+func open_game_dev() -> GameDevMenu:
+	if not is_in_gameplay() or router.is_busy() or not modals.is_empty():
+		return null
+	var menu := GameDevMenu.new()
+	menu.work_requested.connect(func(task_id: String, choice: int) -> void: work_on_game.call_deferred(task_id, choice))
+	modals.push(menu)
+	return menu
+
+
+## A session on the little game: the task's (remaining) hours pass on the one
+## clock; when interrupted, the hours worked still count.
+func work_on_game(task_id: String, choice: int) -> void:
+	var task := Pastimes.task(task_id)
+	if task.is_empty():
+		return
+	var unfinished: Dictionary = GameSession.get_pastimes().game.task
+	var minutes := float(task.hours) * 60.0 - (float(unfinished.minutes) if unfinished.get("id") == task_id else 0.0)
+	var result: Simulation.AdvanceResult = await pass_time(func() -> Simulation.AdvanceResult: return Simulation.spend_time_aboard(minutes, true))
+	var outcome := GameSession.work_on_game(task_id, choice, result.elapsed_seconds / 60.0)
+	if result.stopped_by == Simulation.STOP_RESCUE:
+		return
+	var now := Simulation.format_game_time(GameSession.get_game_time())
+	if not outcome.done:
+		notify(Loc.t("Interrupted after %s: %s. The hours worked count; go on later from the cabin. It is %s.") % [
+			Simulation.format_duration(result.elapsed_seconds), interruption_reason(result.stopped_by), now])
+		return
+	var lines: Array[String] = [Loc.t(String((task.done as Array)[clampi(choice, 0, (task.done as Array).size() - 1)]))]
+	if not (outcome.milestone as Dictionary).is_empty():
+		lines.append(Loc.t("Milestone: %s!") % Loc.t(String(outcome.milestone.name)))
+	if int(outcome.euros) > 0:
+		lines.append(Loc.t("The first sales: %s.") % GameSession.format_money(int(outcome.euros)))
+	lines.append(Loc.t("It is %s.") % now)
+	notify(" ".join(lines))
 
 
 func _on_weather_warning(warning: Dictionary) -> void:

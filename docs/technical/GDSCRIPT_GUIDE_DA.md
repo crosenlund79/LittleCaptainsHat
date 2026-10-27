@@ -156,7 +156,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Formål:** Spillets "dirigent": det forbinder menuerne, skærmene og spillets systemer, så de arbejder sammen.
-- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen.
+- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen. I022: lange gøremål om bord (fjernarbejde, et postkort, en økt på det lille spil) går på det ene ur gennem `pass_time`: en overgang til sort, simulationen kørt én gang mens uret tæller, en linje hvis noget afbrød, og tilbage i ×1; kahyttens Q-hjul tilbyder Skriv et postkort og Arbejd på dit lille spil.
 - **Arbejder sammen med:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Holder styr på:** Kun skærmens bogføring: om redningsrapporten er åben, et VHF-radioopkald eller et spørgsmål om ankerpladsen, der venter på at blive vist, sekunderne før en fisk på krogen slipper væk, og hvornår ledsageren næste gang følger dig mellem kahyt og dæk. Selve spillet ligger i `GameSession`.
 - **Hvornår det kører:** Altid: det er hovedscenen, der starter med spillet.
@@ -237,7 +237,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/game_session.gd`
 
 **Formål:** Vogteren af det kørende spil: det eneste sted, hvor spillets tilstand ændres.
-- **Hvad det gør:** Starter, afslutter og indlæser spil og tilbyder alle spillets handlinger: lægge en kurs, sætte sejl, ankomme, redning, penge, proviant, bådpleje, fiskeri, madlavning, ankeret, kaptajnshuen, ledsagerens flytninger, ry og rejseopdateringer. Det melder hver ændring ud med signaler (beskeder et objekt sender, som andre kan lytte efter) og rører aldrig skærmene. Siden I022 købes både (`buy_vessel`, én gang, på et værft, aldrig under nul), og kun både, du ejer, kan sejles; den holder også sværhedsgraden, som skalerer forbrug af mad og vand, slid, priser på bådpleje og proviant og redningsgebyret.
+- **Hvad det gør:** Starter, afslutter og indlæser spil og tilbyder alle spillets handlinger: lægge en kurs, sætte sejl, ankomme, redning, penge, proviant, bådpleje, fiskeri, madlavning, ankeret, kaptajnshuen, ledsagerens flytninger, ry og rejseopdateringer. Det melder hver ændring ud med signaler (beskeder et objekt sender, som andre kan lytte efter) og rører aldrig skærmene. Siden I022 købes både (`buy_vessel`, én gang, på et værft, aldrig under nul), og kun både, du ejer, kan sejles; den holder også sværhedsgraden, som skalerer forbrug af mad og vand, slid, priser på bådpleje og proviant og redningsgebyret. I022 fritidssysler: den gemmer postkortet under arbejde (brugt tid bevares ved afbrydelse, smides ud på forlangende), lægger et færdigt kort i scrapbogen med ry første gang for hvert motiv, og tæller det lille spils økter for de timer, der faktisk er arbejdet, med ry for hver milepæl én gang og de første salg ved udgivelsen.
 - **Arbejder sammen med:** `SessionState` (de data, det ejer), `Simulation` (flytter tiden frem og kalder tilbage), `SaveManager`, `App`, HUD og menuer, mange kataloger (`PortCatalog`, `SeaRouter`, `VesselCatalog`, `ObjectiveCatalog`, `BoatCare`, `FishingCatalog`).
 - **Holder styr på:** Den aktuelle `SessionState`, om der er ændringer, der ikke er gemt, og et par ting, der ikke gemmes (en fisk på linen, om kaptajnen sover, om båden ligger roligt for anker).
 - **Hvornår det kører:** Altid (en autoload: et script Godot starter automatisk, og som altid findes).
@@ -288,6 +288,24 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Når der optjenes eller udgives ry; ved gemme og indlæse.
 - **Hvis du ændrer det:** Ry, indtægten fra rejseopdateringer og "progress"-delen af gemte spil.
 
+### `src/core/pastimes.gd`
+
+**Formål:** Reglerne for skipperens to fritidssysler om bord: Postkort fra havet og En spiludvikler til søs (I022).
+- **Hvad det gør:** Læser `data/pastimes/postcards.json` og `data/pastimes/game_dev.json`. For postkort finder den, hvad et kort kan vise, ud fra spillets egne optegnelser (besøgte havne, fangede fisk, følgesvenden, sejladser, vejret undervejs, aftenlyset hvor båden er), billedteksterne med navnene udfyldt, layoutene, hvor lang tid et kort tager (to timer) og dets ry; hvert motiv giver kun ry én gang. For det lille spil giver den titlen, milepælene, opgaverne (2 til 4 timer hver), hvor mange point en arbejdsøkt giver (dobbelt for det kloge svar) og rækkefølgen svarene vises i.
+- **Arbejder sammen med:** `GameSession` (gemmer tilstanden og giver ry), `PastimesState`, `PostcardMenu`, `PostcardView`, `GameDevMenu`, skibsloggen, fangstrekorderne, `PortCatalog`, `Daylight`.
+- **Holder styr på:** Kun de to datafiler, læst én gang.
+- **Hvornår det kører:** Når en fritidsmenu åbnes, og når et kort eller en arbejdsøkt bliver færdig.
+- **Hvis du ændrer det:** Ret teksterne i datafilerne (de trækkes ud til oversættelse); hold motiverne bundet til rigtige optegnelser i spillet, så intet kort viser noget, der ikke er sket.
+
+### `src/core/pastimes_state.gd`
+
+**Formål:** Hvad gemmefilen husker om fritidssyslerne: scrapbogen, et postkort under arbejde og det lille spils fremskridt (I022).
+- **Hvad det gør:** Holder de lavede postkort (nyeste sidst, højst 40), kortet under arbejde med de minutter, der allerede er brugt på det, og spillets point, milepæl, arbejdsøkter, en afbrudt økt og udviklerdagbogen. Den laver dem om til gemmedata og tilbage; et ældre spil har bare en tom scrapbog, og ødelagte dele udelades i stedet for at afvise spillet.
+- **Arbejder sammen med:** `SessionState` (gemt som "pastimes"), `GameSession`.
+- **Holder styr på:** `postcards`, `draft`, `game`.
+- **Hvornår det kører:** Når spillet gemmes, indlæses og kopieres.
+- **Hvis du ændrer det:** Hold indlæsningen tolerant; et afbrudt kort eller en afbrudt økt skal overleve en gemning, så det kan gøres færdigt senere.
+
 ### `src/core/provisions.gd`
 
 **Formål:** Proviant: hvor mange dages mad og vand der er om bord.
@@ -300,7 +318,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/session_state.gd`
 
 **Formål:** Det komplette gemte billede af ét spil, som rene data.
-- **Hvad det gør:** Holder alt, et gemt spil skal bruge (hvor du er om bord, uret, båden og dens position, rejsen, penge, proviant, stand for hver båd, Logbogen, ry, huen, fiskeri, kabys, anker, bådpleje, hjem), og laver det om til gemme-data og tilbage, mens hver del kontrolleres. Siden I022 husker den også, hvilke både kaptajnen ejer, og sværhedsgraden; gemte spil fra før I022 ejer alle både og er Standard.
+- **Hvad det gør:** Holder alt, et gemt spil skal bruge (hvor du er om bord, uret, båden og dens position, rejsen, penge, proviant, stand for hver båd, Logbogen, ry, huen, fiskeri, kabys, anker, bådpleje, hjem), og laver det om til gemme-data og tilbage, mens hver del kontrolleres. Siden I022 husker den også, hvilke både kaptajnen ejer, og sværhedsgraden; gemte spil fra før I022 ejer alle både og er Standard. I022: den gemmer også fritidssyslerne (scrapbogen, et kort under arbejde, det lille spil).
 - **Arbejder sammen med:** `GameSession` (ejer og ændrer det), `SaveManager` (skriver og læser det), alle de mindre tilstands-optegnelser i `src/core/`.
 - **Holder styr på:** Hele spillets tilstand.
 - **Hvornår det kører:** Ved nyt spil, hver gang der gemmes og indlæses, og som data bag hele spillet.
@@ -309,7 +327,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/simulation.gd`
 
 **Formål:** Spillets ur og den motor, der flytter båden gennem tiden.
-- **Hvad det gør:** Hvert billede laver det rigtig tid om til spiltid (1 rigtigt sekund = 1 spilminut ved 1×) og flytter båden langs kursen, med sejl eller motor efter vinden. Det tjekker vejret, huen, fiskebid, ankeret, trafik og opkald på VHF-radioen på et fast tidsgitter, så resultatet bliver det samme ved enhver hastighed, under søvn og under en Lang passage. Siden I022 skaleres vejrskader efter sværhedsgraden (selve vejret ikke).
+- **Hvad det gør:** Hvert billede laver det rigtig tid om til spiltid (1 rigtigt sekund = 1 spilminut ved 1×) og flytter båden langs kursen, med sejl eller motor efter vinden. Det tjekker vejret, huen, fiskebid, ankeret, trafik og opkald på VHF-radioen på et fast tidsgitter, så resultatet bliver det samme ved enhver hastighed, under søvn og under en Lang passage. Siden I022 skaleres vejrskader efter sværhedsgraden (selve vejret ikke). I022: fjernarbejde fortæller nu også, hvad der stoppede det før tid, så tidsskærmen kan sige det.
 - **Arbejder sammen med:** `GameSession` (læser og opdaterer spillet), `WeatherModel`, `PropulsionController`, `WeatherDamage`, `HatConfig`, `FishingCatalog`, `TrafficModel`, `VhfRadio`; `App` lytter efter dens advarsler.
 - **Holder styr på:** Ikke gemt: farten for Lang passage, et gemt (cachet) skøn over ankomsttiden, og om kaptajnen er under dæk.
 - **Hvornår det kører:** Altid (en autoload); det står stille, mens spillet er sat på pause.
@@ -1485,6 +1503,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Fra købmandens knap "To the fishmonger…", i havne der har en fiskehandler.
 - **Hvis du ændrer det:** Hvor mange penge fiskeri giver, og hvordan det føles at sælge.
 
+### `src/ui/game_dev_menu.gd`
+
+**Formål:** En spiludvikler til søs: skipperens lille spil, åbnet fra kahyttens Q-hjul (I022).
+- **Hvad det gør:** Viser spillets fremskridt mod næste milepæl og udviklerdagbogen med de nåede milepæle, lader spilleren vælge en opgave (hver viser sine 2 til 4 timer), svare på dens ene lille spørgsmål og begynde at arbejde; timerne vises før start. En afbrudt arbejdsøkt venter her med resten af tiden.
+- **Arbejder sammen med:** `App` (bruger tiden og melder resultatet), `GameSession`, `Pastimes`.
+- **Holder styr på:** Det valgte svar.
+- **Hvornår det kører:** Mens dialogen er åben.
+- **Hvis du ændrer det:** Hold det lille; svarene skifter rækkefølge, så det kloge ikke altid står først.
+
 ### `src/ui/go_ashore_menu.gd`
 
 **Formål:** "Go Ashore": et lille øjeblik i havnen med et lille tegnet billede og et eller to valg.
@@ -1620,6 +1647,24 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Når du trykker Esc eller menuknappen under spillet.
 - **Hvis du ændrer det:** At gemme, indlæse og forlade spillet kan blive påvirket.
 
+### `src/ui/postcard_menu.gd`
+
+**Formål:** Dialogen Postkort fra havet, åbnet fra kahyttens Q-hjul (I022).
+- **Hvad det gør:** Lader spilleren vælge, hvad kortet viser, ordene og layoutet, viser kortet som det kommer til at se ud, og siger før start, at det tager omkring to timer spiltid at lave og udgive det, og om det giver ry. Et kort, der blev afbrudt undervejs, kommer tilbage som det var, med den resterende tid, og kan gøres færdigt eller smides ud. Den åbner også scrapbogen.
+- **Arbejder sammen med:** `App` (bruger tiden), `GameSession` (kladden), `Pastimes`, `PostcardView`, `ScrapbookMenu`.
+- **Holder styr på:** De tilbudte motiver og de valg, der er truffet.
+- **Hvornår det kører:** Mens dialogen er åben.
+- **Hvis du ændrer det:** Beskeden om de to timer skal være synlig, før spilleren starter.
+
+### `src/ui/postcard_view.gd`
+
+**Formål:** Tegner ét postkort: forhåndsvisningen mens man laver et, og hver side i scrapbogen (I022).
+- **Hvad det gør:** Maler et papirkort i et af tre layouts (klassisk, øjebliksbillede, banner) med billedteksten og stedet, det blev sendt fra. Billedet bruger spillets egne tegninger: havnens vartegn, fisken, følgesvenden der hviler; til sejladser, vejr og aftenlys maler den et lille hav og en himmel med en sejlbåd.
+- **Arbejder sammen med:** `PostcardMenu`, `ScrapbookMenu`, `Pastimes`, `HarbourLooks`, `FishArt`, `CompanionVisualSet`.
+- **Holder styr på:** Kortet der vises, og dets billede.
+- **Hvornår det kører:** Når et kort vælges, eller en side vendes.
+- **Hvis du ændrer det:** Hold det til almindelig tegning (ingen shaders); ordene kommer fra `Pastimes`, så de forbliver oversat.
+
 ### `src/ui/provisions_menu.gd`
 
 **Formål:** Proviantskabet: hvor meget mad og vand der er om bord, og hvor længe det rækker.
@@ -1700,6 +1745,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Om den er i gemme- eller indlæsningstilstand.
 - **Hvornår det kører:** Når du vælger Gem eller Indlæs i pausemenuen eller på titelskærmen.
 - **Hvis du ændrer det:** At gemme og indlæse. En fejl her kan få en spiller til at miste sine fremskridt.
+
+### `src/ui/scrapbook_menu.gd`
+
+**Formål:** Scrapbogen med de postkort, der er lavet (I022).
+- **Hvad det gør:** Viser kortene én side ad gangen, nyeste først, med hvornår hvert blev sendt; pileknapperne eller Venstre/Højre bladrer. Uden kort endnu fortæller den, hvordan man laver et.
+- **Arbejder sammen med:** `PostcardView`, `GameSession` (kortene), `PostcardMenu` (åbner den).
+- **Holder styr på:** Den viste side.
+- **Hvornår det kører:** Mens den er åben.
+- **Hvis du ændrer det:** Behold en Luk-knap; Esc lukker den altid også.
 
 ### `src/ui/settings_menu.gd`
 
@@ -1895,7 +1949,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_captains_other_life.gd`
 
 **Formål:** Tjekker I022, Kaptajnens andet liv.
-- **Hvad det gør:** Tjekker bådpriser, at et nyt spil kun ejer startbåden, køb af en båd (aldrig to gange, aldrig under nul kroner, kun på et værft), at gamle gemte spil beholder alle både, de tre sværhedsgrader (startpenge, mad, udgifter, danske navne), ændring af niveauet undervejs og menuerne Nyt spil og pause, der tilbyder det.
+- **Hvad det gør:** Tjekker bådpriser, at et nyt spil kun ejer startbåden, køb af en båd (aldrig to gange, aldrig under nul kroner, kun på et værft), at gamle gemte spil beholder alle både, de tre sværhedsgrader (startpenge, mad, udgifter, danske navne), ændring af niveauet undervejs og menuerne Nyt spil og pause, der tilbyder det. I022 fritidssysler: postkort (rigtige motiver, to timer, bevares ved afbrydelse, ry én gang), det lille spil (økter på 2 til 4 timer, point for den del der er arbejdet, milepæle, udgivelse, ingen gentagne belønninger), gemte og gamle spil, det ene ur gennem App (to timer af verden går, en ankomst afbryder et kort, som gøres færdigt senere) og menuerne.
 - **Arbejder sammen med:** `GameSession`, `SessionState`, `VesselCatalog`, `Difficulty`, `NewGameMenu`, `DifficultyMenu`, `App`.
 - **Holder styr på:** Intet.
 - **Hvornår det kører:** Sammen med de andre testsæt (`test_runner.tscn`).

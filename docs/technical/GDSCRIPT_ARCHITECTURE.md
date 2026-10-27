@@ -225,7 +225,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/app/app.gd`
 
-- **Role:** no class_name, extends Node; root script of `res://src/app/app.tscn` (project `run/main_scene`). Application shell and flow coordinator: wires screens/menus to services, owns all hotkey/Esc handling, turns service signals into toasts, sounds and modals. I021: `_on_arrived` calls `toasts.show_card(title, PortData.get_description(), HarbourLooks.picture_for(port))` instead of a plain notice (the title keeps the old "Arrived in %s." text, which tests read through `toasts.get_messages()`). I022: `switch_vessel` awaits `modals.confirm` and `GameSession.buy_vessel` for an unowned boat before switching; `start_new_game(companion, level)`; pause menu `difficulty_requested` pushes `DifficultyMenu.new()`.
+- **Role:** no class_name, extends Node; root script of `res://src/app/app.tscn` (project `run/main_scene`). Application shell and flow coordinator: wires screens/menus to services, owns all hotkey/Esc handling, turns service signals into toasts, sounds and modals. I021: `_on_arrived` calls `toasts.show_card(title, PortData.get_description(), HarbourLooks.picture_for(port))` instead of a plain notice (the title keeps the old "Arrived in %s." text, which tests read through `toasts.get_messages()`). I022: `switch_vessel` awaits `modals.confirm` and `GameSession.buy_vessel` for an unowned boat before switching; `start_new_game(companion, level)`; pause menu `difficulty_requested` pushes `DifficultyMenu.new()`. I022: `pass_time(work: Callable) -> Variant` (modals.clear, TimePassage.play_sleep with `interruption_reason(_stopped_by(result))`, snap_light, time scale back to 1; direct in tests), `interruption_reason(stopped_by)`, `open_postcards/make_postcard`, `open_game_dev/work_on_game(task_id, choice)`; `work_for` now awaits `pass_time(Simulation.work)` and names an interruption; wheel ids `postcards`, `game_dev` (interior).
 - **Depends on:** autoloads `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `AudioManager`, `SessionLog`, `UiTheme`; scene children `SceneRouter` ($SceneRouter), `Hud`, `ModalStack`, `Toasts`; creates `WeatherAudio`, `DayNightWatch`, `LoadingScreen`, `TimePassage`, `VoyageMap`; pushes modals (`NewGameMenu`, `PauseMenu`, `SleepMenu`, `SaveLoadMenu`, `BoatyardMenu`, `ProvisionsMenu`, `RescueDialog`, `GroceryMenu`, `FishmongerMenu`, `ChandleryMenu`, `SailmakerMenu`, `CabinHomeMenu`, `GoAshoreMenu`, `FishingMenu`, `CookingMenu`, `AnchorMenu`, `AnchoragePrompt`, `VhfDialog`, `TrophyMenu`, `WorkMenu`, `PublishMenu`, `CaptainsLogMenu`, `SailTrimPanel`, `ActionWheel`, `BoatCareMenu`, `HaulOutPanel`, `LanguagePicker`, `DevTestPanel`); static helpers `Loc`, `PortCatalog`, `VesselCatalog`, `PassageReadiness`, `LegacySaves`, `DevTools`, `DevGuides`, `HarbourFacilities`, `BoatCare`, `FishingSounds`, `HatBadge`, `AnchorSite`, `ChartPlotter`, `SailingPanel`, `RadarPanel`, `Interactable`; screen types `MainMenu`, `BoatArea`, `WorldMap`.
 - **Signals:** declares none. Connects to `GameSession` (`notice`, `rescued`, `voyage_logged`, `renown_awarded`, `hat_warning`, `hat_lost`, `fish_bite`, `anchorage_reached`, `anchor_alarm`, `anchor_moment`, `fishing_warning`, `provisions_warning`, `propulsion_changed`, `state_replaced`, `session_started/ended` → `DevTools.on_session_changed`), `Simulation` (`weather_warning`, `traffic_alert`, `vhf_call`, `arrived`, `passage_started`), `router.screen_changed`, `modals.stack_changed`, `hud.*_requested`, `get_tree().node_added` (adds UI click sound to every BaseButton), and every BoatArea/WorldMap/MainMenu request signal in `_connect_*`.
 - **State:** writes no game state directly; all changes go through `GameSession`/`Simulation`/`SaveManager` calls. Owns UI-only fields: `_rescue_open`, `_anchorage_prompt_due`, `_pending_vhf`, `_bite_wait`, companion follow timers, `_last_quick_msec`, `voyage_map`, `time_passage`. Sets `get_tree().paused` in `_on_modal_stack_changed` (paused while any modal is open in gameplay, or while the rescue report is open).
@@ -321,7 +321,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/core/game_session.gd`
 
-- **Role:** no class_name, extends Node; autoload `GameSession`. Sole mutator of the active `SessionState`; game rules API (lifecycle, area/player, clock and pause, routes and voyages, propulsion/trim, weather exposure and damage, rescue, boat care and services, Captain's Log, objectives/renown/publishing, fishing, galley/coffee/hands, anchor and Magic Anchor, anchorages, VHF standby, Go Ashore, money, provisions, remote work, hat, location recovery, life at anchor). I022: signals `fleet_changed`, `difficulty_changed(level)`; `get_difficulty`, `set_difficulty`, `owns_vessel` (or `test_all_boats_owned`, set by the test runner), `get_owned_vessels`, `buy_vessel` (BOATYARD facility, price ≤ funds, not owned); `switch_vessel` refuses unowned boats; `start_new_session(companion, level)`; factors: consumption ×`provisions_use`, `_wear` ×`wear`, `service_quote`/`get_provisions_price` ×`costs` (ceil), rescue fee ×`rescue_fee`; `_check_vessel` owns the fallback starter.
+- **Role:** no class_name, extends Node; autoload `GameSession`. Sole mutator of the active `SessionState`; game rules API (lifecycle, area/player, clock and pause, routes and voyages, propulsion/trim, weather exposure and damage, rescue, boat care and services, Captain's Log, objectives/renown/publishing, fishing, galley/coffee/hands, anchor and Magic Anchor, anchorages, VHF standby, Go Ashore, money, provisions, remote work, hat, location recovery, life at anchor). I022: signals `fleet_changed`, `difficulty_changed(level)`; `get_difficulty`, `set_difficulty`, `owns_vessel` (or `test_all_boats_owned`, set by the test runner), `get_owned_vessels`, `buy_vessel` (BOATYARD facility, price ≤ funds, not owned); `switch_vessel` refuses unowned boats; `start_new_session(companion, level)`; factors: consumption ×`provisions_use`, `_wear` ×`wear`, `service_quote`/`get_provisions_price` ×`costs` (ceil), rescue fee ×`rescue_fee`; `_check_vessel` owns the fallback starter. I022: `get_pastimes()`, `set_postcard_draft(kind, subject, caption, layout)` (keeps minutes for the same subject), `abandon_postcard()`, `postcard_minutes_left()`, `work_on_postcard(minutes)` → {done, award, card} (`_award_once(Pastimes.renown_key)`, scrapbook trimmed to `scrapbook_size`, SessionLog "postcard"), `work_on_game(task_id, choice, minutes)` → {points, done, milestone, award, euros} (points × share of task hours, `_award_once("gamedev:<id>")`, release_euros on the last milestone, SessionLog "game_dev"), `is_game_released()`.
 - **Depends on:** `SessionState` and its sub-records; `Simulation` (weather queries, `invalidate_estimates`); `PortCatalog`, `SeaRouter`, `VesselCatalog`, `VesselProfile`, `BoatCare`, `HarbourFacilities`, `ObjectiveCatalog`, `FishingCatalog`, `HatConfig`, `AnchorLife`, `AnchorSite`, `SailTrim`, `GeoMath`, `NavGrid`, `WeatherAudio.rain_level`, `SessionLog`, `Loc`; `_exit_tree` clears catalogue singletons (`PortCatalog`, `ObjectiveCatalog`, `HatConfig`, `HatArt`, `SeaRouter`, `WeatherModel`, `WindField`, `VesselProfile`, `VesselCatalog`).
 - **Signals:** declares ~45, incl. `session_started`, `session_ended`, `state_replaced`, `boat_area_changed`, `route_changed`, `time_scale_changed`, `pause_changed`, `voyage_started`, `voyage_course_changed`, `voyage_arrived`, `propulsion_changed`, `sail_trim_changed`, `anchorage_reached`, `vessel_changed`, `companion_moved`, `companion_area_changed`, `notice`, `condition_changed`, `funds_changed`, `provisions_changed`, `provisions_warning`, `rescued`, `voyage_logged`, `renown_awarded`, `travel_update_published`, `hat_*`, `coffee_changed`, `fish_bite`, `fishing_*`, `fish_landed`, `meal_cooked`, `anchor_changed`, `anchor_alarm`, `boat_care_changed`, `home_changed`, `location_recovered`, `anchor_life_changed`, `anchor_moment`. Connects only its own `anchor_changed` → `_update_anchor_life`.
 - **State:** owns `_state`, `_has_unsaved_changes`; unsaved runtime: `_pending_bite`, `_settled`, `_asleep`, `_profile` cache, `_chart_region`, `_last_recovery`, fishing warning flags. Getters return copies (`duplicate_*`) or scalars.
@@ -383,6 +383,24 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** `tests/suites/test_objectives.gd`, `tests/suites/test_secret_achievements.gd`.
 - **Change risks:** `last_event` comparisons use game time; events at identical times will not pay twice.
 
+### `src/core/pastimes.gd`
+
+- **Role:** class_name `Pastimes`, extends RefCounted, static only (I022). Postcards: `KINDS`, `LAYOUTS`, `postcard_minutes()`, `postcard_renown()`, `kind_name`, `layout_name`, `captions(kind)`, `subjects()` → [{kind, subject, title, args}], `args_for(kind, subject)` (caption names in the current language, also for old scrapbook cards), `weather_name(hazard)`, `where_now()`, `caption_text(kind, caption, args)`, `renown_key(kind, subject)` ("postcard:<kind>:<subject>"), `is_posted`. Game: `game_title`, `milestones`, `tasks`, `task(id)`, `session_points(task, choice)` (2 best / 1), `choice_order(task, sessions)` (rotated).
+- **Depends on:** `data/pastimes/*.json`, `GameSession` (log, fishing, companion, position, time, objective progress), `PortCatalog`, `FishingCatalog.get_species_name`, `CompanionState.display_name`, `CaptainsLog.OUTCOME_ARRIVED` (voyage records), `Daylight.sun_elevation` (`LOW_SUN` −8..12°), `HatStory.describe_place`, `Loc`.
+- **State:** static `_postcards`, `_game` caches.
+- **Lifecycle:** read by `GameSession.set_postcard_draft/work_on_postcard/work_on_game`, `PostcardMenu`, `PostcardView`, `ScrapbookMenu`, `GameDevMenu`, `App.work_on_game`.
+- **Tests:** `tests/suites/test_captains_other_life.gd` (`[postcards]`, `[game dev]`).
+- **Change risks:** subject keys are saved (scrapbook, renown ids): voyage subjects are "<from>-<to>", weather "<from>-<to>:<hazard>"; port ids must not contain "-". Data strings are extracted via `DATA_KEYS` plus `LIST_KEYS` (captions, choices, done) and `MAP_KEYS` (weather_names) in `tools/i18n/extract.py`.
+
+### `src/core/pastimes_state.gd`
+
+- **Role:** class_name `PastimesState`, extends RefCounted. `postcards` [{kind, subject, caption, layout, time, place}], `draft` {kind, subject, caption, layout, minutes} or {}, `game` {points, milestone, sessions, task {id, choice, minutes} or {}, log [{milestone, time}]}; `duplicate_state()`, `to_dict()`, static `from_dict(data)` (never fails; validates types, drops malformed parts).
+- **Depends on:** nothing but Variant checks (`_is_number`).
+- **State:** the three fields above.
+- **Lifecycle:** `SessionState.pastimes` (duplicate_state, to_dict "pastimes", from_dict); mutated only by `GameSession` pastime methods.
+- **Tests:** `tests/suites/test_captains_other_life.gd` (`[saves]`, `[old saves]`).
+- **Change risks:** optional save section, no SAVE_VERSION bump; adding a field means adding it to all three methods.
+
 ### `src/core/provisions.gd`
 
 - **Role:** class_name `Provisions`, extends RefCounted; food/water days, `warning_level`, consumption, restock, warning thresholds, display levels.
@@ -396,7 +414,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/core/session_state.gd`
 
-- **Role:** class_name `SessionState`, extends RefCounted; the complete serialisable game state and save format (`to_dict`/`from_dict`), plus `create_new`, `duplicate_state`, per-boat condition and care accessors. I022: `owned_vessels` (saved as `fleet.owned`, always including the boat aboard: `_owned_for_save`/`owned_from`; missing section → every catalogue id) and `difficulty` (top-level `difficulty`, `Difficulty.valid`); `create_new(..., level)` sets funds from `Difficulty.starting_funds` and owns the starter; both copied in `duplicate_state`. No save version change.
+- **Role:** class_name `SessionState`, extends RefCounted; the complete serialisable game state and save format (`to_dict`/`from_dict`), plus `create_new`, `duplicate_state`, per-boat condition and care accessors. I022: `owned_vessels` (saved as `fleet.owned`, always including the boat aboard: `_owned_for_save`/`owned_from`; missing section → every catalogue id) and `difficulty` (top-level `difficulty`, `Difficulty.valid`); `create_new(..., level)` sets funds from `Difficulty.starting_funds` and owns the starter; both copied in `duplicate_state`. No save version change. I022: `pastimes: PastimesState` (duplicate_state, to_dict "pastimes", from_dict via lenient `PastimesState.from_dict`; optional, no version bump).
 - **Depends on:** `PortCatalog`, `PlannedRoute`, `Voyage`, `PropulsionState`, `WeatherExposure`, `CompanionState`, `VesselCatalog.STARTER_ID`, `CaptainsLog`, `ObjectiveProgress`, `HatState`, `FishingState`, `GalleyState`, `AnchorState`, `BoatCareState`, `HomeState`, `Provisions`, `VesselCondition`, `GeoMath`, `Loc`.
 - **State:** pure data; no node references.
 - **Lifecycle:** created by `GameSession.start_new_session()` or `SaveManager` load; owned by `GameSession`.
@@ -407,7 +425,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/core/simulation.gd`
 
-- **Role:** no class_name, extends Node; autoload `Simulation`. The single timeline: converts real time to game time and advances clock, voyage and all timed checks; weather queries, ETA/route estimates, Long Passage, traffic and VHF, hat checks. Inner class `AdvanceResult`. I022: `_assess_weather` multiplies `WeatherDamage.damage_between(...)` by `Difficulty.factor("weather_damage")` (1.0 at Standard).
+- **Role:** no class_name, extends Node; autoload `Simulation`. The single timeline: converts real time to game time and advances clock, voyage and all timed checks; weather queries, ETA/route estimates, Long Passage, traffic and VHF, hat checks. Inner class `AdvanceResult`. I022: `_assess_weather` multiplies `WeatherDamage.damage_between(...)` by `Difficulty.factor("weather_damage")` (1.0 at Standard). I022: `work(hours)` also returns "stopped_by" (the AdvanceResult's) for `App.pass_time`.
 - **Depends on:** `GameSession` (all reads and `apply_*` hooks), `WeatherModel`, `WeatherDamage`, `WeatherEvent`, `WindField`, `PropulsionController`, `SailTrim`, `GeoMath`, `HatConfig`, `FishingCatalog`, `TrafficModel`, `VhfRadio`, `PortCatalog`, `SessionLog`, `Loc`.
 - **Signals:** `weather_warning(warning)`, `arrived(port_id)`, `passage_interrupted(reason, text)`, `passage_started(rate)`, `traffic_alert(info)`, `vhf_call(call)`. Connects to `GameSession.voyage_started`, `voyage_course_changed`, `state_replaced`, `vessel_changed`, `rescued`, `provisions_warning` and `notice` (the last two only flag Long Passage interruptions).
 - **State:** writes game state only through `GameSession` hooks. Unsaved: `passage_rate`, `_passage_notice`, `_eta_key`/`_eta_seconds`, `_hat_sheltered`. Tunables: `game_seconds_per_real_second` (60), `auto_advance`, `sea_encounters`.
@@ -1836,6 +1854,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** `tests/suites/test_boat_of_your_own.gd`.
 - **Change risks:** `_rebuild` frees rows with `queue_free` and clears `_rows`; the sell-all total is recomputed here from catalog prices and must match GameSession's `sell_catch`.
 
+### `src/ui/game_dev_menu.gd`
+
+- **Role:** class_name `GameDevMenu`, extends `SimplePanel`. Signal `work_requested(task_id, choice)`. Nodes: Progress, Devlog, Task OptionButton ("name (N h)"), Question, Choices (toggle buttons Choice0..2 in `Pastimes.choice_order` order, locked for an interrupted task), Note, CancelButton, WorkButton (disabled until a choice). `selected_task()`, `pick(position)` (tests).
+- **Depends on:** `Pastimes`, `GameSession.get_pastimes/is_game_released`, `Simulation.format_duration/format_game_time`.
+- **State:** `choice`, `_order`.
+- **Lifecycle:** pushed by `App.open_game_dev()`; App connects `work_requested` → `App.work_on_game` (deferred), which runs `pass_time` + `GameSession.work_on_game`.
+- **Tests:** `tests/suites/test_captains_other_life.gd` (`[menus]`, screenshot i022_game_dev).
+- **Change risks:** the interrupted task's choice is fixed (points count for the share worked with that choice).
+
 ### `src/ui/go_ashore_menu.gd`
 
 - **Role:** class_name `GoAshoreMenu`, extends `SimplePanel`; harbour shore event with drawn icon and choices.
@@ -2002,6 +2029,24 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** `tests/suites/test_gameplay_flow.gd`, `test_upkeep_ui.gd`; opened via `open_pause_menu` in `test_hat.gd`, `test_captains_log.gd`, `test_localization.gd`, `test_well_run_ship.gd` and others.
 - **Change risks:** the dev button is added only when DevTools is enabled.
 
+### `src/ui/postcard_menu.gd`
+
+- **Role:** class_name `PostcardMenu`, extends `SimplePanel`. Signals `make_requested` (after `GameSession.set_postcard_draft`), `scrapbook_requested`. Nodes: Subject/Caption/Layout OptionButtons, Preview (`PostcardView`), Note, buttons ScrapbookButton, AbandonButton (only with a draft), CancelButton, MakeButton. `chosen_card()`, `selected_subject()`, `choose(index, caption, layout)` (tests), `_resume_draft()`.
+- **Depends on:** `Pastimes`, `GameSession.get_pastimes/postcard_minutes_left/set_postcard_draft/abandon_postcard`, `Simulation.format_duration`.
+- **State:** `_subjects` (snapshot of `Pastimes.subjects()` at open).
+- **Lifecycle:** pushed by `App.open_postcards()`; App connects `make_requested` → `make_postcard` (deferred) and `scrapbook_requested` → push `ScrapbookMenu`.
+- **Tests:** `tests/suites/test_captains_other_life.gd` (`[menus]`).
+- **Change risks:** Esc closes (ModalPanel); `make_requested` closes all modals through `App.pass_time`.
+
+### `src/ui/postcard_view.gd`
+
+- **Role:** class_name `PostcardView`, extends Control (600×390 minimum, mouse ignored). `card` setter (finds the picture, redraws), `caption()`; `_draw` per layout ("classic", "snapshot", "banner"), `_draw_scene` (gradient sky/sea per kind, rain lines for weather, sun for sunset, `_draw_boat` for voyage/weather/sunset), the art fitted into the picture box.
+- **Depends on:** `Pastimes.caption_text/args_for`, `HarbourLooks.picture_for`, `FishArt.thumbnail/has_art`, `CompanionVisualSet.for_kind(...).get_texture(&"resting")`.
+- **State:** `card`, `_picture`.
+- **Lifecycle:** child of `PostcardMenu` (Preview) and `ScrapbookMenu` (Card).
+- **Tests:** `tests/suites/test_captains_other_life.gd` (`[menus]`, screenshots i022_postcard, i022_scrapbook).
+- **Change risks:** draw calls only, redrawn on change, not per frame.
+
 ### `src/ui/provisions_menu.gd`
 
 - **Role:** `class_name ProvisionsMenu`, extends `ModalPanel`; provisions locker read-out.
@@ -2098,6 +2143,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Invariants:** asks before overwriting a non-empty slot; on failure keeps the previous save and reports `error_string(err)`. Static `format_timestamp` (local time) is reused by `MainMenu`.
 - **Tests:** `tests/suites/test_gameplay_flow.gd`, `test_long_passage.gd`.
 - **Change risks:** `setup()` must precede `_ready`; `_refresh` rebuilds all buttons on `slots_changed`.
+
+### `src/ui/scrapbook_menu.gd`
+
+- **Role:** class_name `ScrapbookMenu`, extends `SimplePanel`. `page`, `view` (`PostcardView` "Card"), `turn(delta)`, When label, PreviousButton/NextButton/CloseButton; ui_left/ui_right and move_left/move_right turn pages.
+- **Depends on:** `GameSession.get_pastimes().postcards`, `Simulation.format_game_time`.
+- **State:** `page` (0 = newest).
+- **Lifecycle:** pushed by App from `PostcardMenu.scrapbook_requested`.
+- **Tests:** `tests/suites/test_captains_other_life.gd` (`[menus] the scrapbook opens on the newest card`).
+- **Change risks:** none beyond the modal stack.
 
 ### `src/ui/settings_menu.gd`
 
@@ -2321,7 +2375,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_captains_other_life.gd`
 
-- **Role:** extends RefCounted; I022 suite. `_test_prices_and_new_games`, `_test_old_saves` (erases `fleet`/`difficulty` from a save dict; unknown ids and levels), `_test_buying` (sets `GameSession.test_all_boats_owned = false`, restores it), `_test_difficulty_factors` (a day of food, provisions price, engine service quote per level; `set_difficulty`; Danish names), `_test_menus` (App: New Game picker → Seasoned start; pause menu `DifficultyButton` → `DifficultyMenu` → Relaxed).
+- **Role:** extends RefCounted; I022 suite. `_test_prices_and_new_games`, `_test_old_saves` (erases `fleet`/`difficulty` from a save dict; unknown ids and levels), `_test_buying` (sets `GameSession.test_all_boats_owned = false`, restores it), `_test_difficulty_factors` (a day of food, provisions price, engine service quote per level; `set_difficulty`; Danish names), `_test_menus` (App: New Game picker → Seasoned start; pause menu `DifficultyButton` → `DifficultyMenu` → Relaxed). I022: `_test_postcards`, `_test_game_dev`, `_test_pastime_saves`, `_test_pastimes_on_the_clock` (Copenhagen→Helsingør measured, then a card started ~1 h out is stopped by STOP_ARRIVAL), `_test_pastime_menus` (wheel ids, PostcardMenu/ScrapbookMenu/GameDevMenu, screenshots).
 - **Depends on:** `app.tscn`, `GameSession`, `SessionState.from_dict`, `VesselCatalog`, `Difficulty`, runner helpers (`click`, `frames`, `wait_until`, `screenshot`).
 - **Lifecycle:** in `test_runner.gd` `SUITES` after `test_wider_world`.
 - **Change risks:** prices and starting funds are read from data, not hard-coded; the ownership switch must be restored for later suites.

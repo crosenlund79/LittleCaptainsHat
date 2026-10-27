@@ -370,6 +370,110 @@ func facility_refusal(facility: StringName) -> String:
 	return ""
 
 
+# --- Pastimes (I022): postcards and the little game -------------------------------------------
+
+func get_pastimes() -> PastimesState:
+	return _state.pastimes if _state else PastimesState.new()
+
+
+## Starts (or replaces) the postcard being made: a subject from
+## Pastimes.subjects(), a caption index and a layout.
+func set_postcard_draft(kind: String, subject: String, caption: int, layout: String) -> void:
+	if _state == null:
+		return
+	var minutes: float = float(_state.pastimes.draft.get("minutes", 0.0)) if _state.pastimes.draft.get("subject") == subject \
+		and _state.pastimes.draft.get("kind") == kind else 0.0
+	_state.pastimes.draft = {"kind": kind, "subject": subject, "caption": caption, "layout": layout if layout in Pastimes.LAYOUTS else "classic",
+		"minutes": minutes}
+	_has_unsaved_changes = true
+
+
+func abandon_postcard() -> void:
+	if _state and not _state.pastimes.draft.is_empty():
+		_state.pastimes.draft = {}
+		_has_unsaved_changes = true
+
+
+## Minutes still needed for the postcard being made.
+func postcard_minutes_left() -> float:
+	if _state == null or _state.pastimes.draft.is_empty():
+		return Pastimes.postcard_minutes()
+	return maxf(Pastimes.postcard_minutes() - float(_state.pastimes.draft.minutes), 0.0)
+
+
+## `minutes` were spent on the draft (the one clock has already passed them).
+## When it is done it goes into the scrapbook, and a subject posted for the
+## first time earns renown. Returns {"done": bool, "award": {} or the award}.
+func work_on_postcard(minutes: float) -> Dictionary:
+	if _state == null or _state.pastimes.draft.is_empty():
+		return {"done": false, "award": {}}
+	var draft := _state.pastimes.draft
+	draft.minutes = float(draft.minutes) + maxf(minutes, 0.0)
+	_has_unsaved_changes = true
+	if float(draft.minutes) < Pastimes.postcard_minutes() - 0.5:
+		return {"done": false, "award": {}}
+	var card := {"kind": draft.kind, "subject": draft.subject, "caption": int(draft.caption), "layout": draft.layout,
+		"time": _state.game_time, "place": Pastimes.where_now()}
+	_state.pastimes.postcards.append(card)
+	var keep := int(Pastimes.postcard_data().get("scrapbook_size", 40))
+	while _state.pastimes.postcards.size() > keep:
+		_state.pastimes.postcards.remove_at(0)
+	_state.pastimes.draft = {}
+	var award := _award_once(Pastimes.renown_key(card.kind, card.subject), Loc.t("Postcard: %s") % Pastimes.kind_name(card.kind).to_lower(),
+		Pastimes.postcard_renown())
+	SessionLog.write("postcard", {"kind": card.kind, "subject": card.subject, "renown": int(award.get("reward", 0))})
+	if not award.is_empty():
+		renown_awarded.emit([award])
+	return {"done": true, "award": award, "card": card}
+
+
+## A session on the little game: `minutes` of `task_id` were worked (the one
+## clock has passed them), with `choice`. Points count for the share of the
+## task's hours actually worked; an unfinished task is kept to go on with.
+## Returns {"points", "done": bool, "milestone": {} or the milestone reached,
+## "award": {}, "euros": int}.
+func work_on_game(task_id: String, choice: int, minutes: float) -> Dictionary:
+	var out := {"points": 0.0, "done": false, "milestone": {}, "award": {}, "euros": 0}
+	var task := Pastimes.task(task_id)
+	if _state == null or task.is_empty():
+		return out
+	var game := _state.pastimes.game
+	var total := float(task.hours) * 60.0
+	var before := float((game.task as Dictionary).get("minutes", 0.0)) if (game.task as Dictionary).get("id") == task_id else 0.0
+	var worked := minf(before + maxf(minutes, 0.0), total)
+	var points := Pastimes.session_points(task_id, choice) * (worked - before) / total
+	out.points = points
+	out.done = worked >= total - 0.5
+	game.task = {} if out.done else {"id": task_id, "choice": choice, "minutes": worked}
+	if out.done:
+		game.sessions = int(game.sessions) + 1
+	game.points = float(game.points) + points
+	var stones := Pastimes.milestones()
+	if int(game.milestone) < stones.size() and float(game.points) >= float(stones[int(game.milestone)].points) - 1e-6:
+		var stone: Dictionary = stones[int(game.milestone)]
+		game.points = float(game.points) - float(stone.points)
+		game.log.append({"milestone": int(game.milestone), "time": _state.game_time})
+		game.milestone = int(game.milestone) + 1
+		out.milestone = stone
+		out.award = _award_once("gamedev:%s" % stone.id, Loc.t("%s: %s") % [Pastimes.game_title(), Loc.t(String(stone.name))],
+			int(Pastimes.game_data().get("renown_per_milestone", 4)))
+		if int(game.milestone) >= stones.size():
+			out.euros = int(Pastimes.game_data().get("release_euros", 0))
+			_state.funds += out.euros
+			funds_changed.emit(_state.funds)
+		if not out.award.is_empty():
+			renown_awarded.emit([out.award])
+	_has_unsaved_changes = true
+	SessionLog.write("game_dev", {"task": task_id, "choice": choice, "minutes": snappedf(minutes, 0.1), "points": snappedf(points, 0.01),
+		"milestone": int(game.milestone)})
+	return out
+
+
+## True when every milestone of the little game is done.
+func is_game_released() -> bool:
+	return _state != null and int(_state.pastimes.game.milestone) >= Pastimes.milestones().size()
+
+
 ## The difficulty of the game being played (Difficulty; Standard without a game).
 func get_difficulty() -> StringName:
 	return _state.difficulty if _state else Difficulty.STANDARD

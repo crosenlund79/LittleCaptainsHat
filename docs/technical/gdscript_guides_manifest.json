@@ -53,9 +53,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/app/app.gd": {
-   "sha": "8dad5be7dc86ab16",
+   "sha": "07d87884a6bfd4c4",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/app/game_version.gd": {
    "sha": "8392004ca99d3110",
@@ -233,9 +233,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/core/game_session.gd": {
-   "sha": "443685c85939d52c",
+   "sha": "a0281da6473765bb",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/core/hat_state.gd": {
    "sha": "5d50d71e51204312",
@@ -262,20 +262,30 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "src/core/pastimes.gd": {
+   "sha": "b7a1a203b29d646a",
+   "reviewed": "2026-10-27",
+   "note": "I022 pastimes and the one clock for hours-long tasks"
+  },
+  "src/core/pastimes_state.gd": {
+   "sha": "72bccc9fc02774d9",
+   "reviewed": "2026-10-27",
+   "note": "I022 pastimes and the one clock for hours-long tasks"
+  },
   "src/core/provisions.gd": {
    "sha": "2a5ea7d7061a4e03",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/core/session_state.gd": {
-   "sha": "c9e3f4dac42590d9",
+   "sha": "ab8482ced3e0e636",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/core/simulation.gd": {
-   "sha": "7b8eb95089996e9c",
+   "sha": "6d28ea07e681de6d",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/core/vessel_condition.gd": {
    "sha": "d1e2f8e4ae1d2c4b",
@@ -687,6 +697,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "src/ui/game_dev_menu.gd": {
+   "sha": "db182ce2c131300c",
+   "reviewed": "2026-10-27",
+   "note": "I022 pastimes and the one clock for hours-long tasks"
+  },
   "src/ui/go_ashore_menu.gd": {
    "sha": "e841c575d3dcefe1",
    "reviewed": "2026-10-27",
@@ -762,6 +777,16 @@
    "reviewed": "2026-10-27",
    "note": "I022 boats and difficulty"
   },
+  "src/ui/postcard_menu.gd": {
+   "sha": "8d7e54203418ec86",
+   "reviewed": "2026-10-27",
+   "note": "I022 pastimes and the one clock for hours-long tasks"
+  },
+  "src/ui/postcard_view.gd": {
+   "sha": "a7bdedc3d9586c55",
+   "reviewed": "2026-10-27",
+   "note": "I022 pastimes and the one clock for hours-long tasks"
+  },
   "src/ui/provisions_menu.gd": {
    "sha": "0048b26b1806f0f1",
    "reviewed": "2026-10-27",
@@ -806,6 +831,11 @@
    "sha": "7685e088d8d02cfd",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/scrapbook_menu.gd": {
+   "sha": "c6624f2bd0b63919",
+   "reviewed": "2026-10-27",
+   "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/ui/settings_menu.gd": {
    "sha": "2b637b15637b0b10",
@@ -1068,9 +1098,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_captains_other_life.gd": {
-   "sha": "d9cc271e39ab6afb",
+   "sha": "15af68a4f9b4b0bf",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "tests/suites/test_captains_watch.gd": {
    "sha": "a511747240a65668",

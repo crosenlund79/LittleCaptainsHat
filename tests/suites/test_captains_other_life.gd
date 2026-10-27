@@ -2,7 +2,8 @@ extends RefCounted
 ## I022, The Captain's Other Life: boats with prices (bought once, kept for
 ## good, never below zero money, old saves keep every boat), the three
 ## difficulty levels (what they change, saves, changing during a game), and
-## the new game and pause menus that offer them.
+## the new game and pause menus that offer them; the pastimes aboard
+## (Postcards from the Sea, A Game Developer at Sea) on the one clock.
 
 const APP_SCENE := preload("res://src/app/app.tscn")
 
@@ -16,12 +17,17 @@ func run(runner: Node) -> void:
 	_test_old_saves()
 	_test_buying()
 	_test_difficulty_factors()
+	_test_postcards()
+	_test_game_dev()
+	_test_pastime_saves()
 	Simulation.auto_advance = false
 	app = APP_SCENE.instantiate()
 	t.add_child(app)
 	app.router.fade_duration = 0.05
 	await _settle()
 	await _test_menus()
+	await _test_pastimes_on_the_clock()
+	await _test_pastime_menus()
 	app.queue_free()
 	await t.frames(2)
 	GameSession.test_all_boats_owned = true
@@ -155,6 +161,180 @@ func _test_difficulty_factors() -> void:
 	var texts := Difficulty.LEVELS.all(func(level: StringName) -> bool: return Difficulty.describe(level) != "" and Loc.t(Difficulty.describe(level)) == Difficulty.describe(level))
 	SettingsManager.set_language(&"en")
 	t.check(names == ["Afslappet", "Standard", "Erfaren skipper"] and texts, "[dansk] %s" % [names])
+
+
+# --- Pastimes -------------------------------------------------------------------------------------
+
+func _test_postcards() -> void:
+	GameSession.start_new_session()
+	_moor_in(&"copenhagen")
+	var subjects := Pastimes.subjects()
+	t.check(subjects.any(func(s: Dictionary) -> bool: return s.kind == "companion") and Pastimes.postcard_minutes() == 120.0,
+		"[postcards] real subjects from the game (%s); a card takes 2 hours" % [subjects.map(func(s: Dictionary) -> String: return "%s:%s" % [s.kind, s.subject])])
+	var companion: Dictionary = subjects.filter(func(s: Dictionary) -> bool: return s.kind == "companion")[0]
+	var renown := GameSession.get_unpublished_renown()
+	GameSession.set_postcard_draft(companion.kind, companion.subject, 1, "snapshot")
+	var half := GameSession.work_on_postcard(45.0)
+	t.check(not half.done and GameSession.postcard_minutes_left() == 75.0 and GameSession.get_pastimes().postcards.is_empty(),
+		"[postcards] interrupted after 45 min: the card is kept, 75 min left")
+	GameSession.set_postcard_draft(companion.kind, companion.subject, 2, "banner")
+	t.check(GameSession.postcard_minutes_left() == 75.0, "[postcards] changing the words of the same card keeps the time already given it")
+	var done := GameSession.work_on_postcard(75.0)
+	t.check(done.done and GameSession.get_pastimes().draft.is_empty() and GameSession.get_pastimes().postcards.size() == 1
+		and GameSession.get_unpublished_renown() == renown + Pastimes.postcard_renown() and Pastimes.is_posted(companion.kind, companion.subject),
+		"[postcards] finished: in the scrapbook, +%d renown" % Pastimes.postcard_renown())
+	GameSession.set_postcard_draft(companion.kind, companion.subject, 0, "classic")
+	var again := GameSession.work_on_postcard(120.0)
+	t.check(again.done and (again.award as Dictionary).is_empty() and GameSession.get_unpublished_renown() == renown + Pastimes.postcard_renown()
+		and GameSession.get_pastimes().postcards.size() == 2, "[postcards] the same subject again: a second card, no second reward")
+	GameSession.set_postcard_draft("harbour", "copenhagen", 0, "classic")
+	GameSession.abandon_postcard()
+	t.check(GameSession.get_pastimes().draft.is_empty() and GameSession.postcard_minutes_left() == 120.0, "[postcards] an unfinished card can be thrown away")
+	for kind in Pastimes.KINDS:
+		t.check(Pastimes.captions(kind).size() == 3, "[postcards] three captions for %s" % kind)
+	var caption := Pastimes.caption_text("voyage", 0, Pastimes.args_for("voyage", "copenhagen-helsingor"))
+	t.check(caption.contains("Copenhagen") and caption.contains("Helsing"), "[postcards] a voyage card names both harbours (%s)" % caption)
+
+
+func _test_game_dev() -> void:
+	GameSession.start_new_session()
+	var fits := func(task: Dictionary) -> bool:
+		return int(task.hours) >= 2 and int(task.hours) <= 4 and (task.choices as Array).size() == 3 and (task.done as Array).size() == 3
+	t.check(Pastimes.tasks().all(fits), "[game dev] every session is 2 to 4 hours, with three choices")
+	var game := GameSession.get_pastimes().game
+	var part := GameSession.work_on_game("feature", 0, 60.0)
+	t.check(not part.done and absf(float(game.points) - 2.0 / 3.0) < 1e-6 and game.task.get("id") == "feature" and float(game.task.minutes) == 60.0,
+		"[game dev] interrupted after 1 of 3 hours: a third of the points count, the session waits (%.2f)" % float(game.points))
+	var rest := GameSession.work_on_game("feature", 0, 120.0)
+	t.check(rest.done and absf(float(game.points) - 2.0) < 1e-6 and (game.task as Dictionary).is_empty() and int(game.sessions) == 1,
+		"[game dev] going on: the whole session done, 2 points for the wise choice")
+	var renown := GameSession.get_unpublished_renown()
+	var odd := GameSession.work_on_game("bug", 2, 120.0)
+	t.check(odd.done and not (odd.milestone as Dictionary).is_empty() and String(odd.milestone.id) == "keeper" and int(game.milestone) == 1
+		and absf(float(game.points) - 0.0) < 1e-6 and GameSession.get_unpublished_renown() == renown + 4,
+		"[game dev] an odd choice counts 1 point; 3 points: the first milestone, +4 renown")
+	var funds := GameSession.get_funds()
+	var guard := 0
+	while not GameSession.is_game_released() and guard < 50:
+		GameSession.work_on_game("arrange", 0, 180.0)
+		guard += 1
+	t.check(GameSession.is_game_released() and GameSession.get_funds() == funds + 300 and (game.log as Array).size() == Pastimes.milestones().size(),
+		"[game dev] released after %d more sessions: the first sales pay %s, every milestone in the devlog" % [guard, GameSession.format_money(300)])
+	var lifetime := GameSession.get_lifetime_renown()
+	var after := GameSession.work_on_game("update", 0, 240.0)
+	t.check(after.done and (after.award as Dictionary).is_empty() and GameSession.get_lifetime_renown() == lifetime and GameSession.get_funds() == funds + 300,
+		"[game dev] after the release: small updates, no repeated rewards")
+	var order := Pastimes.choice_order("bug", 0)
+	var moved := range(4).any(func(n: int) -> bool: return Pastimes.choice_order("bug", n)[0] != 0)
+	t.check(order.size() == 3 and moved, "[game dev] the choices are shown in a changing order (%s)" % [order])
+
+
+func _test_pastime_saves() -> void:
+	GameSession.start_new_session()
+	GameSession.set_postcard_draft("companion", "cat", 1, "banner")
+	GameSession.work_on_postcard(30.0)
+	GameSession.work_on_game("balance", 1, 30.0)
+	var back := _round_trip()
+	t.check(back != null and back.pastimes.draft.get("minutes") == 30.0 and back.pastimes.draft.get("layout") == "banner"
+		and back.pastimes.game.task.get("id") == "balance" and float(back.pastimes.game.task.minutes) == 30.0,
+		"[saves] an unfinished postcard and game session are saved")
+	var data: Dictionary = JSON.parse_string(JSON.stringify(GameSession.get_state_snapshot().to_dict()))
+	data.erase("pastimes")
+	var errors: Array[String] = []
+	var old := SessionState.from_dict(data, errors)
+	t.check(old != null and errors.is_empty() and old.pastimes.postcards.is_empty() and old.pastimes.draft.is_empty() and int(old.pastimes.game.milestone) == 0,
+		"[old saves] a save from before the pastimes: an empty scrapbook and a game not yet begun")
+	data["pastimes"] = {"postcards": [{"kind": 3}], "draft": "x", "game": {"points": "many", "milestone": -2, "task": {"id": 5}}}
+	var odd := SessionState.from_dict(data, errors)
+	t.check(odd != null and odd.pastimes.postcards.is_empty() and odd.pastimes.draft.is_empty() and float(odd.pastimes.game.points) == 0.0
+		and int(odd.pastimes.game.milestone) == 0, "[saves] malformed pastimes are dropped quietly")
+
+
+## Through App, on the one clock: the hours really pass (food is eaten), an
+## arrival interrupts and the progress is kept.
+func _test_pastimes_on_the_clock() -> void:
+	GameSession.start_new_session()
+	_moor_in(&"copenhagen")
+	GameSession.set_postcard_draft("companion", String(GameSession.get_companion().kind), 0, "classic")
+	var start := GameSession.get_game_time()
+	var food := GameSession.get_provisions().food_days
+	await app.make_postcard()
+	t.check(absf(GameSession.get_game_time() - start - 7200.0) < 1.0 and GameSession.get_provisions().food_days < food
+		and GameSession.get_pastimes().postcards.size() == 1, "[one clock] a postcard: two hours of the world pass, food is eaten as usual")
+	GameSession.set_time_scale(20)
+	start = GameSession.get_game_time()
+	await app.work_on_game("bug", 0)
+	t.check(absf(GameSession.get_game_time() - start - 7200.0) < 1.0 and GameSession.get_time_scale() == 1,
+		"[one clock] a game session of 2 h; back at ×1 afterwards")
+	# Find how long the short hop to Helsingør takes, then start a card an hour before arriving.
+	var moored := GameSession.get_state_snapshot()
+	t.check_eq(GameSession.plan_route_to(&"helsingor"), "", "(setup) course to Helsingør")
+	t.check_eq(GameSession.depart(), "", "(setup) departed")
+	var underway := GameSession.get_state_snapshot()
+	var sailed := 0.0
+	while GameSession.is_underway() and sailed < 48.0 * 3600.0:
+		sailed += Simulation.advance(600.0, true).elapsed_seconds
+	GameSession.replace_state(underway)
+	Simulation.advance(sailed - 3600.0, false)
+	if not t.check(GameSession.is_underway(), "(setup) underway, about an hour out (the hop takes %s)" % Simulation.format_duration(sailed)):
+		GameSession.replace_state(moored)
+		return
+	GameSession.set_postcard_draft("companion", String(GameSession.get_companion().kind), 0, "classic")
+	await app.make_postcard()
+	var draft := GameSession.get_pastimes().draft
+	t.check(not GameSession.is_underway() and not draft.is_empty() and float(draft.minutes) > 0.0 and float(draft.minutes) < 120.0
+		and GameSession.get_pastimes().postcards.size() == 1, "[one clock] the arrival interrupts the card after %.0f min; it is kept to finish" % float(draft.get("minutes", 0)))
+	t.check(Pastimes.subjects().any(func(s: Dictionary) -> bool: return s.kind == "voyage" and s.subject == "copenhagen-helsingor"),
+		"[postcards] the voyage just made is a subject now")
+	await app.make_postcard()
+	t.check(GameSession.get_pastimes().draft.is_empty() and GameSession.get_pastimes().postcards.size() == 2, "[one clock] continued and finished later")
+
+
+func _test_pastime_menus() -> void:
+	app.modals.clear()
+	await _settle()
+	app.modals.clear()
+	app._on_area_change_requested(&"interior", &"from_deck")
+	await _settle()
+	var wheel: Array = app.get_wheel_actions().map(func(a: Dictionary) -> StringName: return a.id)
+	t.check(wheel.has(&"postcards") and wheel.has(&"game_dev") and wheel.has(&"log"), "[menus] the cabin's Q wheel offers both pastimes")
+	var menu: PostcardMenu = app.open_postcards()
+	if not t.check(menu != null, "[menus] Postcards from the Sea opens (gameplay %s, busy %s, modals %d %s, screen %s)" % [app.is_in_gameplay(),
+			app.router.is_busy(), app.modals.depth(), app.modals.get_top(), app.router.current_screen]):
+		return
+	await t.frames(3)
+	menu.choose(0, 1, "snapshot")
+	t.check(menu.preview.card.get("layout") == "snapshot" and menu.find_child("Note", true, false).text.contains("2 h"),
+		"[menus] the preview follows the choices; it says it takes about 2 hours (%s)" % menu.find_child("Note", true, false).text)
+	await t.screenshot("i022_postcard")
+	var cards := GameSession.get_pastimes().postcards.size()
+	await t.click(menu.find_child("MakeButton", true, false))
+	await t.frames(3)
+	await t.wait_until(func() -> bool: return GameSession.get_pastimes().postcards.size() == cards + 1, 3.0)
+	t.check(GameSession.get_pastimes().postcards.size() == cards + 1 and app.modals.is_empty(), "[menus] made and published from the menu")
+	menu = app.open_postcards()
+	await t.frames(2)
+	await t.click(menu.find_child("ScrapbookButton", true, false))
+	await t.frames(3)
+	var book := app.modals.get_top() as ScrapbookMenu
+	t.check(book != null and book.view.visible and book.view.card == GameSession.get_pastimes().postcards.back(), "[menus] the scrapbook opens on the newest card")
+	await t.screenshot("i022_scrapbook")
+	app.modals.clear()
+	await t.frames(2)
+	var dev: GameDevMenu = app.open_game_dev()
+	if not t.check(dev != null, "[menus] the little game opens"):
+		return
+	await t.frames(3)
+	t.check(dev.find_child("WorkButton", true, false).disabled, "[menus] no work before an answer is chosen")
+	dev.pick(0)
+	await t.frames(1)
+	t.check(not dev.find_child("WorkButton", true, false).disabled and dev.find_child("Note", true, false).text.contains("h"),
+		"[menus] the hours are shown before starting (%s)" % dev.find_child("WorkButton", true, false).text)
+	await t.screenshot("i022_game_dev")
+	var sessions := int(GameSession.get_pastimes().game.sessions)
+	await t.click(dev.find_child("WorkButton", true, false))
+	await t.wait_until(func() -> bool: return int(GameSession.get_pastimes().game.sessions) == sessions + 1, 3.0)
+	t.check(int(GameSession.get_pastimes().game.sessions) == sessions + 1 and app.modals.is_empty(), "[menus] a session worked from the menu")
 
 
 # --- Menus -----------------------------------------------------------------------------------------

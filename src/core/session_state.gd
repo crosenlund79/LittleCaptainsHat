@@ -77,6 +77,8 @@ var voyage: Voyage
 ## among them. Saves from before I022 own every boat: they could move aboard
 ## any of them at a boatyard, and nothing is ever taken away.
 var owned_vessels: Array[StringName] = [VesselCatalog.STARTER_ID]
+## Postcards and the little game (I022; PastimesState). Older saves: none yet.
+var pastimes := PastimesState.new()
 ## Relaxed, Standard or Seasoned Captain (I022; Difficulty). Older saves: Standard.
 var difficulty: StringName = Difficulty.STANDARD
 ## Euros (whole). Never negative.
@@ -193,6 +195,7 @@ func duplicate_state() -> SessionState:
 	copy.funds = funds
 	copy.owned_vessels = owned_vessels.duplicate()
 	copy.difficulty = difficulty
+	copy.pastimes = pastimes.duplicate_state()
 	copy.provisions = provisions.duplicate_provisions()
 	copy.vessel_conditions = vessel_conditions.duplicate()
 	copy.damage_applied_until = damage_applied_until
@@ -259,6 +262,7 @@ func to_dict() -> Dictionary:
 		"economy": {"funds": funds},
 		"fleet": {"owned": _owned_for_save()},
 		"difficulty": String(difficulty),
+		"pastimes": pastimes.to_dict(),
 		"provisions": provisions.to_dict(),
 		"rescue": {"count": rescue_count, "last": last_rescue.duplicate(true)},
 		"log": captains_log.to_dict(),
@@ -430,6 +434,7 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 	# could move aboard any of them) and the difficulty (older saves: Standard).
 	state.owned_vessels = owned_from(data.get("fleet"), state.vessel_id)
 	state.difficulty = Difficulty.valid(data.get("difficulty"))
+	state.pastimes = PastimesState.from_dict(data.get("pastimes"))
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:

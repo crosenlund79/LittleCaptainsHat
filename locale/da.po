@@ -7771,3 +7771,392 @@ msgstr "Hvor tilgivende skal havet være?"
 
 msgid "Difficulty…"
 msgstr "Sværhedsgrad…"
+
+# I022: pastimes (Postcards from the Sea, A Game Developer at Sea) and time passing
+
+msgid "%d of %d · sent %s"
+msgstr "%d af %d · sendt %s"
+
+msgid "%s (%d h)"
+msgstr "%s (%d t)"
+
+msgid "%s behind us, %s ahead. And then we arrived."
+msgstr "%s bag os, %s forude. Og så var vi fremme."
+
+msgid "%s to %s: another passage in the log."
+msgstr "%s til %s: endnu en sejlads i logbogen."
+
+msgid "%s: %s"
+msgstr "%s: %s"
+
+msgid "%s: worth every mile to get here."
+msgstr "%s: hver sømil værd."
+
+msgid "A catch"
+msgstr "En fangst"
+
+msgid "A first card of this subject earns %d renown."
+msgstr "Det første kort med dette motiv giver %d ry."
+
+msgid "A harbour"
+msgstr "En havn"
+
+msgid "A little further, and suddenly every storm is a good story rather than a bad day."
+msgstr "Lidt længere, og pludselig er hver storm en god historie i stedet for en dårlig dag."
+
+msgid "A mystery update. Brave."
+msgstr "En mystisk opdatering. Modigt."
+
+msgid "A thousand words about the code"
+msgstr "Tusind ord om koden"
+
+msgid "A voyage"
+msgstr "En sejlads"
+
+msgid "Add a tiny feature"
+msgstr "Tilføj en lillebitte funktion"
+
+msgid "Added the creak of the stairs, the wind at the gallery and a small tune on an accordion. The game feels like a place now."
+msgstr "Trappen knirker nu, vinden suser om galleriet, og en lille melodi spilles på harmonika. Spillet føles som et sted nu."
+
+msgid "Already posted once: a card for the scrapbook, without renown."
+msgstr "Allerede sendt én gang: et kort til scrapbogen, uden ry."
+
+msgid "Another day ends softly at %s."
+msgstr "Endnu en dag slutter stille i %s."
+
+msgid "Arrange the scene"
+msgstr "Arranger scenen"
+
+msgid "Balance the game"
+msgstr "Afbalancer spillet"
+
+msgid "Banner"
+msgstr "Banner"
+
+msgid "Caught today: a %s. Supper is sorted."
+msgstr "Dagens fangst: %s. Aftensmaden er klaret."
+
+msgid "Choose an answer first"
+msgstr "Vælg et svar først"
+
+msgid "Collect every seashell on the island"
+msgstr "Saml alle muslingeskaller på øen"
+
+msgid "Devlog"
+msgstr "Udviklerdagbog"
+
+msgid "Devlog: nothing yet. Every game starts with a first small step."
+msgstr "Udviklerdagbog: intet endnu. Ethvert spil begynder med et lille første skridt."
+
+msgid "Evening light"
+msgstr "Aftenlys"
+
+msgid "Every voyage is better with a friend aboard."
+msgstr "Enhver sejlads er bedre med en ven om bord."
+
+msgid "Finish the card (%s)"
+msgstr "Gør kortet færdigt (%s)"
+
+msgid "First mate, on watch (asleep)."
+msgstr "Styrmand på vagt (sover)."
+
+msgid "Fix a funny bug"
+msgstr "Ret en sjov fejl"
+
+msgid "Fog rolls in, the ships slow down, and the keeper has to light the fog bell too. It is harder now, but kind: nobody sinks, they only wait."
+msgstr "Tågen ruller ind, skibene sænker farten, og fyrpasseren må også ringe med tågeklokken. Det er sværere nu, men venligt: ingen synker, de venter bare."
+
+msgid "Found it: the tide pulled the ships home stern first. Fixed, with a small sigh of pride."
+msgstr "Fundet: tidevandet trak skibene hjem med agterenden først. Rettet, med et lille stolt suk."
+
+msgid "From %s to %s, and the sea was kind."
+msgstr "Fra %s til %s, og havet var venligt."
+
+msgid "Go on working (%s)"
+msgstr "Arbejd videre (%s)"
+
+msgid "Hello from %s!"
+msgstr "Hilsen fra %s!"
+
+msgid "Hidden behind the menu buttons"
+msgstr "Skjult bag menuknapperne"
+
+msgid "Interrupted after %s: %s. The hours worked count; go on later from the cabin. It is %s."
+msgstr "Afbrudt efter %s: %s. Timerne du har arbejdet tæller; fortsæt senere fra kahytten. Klokken er %s."
+
+msgid "Interrupted after %s: %s. The postcard is kept; finish it later from the cabin (Q, Write a postcard). It is %s."
+msgstr "Afbrudt efter %s: %s. Postkortet gemmes; gør det færdigt senere fra kahytten (Q, Skriv et postkort). Klokken er %s."
+
+msgid "Interrupted last time: the rest of the session is waiting."
+msgstr "Afbrudt sidst: resten af arbejdet venter."
+
+msgid "Interrupted: %s"
+msgstr "Afbrudt: %s"
+
+msgid "Interrupted: %s."
+msgstr "Afbrudt: %s."
+
+msgid "It is %s."
+msgstr "Klokken er %s."
+
+msgid "Juggle three lanterns"
+msgstr "Jonglere med tre lanterner"
+
+msgid "Lesson of the day: respect %s."
+msgstr "Dagens lektie: respekt for %s."
+
+msgid "Look what came up on the line: a %s!"
+msgstr "Se hvad der kom op på linen: %s!"
+
+msgid "Make and publish"
+msgstr "Lav og udgiv"
+
+msgid "Make and publish (%s)"
+msgstr "Lav og udgiv (%s)"
+
+msgid "Make the light reach a little further"
+msgstr "Lad lyset nå lidt længere ud"
+
+msgid "Make the ships faster in every weather"
+msgstr "Gør skibene hurtigere i al slags vejr"
+
+msgid "Milestone %d of %d: %s · %s of %s points"
+msgstr "Milepæl %d af %d: %s · %s af %s point"
+
+msgid "Milestone: %s!"
+msgstr "Milepæl: %s!"
+
+msgid "Moored in %s. The kettle is on."
+msgstr "Fortøjet i %s. Kedlen er sat over."
+
+msgid "Mysterious. Nobody can find the lighthouse."
+msgstr "Mystisk. Ingen kan finde fyrtårnet."
+
+msgid "No postcards yet. Make one at the cabin table: Q, then Write a postcard."
+msgstr "Ingen postkort endnu. Lav et ved kahytsbordet: Q, derefter Skriv et postkort."
+
+msgid "Nothing at all: let them guess"
+msgstr "Slet ingenting: lad dem gætte"
+
+msgid "Nothing to send yet."
+msgstr "Intet at sende endnu."
+
+msgid "On the rocks, a little to the left, with the sea in front"
+msgstr "På klipperne, lidt til venstre, med havet foran"
+
+msgid "One %s, one very happy captain."
+msgstr "Én fisk (%s), én meget glad skipper."
+
+msgid "Our companion"
+msgstr "Vores følgesvend"
+
+msgid "Playtesters say the storms are too hard. What do you change?"
+msgstr "Testspillerne siger, at stormene er for svære. Hvad ændrer du?"
+
+msgid "Postcard: %s"
+msgstr "Postkort: %s"
+
+msgid "Postcards from the Sea"
+msgstr "Postkort fra havet"
+
+msgid "Prepare a small update"
+msgstr "Forbered en lille opdatering"
+
+msgid "Published Tiny Lighthouse 1.0 from a harbour café, with a slow connection and a fast heart. Kind messages are arriving. A few people even bought it."
+msgstr "Udgav Lille Fyrtårn 1.0 fra en havnecafé, med en langsom forbindelse og et hurtigt hjerte. Søde beskeder strømmer ind. Nogle har endda købt det."
+
+msgid "Release: Tiny Lighthouse 1.0"
+msgstr "Udgivelse: Lille Fyrtårn 1.0"
+
+msgid "Released! Every milestone is done; small updates still make it better."
+msgstr "Udgivet! Alle milepæle er nået; små opdateringer gør det stadig bedre."
+
+msgid "Remove storms completely"
+msgstr "Fjern stormene helt"
+
+msgid "Right in the middle, very large"
+msgstr "Midt i billedet, meget stort"
+
+msgid "Scrapbook"
+msgstr "Scrapbog"
+
+msgid "Scrapbook (%d)"
+msgstr "Scrapbog (%d)"
+
+msgid "Ships to guide"
+msgstr "Skibe at lede hjem"
+
+msgid "Short, clear and kind notes. Players will like that."
+msgstr "Korte, klare og venlige noter. Det vil spillerne kunne lide."
+
+msgid "Snapshot"
+msgstr "Øjebliksbillede"
+
+msgid "Sound and music"
+msgstr "Lyd og musik"
+
+msgid "Squalls and fog"
+msgstr "Byger og tåge"
+
+msgid "Sunset at %s. Nothing to add."
+msgstr "Solnedgang ved %s. Intet at tilføje."
+
+msgid "The first sales: %s."
+msgstr "De første salg: %s."
+
+msgid "The hat is fine. The ships are not. The search continues."
+msgstr "Hatten er fin. Skibene er ikke. Jagten fortsætter."
+
+msgid "The juggling is impressive, if rather off-topic."
+msgstr "Jongleringen er imponerende, om end lidt ved siden af."
+
+msgid "The keeper walks"
+msgstr "Fyrpasseren går"
+
+msgid "The keeper waves. Ships wave back. Small, and exactly right."
+msgstr "Fyrpasseren vinker. Skibene vinker igen. Lille, og helt rigtigt."
+
+msgid "The keeper's hat"
+msgstr "Fyrpasserens hat"
+
+msgid "The lamp turns! It sweeps across the sea and every boat in the harbour blinks back. Tried it with the cabin lights off. Very pleased."
+msgstr "Lampen drejer! Den fejer hen over havet, og alle bådene i havnen blinker tilbage. Prøvede det med lyset slukket i kahytten. Meget tilfreds."
+
+msgid "The layout"
+msgstr "Layoutet"
+
+msgid "The light at %s tonight."
+msgstr "Lyset ved %s i aften."
+
+msgid "The light turns"
+msgstr "Lyset drejer"
+
+msgid "The little keeper can walk up the spiral stairs now. She stops at the top to look at the sea, which I did not program. I am choosing to call it a feature."
+msgstr "Den lille fyrpasser kan gå op ad vindeltrappen nu. Hun stopper øverst og kigger ud over havet, hvilket jeg ikke har programmeret. Jeg vælger at kalde det en funktion."
+
+msgid "The moon's tide code"
+msgstr "Månens tidevandskode"
+
+msgid "The notes are longer than the game."
+msgstr "Noterne er længere end spillet."
+
+msgid "The real captain of this boat."
+msgstr "Den egentlige skipper på denne båd."
+
+msgid "The sails are now a lovely blue. The ships still sail backwards."
+msgstr "Sejlene er nu smukt blå. Skibene sejler stadig baglæns."
+
+msgid "The sails' colour"
+msgstr "Sejlenes farve"
+
+msgid "The seashell counter now reaches 4,000. Perhaps too many shells."
+msgstr "Muslingetælleren når nu op på 4.000. Måske lidt for mange skaller."
+
+msgid "The ships now zip about like dragonflies. Fun, but odd."
+msgstr "Skibene suser nu rundt som guldsmede. Sjovt, men underligt."
+
+msgid "The ships sail backwards when the moon is full. Where do you look first?"
+msgstr "Skibene sejler baglæns, når det er fuldmåne. Hvor kigger du først?"
+
+msgid "The title screen breathes now: rocks, sea and a light that waits for you."
+msgstr "Titelskærmen ånder nu: klipper, hav og et lys, der venter på dig."
+
+msgid "The words"
+msgstr "Ordene"
+
+msgid "There was %s out there. Glad to be in port."
+msgstr "Der var %s derude. Godt at være i havn."
+
+msgid "This session takes %s of game time. Time passes as usual; an alarm or a warning interrupts it, and the hours worked still count."
+msgstr "Dette arbejde tager %s spiltid. Tiden går som altid; en alarm eller en advarsel afbryder det, og de timer du har arbejdet tæller stadig."
+
+msgid "Three little ships now sail home if the light finds them in time. The cat watched the first one arrive and approved."
+msgstr "Tre små skibe sejler nu hjem, hvis lyset finder dem i tide. Katten så det første ankomme og godkendte det."
+
+msgid "Throw away the unfinished card"
+msgstr "Smid det ufærdige kort ud"
+
+msgid "Very large indeed. It looks surprised."
+msgstr "Meget stort, ja. Det ser overrasket ud."
+
+msgid "Wave at passing ships"
+msgstr "Vinke til forbipasserende skibe"
+
+msgid "We met %s on the way. The boat held, and so did we."
+msgstr "Vi mødte %s undervejs. Båden holdt, og det gjorde vi også."
+
+msgid "Weather we met"
+msgstr "Vejr vi mødte"
+
+msgid "What changed, in plain words, and a thank-you"
+msgstr "Hvad der er ændret, i almindelige ord, og et tak"
+
+msgid "What goes into the update notes?"
+msgstr "Hvad skal der stå i opdateringsnoterne?"
+
+msgid "What should the keeper be able to do next?"
+msgstr "Hvad skal fyrpasseren kunne nu?"
+
+msgid "What the card shows"
+msgstr "Hvad kortet viser"
+
+msgid "Where should the lighthouse stand on the title screen?"
+msgstr "Hvor skal fyrtårnet stå på titelskærmen?"
+
+msgid "Without storms it is calm. Perhaps a little too calm."
+msgstr "Uden storme er der roligt. Måske lidt for roligt."
+
+msgid "Work for %s"
+msgstr "Arbejd i %s"
+
+msgid "Work on your little game"
+msgstr "Arbejd på dit lille spil"
+
+msgid "Write a postcard"
+msgstr "Skriv et postkort"
+
+msgid "Writing, arranging and publishing a postcard takes about %s of game time. Time passes as usual, and an alarm or a warning interrupts it; the card is kept to finish later."
+msgstr "At skrive, arrangere og udgive et postkort tager omkring %s spiltid. Tiden går som altid, og en alarm eller en advarsel afbryder det; kortet gemmes, så du kan gøre det færdigt senere."
+
+msgid "Your postcard is published and in the scrapbook. It is %s."
+msgstr "Dit postkort er udgivet og ligger i scrapbogen. Klokken er %s."
+
+msgid "a call on the radio"
+msgstr "et opkald på radioen"
+
+msgid "a storm"
+msgstr "en storm"
+
+msgid "a traffic warning"
+msgstr "en trafikadvarsel"
+
+msgid "a weather warning came in"
+msgstr "en vejradvarsel kom ind"
+
+msgid "at sea"
+msgstr "på havet"
+
+msgid "heavy weather"
+msgstr "meget hårdt vejr"
+
+msgid "rough weather"
+msgstr "hårdt vejr"
+
+msgid "the anchor alarm went"
+msgstr "ankeralarmen gik"
+
+msgid "the bell on the rod rang: a fish is on"
+msgstr "klokken på stangen ringede: der er fisk på"
+
+msgid "the boat has arrived"
+msgstr "båden er fremme"
+
+msgid "the boat is at the anchorage"
+msgstr "båden er ved ankerpladsen"
+
+msgid "the rescue came"
+msgstr "redningen kom"
+
+msgid "Tiny Lighthouse"
+msgstr "Lille Fyrtårn"

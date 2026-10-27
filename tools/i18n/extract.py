@@ -33,8 +33,11 @@ def literals(code):
 LOC_T = re.compile(r'Loc\.t\(\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*"((?:[^"\\]|\\.)*)")?\s*\)')
 LOC_FORMAT = re.compile(r'Loc\.format\(\s*"((?:[^"\\]|\\.)*)"')
 LOC_N = re.compile(r'Loc\.(?:n|format_plural)\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"(?:\s*,[^,)]*(?:\([^)]*\))?[^,)]*,\s*"((?:[^"\\]|\\.)*)")?')
-DATA_KEYS = ("name", "text", "title", "description", "label", "display_name", "short", "story", "hint", "flavour", "message",
-             "body", "choice", "outcome")
+DATA_KEYS = ("name", "game_title", "text", "title", "description", "label", "display_name", "short", "story", "hint", "flavour", "message",
+             "body", "choice", "outcome", "question", "log")
+# Lists of player-facing strings (I022 pastimes), and maps whose values are.
+LIST_KEYS = ("captions", "choices", "done")
+MAP_KEYS = ("weather_names",)
 
 
 def sentence_like(text):
@@ -114,6 +117,14 @@ def collect():
             for k, v in node.items():
                 if k in DATA_KEYS and isinstance(v, str) and sentence_like(v):
                     add(v, rel)
+                elif k in LIST_KEYS and isinstance(v, list):
+                    for item in v:
+                        if isinstance(item, str) and sentence_like(item):
+                            add(item, rel)
+                elif k in MAP_KEYS and isinstance(v, dict):
+                    for item in v.values():
+                        if isinstance(item, str) and sentence_like(item):
+                            add(item, rel)
                 elif isinstance(v, (dict, list)):
                     walk(v, rel)
         elif isinstance(node, list):
