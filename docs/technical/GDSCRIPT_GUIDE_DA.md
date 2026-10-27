@@ -1614,7 +1614,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/radar_panel.gd`
 
 **Formål:** En lille radarskærm på dækket, der viser andre skibe i nærheden.
-- **Hvad det gør:** Tegner din båd i midten, afstandsringe og nærliggende skibe farvet efter fare, og skriver op til tre linjer om de vigtigste (hvor tæt de passerer, og hvad du skal gøre). Du kan zoome mellem 3, 6 og 12 sm. Den vises, når du tænder den, eller af sig selv, når et skib udgør en risiko under sejlads.
+- **Hvad det gør:** Tegner din båd i midten, afstandsringe og nærliggende skibe farvet efter fare, og skriver op til tre linjer om de vigtigste (hvor tæt de passerer, og hvad du skal gøre). Du kan zoome mellem 3, 6 og 12 sm. Den vises, når du tænder den, eller af sig selv, når et skib udgør en risiko under sejlads. Den vises kun under sejlads, hvor dens punkt i Q-menuen findes: tændt på havet forsvinder den ved fortøjning og kommer igen på næste sejlads.
 - **Arbejder sammen med:** `Simulation` (trafikrisici), `GameSession`, `TrafficModel`, `Hud` (rummer den), `App` (handlingshjulet tænder den).
 - **Holder styr på:** Om den er tændt, og zoomniveauet (kun for denne kørsel, ikke gemt).
 - **Hvornår det kører:** Under spillet, på dækket. Den tjekker trafikken et par gange i sekundet.
@@ -1868,7 +1868,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_captains_watch.gd`
 
 **Formål:** Tjekker Kaptajnens vagt: skibstrafik, radar, kollisionsadvarsler, ankeralarmer og opkald på VHF-radioen (I019).
-- **Hvad det gør:** Den tjekker, at andre skibe altid er de samme steder på samme tidspunkt, holder sig på vandet og ikke er for mange. Den tjekker regnestykket for, hvor tæt skibene kommer på hinanden, og at kollisionsadvarsler kommer i god tid, én gang pr. skib, og vækker dig eller stopper Lang passage. Den tjekker også ankeralarmens niveauer og VHF-opkald: et svar belønnes kun én gang, også efter gemme/indlæse.
+- **Hvad det gør:** Den tjekker, at andre skibe altid er de samme steder på samme tidspunkt, holder sig på vandet og ikke er for mange. Den tjekker regnestykket for, hvor tæt skibene kommer på hinanden, og at kollisionsadvarsler kommer i god tid, én gang pr. skib, og vækker dig eller stopper Lang passage. Den tjekker også ankeralarmens niveauer og VHF-opkald: et svar belønnes kun én gang, også efter gemme/indlæse. Den tjekker også, at radaren, tændt på havet, forsvinder ved fortøjning og kommer igen på næste sejlads.
 - **Arbejder sammen med:** `TrafficModel`, `Simulation`, `GameSession`, `RadarPanel`, `VhfRadio`, `AnchorState`, `SeaRouter`.
 - **Holder styr på:** Intet af sit eget.
 - **Hvornår det kører:** Kun i test. Det er en af kun to testsamlinger, hvor møder på havet er slået til.

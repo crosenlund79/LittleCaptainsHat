@@ -1998,7 +1998,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/radar_panel.gd`
 
-- **Role:** `class_name RadarPanel`, extends PanelContainer; north-up traffic scope with up to three advice lines.
+- **Role:** `class_name RadarPanel`, extends PanelContainer; north-up traffic scope with up to three advice lines. `should_show()` requires `GameSession.is_underway()` (the wheel's Radar item exists only underway; before, `shown` kept it up in harbour with no way to close it); `shown` is kept for the next voyage, and traffic is only queried underway.
 - **Depends on:** `Simulation` (`traffic_risks`, `RISK_NONE/CAUTION/DANGER`, `get_current_heading`), `GameSession`, `TrafficModel.kind_name`, `WindField.compass_name`, `Loc`.
 - **State:** static `shown` and `range_index` (per run, not saved); `on_deck` Callable set by Hud; `_risks` cache.
 - **Lifecycle:** created in code by `Hud._ready()` (`hud.radar_panel`); App's action wheel toggles `RadarPanel.shown`.
@@ -2295,7 +2295,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_captains_watch.gd`
 
-- **Role:** extends RefCounted; test suite for I019 The Captain's Watch. Covers `TrafficModel` (deterministic, navigable, bounded by `MAX_PER_CELL`, ships moving, query < 2 ms), `TrafficModel.approach` CPA/TCPA, `Simulation.risk_level`, `traffic_alert` fairness (tcpa ≥ 0.15 h, once per ship, ≤ 1 per 10 h), sleep and Long Passage stopping (`STOP_TRAFFIC`/`STOP_WARNING`), `RadarPanel.describe`/`colour_for`, anchor alarm levels and `AnchorState` compatibility, and `VhfRadio` (deterministic per slot, answering and declining, standby, once-only reward across a round trip, the expiry window).
+- **Role:** extends RefCounted; test suite for I019 The Captain's Watch. Covers `TrafficModel` (deterministic, navigable, bounded by `MAX_PER_CELL`, ships moving, query < 2 ms), `TrafficModel.approach` CPA/TCPA, `Simulation.risk_level`, `traffic_alert` fairness (tcpa ≥ 0.15 h, once per ship, ≤ 1 per 10 h), sleep and Long Passage stopping (`STOP_TRAFFIC`/`STOP_WARNING`), `RadarPanel.describe`/`colour_for`, anchor alarm levels and `AnchorState` compatibility, and `VhfRadio` (deterministic per slot, answering and declining, standby, once-only reward across a round trip, the expiry window). `_test_radar` also checks `RadarPanel.should_show()` on a standalone panel: on at sea, off when moored, on again after `_depart`.
 - **Depends on:** `GameSession`, `Simulation`, `TrafficModel`, `SeaRouter`, `PortCatalog`, `RadarPanel`, `VhfRadio`, `AnchorState`, `SessionState`.
 - **Signals:** connects to `Simulation.traffic_alert`, `Simulation.passage_interrupted`, `Simulation.vhf_call`, `GameSession.anchor_alarm`, `GameSession.notice`.
 - **State:** no app scene. `app = runner.get("app")` is null with the current runner, so the HUD radar check is skipped. Sets `Simulation.passage_rate` directly.

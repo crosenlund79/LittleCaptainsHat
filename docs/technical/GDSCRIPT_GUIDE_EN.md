@@ -1612,7 +1612,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/radar_panel.gd`
 
 **Purpose:** A small radar screen on deck that shows other ships nearby.
-- **What it does:** Draws your boat in the centre, range rings and nearby ships coloured by danger, and writes up to three lines on the most important ones (how close they pass and what to do). You can zoom between 3, 6 and 12 sm. It appears when you turn it on, or by itself when a ship is a risk underway.
+- **What it does:** Draws your boat in the centre, range rings and nearby ships coloured by danger, and writes up to three lines on the most important ones (how close they pass and what to do). You can zoom between 3, 6 and 12 sm. It appears when you turn it on, or by itself when a ship is a risk underway. It shows only underway, where its Q-menu item is: switched on at sea it goes away on mooring and comes back on the next voyage.
 - **Works with:** `Simulation` (traffic risks), `GameSession`, `TrafficModel`, `Hud` (contains it), `App` (the action wheel switches it on).
 - **Keeps:** Whether it is switched on and the zoom level (for this run only, not saved).
 - **When it runs:** During play, on deck. It checks traffic a few times a second.
@@ -1866,7 +1866,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_captains_watch.gd`
 
 **Purpose:** Checks the Captain's Watch: ship traffic, radar, collision warnings, anchor alarms and VHF radio calls (I019).
-- **What it does:** It checks that other ships are always in the same places for the same time, stay on water and are not too many. It checks the closest-approach maths, and that collision warnings come early, once per ship, and wake you or stop Long Passage. It checks the anchor alarm levels and VHF calls: answering pays only once, even after a save and load.
+- **What it does:** It checks that other ships are always in the same places for the same time, stay on water and are not too many. It checks the closest-approach maths, and that collision warnings come early, once per ship, and wake you or stop Long Passage. It checks the anchor alarm levels and VHF calls: answering pays only once, even after a save and load. It also checks that the radar, switched on at sea, goes away on mooring and returns on the next voyage.
 - **Works with:** `TrafficModel`, `Simulation`, `GameSession`, `RadarPanel`, `VhfRadio`, `AnchorState`, `SeaRouter`.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests. It is one of only two suites that switch on encounters at sea.

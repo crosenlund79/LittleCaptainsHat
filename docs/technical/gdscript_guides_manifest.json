@@ -758,9 +758,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/radar_panel.gd": {
-   "sha": "fdc26df5aac167ad",
+   "sha": "3ad0d7f5ee70845b",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "radar only underway"
   },
   "src/ui/reel_dial.gd": {
    "sha": "07855b87c8f876dc",
@@ -1053,9 +1053,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_captains_watch.gd": {
-   "sha": "293c04686a6389a1",
+   "sha": "a511747240a65668",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "radar mooring check"
   },
   "tests/suites/test_catamaran_cabin.gd": {
    "sha": "438528746e1946e8",
