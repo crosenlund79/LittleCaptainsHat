@@ -281,9 +281,20 @@ func _test_danish() -> void:
 		app.modals.clear()
 		var menu: Node = opener.call()
 		await t.frames(3)
+		var scroll := menu.find_child("Scroll", true, false) as ScrollContainer
+		if scroll and not screen.grow(2.0).encloses(scroll.get_global_rect()):
+			problems.append("%s/Scroll" % menu.name)
 		for node in menu.find_children("*", "Control", true, false):
 			var control := node as Control
-			if control.is_visible_in_tree() and (control is Button or control is Label) and not screen.grow(2.0).encloses(control.get_global_rect()):
+			if not control.is_visible_in_tree() or not (control is Button or control is Label):
+				continue
+			var rect := control.get_global_rect()
+			if scroll and scroll.is_ancestor_of(control):
+				# A row scrolled out of view is not off screen (I021: longer lists);
+				# it must still fit across.
+				if rect.position.x < -2.0 or rect.end.x > screen.end.x + 2.0:
+					problems.append("%s/%s" % [menu.name, control.name])
+			elif not screen.grow(2.0).encloses(rect):
 				problems.append("%s/%s" % [menu.name, control.name])
 	var chandlery_title := ""
 	app.modals.clear()
