@@ -37,9 +37,11 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # reported as WARN: the game's largest intended images are the chart rasters.
 TEXTURE_MAX_PX = 4096
 TEXTURE_MAX_BYTES = 8 * 1024 * 1024
-# Folders whose files are read by path patterns built in code or by tools, or are
-# the Captain's own reference material, so "unused" means nothing there.
-UNUSED_IGNORE = ("assets/branding/", "art_replacements/", "docs/", "tests/", "tools/", ".godot/", "addons/")
+# Folders whose files are read by tools, or are kept on purpose without being used,
+# so "unused" means nothing there: Visuals/ holds the Captain's own original drawings
+# (kept unchanged; they can be switched back in through data, see
+# DEV_GUIDES/COMPANION_ANIMATION.md), art_replacements/ the Sprite Workshop.
+UNUSED_IGNORE = ("assets/branding/", "art_replacements/", "docs/", "tests/", "tools/", ".godot/", "addons/", "Visuals/")
 # Files the game reads only when they exist, by design (reported as INFO, never FAIL).
 OPTIONAL_FILES = {
     "res://build_info.json": "written by tools/write_build_info.py before an export; a run from the project reads .git instead",
