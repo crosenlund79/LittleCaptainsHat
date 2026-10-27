@@ -76,6 +76,10 @@ msgid "Atlantic bonito"
 msgstr ""
 
 #: data/fishing/fishing.json
+msgid "Atlantic halibut"
+msgstr ""
+
+#: data/fishing/fishing.json
 msgid "Blacktip reef shark"
 msgstr ""
 
@@ -84,7 +88,19 @@ msgid "Blue shark"
 msgstr ""
 
 #: data/fishing/fishing.json
+msgid "Bluefish"
+msgstr ""
+
+#: data/fishing/fishing.json
 msgid "Cod"
+msgstr ""
+
+#: data/fishing/fishing.json
+msgid "Common dentex"
+msgstr ""
+
+#: data/fishing/fishing.json
+msgid "Dusky grouper"
 msgstr ""
 
 #: data/fishing/fishing.json
@@ -93,6 +109,10 @@ msgstr ""
 
 #: data/fishing/fishing.json
 msgid "Garfish"
+msgstr ""
+
+#: data/fishing/fishing.json
+msgid "Giant trevally"
 msgstr ""
 
 #: data/fishing/fishing.json
@@ -116,11 +136,19 @@ msgid "Mahi-mahi"
 msgstr ""
 
 #: data/fishing/fishing.json
+msgid "Narrow-barred Spanish mackerel"
+msgstr ""
+
+#: data/fishing/fishing.json
 msgid "Old boot"
 msgstr ""
 
 #: data/fishing/fishing.json
 msgid "Perch"
+msgstr ""
+
+#: data/fishing/fishing.json
+msgid "Pollack"
 msgstr ""
 
 #: data/fishing/fishing.json
@@ -160,7 +188,19 @@ msgid "Spoon lure"
 msgstr ""
 
 #: data/fishing/fishing.json
+msgid "Striped bass"
+msgstr ""
+
+#: data/fishing/fishing.json
+msgid "Striped red mullet"
+msgstr ""
+
+#: data/fishing/fishing.json
 msgid "Tangled rope"
+msgstr ""
+
+#: data/fishing/fishing.json
+msgid "Wahoo"
 msgstr ""
 
 #: data/fishing/fishing.json
@@ -175,8 +215,88 @@ msgstr ""
 msgid "Nyhavn"
 msgstr ""
 
+#: data/harbours/essaouira.tres:9
+msgid "The Skala"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Aegean island harbour"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Gabled harbour town"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Mediterranean harbour town"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Nordic timber harbour"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Stone harbour of the Atlantic coast"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Stone town harbour"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Tropical harbour town"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Tropical island harbour"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "Volcanic island harbour"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "an illustrated arrival among the tiers of neoclassical houses at Gialos"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "an illustrated arrival at Nyhavn's painted harbour houses"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "an illustrated arrival at the red waterfront of the old fishing town"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "an illustrated arrival below the Skala, the old sea bastion"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "an illustrated arrival beneath the bastions of Grand Harbour"
+msgstr ""
+
+#: data/harbours/harbour_looks.json
+msgid "an illustrated arrival in Jamestown's valley between the cliffs"
+msgstr ""
+
+#: data/harbours/lunenburg.tres:9
+msgid "Lunenburg waterfront"
+msgstr ""
+
+#: data/harbours/st_helena.tres:9
+msgid "Jamestown"
+msgstr ""
+
+#: data/harbours/symi.tres:9
+msgid "Gialos"
+msgstr ""
+
 #: data/harbours/trades/trades.json
 msgid "A gimballed brass lamp. It does not light the cabin much, but it makes it cosy."
+msgstr ""
+
+#: data/harbours/trades/trades.json
+msgid "A jar of smooth green and blue sea glass, picked up on beaches along the way."
 msgstr ""
 
 #: data/harbours/trades/trades.json
@@ -189,6 +309,14 @@ msgstr ""
 
 #: data/harbours/trades/trades.json
 msgid "A short shelf with a fiddle rail and a row of well-thumbed sea stories."
+msgstr ""
+
+#: data/harbours/trades/trades.json
+msgid "A small brass ship's barometer. The needle says what the sky is about to do."
+msgstr ""
+
+#: data/harbours/trades/trades.json
+msgid "A small model sloop on a wooden stand, rigged with real thread."
 msgstr ""
 
 #: data/harbours/trades/trades.json
@@ -208,6 +336,10 @@ msgid "Braided rug"
 msgstr ""
 
 #: data/harbours/trades/trades.json
+msgid "Brass barometer"
+msgstr ""
+
+#: data/harbours/trades/trades.json
 msgid "Brass oil lamp"
 msgstr ""
 
@@ -221,6 +353,14 @@ msgstr ""
 
 #: data/harbours/trades/trades.json
 msgid "Harbour blue"
+msgstr ""
+
+#: data/harbours/trades/trades.json
+msgid "Jar of sea glass"
+msgstr ""
+
+#: data/harbours/trades/trades.json
+msgid "Model ship"
 msgstr ""
 
 #: data/harbours/trades/trades.json
@@ -245,6 +385,10 @@ msgstr ""
 
 #: data/harbours/trades/trades.json
 msgid "The warm red-brown of the old working boats. Purely a look: the sails draw exactly as before."
+msgstr ""
+
+#: data/harbours/valletta.tres:9
+msgid "Grand Harbour bastions"
 msgstr ""
 
 #: data/navigation/canals.json
@@ -677,6 +821,15 @@ msgctxt "place"
 msgid "Cannes"
 msgstr ""
 
+#: data/navigation/ports/cape_town.tres:12
+msgid "Cape Town, beneath Table Mountain, the harbour for sailors on the long way round the Cape of Good Hope."
+msgstr ""
+
+#: data/navigation/ports/cape_town.tres:8
+msgctxt "place"
+msgid "Cape Town"
+msgstr ""
+
 #: data/navigation/ports/capri.tres:12
 msgid "Capri, an island harbour on the Mediterranean."
 msgstr ""
@@ -803,6 +956,15 @@ msgctxt "place"
 msgid "Cuxhaven"
 msgstr ""
 
+#: data/navigation/ports/dakar.tres:12
+msgid "Dakar, near the westernmost point of Africa, where painted pirogues come in beside a busy commercial port."
+msgstr ""
+
+#: data/navigation/ports/dakar.tres:8
+msgctxt "place"
+msgid "Dakar"
+msgstr ""
+
 #: data/navigation/ports/den_helder.tres:12
 msgid "Den Helder, a harbour on the North Sea."
 msgstr ""
@@ -819,6 +981,15 @@ msgstr ""
 #: data/navigation/ports/dieppe.tres:8
 msgctxt "place"
 msgid "Dieppe"
+msgstr ""
+
+#: data/navigation/ports/dingle.tres:12
+msgid "Dingle, a small fishing harbour at the head of its bay in Ireland's far south-west, with painted shopfronts above the quay."
+msgstr ""
+
+#: data/navigation/ports/dingle.tres:8
+msgctxt "place"
+msgid "Dingle"
 msgstr ""
 
 #: data/navigation/ports/douglas.tres:12
@@ -873,6 +1044,15 @@ msgstr ""
 #: data/navigation/ports/ebeltoft.tres:8
 msgctxt "place"
 msgid "Ebeltoft"
+msgstr ""
+
+#: data/navigation/ports/essaouira.tres:12
+msgid "Essaouira on Morocco's Atlantic coast: blue fishing boats beneath the old sea bastion, and gulls over the Skala."
+msgstr ""
+
+#: data/navigation/ports/essaouira.tres:8
+msgctxt "place"
+msgid "Essaouira"
 msgstr ""
 
 #: data/navigation/ports/faaborg.tres:12
@@ -936,6 +1116,15 @@ msgstr ""
 #: data/navigation/ports/funchal.tres:8
 msgctxt "place"
 msgid "Funchal"
+msgstr ""
+
+#: data/navigation/ports/galle.tres:12
+msgid "Galle, Sri Lanka, beside the ramparts of its old fort, on the sea road across the Indian Ocean."
+msgstr ""
+
+#: data/navigation/ports/galle.tres:8
+msgctxt "place"
+msgid "Galle"
 msgstr ""
 
 #: data/navigation/ports/gdynia.tres:12
@@ -1055,6 +1244,15 @@ msgctxt "place"
 msgid "Heraklion"
 msgstr ""
 
+#: data/navigation/ports/hobart.tres:12
+msgid "Hobart, Tasmania, where old sandstone warehouses line the docks below Mount Wellington."
+msgstr ""
+
+#: data/navigation/ports/hobart.tres:8
+msgctxt "place"
+msgid "Hobart"
+msgstr ""
+
 #: data/navigation/ports/honningsvag.tres:12
 msgid "Honningsvåg, an island harbour on the Norwegian coast."
 msgstr ""
@@ -1116,6 +1314,15 @@ msgstr ""
 #: data/navigation/ports/ijmuiden.tres:8
 msgctxt "place"
 msgid "IJmuiden"
+msgstr ""
+
+#: data/navigation/ports/isafjordur.tres:12
+msgid "Ísafjörður, a fishing town on a sandspit in the fjords of Iceland's north-west, under steep mountains."
+msgstr ""
+
+#: data/navigation/ports/isafjordur.tres:8
+msgctxt "place"
+msgid "Ísafjörður"
 msgstr ""
 
 #: data/navigation/ports/izmir.tres:12
@@ -1289,6 +1496,15 @@ msgctxt "place"
 msgid "Lagos"
 msgstr ""
 
+#: data/navigation/ports/langkawi.tres:12
+msgid "Kuah on Langkawi, Malaysia, among green limestone islands at the northern entrance of the Strait of Malacca."
+msgstr ""
+
+#: data/navigation/ports/langkawi.tres:8
+msgctxt "place"
+msgid "Langkawi"
+msgstr ""
+
 #: data/navigation/ports/larnaca.tres:12
 msgid "Larnaca, an island harbour in the eastern Mediterranean."
 msgstr ""
@@ -1449,6 +1665,15 @@ msgstr ""
 #: data/navigation/ports/lulea.tres:8
 msgctxt "place"
 msgid "Luleå"
+msgstr ""
+
+#: data/navigation/ports/lunenburg.tres:12
+msgid "Lunenburg, Nova Scotia, an old fishing town of painted wooden houses climbing the hill above its red waterfront sheds."
+msgstr ""
+
+#: data/navigation/ports/lunenburg.tres:8
+msgctxt "place"
+msgid "Lunenburg"
 msgstr ""
 
 #: data/navigation/ports/malaga.tres:12
@@ -1802,6 +2027,15 @@ msgctxt "place"
 msgid "Ponta Delgada"
 msgstr ""
 
+#: data/navigation/ports/port_louis.tres:12
+msgid "Port Louis, Mauritius, a busy harbour town between green mountains and the Indian Ocean."
+msgstr ""
+
+#: data/navigation/ports/port_louis.tres:8
+msgctxt "place"
+msgid "Port Louis"
+msgstr ""
+
 #: data/navigation/ports/port_of_spain.tres:12
 msgid "Port of Spain, Trinidad, at the southern end of the Antilles."
 msgstr ""
@@ -2045,6 +2279,15 @@ msgctxt "place"
 msgid "St. George's"
 msgstr ""
 
+#: data/navigation/ports/st_helena.tres:12
+msgid "Jamestown, St Helena: one long street in a narrow valley between dark volcanic cliffs, alone in the South Atlantic."
+msgstr ""
+
+#: data/navigation/ports/st_helena.tres:8
+msgctxt "place"
+msgid "Jamestown"
+msgstr ""
+
 #: data/navigation/ports/st_helier.tres:12
 msgid "St Helier, an island harbour on the English Channel."
 msgstr ""
@@ -2052,6 +2295,15 @@ msgstr ""
 #: data/navigation/ports/st_helier.tres:8
 msgctxt "place"
 msgid "St Helier"
+msgstr ""
+
+#: data/navigation/ports/st_johns.tres:12
+msgid "St. John's, Newfoundland, reached through the narrow cliffs of the Narrows, with rows of colourful wooden houses above the harbour."
+msgstr ""
+
+#: data/navigation/ports/st_johns.tres:8
+msgctxt "place"
+msgid "St. John's"
 msgstr ""
 
 #: data/navigation/ports/st_peter_port.tres:12
@@ -2079,6 +2331,15 @@ msgstr ""
 #: data/navigation/ports/stege.tres:8
 msgctxt "place"
 msgid "Stege"
+msgstr ""
+
+#: data/navigation/ports/stornoway.tres:12
+msgid "Stornoway on the Isle of Lewis, the little capital of the Outer Hebrides, where ferries and fishing boats share the inner harbour."
+msgstr ""
+
+#: data/navigation/ports/stornoway.tres:8
+msgctxt "place"
+msgid "Stornoway"
 msgstr ""
 
 #: data/navigation/ports/stromstad.tres:12
@@ -2142,6 +2403,15 @@ msgstr ""
 #: data/navigation/ports/swinoujscie.tres:8
 msgctxt "place"
 msgid "Świnoujście"
+msgstr ""
+
+#: data/navigation/ports/symi.tres:12
+msgid "Symi, a small island harbour in the Dodecanese, ringed by tiers of pastel neoclassical houses."
+msgstr ""
+
+#: data/navigation/ports/symi.tres:8
+msgctxt "place"
+msgid "Symi"
 msgstr ""
 
 #: data/navigation/ports/syracuse.tres:12
@@ -2241,6 +2511,15 @@ msgstr ""
 #: data/navigation/ports/vaasa.tres:8
 msgctxt "place"
 msgid "Vaasa"
+msgstr ""
+
+#: data/navigation/ports/valletta.tres:12
+msgid "Valletta, Malta, where honey-coloured bastions rise straight out of the water of Grand Harbour."
+msgstr ""
+
+#: data/navigation/ports/valletta.tres:8
+msgctxt "place"
+msgid "Valletta"
 msgstr ""
 
 #: data/navigation/ports/venice.tres:12
@@ -2367,6 +2646,15 @@ msgstr ""
 #: data/navigation/ports/zakynthos.tres:8
 msgctxt "place"
 msgid "Zakynthos"
+msgstr ""
+
+#: data/navigation/ports/zanzibar.tres:12
+msgid "Zanzibar's Stone Town, where dhows lie off coral-stone houses with carved wooden doors."
+msgstr ""
+
+#: data/navigation/ports/zanzibar.tres:8
+msgctxt "place"
+msgid "Zanzibar"
 msgstr ""
 
 #: data/navigation/ports/zeebrugge.tres:12
@@ -3222,43 +3510,43 @@ msgstr ""
 msgid "  Time is still paused."
 msgstr ""
 
-#: src/app/app.gd:1158
+#: src/app/app.gd:1161
 msgid "Arrived in %s."
 msgstr ""
 
-#: src/app/app.gd:1194
+#: src/app/app.gd:1198
 msgid "New harbour in the Captain's Log: %s (%d of %d visited)."
 msgstr ""
 
-#: src/app/app.gd:1207
+#: src/app/app.gd:1211
 msgid "Secret achievement: %s. %s  +%d renown"
 msgstr ""
 
-#: src/app/app.gd:1213
+#: src/app/app.gd:1217
 msgid "+%d renown: %s."
 msgstr ""
 
-#: src/app/app.gd:1245
+#: src/app/app.gd:1249
 msgid "%s %s A new one is sold at the harbour grocery store."
 msgstr ""
 
-#: src/app/app.gd:1327
+#: src/app/app.gd:1331
 msgid "Travel update published: %d renown earned you %s. Funds: %s."
 msgstr ""
 
-#: src/app/app.gd:1334 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1268 src/boat/boat_area.gd:662
+#: src/app/app.gd:1338 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1268 src/boat/boat_area.gd:662
 msgid "Interactable"
 msgstr ""
 
-#: src/app/app.gd:1338
+#: src/app/app.gd:1342
 msgid "Interaction areas: %s"
 msgstr ""
 
-#: src/app/app.gd:1359
+#: src/app/app.gd:1363
 msgid "The boatyard is only open while you are moored in harbour."
 msgstr ""
 
-#: src/app/app.gd:1428
+#: src/app/app.gd:1432
 msgid "Welcome aboard the %s."
 msgstr ""
 
@@ -3598,7 +3886,7 @@ msgstr ""
 msgid "You slept %s. It is %s.%s"
 msgstr ""
 
-#: src/app/app.gd:872 src/ui/grocery_menu.gd:133
+#: src/app/app.gd:872 src/ui/grocery_menu.gd:141
 msgid "The grocery store is in harbour; you are at sea."
 msgstr ""
 
@@ -3758,27 +4046,27 @@ msgstr ""
 msgid "Trophies"
 msgstr ""
 
-#: src/boat/boat_lighting.gd:104
+#: src/boat/boat_lighting.gd:106
 msgid "Lighting"
 msgstr ""
 
-#: src/boat/boat_lighting.gd:118 src/interaction/highlight_resolver.gd:26
+#: src/boat/boat_lighting.gd:120 src/interaction/highlight_resolver.gd:26
 msgid "Pedestal"
 msgstr ""
 
-#: src/boat/boat_lighting.gd:118 src/interaction/highlight_resolver.gd:26
+#: src/boat/boat_lighting.gd:120 src/interaction/highlight_resolver.gd:26
 msgid "Tiller"
 msgstr ""
 
-#: src/boat/boat_lighting.gd:118 src/interaction/highlight_resolver.gd:26
+#: src/boat/boat_lighting.gd:120 src/interaction/highlight_resolver.gd:26
 msgid "Wheel"
 msgstr ""
 
-#: src/boat/boat_lighting.gd:250 src/water/water_life.gd:152
+#: src/boat/boat_lighting.gd:252 src/water/water_life.gd:152
 msgid "Hull"
 msgstr ""
 
-#: src/boat/boat_lighting.gd:250
+#: src/boat/boat_lighting.gd:252
 msgid "Lifeline"
 msgstr ""
 
@@ -4545,7 +4833,7 @@ msgstr ""
 msgid "The grocery store is only reachable while moored in harbour."
 msgstr ""
 
-#: src/core/game_session.gd:2670 src/ui/grocery_menu.gd:135
+#: src/core/game_session.gd:2670 src/ui/grocery_menu.gd:143
 msgid "Food and water are already full."
 msgstr ""
 
@@ -5375,27 +5663,27 @@ msgstr ""
 msgid "Two fish, bread, butter and a proper sit-down at the table."
 msgstr ""
 
-#: src/harbour/harbour_dressing.gd:101 src/harbour/harbour_dressing.gd:69
+#: src/harbour/harbour_dressing.gd:102 src/harbour/harbour_dressing.gd:70
 msgid "Line"
 msgstr ""
 
-#: src/harbour/harbour_dressing.gd:34 src/harbour/harbour_facilities.gd:127
+#: src/harbour/harbour_dressing.gd:35 src/harbour/harbour_facilities.gd:127
 msgid "Groceries"
 msgstr ""
 
-#: src/harbour/harbour_dressing.gd:35
+#: src/harbour/harbour_dressing.gd:36
 msgid "Boatyard · Repairs"
 msgstr ""
 
-#: src/harbour/harbour_dressing.gd:36
+#: src/harbour/harbour_dressing.gd:37
 msgid "Go Ashore"
 msgstr ""
 
-#: src/harbour/harbour_dressing.gd:39 src/harbour/harbour_dressing.gd:71
+#: src/harbour/harbour_dressing.gd:40 src/harbour/harbour_dressing.gd:72
 msgid "Cleat"
 msgstr ""
 
-#: src/harbour/harbour_dressing.gd:39
+#: src/harbour/harbour_dressing.gd:40
 msgid "Plank"
 msgstr ""
 
@@ -5843,11 +6131,11 @@ msgstr ""
 msgid "BLOCKED (not applied)"
 msgstr ""
 
-#: src/navigation/map_view.gd:1632
+#: src/navigation/map_view.gd:1650
 msgid "  (Magic Anchor)"
 msgstr ""
 
-#: src/navigation/map_view.gd:1632
+#: src/navigation/map_view.gd:1650
 msgid "%d  Anchorage%s"
 msgstr ""
 
@@ -6305,6 +6593,10 @@ msgstr ""
 
 #: src/navigation/world_map.gd:1241
 msgid "Zoom in to see wind details."
+msgstr ""
+
+#: src/navigation/world_map.gd:1295
+msgid "Special harbour: %s"
 msgstr ""
 
 #: src/navigation/world_map.gd:142 src/navigation/world_map.tscn:141
@@ -7589,7 +7881,7 @@ msgstr ""
 msgid "The Magic Anchor is aboard. Choose it at the windlass when the water is deep."
 msgstr ""
 
-#: src/ui/chandlery_menu.gd:88 src/ui/grocery_menu.gd:176
+#: src/ui/chandlery_menu.gd:88 src/ui/grocery_menu.gd:184
 msgid "Bought a %s. You have %d."
 msgstr ""
 
@@ -8051,75 +8343,79 @@ msgstr ""
 msgid "%s  ·  %s  ·  %d min"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:124
+#: src/ui/grocery_menu.gd:101
+msgid "Buy lure"
+msgstr ""
+
+#: src/ui/grocery_menu.gd:132
 msgid "Aboard: food %s, water %s. Missing: %.1f days in all."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:126
+#: src/ui/grocery_menu.gd:134
 msgid "Price %s  ·  Funds %s"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:129
+#: src/ui/grocery_menu.gd:137
 msgid "Buy for %s"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:137
+#: src/ui/grocery_menu.gd:145
 msgid "Not enough money: you need %s. Remote work at the boat's work station earns %s an hour."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:140
+#: src/ui/grocery_menu.gd:148
 msgid "Food and water will be full (%d days each)."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:151
+#: src/ui/grocery_menu.gd:159
 msgid "Stock up (%s)"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:155
+#: src/ui/grocery_menu.gd:163
 msgid "Long passage: the %s is stocked for %d days, all she can stow."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:157
+#: src/ui/grocery_menu.gd:165
 msgid "Long passage: stow food and water for %d days each, all the %s can carry."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:167
+#: src/ui/grocery_menu.gd:175
 msgid "Your catch: %d fish in the cool box."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:168
+#: src/ui/grocery_menu.gd:176
 msgid "Your catch: the cool box is empty."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:169
+#: src/ui/grocery_menu.gd:177
 msgid "To the fishmonger (%s)…"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:183
+#: src/ui/grocery_menu.gd:191
 msgid "Buy captain's hat (%s)"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:186
+#: src/ui/grocery_menu.gd:194
 msgid "Captain's hats: you already have yours."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:188
+#: src/ui/grocery_menu.gd:196
 msgid "Captain's hats, %s. Not enough money right now."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:190
+#: src/ui/grocery_menu.gd:198
 msgid "A replacement captain's hat, %s. Hold onto this one."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:204
+#: src/ui/grocery_menu.gd:212
 msgid "Bought a new captain's hat for %s. Press H to put it on."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:211
+#: src/ui/grocery_menu.gd:219
 msgid "Bought food and water for %s. Stores full: %s each."
 msgstr ""
 
-#: src/ui/grocery_menu.gd:224
+#: src/ui/grocery_menu.gd:232
 msgid "Stocked up for a long passage for %s: %s of food and water."
 msgstr ""
 
@@ -8147,12 +8443,8 @@ msgstr ""
 msgid "Buy"
 msgstr ""
 
-#: src/ui/grocery_menu.gd:86
+#: src/ui/grocery_menu.gd:90
 msgid "Fishing lures"
-msgstr ""
-
-#: src/ui/grocery_menu.gd:97
-msgid "Buy lure"
 msgstr ""
 
 #: src/ui/hat_badge.gd:16

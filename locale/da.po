@@ -7477,3 +7477,232 @@ msgstr "Hvem er en dygtig pige?"
 
 msgid "Who's a good boy?"
 msgstr "Hvem er en dygtig dreng?"
+
+# I021, A Wider, Warmer World
+
+msgid "Pollack"
+msgstr "Lubbe"
+
+msgid "Atlantic halibut"
+msgstr "Helleflynder"
+
+msgid "Striped red mullet"
+msgstr "Stribet mulle"
+
+msgid "Common dentex"
+msgstr "Tandbrasen"
+
+msgid "Bluefish"
+msgstr "Blåfisk"
+
+msgid "Striped bass"
+msgstr "Stribet bars"
+
+msgid "Giant trevally"
+msgstr "Kæmpehestemakrel"
+
+msgid "Wahoo"
+msgstr "Wahoo"
+
+msgid "Narrow-barred Spanish mackerel"
+msgstr "Smalstribet kongemakrel"
+
+msgid "Dusky grouper"
+msgstr "Brun havaborre"
+
+msgid "Nordic timber harbour"
+msgstr "Nordisk træhavn"
+
+msgid "Gabled harbour town"
+msgstr "Havneby med gavlhuse"
+
+msgid "Stone harbour of the Atlantic coast"
+msgstr "Stenhavn ved Atlanterhavet"
+
+msgid "Mediterranean harbour town"
+msgstr "Middelhavsby med havn"
+
+msgid "Aegean island harbour"
+msgstr "Ø-havn i Det Ægæiske Hav"
+
+msgid "Stone town harbour"
+msgstr "Havn ved en gammel stenby"
+
+msgid "Tropical harbour town"
+msgstr "Tropisk havneby"
+
+msgid "Tropical island harbour"
+msgstr "Tropisk ø-havn"
+
+msgid "Volcanic island harbour"
+msgstr "Havn på en vulkanø"
+
+msgid "Grand Harbour bastions"
+msgstr "Grand Harbours bastioner"
+
+msgid "Gialos"
+msgstr "Gialos"
+
+msgid "The Skala"
+msgstr "Skalaen"
+
+msgid "Lunenburg waterfront"
+msgstr "Lunenburgs havnefront"
+
+msgid "Jamestown"
+msgstr "Jamestown"
+
+msgid "Special harbour: %s"
+msgstr "Særlig havn: %s"
+
+msgid "an illustrated arrival at Nyhavn's painted harbour houses"
+msgstr "en illustreret ankomst ved Nyhavns malede havnehuse"
+
+msgid "an illustrated arrival beneath the bastions of Grand Harbour"
+msgstr "en illustreret ankomst under bastionerne i Grand Harbour"
+
+msgid "an illustrated arrival among the tiers of neoclassical houses at Gialos"
+msgstr "en illustreret ankomst mellem de nyklassiske huse i terrasser ved Gialos"
+
+msgid "an illustrated arrival below the Skala, the old sea bastion"
+msgstr "en illustreret ankomst under Skalaen, den gamle havbastion"
+
+msgid "an illustrated arrival at the red waterfront of the old fishing town"
+msgstr "en illustreret ankomst ved den gamle fiskerbys røde havnefront"
+
+msgid "an illustrated arrival in Jamestown's valley between the cliffs"
+msgstr "en illustreret ankomst i Jamestowns dal mellem klipperne"
+
+
+
+msgid "Model ship"
+msgstr "Modelskib"
+
+msgid "A small model sloop on a wooden stand, rigged with real thread."
+msgstr "En lille modelslup på en træfod, rigget med rigtig tråd."
+
+msgid "Jar of sea glass"
+msgstr "Glas med havglas"
+
+msgid "A jar of smooth green and blue sea glass, picked up on beaches along the way."
+msgstr "Et glas med glatte grønne og blå stykker havglas, samlet op på strande undervejs."
+
+
+
+msgid "Brass barometer"
+msgstr "Barometer i messing"
+
+msgid "A small brass ship's barometer. The needle says what the sky is about to do."
+msgstr "Et lille skibsbarometer i messing. Viseren fortæller, hvad himlen har i sinde."
+
+msgid "Dingle, a small fishing harbour at the head of its bay in Ireland's far south-west, with painted shopfronts above the quay."
+msgstr "Dingle, en lille fiskerhavn inderst i sin bugt i Irlands yderste sydvest, med malede butiksfacader over kajen."
+
+msgid "Stornoway on the Isle of Lewis, the little capital of the Outer Hebrides, where ferries and fishing boats share the inner harbour."
+msgstr "Stornoway på Isle of Lewis, Ydre Hebriders lille hovedstad, hvor færger og fiskerbåde deler inderhavnen."
+
+msgid "Ísafjörður, a fishing town on a sandspit in the fjords of Iceland's north-west, under steep mountains."
+msgstr "Ísafjörður, en fiskerby på en sandtange i fjordene i Islands nordvestlige hjørne, under stejle fjelde."
+
+msgid "Lunenburg, Nova Scotia, an old fishing town of painted wooden houses climbing the hill above its red waterfront sheds."
+msgstr "Lunenburg i Nova Scotia, en gammel fiskerby, hvor malede træhuse klatrer op ad bakken over de røde skure ved havnen."
+
+msgid "St. John's, Newfoundland, reached through the narrow cliffs of the Narrows, with rows of colourful wooden houses above the harbour."
+msgstr "St. John's på Newfoundland, som man når gennem de smalle klipper i The Narrows, med rækker af farverige træhuse over havnen."
+
+msgid "Valletta, Malta, where honey-coloured bastions rise straight out of the water of Grand Harbour."
+msgstr "Valletta på Malta, hvor honningfarvede bastioner rejser sig lige op af vandet i Grand Harbour."
+
+msgid "Symi, a small island harbour in the Dodecanese, ringed by tiers of pastel neoclassical houses."
+msgstr "Symi, en lille ø-havn i Dodekaneserne, omkranset af nyklassiske huse i pastelfarver, terrasse over terrasse."
+
+msgid "Essaouira on Morocco's Atlantic coast: blue fishing boats beneath the old sea bastion, and gulls over the Skala."
+msgstr "Essaouira ved Marokkos atlanterhavskyst: blå fiskerbåde under den gamle havbastion og måger over Skalaen."
+
+msgid "Dakar, near the westernmost point of Africa, where painted pirogues come in beside a busy commercial port."
+msgstr "Dakar, nær Afrikas vestligste punkt, hvor malede pirogger lægger til ved siden af en travl handelshavn."
+
+msgid "Jamestown, St Helena: one long street in a narrow valley between dark volcanic cliffs, alone in the South Atlantic."
+msgstr "Jamestown på St. Helena: én lang gade i en smal dal mellem mørke vulkanklipper, helt alene i Sydatlanten."
+
+msgid "Cape Town, beneath Table Mountain, the harbour for sailors on the long way round the Cape of Good Hope."
+msgstr "Kapstaden under Taffelbjerget, havnen for sejlere på den lange vej rundt om Kap det Gode Håb."
+
+msgid "Zanzibar's Stone Town, where dhows lie off coral-stone houses with carved wooden doors."
+msgstr "Zanzibars Stone Town, hvor dhower ligger ud for huse af koralsten med udskårne trædøre."
+
+msgid "Port Louis, Mauritius, a busy harbour town between green mountains and the Indian Ocean."
+msgstr "Port Louis på Mauritius, en travl havneby mellem grønne bjerge og Det Indiske Ocean."
+
+msgid "Galle, Sri Lanka, beside the ramparts of its old fort, on the sea road across the Indian Ocean."
+msgstr "Galle på Sri Lanka, ved voldene om det gamle fort, på søvejen over Det Indiske Ocean."
+
+msgid "Kuah on Langkawi, Malaysia, among green limestone islands at the northern entrance of the Strait of Malacca."
+msgstr "Kuah på Langkawi i Malaysia, mellem grønne kalkstensøer ved den nordlige indsejling til Malakkastrædet."
+
+msgid "Hobart, Tasmania, where old sandstone warehouses line the docks below Mount Wellington."
+msgstr "Hobart på Tasmanien, hvor gamle pakhuse af sandsten ligger langs dokkerne under Mount Wellington."
+
+msgctxt "place"
+msgid "Dingle"
+msgstr "Dingle"
+
+msgctxt "place"
+msgid "Stornoway"
+msgstr "Stornoway"
+
+msgctxt "place"
+msgid "Ísafjörður"
+msgstr "Ísafjörður"
+
+msgctxt "place"
+msgid "Lunenburg"
+msgstr "Lunenburg"
+
+msgctxt "place"
+msgid "St. John's"
+msgstr "St. John's"
+
+msgctxt "place"
+msgid "Valletta"
+msgstr "Valletta"
+
+msgctxt "place"
+msgid "Symi"
+msgstr "Symi"
+
+msgctxt "place"
+msgid "Essaouira"
+msgstr "Essaouira"
+
+msgctxt "place"
+msgid "Dakar"
+msgstr "Dakar"
+
+msgctxt "place"
+msgid "Jamestown"
+msgstr "Jamestown"
+
+msgctxt "place"
+msgid "Cape Town"
+msgstr "Kapstaden"
+
+msgctxt "place"
+msgid "Zanzibar"
+msgstr "Zanzibar"
+
+msgctxt "place"
+msgid "Port Louis"
+msgstr "Port Louis"
+
+msgctxt "place"
+msgid "Galle"
+msgstr "Galle"
+
+msgctxt "place"
+msgid "Langkawi"
+msgstr "Langkawi"
+
+msgctxt "place"
+msgid "Hobart"
+msgstr "Hobart"
