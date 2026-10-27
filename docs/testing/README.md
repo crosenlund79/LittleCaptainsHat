@@ -56,3 +56,15 @@ python3 tools/docs/check_links.py   # every internal Markdown link and #heading 
 ```
 
 `test_dev_guides` also checks every link and repository path in the developer guides and in a set of linked documents.
+
+## The Illustrated Catalogue's contact sheets
+
+Picture sheets of all the game's art, for looking, not for pass/fail (see
+[the catalogue](../art/ILLUSTRATED_ASSET_CATALOGUE.md)):
+
+```sh
+# the art the game draws in code, photographed through the game (needs a display)
+xvfb-run -a godot --path . --rendering-driver opengl3 --resolution 1600x900 \
+  res://tools/art/capture_previews.tscn -- --out=docs/art/previews
+python3 tools/art/build_contact_sheets.py   # six sheets in docs/art/contact_sheets/ (Pillow)
+```

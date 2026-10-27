@@ -2650,6 +2650,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Når du starter det, eller i automatik: `godot --headless --path . res://tests/test_runner.tscn` (valgmuligheder efter `--`: `--only=navn`, `--skip=navn`, `--screenshots=MAPPE`).
 - **Hvis du ændrer det:** Alle test kan blive påvirket; en ny testsamling kører først, når den er tilføjet til listen her.
 
+### `tools/art/capture_previews.gd`
+
+**Formål:** Fotograferer den grafik, spillet tegner i kode (kahytsting, sejl, søkortets mærker), så det illustrerede katalogs kontaktark viser præcis det, spilleren ser.
+- **Hvad det gør:** Viser hver kahytsting på en kahytsgulvfarve; starter så et spil med kladdegemninger og fotograferer for hver af de fire både båden fortøjet i København, kahytten med alle kahytsting og båden for sejl; til sidst klipper den søkortets mærker ud (havn, valgt havn, destination med messingstjernen, båden, et waypoint, drømmekortets nåle) om dagen og om natten. Værktøjet tegner intet selv.
+- **Arbejder sammen med:** `App`, `GameSession`, `CabinDecor`, `HarbourTrades`, `WindField`, `Simulation`, `MapView`; `tools/art/build_contact_sheets.py` sætter billederne på arkene.
+- **Holder styr på:** Intet; skriver PNG'er i `docs/art/previews/` (kladdegemninger og -indstillinger, aldrig spillerens).
+- **Hvornår det kører:** Kun når du starter det, med skærm: `xvfb-run -a godot --path . --rendering-driver opengl3 --resolution 1600x900 res://tools/art/capture_previews.tscn -- --out=docs/art/previews`.
+- **Hvis du ændrer det:** Kun katalogets forhåndsbilleder ændres, ikke spillet.
+
 ### `tools/build_theme.gd`
 
 **Formål:** Bygger spillets fælles udseende (farver, skrifttyper, knapper, paneler) som en temafil.

@@ -2648,6 +2648,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** By hand or in automation: `godot --headless --path . res://tests/test_runner.tscn` (options after `--`: `--only=name`, `--skip=name`, `--screenshots=DIR`).
 - **If you change it:** Every test could be affected; a new suite file only runs once it is added to the list here.
 
+### `tools/art/capture_previews.gd`
+
+**Purpose:** Photographs the art the game draws in code (cabin things, sails, chart markers), so the Illustrated Catalogue's contact sheets show exactly what the player sees.
+- **What it does:** Shows each cabin thing on a cabin-floor colour; then starts a game in scratch saves and, for each of the four boats, photographs it moored in Copenhagen, its cabin with every cabin thing, and under sail; finally crops the chart's markers (harbour, selected harbour, destination with the brass star, the boat, a waypoint, the Dreamer's Map pins) by day and by night. Nothing is drawn by the tool itself.
+- **Works with:** `App`, `GameSession`, `CabinDecor`, `HarbourTrades`, `WindField`, `Simulation`, `MapView`; `tools/art/build_contact_sheets.py` puts the pictures on the sheets.
+- **Keeps:** Nothing; writes PNGs into `docs/art/previews/` (scratch saves and settings, never the player's).
+- **When it runs:** Only by hand, with a display: `xvfb-run -a godot --path . --rendering-driver opengl3 --resolution 1600x900 res://tools/art/capture_previews.tscn -- --out=docs/art/previews`.
+- **If you change it:** Only the catalogue's preview pictures change, not the game.
+
 ### `tools/build_theme.gd`
 
 **Purpose:** Builds the game's shared look (colours, fonts, buttons, panels) as a theme file.

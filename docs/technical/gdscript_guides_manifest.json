@@ -1382,6 +1382,11 @@
    "reviewed": "2026-10-27",
    "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
+  "tools/art/capture_previews.gd": {
+   "sha": "566318c26d0e7d07",
+   "reviewed": "2026-10-27",
+   "note": "Illustrated Catalogue preview capture tool"
+  },
   "tools/build_theme.gd": {
    "sha": "0e5953be619e13ca",
    "reviewed": "2026-10-27",

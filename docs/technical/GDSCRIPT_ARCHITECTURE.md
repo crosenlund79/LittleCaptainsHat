@@ -3107,6 +3107,14 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** —.
 - **Change risks:** a new suite file must be added to `SUITES` or it never runs; suite order matters (shared autoload state between suites); the doc comment for `hold_actions` sits above `press_key`; `_reset_scratch_files` removes only files and empty subfolders.
 
+### `tools/art/capture_previews.gd`
+
+- **Role:** extends Node (root of `capture_previews.tscn`); The Captain's Illustrated Catalogue. Renders previews of `_draw()` art through the game: `decor_<id>` (one `CabinDecor` per `HarbourTrades.get_decor()` item on a `FLOOR` ColorRect, scale 2/3, 6-column grid), `boat_<id>_{moored,cabin,underway}` (whole screen resized to 1280 x 720; moored at Copenhagen 12:30 local, then all decor bought and shown, then `plan_route_to(&"gothenburg")` + `depart()` + `Simulation.advance(1800)` under a fixed 220°/11 kn `WindField.test_override` so the boats sail), and `chart_<symbol>_<day|night>` crops at `MapView.geo_to_screen` positions (Syracuse→Valletta route with one waypoint; Dreamer's Map with `visited_pins`). `_crop` scales canvas units (1920 x 1080 canvas) to image pixels.
+- **Depends on:** `src/app/app.tscn` (`start_new_game`, `router`, `modals`, `toasts`, `_show_current_boat_area`, `open_chart_for_port`, `open_dream_map`, `close_chart`), `GameSession` (`replace_state`, `buy_decor`, `set_cabin_decor`, `enter_boat_area`, `plan_route_to`, `depart`), `SessionState`, `PortCatalog`, `UiTheme._target_blend`, `WorldMap.get_map_view`, `MapView.frame_geo_points`/`visited_pins`; `SaveManager.save_dir`/`SettingsManager.settings_path` redirected to `user://test_*`.
+- **Lifecycle:** tool scene, needs a display: `xvfb-run -a godot --path . --rendering-driver opengl3 --resolution 1600x900 res://tools/art/capture_previews.tscn -- --out=DIR` (default `res://docs/art/previews`); quits after "PREVIEWS DONE". Output is read by `tools/art/build_contact_sheets.py`.
+- **Tests:** none (documentation tool); its output is checked by eye in `docs/art/ART_CONSISTENCY_REVIEW.md`.
+- **Change risks:** follows App/MapView internals (private `_show_current_boat_area`, `_target_blend`); a renamed method stops the capture, not the game. Crops assume the chart framing in `_capture_chart`.
+
 ### `tools/build_theme.gd`
 
 - **Role:** extends SceneTree; generates `res://assets/ui/next_harbor_theme.tres` (palette NAVY/TEAL/SEAFOAM/CREAM/BRASS, Barlow fonts, Patrick Hand display variations `DisplayTagline`/`DisplayHeader`/`DisplayName`, type variations `TitleLabel`, `HeaderLabel`, `MutedLabel`, `KeyLabel`, `BigButton`, `SlotButton`, `HudPanel`, `PromptPanel`, `ToastPanel`, `SidebarPanel`, `SectionPanel`, tabs, sliders, popups, scroll bars).
