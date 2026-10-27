@@ -41,6 +41,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 - [Architecture](technical/ARCHITECTURE.md): how the game is built, including route calculation.
 - [The Captain's Chartroom UI pass](technical/CAPTAINS_CHARTROOM_UI_PASS.md): the shared day/night interface theme (Vintage Chartroom and Harbor Dusk), what the HUD and chart show by default, and the *Interface light* setting.
 - [Cozy Polish injection report](technical/COZY_POLISH_INJECTION_REPORT.md): floating things at sea, the chart's zoom limit, the Kiel and Suez canals, the Q menu, coffee and the hat in hand, the remembered sleep, visited-harbour pins, compact panels and the loading screen.
+- [The Well-Run Ship performance report](technical/THE_WELL_RUN_SHIP_PERFORMANCE_REPORT.md): where the time went (the day/night theme stall), what is kept in memory and what is written to disk, the sleep, dawn and dusk cards, and Long Passage on the voyage map.
 - [Developer guides](../DEV_GUIDES/README.md): step-by-step guides for art, companions, audio, weather, harbours, boat care, chart regions and life aboard, plus design principles for future user content ([MODDING_FUTURE.md](../DEV_GUIDES/MODDING_FUTURE.md)). They stay in `DEV_GUIDES/` because the game's in-game guide viewer reads them from there.
 
 ## Testing

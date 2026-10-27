@@ -10,7 +10,8 @@ extends Node
 ## same Theme object's colours and style boxes from role tokens (PALETTES) and
 ## recolours them in place as the light changes: the style boxes are created
 ## once, and a day/night blend only changes their colours (a few dozen
-## objects, at most a few times a second while dusk or dawn lasts).
+## objects, at most a few times a second while dusk or dawn lasts), and the
+## whole recolouring is announced as one theme change (The Well-Run Ship).
 ##
 ## The mood follows the game's own daylight at the boat (Daylight: night below
 ## -6° sun elevation, day above +4°, blended in between), never the computer's

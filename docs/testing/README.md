@@ -23,7 +23,7 @@ Each is a scene in `tests/` with the exact command in its header comment.
 |---|---|---|
 | Restart (two separate processes) | `restart_check`, `restart_17`, `restart_18`, `restart_105b` | Saves and settings survive quitting and starting again. Run `--phase=write`, then `--phase=read` (0.105b adds the art install/import/remove phases). |
 | Screenshots | `screenshots_16`, `screenshots_17`, `screenshots_18`, `screenshots_105b`, `screenshots_chartroom` (every main screen by day and by night) | Rendered evidence for each release, written to `docs/screenshots/…` or a given folder. |
-| Benchmarks | `benchmark`, `benchmark_17`, `benchmark_18`, `benchmark_105b` | Frame times under a software renderer, for before/after comparison only. Results are in [docs/benchmarks](../benchmarks/). |
+| Benchmarks | `benchmark`, `benchmark_17`, `benchmark_18`, `benchmark_105b`, `benchmark_wrs` (sleep, dawn and dusk, the chart, Long Passage and growth over a session; `--presented` for the new presentations) | Frame times under a software renderer, for before/after comparison only. Results are in [docs/benchmarks](../benchmarks/). |
 | Measurements | `pacing_18`, `cabin_light_18` | Long Passage stop counts; cabin light and shadow figures. |
 
 ## Windows acceptance

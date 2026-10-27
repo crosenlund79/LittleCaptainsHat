@@ -77,10 +77,10 @@ func _ready() -> void:
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_theme_constant_override(&"separation", 6)
 	_black.add_child(column)
-	_date = _label(column, "Date", &"DisplayHeader", DATE_COLOUR, 46)
-	_phrase = _label(column, "Phrase", &"DisplayTagline", PHRASE_COLOUR, 26)
-	_clock = _label(column, "Clock", &"Label", CLOCK_COLOUR, 24)
-	_note = _label(column, "Note", &"Label", CLOCK_COLOUR, 18)
+	_date = _label(column, "Date", &"DisplayHeader", DATE_COLOUR, 58)
+	_phrase = _label(column, "Phrase", &"DisplayTagline", PHRASE_COLOUR, 32)
+	_clock = _label(column, "Clock", &"Label", CLOCK_COLOUR, 30)
+	_note = _label(column, "Note", &"Label", CLOCK_COLOUR, 22)
 	for label in [_date, _phrase, _clock, _note]:
 		label.modulate.a = 0.0
 

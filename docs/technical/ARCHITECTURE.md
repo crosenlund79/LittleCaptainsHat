@@ -555,6 +555,64 @@ is culled and only the light overlay is redrawn when the view moves.
 - No offline time: time only advances while the game runs; loading resumes at the
   saved `game_time`.
 
+### Time passing on screen (The Well-Run Ship)
+
+The simulation above is unchanged; these are presentation layers on top of it.
+
+- **`TimePassage`** (`src/ui/time_passage.gd`, a CanvasLayer at 105): fades to
+  Harbor Dusk's deepest ink, shows the date ("7 May 2026") and a weekday phrase
+  ("a Thursday", "a Thursday evening"), runs the caller's `work` under the black,
+  and fades back. The tree is paused while it shows. Any key or click skips
+  ahead to the fade back. It never animates the simulation: the work is one
+  normal call.
+  - **Sleep**: `App.sleep_for()` fades to black, runs `Simulation.sleep()` once,
+    then counts the ship's clock from the start hour by hour
+    (`SLEEP_HOUR_SECONDS`), turning the date at midnight, and names an early
+    waking ("Woken by a weather warning").
+  - **Dawn and dusk**: `DayNightWatch` (child of App, pausable) looks at the sun
+    each frame. A crossing seen in continuous play (the sun rising through -6°,
+    or sinking through +4°, the interface's own day/night thresholds) asks
+    `App.play_new_light()`. Under the black the twilight passes with
+    `Simulation.advance(…, true)` (stores, weather, wear and events as always;
+    an event stops it and reports itself). `App.snap_light()` then gives the
+    interface and the boat's light the new hour at once.
+    - Once per twilight. A jump in game time of more than 30 minutes between
+      two looks (sleep, load, work, an outing ashore) is never a crossing.
+    - Not over menus, during Long Passage, while sleeping, during a screen
+      change or while another passage shows.
+    - No card where the twilight lasts more than two hours (high latitudes in
+      summer): the light then changes slowly, as before.
+  - **Switches**: `TimePassage.enabled` (off in the test runner, so logic
+    tests stay synchronous), `headless_ok` (tests of the presentation) and the
+    `--no-time-passage` command-line argument (like-for-like benchmarks). When
+    off, callers do the same work at once.
+- **`VoyageMap`** (`src/ui/voyage_map.gd`, a CanvasLayer at 15, under menus and
+  notifications): Long Passage as an illustrated atlas.
+  - `Simulation.passage_started` opens it.
+  - The boat scene below is hidden and not processed
+    (`PROCESS_MODE_DISABLED`), and so is the HUD. Everything is restored when it
+    closes.
+  - The land is the cabin wall map's cached triangle batch
+    (`CabinWorldMap.land_triangles()`), drawn three times across the Date Line
+    with a draw transform. It is redrawn only when the view or the palette
+    changes.
+  - The route is the voyage's own path, unwrapped so it is one line across the
+    Date Line; canal reaches are part of it. The boat is drawn at its real
+    position.
+  - The route and boat redraw 12 times a second. The simulation is unchanged
+    (`Simulation._passage_tick`).
+  - `passage_interrupted` shows the reason and the place, with *Back aboard*
+    and, where resuming is possible, *Sail on*.
+  - It closes at once on a load, a rescue or any screen change. An arrival waits
+    for *Back aboard*; the docking scene then plays.
+- **Interface recolouring is one theme change.** `UiTheme.set_blend()` blocks
+  the project theme's signals while it recolours its style boxes and colours,
+  then emits `changed` once. Before this, every colour set announced itself and
+  each announcement refreshed every control in the game: about 280 whole-tree
+  refreshes per dawn or dusk step, 0.7 s with the deck shown and 2.3 s at the
+  chart, every quarter second through each twilight. Guarded by
+  `test_well_run_ship` (`[theme]`).
+
 ## Voyage state
 
 `SessionState.vessel_status` is a small explicit state model:
@@ -1203,7 +1261,8 @@ chart, Date Line, rebuilding, adding regions),
   nearby events.
 - **Long Passage** (`Simulation.start_passage`, `PassagePanel`): the same
   `advance()` in event-stopping chunks of `passage_rate` × frame time;
-  `passage_interrupted(reason, text)` when it stops. Not saved.
+  `passage_interrupted(reason, text)` when it stops. Not saved. Since The
+  Well-Run Ship it is shown on the `VoyageMap` (see *Time passing on screen*).
 - **Passage stores**: `VesselDefinition.passage_stores_days`;
   `GameSession.buy_provisions(target)`; `Provisions` validates up to
   `MAX_STORE_DAYS`. Save format 12 unchanged.

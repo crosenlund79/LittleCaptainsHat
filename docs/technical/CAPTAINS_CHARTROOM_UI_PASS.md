@@ -59,7 +59,7 @@ Each checkpoint was pushed on its own. Nothing was force-pushed. The Ship's Libr
   - It builds its style boxes and colours **once**, from **semantic roles**: `surface`, `ink`, `heading`, `border`, `accent`, `focus`, `action`, `warning`, `caution`, `success` and others.
   - Screens keep using the existing type variations (`HudPanel`, `SectionPanel`, `MutedLabel`, `HeaderLabel`, …). A screen never names a colour.
 - **Mood blending without rebuilds.** A blend value runs from 0 (day) to 1 (night).
-  - A change of blend recolours the existing style boxes and theme colours in place.
+  - A change of blend recolours the existing style boxes and theme colours in place, announced as one theme change (since The Well-Run Ship: before, each colour set refreshed every control, which stalled dawn and dusk for seconds).
   - Nothing is created and no node is restyled one by one.
   - It runs only when the blend actually changes. The test checks that nothing is restyled while the mood is steady.
 - **New type variations:**

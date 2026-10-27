@@ -37,6 +37,7 @@ func run(runner: Node) -> void:
 	await _test_dawn_card()
 	await _test_voyage_map()
 	await _test_voyage_map_across_canal_and_date_line()
+	await _test_voyage_map_anchorage()
 	TimePassage.headless_ok = false
 	TimePassage.enabled = false
 	Simulation.auto_advance = true
@@ -202,6 +203,9 @@ func _test_sleep_passage() -> void:
 		if clocks.is_empty() or clocks[-1] != clock_label.text:
 			clocks.append(clock_label.text)
 			dates.append("%s %s" % [date_label.text, (passage.find_child("Phrase", true, false) as Label).text])
+			if clock_label.text == "00:00":
+				await t.frames(8)
+				await t.screenshot("wrs_sleep_clock_midnight")
 		await t.frames(1)
 	var seconds := (Time.get_ticks_msec() - started) / 1000.0
 	t.check(clocks.size() >= 8 and clocks[0] == "21:00" and clocks[-1] == "05:00",
@@ -252,7 +256,8 @@ func _test_dawn_card() -> void:
 	var passage: TimePassage = app.time_passage
 	var date_label := passage.find_child("Date", true, false) as Label if passage else null
 	var phrase := passage.find_child("Phrase", true, false) as Label if passage else null
-	await t.frames(2)
+	await t.get_tree().create_timer(1.3).timeout
+	await t.screenshot("wrs_dawn_card")
 	var words := "%s / %s" % [date_label.text if date_label else "", phrase.text if phrase else ""]
 	await t.wait_until(func() -> bool: return app.time_passage == null, 10.0)
 	var elevation := Daylight.sun_elevation(geo, GameSession.get_game_time())
@@ -421,3 +426,50 @@ func _test_voyage_map_across_canal_and_date_line() -> void:
 	await t.screenshot("wrs_voyage_map_date_line")
 	map.take_the_helm()
 	await t.wait_until(func() -> bool: return app.voyage_map == null, 5.0)
+
+
+## A planned anchorage on the way: the map stops there, says so, offers no
+## Sail on (the boat waits for the anchor), and Back aboard returns to the deck.
+func _test_voyage_map_anchorage() -> void:
+	_moor_at(&"copenhagen")
+	await _show(SessionState.AREA_INTERIOR)
+	app.open_chart()
+	await _settle()
+	var world := app.router.current_screen as WorldMap
+	world.plot_course_to(&"gothenburg")
+	await t.frames(1)
+	var path := world.get_draft_route().path
+	var spot := Vector2.INF
+	for i in range(1, path.size() - 1):
+		for f in [0.3, 0.6]:
+			var p: Vector2 = path[i].lerp(path[i + 1], f)
+			if spot == Vector2.INF and GameSession.anchorage_spot(p).ok:
+				spot = p
+	if not t.check(spot != Vector2.INF, "(setup) a spot to anchor on the way to Gothenburg"):
+		app.close_chart()
+		await _settle()
+		return
+	var index := world.insert_waypoint(0, spot)
+	world.toggle_anchorage(index)
+	t.check_eq(world.apply_course(), "", "(setup) the course with an anchorage")
+	app.close_chart()
+	await _settle()
+	GameSession.depart()
+	var deck := await _show(SessionState.AREA_EXTERIOR)
+	Simulation.start_passage(Simulation.PASSAGE_RATES[0])
+	await t.frames(2)
+	var map: VoyageMap = app.voyage_map
+	for i in 600:
+		if not Simulation.is_passage_running():
+			break
+		Simulation.tick(0.05)
+		await t.frames(1)
+	await t.frames(3)
+	t.check(map != null and GameSession.is_holding_at_anchorage() and map.is_stopped() and map.get_stop_text().contains("anchorage")
+		and not (map.find_child("SailOn", true, false) as Button).visible,
+		"[passage] a planned anchorage stops the map there, without Sail on (\"%s\")" % (map.get_stop_text() if map else ""))
+	if map:
+		(map.find_child("BackAboard", true, false) as Button).pressed.emit()
+		await t.wait_until(func() -> bool: return app.voyage_map == null, 5.0)
+	t.check(app.voyage_map == null and deck.visible and GameSession.is_holding_at_anchorage(), "[passage] back aboard to drop the anchor")
+

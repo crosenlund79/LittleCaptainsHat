@@ -238,6 +238,10 @@ func _run() -> void:
 	_log_lines_before = _log_lines()
 	var t0 := GameSession.get_game_time()
 	_growth("start")
+	if OS.get_cmdline_user_args().has("--presented"):
+		await _presented()
+		_finish()
+		return
 
 	# 1-3. Walking: deck in harbour, cabin, at noon.
 	_set_time(_time_before_crossing(COPENHAGEN, t0, 40.0, true, 0.0))
@@ -341,6 +345,10 @@ func _run() -> void:
 	await _measure("walk_deck_after_session", 360, _walk)
 	_stop_walking()
 
+	_finish()
+
+
+func _finish() -> void:
 	results["version"] = ProjectSettings.get_setting("application/config/version", "")
 	results["label"] = _arg("label", "")
 	results["renderer"] = "%s / %s" % [RenderingServer.get_video_adapter_name(), RenderingServer.get_video_adapter_vendor()]
@@ -383,3 +391,63 @@ func _long_passage() -> void:
 		e.sim_ms.get("mean_ms", 0.0), e.sim_ms.get("worst_ms", 0.0), "running" if e.still_running else "interrupted"])
 	Simulation.stop_passage()
 	_growth("after_long_passage")
+
+
+## The new presentations as the Captain sees them (The Well-Run Ship builds
+## only): an 8-hour sleep, a dawn card while walking at 20x, and Long Passage
+## on the voyage map. Frames are measured until each one is over.
+func _presented() -> void:
+	if not ClassDB.class_exists("Node") or not ResourceLoader.exists("res://src/ui/time_passage.gd"):
+		return
+	_moor()
+	_set_time(_time_before_crossing(COPENHAGEN, GameSession.get_game_time(), -1.0, false, 120.0))
+	await _show(SessionState.AREA_INTERIOR)
+	var started := Time.get_ticks_msec()
+	app.sleep_for(8.0)
+	var e := await _measure_until("presented_sleep_8h", func() -> bool: return app.get("time_passage") == null)
+	e["wall_s"] = snappedf((Time.get_ticks_msec() - started) / 1000.0, 0.1)
+	# Dawn while walking on deck at 20x.
+	_set_time(_time_before_crossing(COPENHAGEN, GameSession.get_game_time(), -6.0, true, 20.0))
+	await _show(SessionState.AREA_EXTERIOR)
+	_run_time(20)
+	var waited := 0
+	while app.get("time_passage") == null and waited < 600:
+		_walk(waited)
+		await get_tree().process_frame
+		waited += 1
+	_stop_walking()
+	e = await _measure_until("presented_dawn_card", func() -> bool: return app.get("time_passage") == null)
+	e["frames_before_card"] = waited
+	await _measure("after_dawn_walk_20x", 240, _walk)
+	_stop_walking()
+	_stop_time()
+	# Long Passage on the voyage map, 12 h a second, with the clock running.
+	_moor()
+	GameSession.plan_route_to(&"reykjavik")
+	GameSession.depart()
+	await _show(SessionState.AREA_EXTERIOR)
+	Simulation.auto_advance = true
+	Simulation.start_passage(Simulation.PASSAGE_RATES[-1])
+	var game_before := GameSession.get_game_time()
+	e = await _measure("presented_voyage_map_12h_per_s", 360)
+	e["game_hours"] = snappedf((GameSession.get_game_time() - game_before) / 3600.0, 0.1)
+	e["map_shown"] = app.get("voyage_map") != null
+	Simulation.stop_passage()
+	Simulation.auto_advance = false
+	await _frames(60)
+
+
+## Frames until `done` is true (at most 1,200), measured like _measure.
+func _measure_until(label: String, done: Callable) -> Dictionary:
+	var times: Array[float] = []
+	var last := Time.get_ticks_usec()
+	while not done.call() and times.size() < 1200:
+		await get_tree().process_frame
+		var now := Time.get_ticks_usec()
+		times.append((now - last) / 1000.0)
+		last = now
+	var entry := _stats(times)
+	entry["structure"] = _structure()
+	results.scenarios[label] = entry
+	print("  %-34s frames %d  med %6.2f  p99 %6.2f  worst %7.2f ms" % [label, entry.frames, entry.median_ms, entry.p99_ms, entry.worst_ms])
+	return entry
