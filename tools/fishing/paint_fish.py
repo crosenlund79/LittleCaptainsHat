@@ -417,9 +417,9 @@ SPECIES = {
         anal=[("bot", 0.8, 0.85, 12, "tri")], pectoral=(0.22, 62, 32, 0.34), eye=(0.1, -2, 8), scales=0.0,
         marks=["gills", "countershade"], mouth="shark", shark=True, black_tips=True),
     # --- I021: A Wider, Warmer World ---
-    "pollack": dict(
-        x0=64, x1=386, top=[(0, 2), (0.06, -20), (0.22, -40), (0.45, -42), (0.75, -28), (1, -13)],
-        bot=[(0, 8), (0.08, 24), (0.3, 40), (0.6, 36), (0.85, 20), (1, 13)],
+    "pollack": dict(  # slimmer than the cod, with a jutting lower jaw and no barbel
+        x0=58, x1=390, top=[(0, 2), (0.06, -16), (0.22, -34), (0.45, -36), (0.75, -24), (1, -11)],
+        bot=[(0, 8), (0.08, 20), (0.3, 34), (0.6, 30), (0.85, 17), (1, 11)],
         back=(110, 104, 62), belly=(226, 218, 186), fin=(132, 120, 80), tail_col=(112, 104, 64),
         tail=("notch", 80, 48), dorsal=[("top", 0.26, 0.42, 30, "soft"), ("top", 0.47, 0.64, 26, "soft"), ("top", 0.68, 0.86, 22, "soft")],
         anal=[("bot", 0.46, 0.64, 22, "soft"), ("bot", 0.68, 0.86, 18, "soft")], pectoral=(0.22, 36), eye=(0.12, -8, 13),
@@ -451,11 +451,11 @@ SPECIES = {
         tail=("fork", 88, 54), dorsal=[("top", 0.3, 0.42, 24, "spiny", 7), ("top", 0.48, 0.8, 26, "soft")],
         anal=[("bot", 0.54, 0.8, 22, "soft")], pectoral=(0.22, 34), eye=(0.11, -6, 12), scales=0.0,
         marks=["pectoral_spot"], mouth="up"),
-    "striped_bass": dict(
-        x0=64, x1=386, top=[(0, 6), (0.06, -20), (0.25, -42), (0.5, -44), (0.8, -26), (1, -12)],
-        bot=[(0, 8), (0.08, 22), (0.3, 40), (0.6, 38), (0.85, 20), (1, 12)],
+    "striped_bass": dict(  # longer and more streamlined than the European sea bass
+        x0=44, x1=392, top=[(0, 4), (0.06, -16), (0.25, -34), (0.5, -36), (0.8, -22), (1, -10)],
+        bot=[(0, 8), (0.08, 18), (0.3, 32), (0.6, 30), (0.85, 16), (1, 10)],
         back=(92, 104, 108), belly=(238, 238, 232), fin=(140, 146, 148), tail_col=(106, 116, 120),
-        tail=("notch", 80, 48), dorsal=[("top", 0.3, 0.46, 34, "spiny", 8), ("top", 0.52, 0.68, 26, "soft")],
+        tail=("fork", 82, 52), dorsal=[("top", 0.3, 0.46, 34, "spiny", 8), ("top", 0.52, 0.68, 26, "soft")],
         anal=[("bot", 0.6, 0.72, 20, "soft")], pelvic=("bot", 0.3, 0.38, 16), pectoral=(0.22, 34), eye=(0.11, -8, 12),
         scales=0.5, marks=["long_stripes"], mouth="up"),
     "giant_trevally": dict(

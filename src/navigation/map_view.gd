@@ -1590,7 +1590,7 @@ func _draw_port(port: PortData, s: float, labelled := true) -> void:
 	_overlay.draw_circle(p, 8.0 * s, PORT_RIM, true, -1.0, true)
 	_overlay.draw_circle(p, 5.5 * s, BRASS if port.id == destination_port_id else PORT_FILL, true, -1.0, true)
 	if HarbourLooks.get_default().is_special(port.id):
-		_draw_special_star(p + Vector2(-11.0, -6.0) * s, s)
+		_draw_special_star(p + Vector2(-15.0, -10.0) * s, s)
 	if labelled:
 		# The label rectangle is in screen space (see _update_port_layout()).
 		var rect: Rect2 = _labelled_ports[port.id].grow(-PORT_LABEL_GAP_PX / 2.0)
@@ -1599,11 +1599,12 @@ func _draw_port(port: PortData, s: float, labelled := true) -> void:
 
 
 ## The special-harbour mark (I021): a small brass compass star on the pin's
-## shoulder (upper left, clear of the label on the right and of a visited pin
-## above), for a harbour with its own illustrated arrival.
+## shoulder (upper left, outside the selection ring, clear of the label on
+## the right and of a visited pin above), for a harbour with its own
+## illustrated arrival.
 func _draw_special_star(at: Vector2, s: float) -> void:
-	var outer := 6.0 * s
-	var inner := 2.0 * s
+	var outer := 7.5 * s
+	var inner := 2.6 * s
 	var points := PackedVector2Array()
 	for i in 8:
 		var a := -PI / 2.0 + i * PI / 4.0

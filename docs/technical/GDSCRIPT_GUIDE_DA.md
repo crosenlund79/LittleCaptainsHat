@@ -156,7 +156,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Formål:** Spillets "dirigent": det forbinder menuerne, skærmene og spillets systemer, så de arbejder sammen.
-- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk.
+- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet.
 - **Arbejder sammen med:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Holder styr på:** Kun skærmens bogføring: om redningsrapporten er åben, et VHF-radioopkald eller et spørgsmål om ankerpladsen, der venter på at blive vist, sekunderne før en fisk på krogen slipper væk, og hvornår ledsageren næste gang følger dig mellem kahyt og dæk. Selve spillet ligger i `GameSession`.
 - **Hvornår det kører:** Altid: det er hovedscenen, der starter med spillet.
@@ -165,7 +165,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/game_version.gd`
 
 **Formål:** Holder spillets versionsnummer ét sted.
-- **Hvad det gør:** Giver den version, spillerne ser (fx "0.107a"), en udgave kun med tal til værktøjer, og den korte kode for præcis denne build (commit), når den kan findes.
+- **Hvad det gør:** Giver den version, spillerne ser (fx "0.108a"), en udgave kun med tal til værktøjer, og den korte kode for præcis denne build (commit), når den kan findes.
 - **Arbejder sammen med:** `SessionLog` (skriver versionen ved opstart), hovedmenuen (viser den), `tools/write_build_info.py` (skriver `build_info.json`).
 - **Holder styr på:** Buildens commit-kode, læst én gang og husket.
 - **Hvornår det kører:** Når noget spørger efter versionen (opstartslog, hovedmenu).
@@ -419,7 +419,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/navigation/map_view.gd`
 
 **Formål:** Tegner navigationssøkortet og gør mus og tastatur til handlinger på kortet.
-- **Hvad det gør:** Tegner vand, land, kystlinjer, havnemærker og -navne, gradnet, vejrområder, kanaler, kurser, rutepunkter, ankerpladser, båden og nåle for besøgte havne. Det klarer zoom, panorering og at kortet går hele vejen rundt om jorden, og melder klik og træk videre til søkort-skærmen. Det giver også Dreamer's Map dens malede farver.
+- **Hvad det gør:** Tegner vand, land, kystlinjer, havnemærker og -navne, gradnet, vejrområder, kanaler, kurser, rutepunkter, ankerpladser, båden og nåle for besøgte havne. Det klarer zoom, panorering og at kortet går hele vejen rundt om jorden, og melder klik og træk videre til søkort-skærmen. Det giver også Dreamer's Map dens malede farver. Siden I021 har en særlig havns nål en lille kompasstjerne i messing.
 - **Arbejder sammen med:** `WorldMap` (som bestemmer, hvad klik betyder), `MapProjection`, `PortCatalog`, `WeatherModel`, `WeatherStyle`, `WindLayer`, `AnchorageLayer`, `SeaRouter` (kanaler), `NavGrid` (listen over regioner), `WorldLand`.
 - **Holder styr på:** Hvad der vises lige nu (kurs, rutepunkter, valgt havn), kameraet, og lagre (caches) af det forberedte land, så søkortet åbner hurtigt næste gang.
 - **Hvornår det kører:** Mens kortbordet eller kahyttens Dreamer's Map er åbent.
@@ -455,7 +455,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/navigation/port_data.gd`
 
 **Formål:** Oplysningerne om én havn.
-- **Hvad det gør:** Gemmer havnens id, navn (vist på dit sprog), land, position, beskrivelse og hvor vigtig den er (det bestemmer, fra hvilket zoomniveau den vises på søkortet).
+- **Hvad det gør:** Gemmer havnens id, navn (vist på dit sprog), land, position, beskrivelse og hvor vigtig den er (det bestemmer, fra hvilket zoomniveau den vises på søkortet). Siden I021 giver den også havnens sætning på det valgte sprog.
 - **Arbejder sammen med:** `PortCatalog` og alt, der viser havne eller laver ruter til dem.
 - **Holder styr på:** Kun den ene havns oplysninger.
 - **Hvornår det kører:** Indlæses sammen med havnelisten.
@@ -545,7 +545,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/navigation/world_map.gd`
 
 **Formål:** Søkort-skærmen: planlæg, ret og følg din kurs.
-- **Hvad det gør:** Styrer kortbordet: vælg en destination, sæt en kurs, tilføj, træk og fjern rutepunkter, markér ankerpladser, og tryk Apply eller Discard. Den viser status, forventet ankomst, vind, vejret langs kursen og Passage Readiness (klarhed til sejladsen), har en havnesøgning og slår vind- og ankerpladslagene til og fra. I kahytten bliver den til Dreamer's Map med "Imagine this voyage".
+- **Hvad det gør:** Styrer kortbordet: vælg en destination, sæt en kurs, tilføj, træk og fjern rutepunkter, markér ankerpladser, og tryk Apply eller Discard. Den viser status, forventet ankomst, vind, vejret langs kursen og Passage Readiness (klarhed til sejladsen), har en havnesøgning og slår vind- og ankerpladslagene til og fra. I kahytten bliver den til Dreamer's Map med "Imagine this voyage". Siden I021 fortæller detaljerne for en særlig havn også, hvorfor den er særlig, og havnens sætning følger sproget.
 - **Arbejder sammen med:** `MapView`, `GameSession`, `SeaRouter`, `PortCatalog`, `Simulation`, `VoyageDaydream`, `PassageReadiness`, `AnchorSite`, `WeatherLegend`, `WindLayer`.
 - **Holder styr på:** Udkastet til den kurs, der rettes i (den ændrer aldrig din rigtige kurs, før du trykker Apply).
 - **Hvornår det kører:** Når kortbordet eller kahyttens kort åbnes.
@@ -619,7 +619,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/aboard/cabin_decor.gd`
 
 **Formål:** Tegner en af Kaptajnens hyggelige ting i kahytten (tæppe, krydderurter, indrammet søkort, olielampe, bogreol, signalflag) og finder en god plads til hver.
-- **Hvad det gør:** Hver ting tegnes med enkle, håndtegnede former og har ingen kollision (man kan gå hen over den). En hjælpefunktion sætter vægting langs skrogets sider, skiftevis styrbord og bagbord, og tæppet på åbent gulv nær midten, altid fri af stationer og ledsagerens hvilepladser. Den samme kahyt giver altid de samme pladser.
+- **Hvad det gør:** Hver ting tegnes med enkle, håndtegnede former og har ingen kollision (man kan gå hen over den). En hjælpefunktion sætter vægting langs skrogets sider, skiftevis styrbord og bagbord, og tæppet på åbent gulv nær midten, altid fri af stationer og ledsagerens hvilepladser. Den samme kahyt giver altid de samme pladser. Siden I021 tegner den også et modelskib, et glas med havglas og et barometer i messing.
 - **Arbejder sammen med:** `BoatArea` (opretter og placerer dem), `HarbourTrades` (listen over pynteting, og om de hører til på væg eller gulv), `CabinHomeMenu` (hvor Kaptajnen vælger dem).
 - **Holder styr på:** Hvilken ting den er, og hvilken side den hænger på.
 - **Hvornår det kører:** I kahytten, når den indlæses, eller når Kaptajnen ændrer valget af pynt.
@@ -1135,7 +1135,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/harbour/harbour_dressing.gd`
 
 **Formål:** Tegner den illustrerede havn omkring den fortøjede båd: flydebro, fortøjninger, klamper, stenkaj, krusninger i vandet, skilte for havnens tilbud og vartegn.
-- **Hvad det gør:** Læser, hvor den eksisterende flydebro, fortøjningerne og stationerne er, og maler en håndtegnet havn oven på dem med træskilte for købmanden, bådeværftet og Gå i land. Står indstillingen Grafik på "Classic", skjuler den sig, og den gamle enkle tegning vises. Den fortæller også belysningen, hvor kajens lygter og broens lys er.
+- **Hvad det gør:** Læser, hvor den eksisterende flydebro, fortøjningerne og stationerne er, og maler en håndtegnet havn oven på dem med træskilte for købmanden, bådeværftet og Gå i land. Står indstillingen Grafik på "Classic", skjuler den sig, og den gamle enkle tegning vises. Den fortæller også belysningen, hvor kajens lygter og broens lys er. Siden I021 kommer udsigten bag kajen fra HarbourLooks: havnens eget vartegn eller illustrationen for dens udseende.
 - **Arbejder sammen med:** `BoatArea` (som tilføjer den), `HarbourArt` og `HarbourLandmark`, `SettingsManager` (grafikstil), `GameSession` (hvilken havn), `HighlightProvider`/`HighlightResolver` (skiltenes glød), `Interactable`-stationer.
 - **Holder styr på:** Former den har læst fra dækket, de aktuelle skilte og vartegn samt de klassiske skilttekster, så den kan skifte tilbage.
 - **Hvornår det kører:** Når båden ligger fortøjet i en havn, og dækket vises; opdateres når havnen eller indstillingen skifter.
@@ -1158,6 +1158,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Kun de fire indstillinger.
 - **Hvornår det kører:** Når havnens kulisse tegnes.
 - **Hvis du ændrer det:** Størrelsen og placeringen af et vartegnsbillede; det påvirker aldrig spillet.
+
+### `src/harbour/harbour_looks.gd`
+
+**Formål:** Bestemmer, hvordan hver havn ser ud bag gæstebroen, og hvilke havne der er særlige (I021).
+- **Hvad det gør:** Læser tabellen over havnenes udseende (`data/harbours/harbour_looks.json`). Hver havn har et udseende, valgt efter hvordan stedet virkelig ser ud: nordisk træhavn, havneby med gavlhuse, stenhavn ved Atlanterhavet, middelhavsby, ø-havn i Det Ægæiske Hav, gammel stenby, tropisk havneby, tropisk ø eller vulkanø. En havn med sit eget billede (som Nyhavn i København eller bastionerne i Valletta) viser det i stedet, og de få havne er de særlige havne, der får en stjerne på søkortet. Den giver også billedet til ankomstkortet.
+- **Arbejder sammen med:** `HarbourArt` og `HarbourLandmark` (billederne), `HarbourDressing` (tegner dem), `MapView` og `WorldMap` (stjernen og linjen "Særlig havn"), `App` (ankomstkortet), `Loc` (navne på dansk).
+- **Holder styr på:** Tabellen, den har læst, og hvert udseendes billede, når det først er brugt (så mange havne med samme udseende ikke koster ekstra).
+- **Hvornår det kører:** Når du fortøjer, ankommer eller ser på en havn på søkortet.
+- **Hvis du ændrer det:** Hvordan havnene ser ud, og hvilke der er mærket som særlige; mangler et billede, vises blot den almindelige kaj, aldrig en fejl.
 
 ### `src/harbour/harbour_trades.gd`
 
@@ -1722,7 +1731,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/toasts.gd`
 
 **Formål:** De korte beskeder, der dukker op og forsvinder af sig selv.
-- **Hvad det gør:** Viser en besked i et lille panel, højst tre ad gangen, og toner den ud efter et par sekunder. Det virker også, mens spillet er på pause, så menuer kan melde resultater.
+- **Hvad det gør:** Viser en besked i et lille panel, højst tre ad gangen, og toner den ud efter et par sekunder. Det virker også, mens spillet er på pause, så menuer kan melde resultater. Siden I021 kan den også vise ankomstkortet: et billede af havnen med to linjer, som forsvinder af sig selv.
 - **Arbejder sammen med:** `App` (sender alle beskeder igennem den).
 - **Holder styr på:** De beskeder, der er på skærmen lige nu.
 - **Hvornår det kører:** Altid (en del af appens hovedscene).
@@ -1832,7 +1841,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_boat_of_your_own.gd`
 
 **Formål:** Tjekker havnens forretninger, og at man kan gøre båden til sin egen (I020).
-- **Hvad det gør:** Den tjekker, hvilke havne der har fiskehandler, skibshandel eller sejlmager. Den sælger fisk (aldrig to gange, og købmanden nedenunder viser straks de nye penge), køber udstyr og ting til kahytten (aldrig så pengene går under nul) og bestiller sejl i en ny farve (kun udseendet ændres). Ting til kahytten bliver stillet ind på alle fire både uden at spærre for noget. Den tjekker også, at gamle og mærkelige gemte spil kan indlæses, og at de danske tekster kan være på skærmen.
+- **Hvad det gør:** Den tjekker, hvilke havne der har fiskehandler, skibshandel eller sejlmager. Den sælger fisk (aldrig to gange, og købmanden nedenunder viser straks de nye penge), køber udstyr og ting til kahytten (aldrig så pengene går under nul) og bestiller sejl i en ny farve (kun udseendet ændres). Ting til kahytten bliver stillet ind på alle fire både uden at spærre for noget. Den tjekker også, at gamle og mærkelige gemte spil kan indlæses, og at de danske tekster kan være på skærmen. Siden I021 accepterer den, at en lang butiksliste ruller: en række, der er rullet ud af syne, tæller ikke som uden for skærmen.
 - **Arbejder sammen med:** `HarbourFacilities`, `HarbourTrades`, `TradePanel`, `GameSession`, `CabinDecor`, `SessionState`, `SettingsManager`.
 - **Holder styr på:** Intet af sit eget.
 - **Hvornår det kører:** Kun i test.
@@ -1841,11 +1850,11 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_branding.gd`
 
 **Formål:** Tjekker spillets navn, versionsnummer, skrifttyper, mappen til gemte spil og kopiering af gamle gemte spil fra Next Harbor.
-- **Hvad det gør:** Den tjekker, at spillet hedder "Little Captain's Hat", at versionen er 0.107a overalt, og at logo- og ikonfilerne findes. Den tjekker, at gemte spil ligger i spillets egen mappe, og at den håndskrevne skrifttype Patrick Hand kun bruges til overskrifter (Barlow til alt andet). Den tjekker også, at gamle gemte spil fra Next Harbor bliver kopieret (aldrig flyttet eller overskrevet) over i ledige pladser, også via importknappen i hovedmenuen.
+- **Hvad det gør:** Den tjekker, at spillet hedder "Little Captain's Hat", at versionen er 0.108a overalt, og at logo- og ikonfilerne findes. Den tjekker, at gemte spil ligger i spillets egen mappe, og at den håndskrevne skrifttype Patrick Hand kun bruges til overskrifter (Barlow til alt andet). Den tjekker også, at gamle gemte spil fra Next Harbor bliver kopieret (aldrig flyttet eller overskrevet) over i ledige pladser, også via importknappen i hovedmenuen.
 - **Arbejder sammen med:** `GameVersion`, `SaveManager`, `LegacySaves`, `MainMenu`, `ConfirmDialog`, `CaptainsLogMenu`, `Hud`, `SettingsManager`.
 - **Holder styr på:** Intet af sit eget (den laver en midlertidig, opdigtet Next Harbor-mappe og fjerner den igen).
 - **Hvornår det kører:** Kun i test.
-- **Hvis du ændrer det:** Kun tjekkene ændrer sig. Den tjekker den nøjagtige version ("0.107a", "0.107.1") og gemmeformat 12, så en ny udgivelse betyder, at denne test skal rettes.
+- **Hvis du ændrer det:** Kun tjekkene ændrer sig. Den tjekker den nøjagtige version ("0.108a", "0.108.1") og gemmeformat 12, så en ny udgivelse betyder, at denne test skal rettes.
 
 ### `tests/suites/test_captains_log.gd`
 
@@ -1998,7 +2007,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Arbejder sammen med:** `SessionLog`, `GameSession`, `SaveManager`, `GameVersion`, `Simulation`.
 - **Holder styr på:** Intet af sit eget (den bruger sin egen midlertidige logmappe og rydder den op).
 - **Hvornår det kører:** Kun i test.
-- **Hvis du ændrer det:** Kun tjekkene ændrer sig. Den tjekker det nøjagtige versionsnummer ("0.107a") og gemmeformat (12), så et nyt versionsnummer betyder, at denne test skal rettes.
+- **Hvis du ændrer det:** Kun tjekkene ændrer sig. Den tjekker det nøjagtige versionsnummer ("0.108a") og gemmeformat (12), så et nyt versionsnummer betyder, at denne test skal rettes.
 
 ### `tests/suites/test_eight_directions.gd`
 
@@ -2057,7 +2066,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_harbour_life.gd`
 
 **Formål:** Tester livet i havn: at gå i land, havnens tilbud, Gå i land-oplevelser og dæksvisningen, der følger kursen (Iteration 12).
-- **Hvad det gør:** Tester, hvilke havne der har dagligvarebutik, bådeværft og optagning (Lohals har for eksempel intet bådeværft). På hver båd tester det, at man kan gå ned ad landgangen til pontonen og tilbage. Det tester også, at ting lyser op i stedet for cirkler, at Gå i land-oplevelser koster og betaler én gang, at landgangen tages ind, når man sejler, og at man kan gemme, mens man er i land. Til sidst tester det, at dækket under sejlads kan dreje, så stævnen peger langs kursen.
+- **Hvad det gør:** Tester, hvilke havne der har dagligvarebutik, bådeværft og optagning (Lohals har for eksempel intet bådeværft). På hver båd tester det, at man kan gå ned ad landgangen til pontonen og tilbage. Det tester også, at ting lyser op i stedet for cirkler, at Gå i land-oplevelser koster og betaler én gang, at landgangen tages ind, når man sejler, og at man kan gemme, mens man er i land. Til sidst tester det, at dækket under sejlads kan dreje, så stævnen peger langs kursen. Siden I021 står de små nye havne (Dingle, Ísafjörður, Symi, Essaouira, St. Helena) på listen over havne uden bådeværft.
 - **Arbejder sammen med:** `HarbourFacilities`, `ShoreEvents`, `GoAshoreMenu`, `BoatArea`, `Interactable`, `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, hjælperen til gangbarhed og app-scenen.
 - **Holder styr på:** Intet selv (bruger gemmeplads 3 og sletter den).
 - **Hvornår det kører:** Kun i testene.
@@ -2066,7 +2075,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_harbours.gd`
 
 **Formål:** Tester hver havn i havnekataloget (listen over alle havne).
-- **Hvad det gør:** Tester, at hver havn har et unikt, korrekt id og fuldstændige oplysninger, at den ligger ved en kyst inden for søkortet, og at den kan nå åbent vand. Det tester også, at hver havn kan sejle til den nærmeste oprindelige havn. Desuden prøver det eksempler på sejladser (kystnært, ø-hop, til havs, smalle stræder) og havnesøgningen.
+- **Hvad det gør:** Tester, at hver havn har et unikt, korrekt id og fuldstændige oplysninger, at den ligger ved en kyst inden for søkortet, og at den kan nå åbent vand. Det tester også, at hver havn kan sejle til den nærmeste oprindelige havn. Desuden prøver det eksempler på sejladser (kystnært, ø-hop, til havs, smalle stræder) og havnesøgningen. Siden I021 kender den også de nye havområder (Nordamerika, Vestafrika, Sydatlanten, Det Indiske Ocean, Sydøstasien).
 - **Arbejder sammen med:** `PortCatalog`, `PortData`, `SeaRouter`, `NavGrid` og `GeoMath`.
 - **Holder styr på:** Intet selv.
 - **Hvornår det kører:** Kun i testene (uden spilvindue).
@@ -2363,7 +2372,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_visual_prototype.gd`
 
 **Formål:** Tjekker det malede ("Illustrated") udseende af bådene og havnen.
-- **Hvad det gør:** Tjekker, at ejerens kattetegninger er urørte, at Wing 33, Clam 40 og Frogleap 36 har malede billedsæt, der kan udskiftes, og at et skift mellem Illustrated og Classic kun ændrer udseendet, aldrig hvor man kan gå, eller hvad man kan bruge. Den tjekker den malede havn (København med Nyhavn som vartegn, en almindelig havn andre steder, skilte kun for tjenester der findes, ingen havn til søs), at købmanden og bådeværftet stadig åbner, og valget af Artwork i indstillingerne.
+- **Hvad det gør:** Tjekker, at ejerens kattetegninger er urørte, at Wing 33, Clam 40 og Frogleap 36 har malede billedsæt, der kan udskiftes, og at et skift mellem Illustrated og Classic kun ændrer udseendet, aldrig hvor man kan gå, eller hvad man kan bruge. Den tjekker den malede havn (København med Nyhavn som vartegn, en almindelig havn andre steder, skilte kun for tjenester der findes, ingen havn til søs), at købmanden og bådeværftet stadig åbner, og valget af Artwork i indstillingerne. Siden I021 viser Kiel udseendet som havneby med gavlhuse i stedet for en bar kaj.
 - **Arbejder sammen med:** `VesselCatalog`, `VesselVisual`, `SettingsManager`, `HatArt`, `HarbourArt`, `HarbourLandmark`, `HarbourFacilities`, `BoatArea`, `SettingsMenu`, `TestWalkability`, app-scenen.
 - **Holder styr på:** Intet selv; den efterlader grafikstilen sat til Illustrated.
 - **Hvornår det kører:** Kun i test (den gemmer skærmbilleder, når man beder om det).
@@ -2422,6 +2431,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Intet selv.
 - **Hvornår det kører:** Kun i test (den gemmer skærmbilleder, når man beder om det).
 - **Hvis du ændrer det:** Kun sikkerhedsnettet ændres; fejler testen, kan søkortets vindpile være forkerte, langsomme eller dukke op på land.
+
+### `tests/suites/test_wider_world.gd`
+
+**Formål:** Tjekker I021, En større og varmere verden: de nye havne, havnenes udseende, de særlige havne, ankomstkortet, de nye fisk og tingene til kahytten.
+- **Hvad det gør:** Tjekker, at de 16 nye havne findes med en sætning, en kilde og en købmand, på engelsk og dansk. Hver havn har et udseende med et færdigt billede, valgt efter hvordan stedet ser ud (New Zealand som Norge, Willemstad som Danmark). De særlige havne er netop dem med deres eget billede, og mangler et billede, vises den almindelige kaj. De nye fisk lever, hvor de virkelig lever, har billeder, rimelige priser og danske navne, og en rekord overlever et gemt spil. De tre nye ting til kahytten kan købes. Gamle gemte spil kan indlæses, at fortøje igen og igen tilføjer intet, begge sider af datolinjen virker, og ankomstkortet viser billede og ord uden at stå i vejen.
+- **Arbejder sammen med:** `PortCatalog`, `HarbourLooks`, `HarbourArt`, `HarbourDressing`, `WorldMap`, `FishingCatalog`, `FishArt`, `HarbourTrades`, `SessionState`, `SeaRouter`, `SettingsManager` og app-scenen.
+- **Holder styr på:** Intet af sit eget.
+- **Hvornår det kører:** Kun i test.
+- **Hvis du ændrer det:** Kun tjekkene ændrer sig. En fejl peger på havnedata, billeder, tabellen over udseender, fiskedata eller ankomstkortet.
 
 ### `tests/suites/test_world_chart_render.gd`
 
@@ -2614,10 +2632,19 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Kun når du starter det, med skærm: `xvfb-run godot --path . --rendering-driver opengl3 --resolution 1600x900 res://tests/screenshots_chartroom.tscn -- --out=DIR [--only=day|night]`.
 - **Hvis du ændrer det:** Intet i spillet ændres.
 
+### `tests/screenshots_i021.gd`
+
+**Formål:** Tager billederne til I021-rapporten: hvert udseende af havnene, de særlige havne, ankomstkortet og stjernen på søkortet.
+- **Hvad det gør:** Fortøjer båden i en havn med hvert af de ni udseender og i hver særlig havn og fotograferer dækket. Den viser ankomstkortet (på engelsk og på dansk) og åbner så søkortet om dagen og om natten med Valletta og Symi valgt, og Drømmerens kort.
+- **Arbejder sammen med:** App-scenen, `HarbourLooks`, `PortCatalog`, `GameSession`, `UiTheme`, `SettingsManager`, `WindField`.
+- **Holder styr på:** Intet; den skriver PNG-filer.
+- **Hvornår det kører:** Kun når du starter det, med en rigtig skærm eller Xvfb: `res://tests/screenshots_i021.tscn -- --out=DIR`.
+- **Hvis du ændrer det:** Kun skærmbillederne ændrer sig.
+
 ### `tests/test_runner.gd`
 
-**Formål:** Spillets automatiske testkører: den kører alle 73 testsamlinger og fortæller, hvor mange tjek der bestod.
-- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder.
+**Formål:** Spillets automatiske testkører: den kører alle 74 testsamlinger og fortæller, hvor mange tjek der bestod.
+- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden.
 - **Arbejder sammen med:** Alle testsamlinger i `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Holder styr på:** Antal beståede/fejlede tjek og listen over fejl.
 - **Hvornår det kører:** Når du starter det, eller i automatik: `godot --headless --path . res://tests/test_runner.tscn` (valgmuligheder efter `--`: `--only=navn`, `--skip=navn`, `--screenshots=MAPPE`).

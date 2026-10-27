@@ -13,9 +13,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/aboard/cabin_decor.gd": {
-   "sha": "3cbeebb1d99927c9",
+   "sha": "69f14cfa08724385",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/aboard/coffee_mug.gd": {
    "sha": "7591f61fef11b354",
@@ -53,14 +53,14 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/app/app.gd": {
-   "sha": "5c1941fa4019be83",
+   "sha": "1cc990feef3cbfd6",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/app/game_version.gd": {
-   "sha": "a08c000173a473c6",
+   "sha": "8392004ca99d3110",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: version 0.108a"
   },
   "src/app/scene_router.gd": {
    "sha": "1ddf708627a20b17",
@@ -343,9 +343,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/harbour/harbour_dressing.gd": {
-   "sha": "89577a924fbc2c64",
+   "sha": "70091c165d333657",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/harbour/harbour_facilities.gd": {
    "sha": "89468fd9d1acf16e",
@@ -356,6 +356,11 @@
    "sha": "a0f34cd640504119",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/harbour/harbour_looks.gd": {
+   "sha": "eb39dfe6f16cfefb",
+   "reviewed": "2026-10-27",
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/harbour/harbour_trades.gd": {
    "sha": "7f7cd0c7d12d1f2a",
@@ -458,9 +463,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/navigation/map_view.gd": {
-   "sha": "d5c9c58916333610",
+   "sha": "4f1eb4670aa6116d",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: special star outside the selection ring (entry still accurate)"
   },
   "src/navigation/nav_grid.gd": {
    "sha": "630855214a2c8a0d",
@@ -478,9 +483,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/navigation/port_data.gd": {
-   "sha": "3adcd918d7e4645e",
+   "sha": "b2c2a415bc4a6e25",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/navigation/sea_router.gd": {
    "sha": "18bd434ff4ce69b6",
@@ -528,9 +533,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/navigation/world_map.gd": {
-   "sha": "f6158f07579093c7",
+   "sha": "5657560d20c7eb09",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/persistence/legacy_saves.gd": {
    "sha": "19476bac39c66476",
@@ -818,9 +823,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/toasts.gd": {
-   "sha": "f35506569f47485f",
+   "sha": "5198908c7877e154",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "src/ui/trade_panel.gd": {
    "sha": "709186869b53ca24",
@@ -997,6 +1002,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "tests/screenshots_i021.gd": {
+   "sha": "4d3ac015a0b94d0e",
+   "reviewed": "2026-10-27",
+   "note": "I021 screenshots"
+  },
   "tests/suites/test_anchor_life.gd": {
    "sha": "74cec34564e9983a",
    "reviewed": "2026-10-27",
@@ -1023,14 +1033,14 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_boat_of_your_own.gd": {
-   "sha": "51f1d4ebf4881f59",
+   "sha": "751037e7e4025f12",
    "reviewed": "2026-10-27",
-   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tests/suites/test_branding.gd": {
-   "sha": "1cfc07ae42343c6a",
+   "sha": "af080fa22cdd42f2",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: version 0.108a"
   },
   "tests/suites/test_captains_log.gd": {
    "sha": "d53166fad920e986",
@@ -1113,9 +1123,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_diagnostics.gd": {
-   "sha": "89a389fc60d95954",
+   "sha": "cd357592167f1229",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: version 0.108a"
   },
   "tests/suites/test_eight_directions.gd": {
    "sha": "52a098d0ba76c10d",
@@ -1148,14 +1158,14 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_harbour_life.gd": {
-   "sha": "c4d88be48f295ea5",
+   "sha": "16014f0ce80fcfe1",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tests/suites/test_harbours.gd": {
-   "sha": "c13b0740225f5c43",
+   "sha": "20b68e4c9eed379b",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tests/suites/test_hat.gd": {
    "sha": "e5bc1f38a8a77ad8",
@@ -1318,9 +1328,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_visual_prototype.gd": {
-   "sha": "d3138974760ae08a",
+   "sha": "a8a49ae7a3bc9efe",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tests/suites/test_voyage_persistence.gd": {
    "sha": "8a7b116f4bb8814e",
@@ -1341,6 +1351,11 @@
    "sha": "808425276c89b118",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_wider_world.gd": {
+   "sha": "2627818fa629f971",
+   "reviewed": "2026-10-27",
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tests/suites/test_wind.gd": {
    "sha": "e93f2a67688db172",
@@ -1363,9 +1378,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/test_runner.gd": {
-   "sha": "4e61decc73375823",
+   "sha": "113828088df87ceb",
    "reviewed": "2026-10-27",
-   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
+   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tools/build_theme.gd": {
    "sha": "0e5953be619e13ca",

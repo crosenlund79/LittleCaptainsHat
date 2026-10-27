@@ -4,9 +4,9 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 
 ## Where we are
 
-- **Current development version: 0.105b**, save format 12. This is [Revision 0.105b, Safe Harbours, Deep Waters & the Sprite Workshop](revisions/v0.105b/).
-- **Latest revision:** [report](revisions/v0.105b/REVISION_0_105B_REPORT.md), [requirement tracker](revisions/v0.105b/REVISION_0_105B_REQUIREMENTS.md), [Windows acceptance checklist](revisions/v0.105b/WINDOWS_ACCEPTANCE_0_105B.md) (pending), and the Captain's [assignment](revisions/v0.105b/REVISION_0_105B_ASSIGNMENT.md).
-- **Next planned iteration: Iteration 19, The Captain's Watch.** It is planned but **not started and not implemented**. Iterations 20 (A Boat of Your Own) and 21 (The Well-Trimmed Ship) are also planned. Their scope is set by the Captain; see [CAPTAINS_ORDERS.md](../CAPTAINS_ORDERS.md).
+- **Current development version: 0.108a**, save format 12. This is [Iteration 21, A Wider, Warmer World](iterations/i021/).
+- **Latest iteration:** [report](iterations/i021/ITERATION_21_REPORT.md), [harbour looks](iterations/i021/HARBOUR_LOOKS.md) and the [Windows acceptance checklist](iterations/i021/WINDOWS_ACCEPTANCE_21.md) (pending).
+- **Before it:** [Revision 0.105b](revisions/v0.105b/), Iterations [19](iterations/i019/) and [20](iterations/i020/), and the Engine Room maintenance pass ([report](technical/ENGINE_ROOM_AND_COMPANION_POLISH_REPORT.md)). Windows acceptance of 0.105b, I018–I021 is pending. Future scope is set by the Captain; see [CAPTAINS_ORDERS.md](../CAPTAINS_ORDERS.md).
 
 ## Iterations
 
@@ -26,6 +26,7 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 | [18](iterations/i018/) The Joy of the Journey | 0.105a | [assignment](iterations/i018/ITERATION_18_ASSIGNMENT.md), [report](iterations/i018/ITERATION_18_REPORT.md), [requirements](iterations/i018/ITERATION_18_REQUIREMENTS.md), [Windows acceptance](iterations/i018/WINDOWS_ACCEPTANCE_18.md) (pending) |
 | [19](iterations/i019/) The Captain's Watch | 0.106a | [report](iterations/i019/ITERATION_19_REPORT.md) (traffic, radar, anchor alarms, VHF, English and Dansk; Windows acceptance pending) |
 | [20](iterations/i020/) A Boat of Your Own | 0.107a | [report](iterations/i020/ITERATION_20_REPORT.md) (fishmonger, chandlery, sailmaker, cabin things; Windows acceptance pending) |
+| [21](iterations/i021/) A Wider, Warmer World | 0.108a | [report](iterations/i021/ITERATION_21_REPORT.md), [harbour looks](iterations/i021/HARBOUR_LOOKS.md), [Windows acceptance](iterations/i021/WINDOWS_ACCEPTANCE_21.md) (pending) |
 
 Iterations 7–11 have no separate documents in this repository. Iteration 15 (the performance pass) was skipped at the Captain's instruction.
 
@@ -64,7 +65,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 ## Benchmarks and screenshots
 
 - [Benchmarks](benchmarks/): JSON results by iteration and revision. Revision 0.105b's files record version, commit and label.
-- [Screenshots](screenshots/): by iteration (`iteration12/` … `iteration18/`) and revision (`revision_0102b/`, `revision_0_105b/`), plus the interface pass (`chartroom_ui/`). The older screenshots from before Iteration 12 are at the top of the folder.
+- [Screenshots](screenshots/): by iteration (`iteration12/` … `iteration18/`, `i021/`) and revision (`revision_0102b/`, `revision_0_105b/`), plus the interface pass (`chartroom_ui/`). The older screenshots from before Iteration 12 are at the top of the folder.
 
 ## About this library
 

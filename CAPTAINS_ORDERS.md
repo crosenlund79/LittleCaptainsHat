@@ -320,6 +320,29 @@ fields are optional):
 31. **All four boats receive decorative solar panels. No electrical,
     battery, charging or power-management mechanics are authorized.**
 
+### Iteration 21, A Wider, Warmer World
+
+The Captain has authorized (version 0.108a, save format 12 unchanged), after a
+verified checkpoint branch (`backup/post-engine-room-pre-i021`):
+
+- **More world in the existing systems, not more complexity**: about 12–20 real
+  harbours chosen for gaps along real routes (verified positions, real water
+  access, facilities in the existing tiers, English and Danish), about 8–12 real
+  fish in their real regions with art, and a few cabin things in I020's system.
+- **Harbours look like their place, never like their continent**: a small
+  library of original illustrated harbour looks chosen per harbour by its
+  architecture, materials, land and climate (a New Zealand harbour may look
+  Scandinavian), in the game's hand-drawn style; no placeholders presented as
+  finished art.
+- **Special harbours** (those with their own illustrated arrival) get a subtle
+  mark on the chart and a line saying why; ordinary services never make a
+  harbour special.
+- **Additional boats and the parrot and hamster companions only if complete and
+  safe**; otherwise a feasibility note. No second UI overhaul.
+- This iteration took the number 21. The earlier planned "The Well-Trimmed
+  Ship" remains a separately scoped future assignment (not started, not
+  cancelled).
+
 ### Iterations and versions
 
 - Iteration numbers are plain sequential integers: no letter suffixes and no
@@ -447,3 +470,11 @@ Two; the wording was again not found in the repository in Iteration 18.
   stopping at anchor, decorative solar panels on all four boats, and Sprite
   Workshop Phase 1 (`art_replacements/`); see `docs/revisions/v0.105b/REVISION_0_105B_REPORT.md`,
   `docs/artwork/SPRITE_WORKSHOP_REPORT.md` and `docs/revisions/v0.105b/WINDOWS_ACCEPTANCE_0_105B.md`.
+- **Iteration 21, A Wider, Warmer World**, version 0.108a, save format 12
+  (unchanged): sixteen new harbours (Dingle to Hobart), nine original harbour
+  looks chosen per harbour plus six special harbours with their own illustrated
+  arrival and a brass star on the chart, the arrival card, ten new fish and
+  three cabin things; boats and the parrot and hamster deferred with
+  feasibility notes; see `docs/iterations/i021/ITERATION_21_REPORT.md`,
+  `docs/iterations/i021/HARBOUR_LOOKS.md` and
+  `docs/iterations/i021/WINDOWS_ACCEPTANCE_21.md`.
