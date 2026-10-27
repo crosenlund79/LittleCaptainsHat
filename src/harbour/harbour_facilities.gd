@@ -24,6 +24,12 @@ const GO_ASHORE := &"go_ashore"
 ## Shore stations, in shore order (haul-outs are a service of the boatyard).
 const ALL: Array[StringName] = [GROCERY, BOATYARD, GO_ASHORE]
 const HAUL_OUT := &"haul_out"
+## The harbour trades (I020; HarbourTrades): offered where the facilities
+## above allow (the fishmonger with the grocery store, the chandlery and the
+## sailmaker with the boatyard). Reached from those stations.
+const CHANDLERY := &"chandlery"
+const SAILMAKER := &"sailmaker"
+const FISHMONGER := &"fishmonger"
 
 const TIER_SMALL := &"small"
 const TIER_LARGER := &"larger"
@@ -85,6 +91,8 @@ func has(facility: StringName) -> bool:
 			return go_ashore
 		HAUL_OUT:
 			return boatyard and haul_out
+		CHANDLERY, SAILMAKER, FISHMONGER:
+			return HarbourTrades.offered(self, facility)
 	return false
 
 
@@ -106,8 +114,9 @@ func get_ids() -> Array[StringName]:
 
 ## A player-facing name for refusals: "the boatyard".
 static func describe(facility: StringName) -> String:
-	return {GROCERY: Loc.t("grocery store"), BOATYARD: "boatyard", GO_ASHORE: Loc.t("place to go ashore"),
-		HAUL_OUT: Loc.t("yard that can haul boats out")}.get(facility, String(facility))
+	return {GROCERY: Loc.t("grocery store"), BOATYARD: Loc.t("boatyard"), GO_ASHORE: Loc.t("place to go ashore"),
+		HAUL_OUT: Loc.t("yard that can haul boats out"), CHANDLERY: Loc.t("chandlery"), SAILMAKER: Loc.t("sailmaker"),
+		FISHMONGER: Loc.t("fishmonger")}.get(facility, String(facility))
 
 
 ## How each service is shown in a destination preview (Iteration 17), in
@@ -118,6 +127,9 @@ const PREVIEW := [
 	[GROCERY, "Groceries", "food and water"],
 	[BOATYARD, "Boatyard", "repairs, care, other boats"],
 	[HAUL_OUT, "Haul-out", "bottom cleaning, hard coating"],
+	[CHANDLERY, "Chandlery", "gear and cabin things"],
+	[SAILMAKER, "Sailmaker", "sail care, new sailcloth"],
+	[FISHMONGER, "Fishmonger", "sells your catch"],
 	[GO_ASHORE, "Go ashore", ""],
 ]
 
@@ -131,6 +143,6 @@ static func describe_services(port_id: StringName, brief := false) -> String:
 	var parts := PackedStringArray()
 	for entry: Array in PREVIEW:
 		if facilities.has(entry[0]):
-			parts.append(entry[1] if brief or String(entry[2]).is_empty() else "%s (%s)" % [entry[1], entry[2]])
+			parts.append(Loc.t(entry[1]) if brief or String(entry[2]).is_empty() else "%s (%s)" % [Loc.t(entry[1]), Loc.t(entry[2])])
 	var services := "  ·  ".join(parts) if not parts.is_empty() else Loc.t("no services")
 	return "%s: %s" % [Loc.t(TIER_NAMES[facilities.get_tier()]), services]

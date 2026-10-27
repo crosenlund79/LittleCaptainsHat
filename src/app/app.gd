@@ -482,6 +482,7 @@ func get_wheel_actions() -> Array[Dictionary]:
 		add.call(&"dream_map", Loc.t("World map"), open_dream_map)
 		add.call(&"chart", Loc.t("Chart table"), open_chart)
 		add.call(&"provisions", "Provisions", open_provisions)
+		add.call(&"cabin_home", "Make it home", func() -> void: open_cabin_home.call_deferred())
 	else:
 		if GameSession.is_underway():
 			# On/off items show a check mark read from the setting itself (Cozy Polish).
@@ -874,7 +875,50 @@ func open_grocery() -> void:
 		_refuse_facility(HarbourFacilities.GROCERY)
 		return
 	SessionLog.write("facility", {"facility": "grocery", "outcome": "opened", "port": String(GameSession.get_location_id())})
-	modals.push(GroceryMenu.new())
+	var grocery := GroceryMenu.new()
+	grocery.fishmonger_requested.connect(open_fishmonger)
+	modals.push(grocery)
+
+
+# --- Harbour trades (I020) ------------------------------------------------------------------
+
+## The fishmonger (next to the grocery store): where the catch is sold.
+func open_fishmonger() -> FishmongerMenu:
+	return _open_trade(HarbourFacilities.FISHMONGER, FishmongerMenu.new()) as FishmongerMenu
+
+
+## The chandlery (at the boatyard).
+func open_chandlery() -> ChandleryMenu:
+	var menu := ChandleryMenu.new()
+	menu.time_requested.connect(_spend_yard_time)
+	return _open_trade(HarbourFacilities.CHANDLERY, menu) as ChandleryMenu
+
+
+## The sailmaker (at the boatyard).
+func open_sailmaker() -> SailmakerMenu:
+	var menu := SailmakerMenu.new()
+	menu.time_requested.connect(_spend_yard_time)
+	return _open_trade(HarbourFacilities.SAILMAKER, menu) as SailmakerMenu
+
+
+func _open_trade(trade: StringName, menu: TradePanel) -> TradePanel:
+	if not GameSession.has_facility(trade):
+		_refuse_facility(trade)
+		menu.free()
+		return null
+	SessionLog.write("facility", {"facility": String(trade), "outcome": "opened", "port": String(GameSession.get_location_id())})
+	modals.push(menu)
+	return menu
+
+
+## "Make it home" (I020), in the cabin: which cabin things are shown aboard.
+func open_cabin_home() -> CabinHomeMenu:
+	var area := router.current_screen as BoatArea
+	if area == null or area.area_id != SessionState.AREA_INTERIOR or not modals.is_empty():
+		return null
+	var menu := CabinHomeMenu.new()
+	modals.push(menu)
+	return menu
 
 
 ## Go Ashore (Iteration 12): a small harbour event, in harbours that offer it.
@@ -1322,6 +1366,8 @@ func open_boatyard() -> void:
 	menu.vessel_chosen.connect(switch_vessel)
 	menu.grocery_requested.connect(open_grocery)
 	menu.care_requested.connect(open_boat_care)
+	menu.chandlery_requested.connect(open_chandlery)
+	menu.sailmaker_requested.connect(open_sailmaker)
 	modals.push(menu)
 
 

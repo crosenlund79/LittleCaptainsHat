@@ -94,8 +94,8 @@ func get_species(id: String) -> Dictionary:
 func get_species_name(id: String) -> String:
 	var fish := get_species(id)
 	if fish.is_empty() and not get_junk(id).is_empty():
-		return String(get_junk(id).name)
-	return String(fish.get("name", id.capitalize()))
+		return Loc.t(String(get_junk(id).name))
+	return Loc.t(String(fish.get("name", id.capitalize())))
 
 
 func get_junk(id: String) -> Dictionary:
@@ -193,7 +193,7 @@ func rarity_rank(id: String) -> int:
 
 
 func rarity_name(id: String) -> String:
-	return String(get_species(id).get("rarity", "common")).replace("_", " ")
+	return Loc.t(String(get_species(id).get("rarity", "common")).replace("_", " "))
 
 
 ## The broad sea area of `geo`: the region of the nearest harbour.

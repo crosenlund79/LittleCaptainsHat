@@ -110,24 +110,34 @@ func _test_timing_check() -> void:
 	t.check(is_equal_approx(d.check.angle - speed_before, TimingCheck.SPEED_DEG), "[skill] the needle never speeds up in a storm")
 
 
-# --- Prototype access ---------------------------------------------------------------------
+# --- Getting it (the chandlery, I020) ---------------------------------------------------------------------
 
 func _test_fitting() -> void:
 	t.check(not GameSession.has_magic_anchor(), "[magic] a new game has no Magic Anchor (the normal anchor is enough to play)")
 	t.check(GameSession.anchoring_refusal(AnchorState.KIND_MAGIC) != "", "[magic] without it, it cannot be chosen")
-	# Copenhagen has a boatyard: Boat care offers it free (prototype).
-	var menu := app.open_boat_care() as BoatCareMenu
-	if not t.check(menu != null, "(setup) Boat care opens at the Copenhagen boatyard"):
+	# Copenhagen has a boatyard: since I020 its chandlery sells it (before, a
+	# free prototype in Boat care, which now points there).
+	var care := app.open_boat_care() as BoatCareMenu
+	if not t.check(care != null, "(setup) Boat care opens at the Copenhagen boatyard"):
 		return
 	await t.frames(3)
-	var button := menu.get_magic_anchor_button()
-	t.check(button != null and button.text.contains("free") and not button.disabled, "[magic] Boat care offers the Magic Anchor, free for now (%s)" % (button.text if button else ""))
+	var hint := care.get_magic_anchor_button()
+	t.check(hint != null and hint.disabled and hint.text == "At the chandlery", "[magic] Boat care says where to find it (%s)" % (hint.text if hint else ""))
+	app.modals.clear()
+	var menu: TradePanel = app.open_chandlery()
+	if not t.check(menu != null, "(setup) the chandlery opens at the Copenhagen boatyard"):
+		return
+	await t.frames(3)
+	var button: Button = menu.get_row_button("magic_anchor")
+	var price := HarbourTrades.get_magic_anchor_price()
+	t.check(button != null and not button.disabled and button.text.contains(GameSession.format_money(price)), "[magic] the chandlery sells the Magic Anchor (%s)" % (button.text if button else ""))
 	var funds := GameSession.get_funds()
 	await t.screenshot(SHOTS[0])
 	button.pressed.emit()
 	await t.frames(2)
-	t.check(GameSession.has_magic_anchor() and GameSession.get_funds() == funds, "[magic] fitted, and nothing is charged")
+	t.check(GameSession.has_magic_anchor() and GameSession.get_funds() == funds - price, "[magic] bought once, for %s" % GameSession.format_money(price))
 	t.check(button.disabled and button.text == "Aboard", "[magic] then shown as aboard")
+	t.check(GameSession.buy_magic_anchor() != "" and GameSession.get_funds() == funds - price, "[magic] and never sold twice")
 	app.modals.clear()
 	# Kept by the captain: every boat can use it.
 	t.check_eq(GameSession.switch_vessel(&"halcyon_40"), "", "(setup) aboard the Clam 40")

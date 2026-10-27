@@ -21,7 +21,7 @@ ROOT = os.environ.get("LCH_ROOT") or os.path.dirname(os.path.dirname(os.path.dir
 SKIP_DIRS = ("src/dev/",)
 SKIP_LINE = re.compile(r"SessionLog\.write|push_warning|push_error|print\(|printerr|assert\(|\.has_method\(|get_node|"
                        r"preload\(|load\(|res://|user://|StringName\(|\.connect\(|set_meta|get_meta|ProjectSettings|"
-                       r"Input\.|InputMap|is_action|_log\(|errors\.append|_fail\(|RegEx")
+                       r"Input\.|InputMap|is_action|_log\(|errors\.append|_fail\(|RegEx|\.name\s*=\s*\"")
 _TOKEN = re.compile(r'([&^]?)"((?:[^"\\]|\\.)*)"')
 
 
@@ -141,6 +141,8 @@ def collect():
     for name in ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sun", "Mon", "Tue", "Wed",
                  "Thu", "Fri", "Sat"]:
         add(name, "src/core/loc.gd", "weekday")
+    for name in ["common", "uncommon", "rare", "very rare"]:  # FishingCatalog.rarity_name
+        add(name, "src/fishing/fishing_catalog.gd")
     for name in ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]:
         add(name, "src/weather/wind_field.gd", "compass")
     return entries

@@ -87,6 +87,11 @@ var spinnaker_pole := 270.0
 var spinnaker_depth := 560.0
 ## Sail sprites (null = procedural).
 var main_texture: Texture2D
+## The sailcloth (I020, the sailmaker): the drawn sails' colours, and a tint
+## for sail sprites (white for the classic cream). A look only.
+var sail_colour := SAIL
+var sail_shade := SAIL_SHADE
+var cloth_tint := Color.WHITE
 var jib_texture: Texture2D
 var spinnaker_texture: Texture2D
 var boom_texture: Texture2D
@@ -128,6 +133,15 @@ static func _marker(markers: Node, marker_name: String, fallback: Vector2) -> Ve
 
 
 ## Uses the sail sprites of a visual profile (missing ones stay procedural).
+## Sails of `cloth` (HarbourTrades sail cloth id).
+func set_cloth(cloth: String) -> void:
+	var colours := HarbourTrades.sail_colours(cloth)
+	sail_colour = colours[0]
+	sail_shade = colours[1]
+	cloth_tint = Color(sail_colour.r / SAIL.r, sail_colour.g / SAIL.g, sail_colour.b / SAIL.b).clamp()
+	queue_redraw()
+
+
 func apply_profile(profile: VesselVisualProfile) -> void:
 	main_texture = profile.get_texture(&"MainSailVisual") if profile else null
 	jib_texture = profile.get_texture(&"HeadSailVisual") if profile else null
@@ -316,13 +330,13 @@ func _draw_main(shape: Dictionary) -> void:
 		else:
 			var outline := leech.duplicate()
 			outline.append_array(_inner(_curve(clew, mast, shape.foot_control, 8)))
-			draw_colored_polygon(outline, Color(SAIL, set_amount))
+			draw_colored_polygon(outline, Color(sail_colour, set_amount))
 			draw_polyline(leech, Color(SAIL_EDGE, set_amount), 2.0, true)
 			# Battens.
 			for t in [0.3, 0.55, 0.8]:
 				var on_boom := mast.lerp(clew, t)
 				var on_leech := leech[roundi(t * (leech.size() - 1))]
-				draw_line(on_boom, on_leech, Color(SAIL_SHADE, set_amount), 2.0, true)
+				draw_line(on_boom, on_leech, Color(sail_shade, set_amount), 2.0, true)
 		# Main sheet to the traveller in the cockpit.
 		draw_line(clew, traveller, Color(SHEET, set_amount * 0.8), 1.5, true)
 	# Boom (and the sail cover on it when furled).
@@ -337,7 +351,7 @@ func _draw_main(shape: Dictionary) -> void:
 func _draw_jib(shape: Dictionary) -> void:
 	if set_amount <= 0.01 or spinnaker_amount >= 0.99:
 		# Rolled up on the forestay (roller furling).
-		draw_line(_furled_jib_start(), tack, Color(SAIL_SHADE, 0.9), 6.0, true)
+		draw_line(_furled_jib_start(), tack, Color(sail_shade, 0.9), 6.0, true)
 		return
 	var shown := set_amount * (1.0 - spinnaker_amount)
 	var clew: Vector2 = shape.clew
@@ -347,12 +361,12 @@ func _draw_jib(shape: Dictionary) -> void:
 	else:
 		var outline: PackedVector2Array = leech.duplicate()
 		outline.append_array(_inner(_curve(clew, tack, shape.foot_control, 6)))
-		draw_colored_polygon(outline, Color(SAIL, shown))
+		draw_colored_polygon(outline, Color(sail_colour, shown))
 		draw_polyline(outline, Color(SAIL_EDGE, shown), 2.0, true)
 	# Jib sheet to the leeward winch.
 	var lee := signf(jib_angle_deg) if jib_angle_deg != 0.0 else 1.0
 	draw_line(clew, Vector2(jib_sheet_lead.x, absf(jib_sheet_lead.y) * lee), Color(SHEET, shown * 0.8), 1.5, true)
-	draw_line(_furled_jib_start(), tack, Color(SAIL_SHADE, 1.0 - shown), 6.0, true)
+	draw_line(_furled_jib_start(), tack, Color(sail_shade, 1.0 - shown), 6.0, true)
 
 
 ## Where the rolled-up jib starts along the forestay (just ahead of the mast).
@@ -406,7 +420,7 @@ func _draw_textured_sail(outer: PackedVector2Array, inner: PackedVector2Array, t
 		points.append(inner[i])
 		uvs.append(Vector2(u, 1.0))
 	colors.resize(points.size())
-	colors.fill(Color(1, 1, 1, alpha))
+	colors.fill(Color(cloth_tint, alpha))
 	var indices := PackedInt32Array()
 	for i in count - 1:
 		var a := i * 2

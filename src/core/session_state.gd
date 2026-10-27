@@ -100,6 +100,9 @@ var anchor := AnchorState.new()
 ## Each boat's care record (Iteration 14): wear, fitted equipment, service
 ## history; by vessel id. A boat without one gets a fresh record on first use.
 var boat_care := {}
+## A boat of your own (I020): cabin things and sailcloth, per boat. Optional
+## in saves (older saves: plain cabins, classic sails).
+var home := HomeState.new()
 
 
 static func create_new(start_location: StringName, start_area: StringName, start_spawn: StringName,
@@ -166,6 +169,7 @@ func duplicate_state() -> SessionState:
 	copy.anchor = anchor.duplicate_state()
 	for id: String in boat_care:
 		copy.boat_care[id] = (boat_care[id] as BoatCareState).duplicate_state()
+	copy.home = home.duplicate_home()
 	return copy
 
 
@@ -225,6 +229,7 @@ func to_dict() -> Dictionary:
 		"galley": galley.to_dict(),
 		"anchor": anchor.to_dict(),
 		"boat_care": _boat_care_dict(),
+		"home": home.to_dict(),
 		"navigation": {
 			"location_id": String(location_id),
 			"planned_route": planned_route.to_dict() if planned_route else null,
@@ -380,6 +385,8 @@ static func from_dict(data: Variant, errors: Array[String]) -> SessionState:
 		if record == null:
 			return null
 		state.boat_care[String(id)] = record
+	# I020, optional: older saves have plain cabins and classic sails.
+	state.home = HomeState.from_dict(data.get("home"))
 
 	var navigation: Variant = data.get("navigation")
 	if not navigation is Dictionary:

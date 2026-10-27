@@ -141,6 +141,7 @@ func apply_visual_profile(profile: VesselVisualProfile) -> void:
 	var rig := get_node_or_null("SailRig") as SailRig
 	if rig:
 		rig.apply_profile(profile)
+		rig.set_cloth(GameSession.get_sail_cloth())
 	update_fenders()
 
 
@@ -920,6 +921,74 @@ func _setup_aboard_gear() -> void:
 			# A board to look at: like the companion, it never takes the E key
 			# from a station nearby unless the captain stands closer to it.
 			station.focus_priority = -1
+		setup_decor()
+	if not GameSession.home_changed.is_connected(_on_home_changed):
+		GameSession.home_changed.connect(_on_home_changed)
+
+
+## A boat of your own (I020): the Captain's cabin things shown aboard this
+## boat (GameSession.get_cabin_decor), each in a place found from the cabin
+## (CabinDecor.place_all), clear of every station, companion spot and fitted
+## gear. Rebuilt when the choice changes. Returns the placed things by id.
+func setup_decor() -> Dictionary:
+	for old in get_children():
+		if old is CabinDecor:
+			old.queue_free()
+	var visual := get_node_or_null(^"Visual")
+	if visual:
+		for old in visual.get_children():
+			if old is CabinDecor:
+				old.queue_free()
+	var items := GameSession.get_cabin_decor()
+	if area_id != SessionState.AREA_INTERIOR or items.is_empty() or not has_node(^"Layout/Stations"):
+		return {}
+	var avoid: Array[Vector2] = []
+	for station in get_node(^"Layout/Stations").get_children():
+		if station is Node2D:
+			avoid.append((station as Node2D).position)
+	var spots := get_node_or_null(^"Layout/CompanionSpots")
+	if spots:
+		for marker in spots.get_children():
+			if marker is Node2D:
+				avoid.append((marker as Node2D).position)
+	for gear_name in [^"TrophyBoard", ^"GalleyStove", ^"TableMug", ^"Layout/HatSpot"]:
+		var gear := get_node_or_null(gear_name) as Node2D
+		if gear:
+			avoid.append(gear.position)
+	var fixtures: Array[PackedVector2Array] = []
+	for fixture in get_node(^"Layout/Collision").get_children():
+		if fixture is BoatFixture:
+			fixtures.append((fixture as BoatFixture).transform * (fixture as BoatFixture).get_points())
+	var ordered: Array[String] = []
+	for item: Dictionary in HarbourTrades.get_decor():
+		if String(item.id) in items:
+			ordered.append(String(item.id))
+	var placed := CabinDecor.place_all(ordered, _cabin_polygon(), fixtures, avoid)
+	for id: String in placed:
+		var decor := CabinDecor.new()
+		decor.name = "Decor_%s" % id
+		decor.item_id = id
+		decor.position = placed[id][0]
+		decor.side = placed[id][1]
+		var base := visual.get_node_or_null(^"CabinBase") if visual else null
+		if decor.side == 0.0 and base:
+			# The rug lies on the cabin sole, under the furniture.
+			visual.add_child(decor)
+			visual.move_child(decor, base.get_index() + 1)
+		else:
+			add_child(decor)
+			move_child(decor, get_node(^"Layout").get_index())
+	return placed
+
+
+func _on_home_changed() -> void:
+	if not is_inside_tree():
+		return
+	var rig := get_node_or_null(^"SailRig") as SailRig
+	if rig:
+		rig.set_cloth(GameSession.get_sail_cloth())
+	if area_id == SessionState.AREA_INTERIOR:
+		setup_decor()
 
 
 ## A mug set down below stands on the saloon table; its station (picking it

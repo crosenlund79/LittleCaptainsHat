@@ -7189,3 +7189,225 @@ msgstr "stang"
 
 msgid "menu"
 msgstr "menu"
+
+msgid "A gimballed brass lamp. It does not light the cabin much, but it makes it cosy."
+msgstr "En slingrebøjlet messinglampe. Den lyser ikke meget op, men den gør kahytten hyggelig."
+
+msgid "A print of an old chart of the Kattegat, in a plain oak frame."
+msgstr "Et tryk af et gammelt søkort over Kattegat i en enkel egetræsramme."
+
+msgid "A round rag rug, braided from old sail ties. Warm underfoot on a cold morning."
+msgstr "Et rundt kludetæppe, flettet af gamle sejlbånd. Varmt under fødderne en kold morgen."
+
+msgid "A short shelf with a fiddle rail and a row of well-thumbed sea stories."
+msgstr "En kort hylde med slingrekant og en række godt læste sømandshistorier."
+
+msgid "A soft sea blue, cut by the same pattern. Purely a look: the sails draw exactly as before."
+msgstr "En blød havblå, skåret efter samme mønster. Kun udseendet: sejlene trækker præcis som før."
+
+msgid "A string of small signal flags. Read them right and they say \"welcome aboard\"."
+msgstr "En snor med små signalflag. Læst rigtigt siger de \"velkommen om bord\"."
+
+msgid "Basil, thyme and a stubborn chive, in a pot that sits snug against the hull."
+msgstr "Basilikum, timian og et stædigt purløg i en potte, der står lunt op ad skroget."
+
+msgid "Braided rug"
+msgstr "Flettet tæppe"
+
+msgid "Brass oil lamp"
+msgstr "Messingolielampe"
+
+msgid "Classic cream"
+msgstr "Klassisk creme"
+
+msgid "Framed old chart"
+msgstr "Gammelt søkort i ramme"
+
+msgid "Harbour blue"
+msgstr "Havneblå"
+
+msgid "Pot of herbs"
+msgstr "Krydderurter i potte"
+
+msgid "Shelf of sea stories"
+msgstr "Hylde med sømandshistorier"
+
+msgid "Signal-flag bunting"
+msgstr "Signalflag på snor"
+
+msgid "Tanbark"
+msgstr "Barket"
+
+msgid "The boat's own cream sailcloth."
+msgstr "Bådens egen cremefarvede sejldug."
+
+msgid "The warm red-brown of the old working boats. Purely a look: the sails draw exactly as before."
+msgstr "De gamle arbejdsbådes varme rødbrune. Kun udseendet: sejlene trækker præcis som før."
+
+msgid "Make it home"
+msgstr "Gør det hjemligt"
+
+msgid "Fish can be sold at a harbour fishmonger, while moored."
+msgstr "Fisk kan sælges hos en fiskehandler i havnen, mens båden ligger fortøjet."
+
+msgid "The cool box is empty."
+msgstr "Køleboksen er tom."
+
+msgid "Unknown item."
+msgstr "Ukendt vare."
+
+msgid "You already have it."
+msgstr "Den har du allerede."
+
+msgid "You do not have that yet: the chandlery sells it."
+msgstr "Den har du ikke endnu: skibshandlen sælger den."
+
+msgid "Unknown sailcloth."
+msgstr "Ukendt sejldug."
+
+msgid "The sails are already that cloth."
+msgstr "Sejlene er allerede af den dug."
+
+msgid "boatyard"
+msgstr "bådeværft"
+
+msgid "chandlery"
+msgstr "skibshandel"
+
+msgid "sailmaker"
+msgstr "sejlmager"
+
+msgid "fishmonger"
+msgstr "fiskehandler"
+
+msgid "Chandlery"
+msgstr "Skibshandel"
+
+msgid "gear and cabin things"
+msgstr "udstyr og ting til kahytten"
+
+msgid "Sailmaker"
+msgstr "Sejlmager"
+
+msgid "sail care, new sailcloth"
+msgstr "sejlpleje, ny sejldug"
+
+msgid "Fishmonger"
+msgstr "Fiskehandler"
+
+msgid "sells your catch"
+msgstr "køber din fangst"
+
+msgid "Sold at the chandlery, next to the yard."
+msgstr "Sælges i skibshandlen ved siden af værftet."
+
+msgid "Aboard"
+msgstr "Om bord"
+
+msgid "At the chandlery"
+msgstr "I skibshandlen"
+
+msgid "Sailmaker…"
+msgstr "Sejlmager…"
+
+msgid "Chandlery…"
+msgstr "Skibshandel…"
+
+msgid "The small things that make the %s yours. Each appears in the cabin at once; put it away any time."
+msgstr "De små ting, der gør %s til din. Hver ting dukker op i kahytten med det samme; læg den væk, når du vil."
+
+msgid "At the chandlery (%s)"
+msgstr "I skibshandlen (%s)"
+
+msgid "Put away"
+msgstr "Læg væk"
+
+msgid "Show it"
+msgstr "Sæt frem"
+
+msgid "Rope, shackles, lamp oil and good advice. What you buy here is yours at once."
+msgstr "Tovværk, sjækler, lampeolie og gode råd. Det, du køber her, er dit med det samme."
+
+msgid "A clever anchor for deep water, where an ordinary one cannot reach the bottom. For every boat you sail."
+msgstr "Et snedigt anker til dybt vand, hvor et almindeligt ikke kan nå bunden. Til alle de både, du sejler."
+
+msgid "Buy (%s)"
+msgstr "Køb (%s)"
+
+msgid "Buy (%s)  ·  %d aboard"
+msgstr "Køb (%s)  ·  %d om bord"
+
+msgid "Yours"
+msgstr "Din"
+
+msgid "The Magic Anchor is aboard. Choose it at the windlass when the water is deep."
+msgstr "Det magiske anker er om bord. Vælg det ved ankerspillet, når vandet er dybt."
+
+msgid "%s is yours. Show it aboard with \"Make it home\" (Q, in the cabin)."
+msgstr "%s er din. Sæt den frem om bord med \"Gør det hjemligt\" (Q, i kahytten)."
+
+msgid "%s at the fish counter weighs each fish and pays on the spot. Your trophies and records stay in the Captain's Log."
+msgstr "%s ved fiskedisken vejer hver fisk og betaler med det samme. Dine trofæer og rekorder bliver i Logbogen."
+
+msgid "The cool box is empty. Come back with a catch!"
+msgstr "Køleboksen er tom. Kom igen med en fangst!"
+
+msgid "Sell all (%s)"
+msgstr "Sælg alle (%s)"
+
+msgid "To the fishmonger (%s)…"
+msgstr "Til fiskehandleren (%s)…"
+
+msgid "The sail loft smells of canvas and beeswax. Care for the %s's sails, or a new look."
+msgstr "Sejlloftet dufter af sejldug og bivoks. Pleje af sejlene på %s, eller et nyt udseende."
+
+msgid "Sails restitched, sheets and halyards renewed, the rig checked: worn sails and rigging cost speed."
+msgstr "Sejlene syet efter, skøder og fald fornyet, riggen efterset: slidte sejl og rigning koster fart."
+
+msgid "Service (%s)"
+msgstr "Service (%s)"
+
+msgid "On the boat"
+msgstr "På båden"
+
+msgid "Bend on again (free)"
+msgstr "Slå under igen (gratis)"
+
+msgid "Order (%s)"
+msgstr "Bestil (%s)"
+
+msgid "The %s now carries %s sails."
+msgstr "%s fører nu %s sejl."
+
+msgid "Funds"
+msgstr "Midler"
+
+msgid "Your funds: %s"
+msgstr "Dine midler: %s"
+
+msgid "For the boat"
+msgstr "Til båden"
+
+msgid "Fishing tackle"
+msgstr "Fiskegrej"
+
+msgid "For the cabin"
+msgstr "Til kahytten"
+
+msgid "Care (the boat sails better)"
+msgstr "Pleje (båden sejler bedre)"
+
+msgid "Sailcloth (a look only: no change in speed)"
+msgstr "Sejldug (kun udseendet: ingen forskel i fart)"
+
+msgid "common"
+msgstr "almindelig"
+
+msgid "uncommon"
+msgstr "usædvanlig"
+
+msgid "rare"
+msgstr "sjælden"
+
+msgid "very rare"
+msgstr "meget sjælden"

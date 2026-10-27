@@ -1245,6 +1245,43 @@ with `t` (UTC), `event` and, during a game, `game` (game time).
   without the log and gets the same result. `-- --no-session-log` turns it
   off. Tests write to `user://test_diagnostics`.
 
+## A Boat of Your Own (I020, 0.107a)
+
+Harbour trades and a cabin that feels like home. Report: `docs/iterations/i020/`.
+
+- **Trades** (`src/harbour/harbour_trades.gd`, `HarbourTrades`, catalogue
+  `data/harbours/trades/trades.json`): the fishmonger, the chandlery and the
+  sailmaker are `HarbourFacilities` ids (`FISHMONGER`, `CHANDLERY`,
+  `SAILMAKER`) offered from each harbour's existing facility data: the
+  fishmonger with the grocery store, the other two with the boatyard. They
+  appear in the chart's harbour previews and are reached from those
+  stations (the grocery store's "To the fishmonger", the boatyard's
+  "Sailmaker…" and "Chandlery…"). No pontoon station of their own.
+- **One transaction per thing, in GameSession**: `sell_fish` / `sell_catch`
+  (the fishmonger: the catalogue's price by weight, paid exactly once, the
+  hold emptied, trophies and records kept), `buy_decor`, `buy_magic_anchor`
+  (450; before, a free prototype), `order_sail_cloth`, and the existing
+  `install_upgrade` and `perform_service` for the chandlery's gear (the
+  boat-care catalogue's weather receiver, large cool box and gimballed
+  stove: the yard's list leaves them out) and the sailmaker's rig service.
+  Each checks the trade and the funds first and changes nothing when
+  refused, so funds never go below zero and nothing is bought twice.
+- **Home** (`src/core/home_state.gd`, `SessionState.home`, optional in
+  saves): the cabin things the Captain owns (for any boat), and per vessel
+  which are shown, its sailcloth and the cloths cut for it. Stable ids only;
+  unknown ids are dropped on load.
+- **Cabin things** (`src/aboard/cabin_decor.gd`, `CabinDecor`): drawn in
+  code, no collision, no station. `BoatArea.setup_decor` places them from
+  the cabin itself (`CabinDecor.place_all`: wall things along the hull
+  sides, the rug on open floor clear of all furniture), always clear of
+  every station, companion spot and fitted gear; rebuilt on `home_changed`.
+  "Make it home" (action wheel, in the cabin; `CabinHomeMenu`) shows them or
+  puts them away, the cabin visible beside the panel as the preview.
+- **Sailcloth** (`SailRig.set_cloth`): the drawn sails' colours and a tint
+  for sail sprites. A look only: performance profiles are untouched.
+- **Shared UI**: `TradePanel` (title, intro, scrolling rows of name,
+  description and one priced button, funds, Close) for all four panels.
+
 ## The Captain's Watch (I019, 0.106a)
 
 Awareness at sea and a second language. Report: `docs/iterations/i019/`.

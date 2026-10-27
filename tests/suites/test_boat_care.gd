@@ -315,13 +315,16 @@ func _test_boatyard_ui() -> void:
 	t.check(is_equal_approx(GameSession.get_condition(), 100.0), "[ui] the hull is repaired")
 	app.toasts.clear()
 	await t.screenshot("14_12_boatyard_repairs")
-	var cool := menu.get_upgrade_button("large_cool_box")
+	# I020: gear sold over the counter (the cool box, the weather receiver,
+	# the stove) is the chandlery's; the yard fits the heavy anchor and chain.
+	t.check(menu.get_upgrade_button("large_cool_box") == null, "[ui] the cool box is the chandlery's, not the yard's")
+	var cool := menu.get_upgrade_button("heavy_anchor")
 	t.check(cool != null and not cool.disabled, "[ui] equipment is offered: %s" % (cool.text if cool else "-"))
 	(menu.find_child("Body", true, false) as ScrollContainer).ensure_control_visible(cool)
 	await t.frames(2)
 	await t.click(cool)
 	await t.frames(2)
-	t.check(GameSession.has_upgrade("large_cool_box") and cool.disabled and cool.text == "Fitted", "[ui] the cool box is fitted")
+	t.check(GameSession.has_upgrade("heavy_anchor") and cool.disabled and cool.text == "Fitted", "[ui] the heavy anchor is fitted")
 	(menu.find_child("Body", true, false) as ScrollContainer).scroll_vertical = 10000
 	await t.frames(2)
 	app.toasts.clear()

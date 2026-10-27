@@ -96,4 +96,7 @@ Arctic Wanderer 26), ship names (Nordlys, Freja, …), storm names, Next Harbor.
 | compass N NE E SE S SW W NW | N NØ Ø SØ S SV V NV (16 punkter: NNØ, ØNØ, …) |
 | months | januar … december (short: jan., feb., mar., apr., maj, jun., jul., aug., sep., okt., nov., dec.) |
 | weekdays | søndag … lørdag (short: søn., man., tirs., ons., tors., fre., lør.) |
+| chandlery, sailmaker, fishmonger | skibshandel, sejlmager, fiskehandler |
+| sailcloth, tanbark, bend on (sails) | sejldug, barket, slå under |
+| Make it home (cabin things) | Gør det hjemligt |
 | harbour names | own Danish names where Danes use them: København, Göteborg, Lissabon, Venedig, Neapel, Athen, Rom; otherwise unchanged |

@@ -13,6 +13,9 @@ extends SimplePanel
 ## Iteration 16: "Stock up for a long passage" fills both beyond the everyday
 ## 14 days, up to what this boat can stow (its passage stores).
 
+## The fishmonger next door (I020): App opens it on top.
+signal fishmonger_requested
+
 var _stores: Label
 var _price: Label
 var _note: Label
@@ -105,10 +108,12 @@ func _build_tackle() -> void:
 	_catch_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_catch_info.custom_minimum_size = Vector2(300, 0)
 	catch_row.add_child(_catch_info)
+	# I020: the catch is sold at the fishmonger next door (one place, one
+	# transaction for selling fish).
 	_sell_catch = Button.new()
-	_sell_catch.name = "SellCatchButton"
+	_sell_catch.name = "FishmongerButton"
 	_sell_catch.custom_minimum_size = Vector2(240, 0)
-	_sell_catch.pressed.connect(_on_sell_catch)
+	_sell_catch.pressed.connect(fishmonger_requested.emit)
 	catch_row.add_child(_sell_catch)
 
 
@@ -161,29 +166,14 @@ func _refresh_tackle(harbour: bool) -> void:
 		total += catalog.price(fish.species, float(fish.kg))
 	_catch_info.text = Loc.t("Your catch: %d fish in the cool box.") % fishing.hold.size() if not fishing.hold.is_empty() \
 		else Loc.t("Your catch: the cool box is empty.")
-	_sell_catch.text = Loc.t("Sell the catch (%s)") % GameSession.format_money(total)
-	_sell_catch.disabled = not harbour or fishing.hold.is_empty()
+	_sell_catch.text = Loc.t("To the fishmonger (%s)…") % GameSession.format_money(total)
+	_sell_catch.disabled = not harbour or not GameSession.has_facility(HarbourFacilities.FISHMONGER)
 
 
 func _on_buy_lure() -> void:
 	var lure: Dictionary = FishingCatalog.get_default().lures[maxi(_tackle.selected, 0)]
 	var error := GameSession.buy_lure(lure.id)
 	notify(error if not error.is_empty() else Loc.t("Bought a %s. You have %d.") % [String(lure.name).to_lower(), GameSession.get_fishing().get_lure_count(lure.id)])
-	refresh()
-
-
-## Sells every fish in the cool box.
-func _on_sell_catch() -> void:
-	var total := 0
-	var count := 0
-	for fish in GameSession.get_fishing().hold:
-		var result := GameSession.sell_fish(int(fish.uid))
-		if result.error == "":
-			total += int(result.price)
-			count += 1
-	if count > 0:
-		SessionLog.write("fishing_sold", {"count": count, "price": total, "port": String(GameSession.get_location_id())})
-		notify(Loc.t("Sold %d fish for %s.") % [count, GameSession.format_money(total)])
 	refresh()
 
 

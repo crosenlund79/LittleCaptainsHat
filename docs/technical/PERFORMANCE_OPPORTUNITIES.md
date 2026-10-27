@@ -164,6 +164,7 @@ godot --headless --path . res://tests/test_runner.tscn -- --only=turbocharge
 | Floating sea debris (Injection 1) | A fixed pool of 16, no per-frame allocation; sailing frame times unchanged (34 → 33 ms median) | Not a cause |
 | Long-session growth (nodes, connections, orphans, audio players, tweens, caches, memory) | Flat across 20 rounds (The Well-Run Ship) and 10 rounds with save/load and Long Passage (Turbocharge) | No leak shown. This does not prove none can exist: keep the growth rows in the probe |
 | Weather, router, daydream and spot caches | All bounded (`MAX_CACHE`, `LEG_CACHE_LIMIT`, 64-entry limits) | No unbounded growth |
+| I020 trade panels and cabin things | No per-frame work (panels built on open, freed on close; cabin things drawn once, redrawn on change); `--turbo` probe equal to I019 re-run in the same session (`docs/benchmarks/i019_rerun_rendered.json`, `i020_after1_rendered.json`) | Nothing to gain. Note for future comparisons: this machine drifted 3–10 % between runs hours apart; compare against a baseline re-run in the same session |
 | Disk writes during play | No autosave; one flushed log line per meaningful event; logs capped | Not a responsiveness factor |
 
 ## Hypotheses and larger rework candidates (not yet measured or approved)

@@ -87,6 +87,8 @@ signal anchor_alarm(info: Dictionary)
 ## A boat's care record changed: a service, an upgrade, or wear crossing a
 ## level (Iteration 14). Not emitted for every bit of wear.
 signal boat_care_changed
+## A boat of your own (I020): cabin things or sailcloth changed.
+signal home_changed
 ## A loaded position or course was invalid under the current chart and was
 ## moved or re-planned (Iteration 14): {kind, from, to, moved_nm, replanned}.
 signal location_recovered(info: Dictionary)
@@ -1616,8 +1618,8 @@ func release_fish(uid: int) -> bool:
 func sell_fish(uid: int) -> Dictionary:
 	if _state == null:
 		return {"error": Loc.t("No game is running."), "price": 0}
-	if not has_facility(HarbourFacilities.GROCERY):
-		return {"error": Loc.t("Fish can be sold at a harbour grocery store, while moored."), "price": 0}
+	if not has_facility(HarbourFacilities.FISHMONGER):
+		return {"error": Loc.t("Fish can be sold at a harbour fishmonger, while moored."), "price": 0}
 	var index := _state.fishing.find_in_hold(uid)
 	if index < 0:
 		return {"error": Loc.t("That fish is no longer aboard."), "price": 0}
@@ -1632,11 +1634,36 @@ func sell_fish(uid: int) -> Dictionary:
 	return {"error": "", "price": price}
 
 
-## Buys one lure at the harbour grocery store. Returns "" or the reason.
+## Sells the whole cool box at the fishmonger (I020), in one transaction:
+## every fish priced as in sell_fish(), paid once, the hold emptied. Trophies
+## and species records stay (they are the catch's history, not the fish).
+## Returns {"error", "count", "total"}.
+func sell_catch() -> Dictionary:
+	if _state == null:
+		return {"error": Loc.t("No game is running."), "count": 0, "total": 0}
+	if not has_facility(HarbourFacilities.FISHMONGER):
+		return {"error": facility_refusal(HarbourFacilities.FISHMONGER), "count": 0, "total": 0}
+	if _state.fishing.hold.is_empty():
+		return {"error": Loc.t("The cool box is empty."), "count": 0, "total": 0}
+	var catalog := FishingCatalog.get_default()
+	var total := 0
+	for fish: Dictionary in _state.fishing.hold:
+		total += catalog.price(fish.species, float(fish.kg))
+	var count := _state.fishing.hold.size()
+	_state.fishing.hold.clear()
+	_state.fishing.sold += count
+	_state.funds += total
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	fishing_changed.emit()
+	return {"error": "", "count": count, "total": total}
+
+
+## Buys one lure at the grocery store or the chandlery. Returns "" or the reason.
 func buy_lure(lure_id: String) -> String:
 	if _state == null:
 		return Loc.t("No game is running.")
-	if not has_facility(HarbourFacilities.GROCERY):
+	if not has_facility(HarbourFacilities.GROCERY) and not has_facility(HarbourFacilities.CHANDLERY):
 		return facility_refusal(HarbourFacilities.GROCERY)
 	var lure := FishingCatalog.get_default().get_lure(lure_id)
 	if lure.is_empty():
@@ -1936,6 +1963,106 @@ const MAGIC_ANCHOR_TEXT := "For waters where the charts grow uncertain. A little
 
 ## The captain owns the Magic Anchor (kept with the captain, so it goes to any
 ## boat; a progress mark in the save, no new field).
+# --- A boat of your own (I020) ------------------------------------------------------------
+
+func get_home() -> HomeState:
+	return _state.home if _state else HomeState.new()
+
+
+## The cabin things shown aboard `vessel_id` (the boat aboard by default).
+func get_cabin_decor(vessel_id: StringName = &"") -> Array[String]:
+	return _state.home.get_decor(vessel_id if vessel_id != &"" else _state.vessel_id) if _state else ([] as Array[String])
+
+
+## Buys a cabin thing at the chandlery: once (it is the Captain's, for any
+## boat), paid in full or not at all. Returns "" or why not.
+func buy_decor(id: String) -> String:
+	if _state == null:
+		return Loc.t("No game is running.")
+	var item := HarbourTrades.get_decor_item(id)
+	if item.is_empty():
+		return Loc.t("Unknown item.")
+	if not has_facility(HarbourFacilities.CHANDLERY):
+		return facility_refusal(HarbourFacilities.CHANDLERY)
+	if _state.home.owns_decor(id):
+		return Loc.t("You already have it.")
+	var price := int(item.price)
+	if price > _state.funds:
+		return Loc.t("Not enough money: %s needed.") % format_money(price)
+	_state.funds -= price
+	_state.home.owned_decor.append(id)
+	_has_unsaved_changes = true
+	funds_changed.emit(_state.funds)
+	home_changed.emit()
+	return ""
+
+
+## Shows (or puts away) one of the Captain's cabin things aboard the boat
+## the Captain is on. Anywhere, any time: it is your cabin. Returns "" or why not.
+func set_cabin_decor(id: String, shown: bool) -> String:
+	if _state == null:
+		return Loc.t("No game is running.")
+	if not _state.home.owns_decor(id):
+		return Loc.t("You do not have that yet: the chandlery sells it.")
+	_state.home.set_decor_shown(_state.vessel_id, id, shown)
+	_has_unsaved_changes = true
+	home_changed.emit()
+	return ""
+
+
+## The sailcloth of `vessel_id` (the boat aboard by default).
+func get_sail_cloth(vessel_id: StringName = &"") -> String:
+	return _state.home.get_sails(vessel_id if vessel_id != &"" else _state.vessel_id) if _state else HarbourTrades.CLASSIC_CLOTH
+
+
+## What the sailmaker asks to cut sails of `cloth` for this boat: 0 when the
+## boat already has them (they are bent on again for nothing).
+func sail_cloth_price(cloth: String) -> int:
+	if _state == null or _state.home.has_cloth(_state.vessel_id, cloth):
+		return 0
+	return HarbourTrades.sail_cloth_price(cloth, get_base_vessel_profile().length_ft)
+
+
+## The sailmaker cuts (or bends on again) sails of `cloth` for the boat
+## aboard. A look only: the sails draw exactly as before. Returns "" or why not.
+func order_sail_cloth(cloth: String) -> String:
+	if _state == null:
+		return Loc.t("No game is running.")
+	if HarbourTrades.get_sail_cloth(cloth).is_empty():
+		return Loc.t("Unknown sailcloth.")
+	if not has_facility(HarbourFacilities.SAILMAKER):
+		return facility_refusal(HarbourFacilities.SAILMAKER)
+	if get_sail_cloth() == cloth:
+		return Loc.t("The sails are already that cloth.")
+	var price := sail_cloth_price(cloth)
+	if price > _state.funds:
+		return Loc.t("Not enough money: %s needed.") % format_money(price)
+	_state.funds -= price
+	_state.home.set_sails(_state.vessel_id, cloth)
+	_has_unsaved_changes = true
+	if price > 0:
+		funds_changed.emit(_state.funds)
+	home_changed.emit()
+	return ""
+
+
+## The Magic Anchor at the chandlery (I020; before, a free prototype at the
+## boatyard). Once, for every boat. Returns "" or why not.
+func buy_magic_anchor() -> String:
+	if _state == null:
+		return Loc.t("No game is running.")
+	if has_magic_anchor():
+		return Loc.t("The Magic Anchor is already aboard.")
+	if not has_facility(HarbourFacilities.CHANDLERY):
+		return facility_refusal(HarbourFacilities.CHANDLERY)
+	var price := HarbourTrades.get_magic_anchor_price()
+	if price > _state.funds:
+		return Loc.t("Not enough money: %s needed.") % format_money(price)
+	_state.funds -= price
+	funds_changed.emit(_state.funds)
+	return fit_magic_anchor()
+
+
 func has_magic_anchor() -> bool:
 	return _state != null and _state.progress.is_completed(MAGIC_ANCHOR_MARK)
 

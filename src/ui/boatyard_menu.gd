@@ -24,6 +24,12 @@ signal vessel_chosen(vessel_id: StringName)
 signal care_requested
 ## The player wants the grocery store (App opens it on top of the boatyard).
 signal grocery_requested
+## The harbour trades at the yard (I020): the chandlery and the sailmaker.
+signal chandlery_requested
+signal sailmaker_requested
+
+var _chandlery: Button
+var _sailmaker: Button
 
 ## Conditions used for the comparison table.
 const COMPARE_WIND_KN := 12.0
@@ -73,6 +79,9 @@ func _ready() -> void:
 	%CloseButton.pressed.connect(close)
 	_care.pressed.connect(care_requested.emit)
 	_grocery.pressed.connect(grocery_requested.emit)
+	# I020: the yard's neighbours, beside Boat care.
+	_sailmaker = _trade_button("SailmakerButton", "Sailmaker…", sailmaker_requested.emit)
+	_chandlery = _trade_button("ChandleryButton", "Chandlery…", chandlery_requested.emit)
 	resized.connect(_fit_panel)
 	_fit_panel()
 	select(GameSession.get_vessel_id())
@@ -81,6 +90,16 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if is_visible_in_tree():
 		_update_services()
+
+
+func _trade_button(node_name: String, text: String, action: Callable) -> Button:
+	var button := Button.new()
+	button.name = node_name
+	button.text = text
+	button.custom_minimum_size = _care.custom_minimum_size
+	button.pressed.connect(action)
+	_care.add_sibling(button)
+	return button
 
 
 ## Keeps the panel at PANEL_SIZE, or as large as the window allows.
@@ -104,7 +123,9 @@ func _update_services() -> void:
 		Provisions.format_days(provisions.food_days), Provisions.format_days(provisions.water_days)]
 	var level := BoatCare.overall_level(GameSession.get_boat_care(), GameSession.get_condition(), GameSession.get_game_time())
 	_care.disabled = not GameSession.is_moored_in_harbour()
-	_care.text = "Boat care…" if level in [BoatCare.LEVEL_GOOD, BoatCare.LEVEL_COSMETIC] else Loc.t("Boat care (%s)…") % BoatCare.LEVEL_NAMES[level].to_lower()
+	_care.text = "Boat care…" if level in [BoatCare.LEVEL_GOOD, BoatCare.LEVEL_COSMETIC] else Loc.t("Boat care (%s)…") % Loc.t(BoatCare.LEVEL_NAMES[level]).to_lower()
+	_sailmaker.visible = GameSession.has_facility(HarbourFacilities.SAILMAKER)
+	_chandlery.visible = GameSession.has_facility(HarbourFacilities.CHANDLERY)
 	var store := GameSession.has_facility(HarbourFacilities.GROCERY)
 	_grocery.disabled = not store or provisions.is_full(GameSession.get_passage_store_days())
 	_grocery.visible = store
