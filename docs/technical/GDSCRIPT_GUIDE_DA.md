@@ -682,7 +682,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_area.gd`
 
 **Formål:** Hjertet i hver dæks- og kahytsscene: den placerer Kaptajnen, sætter alt om bord op og gør "tryk på E ved noget" til ønsker, som spillet tager sig af.
-- **Hvad det gør:** Ved indlæsning lægger den bådens grafik på og tilføjer lys, vejr, liv i vandet, ankertegn, ledsageren på dækket, fiskestang, ankerspil, komfur, trofætavle, kaffepladser og kahytspynt. Den styrer kameraet (bredere under sejlads, drejet efter kursen, følger dig i land), gangen ud på pontonen i havnen og den korte ankomst til kaj. Når du bruger en station, sender den et signal (en besked et objekt sender, som andre kan lytte efter), f.eks. åbn søkort, sov eller lav mad, som app'en tager sig af; den åbner aldrig selv menuer.
+- **Hvad det gør:** Ved indlæsning lægger den bådens grafik på og tilføjer lys, vejr, liv i vandet, ankertegn, ledsageren på dækket, fiskestang, ankerspil, komfur, trofætavle, kaffepladser og kahytspynt. Den styrer kameraet (bredere under sejlads, drejet efter kursen, følger dig i land), gangen ud på pontonen i havnen og den korte ankomst til kaj. Når du bruger en station, sender den et signal (en besked et objekt sender, som andre kan lytte efter), f.eks. åbn søkort, sov eller lav mad, som app'en tager sig af; den åbner aldrig selv menuer. Når du kæler for ledsageren, viser den en gang imellem et venligt ord (`CompanionRemarks`), eller et venligt blik, når hænderne er fulde.
 - **Arbejder sammen med:** `GameSession`, `Player`, `Interactable`, `VesselVisual`, `SailRig`, `BoatLighting`, `ShoreAccess`, `HarbourDressing`, `WaterLife`, `App` (som lytter efter dens ønsker).
 - **Holder styr på:** Kameraindstillinger, stationerne i land og ankomst-animationen; den skriver Kaptajnens position tilbage til spillets tilstand.
 - **Hvornår det kører:** Når du er på dækket eller i kahytten.
@@ -987,6 +987,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Når ledsagerens billeder indlæses.
 - **Hvis du ændrer det:** Hvilket billede der vises for en stilling, og hvordan det placeres; en manglende fil får blot den stilling til at falde tilbage til en anden.
 
+### `src/companion/companion_remarks.gd`
+
+**Formål:** De venlige ord, Kaptajnen siger, når han kæler for skibets kat eller hund.
+- **Hvad det gør:** Har nogle få korte bemærkninger til en kat og til en hund ("Sikke en dejlig lille spinden."), vælger den næste, så den samme linje aldrig kommer to gange i træk, og oversætter den til det aktuelle sprog. Den er klar til en ledsager med navn og køn: så bruger den linjer med navnet ("Hvem er en dygtig pige, Freja?"), og navnet sættes ind præcis som det er skrevet. Giver også linjen om, at hænderne er fulde.
+- **Arbejder sammen med:** `CompanionState` (hvem ledsageren er), `Loc` (engelsk eller dansk), `ShipCompanion` (som beder om en bemærkning, når der bliver kælet) og `BoatArea` (som viser den).
+- **Holder styr på:** Intet; linjerne står fast i scriptet.
+- **Hvornår det kører:** Når du kæler for ledsageren (højst én bemærkning hvert 15. sekund) eller prøver med fulde hænder.
+- **Hvis du ændrer det:** Hvad Kaptajnen siger, når han kæler; nye linjer skal have en dansk oversættelse i `locale/da.po`.
+
 ### `src/companion/companion_state.gd`
 
 **Formål:** De gemte oplysninger om skibets ledsager: kat eller hund, hvor den hviler, og om den er i kahytten eller på dækket.
@@ -1017,7 +1026,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/companion/ship_companion.gd`
 
 **Formål:** Katten eller hunden, som du ser og kan kæle for, i kahytten eller på dækket.
-- **Hvad det gør:** Viser ledsageren på dens hvilested med stillingsbilleder (hviler, sover, strækker sig, kigger op) eller et enkelt tegnet dyr, hvis der ikke er billeder. Tryk på E kæler for den: katten spinder og viser hjerter, hunden pruster og logrer. Når den skifter mellem kahyt og dæk, mens du ser på, går den derhen. På en rolig ankerplads krøller den sig sammen og tager lange lure.
+- **Hvad det gør:** Viser ledsageren på dens hvilested med stillingsbilleder (hviler, sover, strækker sig, kigger op) eller et enkelt tegnet dyr, hvis der ikke er billeder. Tryk på E kæler for den: katten spinder og viser hjerter, hunden pruster og logrer, og en gang imellem (højst hvert 15. sekund) siger Kaptajnen et venligt ord, valgt af `CompanionRemarks`. Når den skifter mellem kahyt og dæk, mens du ser på, går den derhen. På en rolig ankerplads krøller den sig sammen og tager lange lure.
 - **Arbejder sammen med:** `GameSession` og `CompanionState` (hvor den skal være), `CompanionVisualSet` (billeder), `DeckCompanionSpots` (steder og ruter på dækket), `AudioManager` (lyde), `Interactable` og `HighlightResolver` (kæl og glød), `SessionLog`. Placeret i hver kahyts scene og bygget på dækket af `BoatArea`; bruges også som forhåndsvisning i menuen for nyt spil.
 - **Holder styr på:** Kun hvordan den ser ud lige nu (stilling, gåtur, reaktion); intet gemmes.
 - **Hvornår det kører:** Når kahytten eller dækket er på skærmen.
@@ -1927,6 +1936,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Kun i test.
 - **Hvis du ændrer det:** Kun tjekkene ændrer sig. Flytter du beslag på dækket eller ændrer dækkets omrids, kan den fejle.
 
+### `tests/suites/test_companion_remarks.gd`
+
+**Formål:** Tjekker de venlige ord, når der bliver kælet for ledsageren.
+- **Hvad det gør:** Tjekker, at katte og hunde har deres egne linjer, at den samme linje aldrig kommer to gange i træk, linjerne "dygtig pige"/"dygtig dreng" for en hund med navn, at et navn med danske bogstaver bevares præcist, de danske linjer og sprogskift, at kæle for en kat og en hund i kahytten (reaktionen kommer stadig, en bemærkning kommer, ikke igen med det samme, en anden senere), reglen om fulde hænder, og at gemte spil er uændrede.
+- **Arbejder sammen med:** `CompanionRemarks`, `ShipCompanion`, `BoatArea`, `GameSession`, `SettingsManager`.
+- **Holder styr på:** Intet.
+- **Hvornår det kører:** I testkørslen (`--only=companion_remarks`).
+- **Hvis du ændrer det:** Kun testen; bemærkningernes ordlyd tjekkes via deres engelske nøgler.
+
 ### `tests/suites/test_cozy_patch.gd`
 
 **Formål:** Tjekker den lille rettelse efter 0.105b: at klappe katten mens hun går, fiskebilleder på trofætavlen og Drømmerens kort (Dreamer's Map) og dets farver.
@@ -2597,7 +2615,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/test_runner.gd`
 
-**Formål:** Spillets automatiske testkører: den kører alle 72 testsamlinger og fortæller, hvor mange tjek der bestod.
+**Formål:** Spillets automatiske testkører: den kører alle 73 testsamlinger og fortæller, hvor mange tjek der bestod.
 - **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder.
 - **Arbejder sammen med:** Alle testsamlinger i `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Holder styr på:** Antal beståede/fejlede tjek og listen over fejl.

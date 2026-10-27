@@ -93,9 +93,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/boat/boat_area.gd": {
-   "sha": "52889b5f29155f8c",
+   "sha": "6f0e13675a13a9af",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
   },
   "src/boat/boat_fixture.gd": {
    "sha": "cb427e4ff17e7ac7",
@@ -177,6 +177,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "src/companion/companion_remarks.gd": {
+   "sha": "af263476051a94c8",
+   "reviewed": "2026-10-27",
+   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
+  },
   "src/companion/companion_state.gd": {
    "sha": "d574f0be431fa89e",
    "reviewed": "2026-10-27",
@@ -193,9 +198,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/companion/ship_companion.gd": {
-   "sha": "a4b1f2abe56d5c69",
+   "sha": "a57819c1d9f31bbb",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
   },
   "src/core/anchor_state.gd": {
    "sha": "fca549a2299f57e0",
@@ -1077,6 +1082,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "tests/suites/test_companion_remarks.gd": {
+   "sha": "2dd480dabf28b0e4",
+   "reviewed": "2026-10-27",
+   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
+  },
   "tests/suites/test_cozy_patch.gd": {
    "sha": "ae3214a9ef1cb04b",
    "reviewed": "2026-10-27",
@@ -1353,9 +1363,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/test_runner.gd": {
-   "sha": "b6c1ab6282b5bbce",
+   "sha": "4e61decc73375823",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
   },
   "tools/build_theme.gd": {
    "sha": "0e5953be619e13ca",

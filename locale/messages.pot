@@ -3246,7 +3246,7 @@ msgstr ""
 msgid "Travel update published: %d renown earned you %s. Funds: %s."
 msgstr ""
 
-#: src/app/app.gd:1334 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1264 src/boat/boat_area.gd:658
+#: src/app/app.gd:1334 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1268 src/boat/boat_area.gd:662
 msgid "Interactable"
 msgstr ""
 
@@ -3392,7 +3392,7 @@ msgstr ""
 msgid "Trim sails"
 msgstr ""
 
-#: src/app/app.gd:498 src/boat/boat_area.gd:882 src/ui/anchor_menu.gd:63
+#: src/app/app.gd:498 src/boat/boat_area.gd:886 src/ui/anchor_menu.gd:63
 msgid "Anchor"
 msgstr ""
 
@@ -3408,7 +3408,7 @@ msgstr ""
 msgid "Charts"
 msgstr ""
 
-#: src/app/app.gd:507 src/boat/boat_area.gd:874 src/ui/fishing_menu.gd:55
+#: src/app/app.gd:507 src/boat/boat_area.gd:878 src/ui/fishing_menu.gd:55
 msgid "Fishing rod"
 msgstr ""
 
@@ -3666,11 +3666,15 @@ msgstr ""
 msgid "OneShot%d"
 msgstr ""
 
-#: src/boat/boat_area.gd:1016
+#: src/boat/boat_area.gd:1001 src/boat/boat_lighting.gd:38 src/interaction/highlight_resolver.gd:25
+msgid "Table"
+msgstr ""
+
+#: src/boat/boat_area.gd:1020
 msgid "Your coffee"
 msgstr ""
 
-#: src/boat/boat_area.gd:1291
+#: src/boat/boat_area.gd:1295
 msgid "Captain's hat"
 msgstr ""
 
@@ -3698,15 +3702,11 @@ msgstr ""
 msgid "The cup holder, just the size of a mug. Make a coffee in the galley."
 msgstr ""
 
-#: src/boat/boat_area.gd:573
-msgid "Snøvs gets a friendly look: your hands are full (hat and coffee)."
-msgstr ""
-
 #: src/boat/boat_area.gd:67
 msgid "Take the helm"
 msgstr ""
 
-#: src/boat/boat_area.gd:673
+#: src/boat/boat_area.gd:677
 msgid "GUEST PONTOON · %s"
 msgstr ""
 
@@ -3714,7 +3714,7 @@ msgstr ""
 msgid "Check sail configuration"
 msgstr ""
 
-#: src/boat/boat_area.gd:702 src/harbour/harbour_facilities.gd:133
+#: src/boat/boat_area.gd:706 src/harbour/harbour_facilities.gd:133
 msgid "Go ashore"
 msgstr ""
 
@@ -3722,7 +3722,7 @@ msgstr ""
 msgid "Put on captain's hat"
 msgstr ""
 
-#: src/boat/boat_area.gd:715
+#: src/boat/boat_area.gd:719
 msgid "GO ASHORE"
 msgstr ""
 
@@ -3734,32 +3734,28 @@ msgstr ""
 msgid "Look at the empty hat hook"
 msgstr ""
 
-#: src/boat/boat_area.gd:874
+#: src/boat/boat_area.gd:878
 msgid "Fishing"
 msgstr ""
 
-#: src/boat/boat_area.gd:897
+#: src/boat/boat_area.gd:901
 msgid "Cup holder"
 msgstr ""
 
-#: src/boat/boat_area.gd:910 src/ui/cooking_menu.gd:70
+#: src/boat/boat_area.gd:914 src/ui/cooking_menu.gd:70
 msgid "Cook"
 msgstr ""
 
-#: src/boat/boat_area.gd:910
+#: src/boat/boat_area.gd:914
 msgid "Cook a meal or make coffee"
 msgstr ""
 
-#: src/boat/boat_area.gd:920
+#: src/boat/boat_area.gd:924
 msgid "Look at the trophy board"
 msgstr ""
 
-#: src/boat/boat_area.gd:920
+#: src/boat/boat_area.gd:924
 msgid "Trophies"
-msgstr ""
-
-#: src/boat/boat_area.gd:997 src/boat/boat_lighting.gd:38 src/interaction/highlight_resolver.gd:25
-msgid "Table"
 msgstr ""
 
 #: src/boat/boat_lighting.gd:104
@@ -4032,6 +4028,94 @@ msgstr ""
 msgid "The engine is due a service; it is a little slower under power."
 msgstr ""
 
+#: src/companion/companion_remarks.gd:106
+msgid "%s gets a friendly look: your hands are full (hat and coffee)."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:108
+msgid "The dog gets a friendly look: your hands are full (hat and coffee)."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:109
+msgid "The cat gets a friendly look: your hands are full (hat and coffee)."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:25
+msgid "You're looking especially cozy today."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:26
+msgid "What a lovely little purr."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:27
+msgid "There's my favourite little sailor."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:28
+msgid "The ship's cat, on watch as ever."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:31
+msgid "Who's a good dog?"
+msgstr ""
+
+#: src/companion/companion_remarks.gd:32
+msgid "There's my faithful first mate!"
+msgstr ""
+
+#: src/companion/companion_remarks.gd:33
+msgid "Best crew on the seven seas, that's you."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:34
+msgid "That tail could power the boat."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:40
+msgid "You're looking especially cozy today, %s."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:41
+msgid "What a lovely little purr, %s."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:42
+msgid "The ship's cat, on watch as ever. Good %s."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:45
+msgid "Who's the best companion, %s?"
+msgstr ""
+
+#: src/companion/companion_remarks.gd:46
+msgid "That tail could power the boat, %s."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:52
+msgid "There's my lovely little sailor, %s."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:53
+msgid "There's my handsome little sailor, %s."
+msgstr ""
+
+#: src/companion/companion_remarks.gd:56
+msgid "Who's a good girl, %s?"
+msgstr ""
+
+#: src/companion/companion_remarks.gd:57
+msgid "There's my good boy, %s!"
+msgstr ""
+
+#: src/companion/companion_remarks.gd:63
+msgid "Who's a good girl?"
+msgstr ""
+
+#: src/companion/companion_remarks.gd:64
+msgid "Who's a good boy?"
+msgstr ""
+
 #: src/companion/companion_visual_set.gd:36
 msgid "Placement"
 msgstr ""
@@ -4044,7 +4128,7 @@ msgstr ""
 msgid "Behaviour"
 msgstr ""
 
-#: src/companion/ship_companion.gd:411
+#: src/companion/ship_companion.gd:434
 msgid "Pet %s"
 msgstr ""
 

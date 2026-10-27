@@ -90,6 +90,13 @@ var _walk_index := 0
 var _walking_out := false
 ## How much longer the naps are while settled.
 const SETTLED_SLEEP_FACTOR := 2.5
+## A kind word when petted (CompanionRemarks): at most one per
+## REMARK_COOLDOWN_MS of real time, so petting often does not fill the
+## screen with notes. The turn is shared by every companion node in this run,
+## so the next remark is a different line wherever the companion is.
+const REMARK_COOLDOWN_MS := 15000
+static var _remark_turn := 0
+static var _last_remark_ms := -REMARK_COOLDOWN_MS
 
 
 func _ready() -> void:
@@ -147,6 +154,22 @@ func pet() -> void:
 		set_pose(CompanionVisualSet.POSE_ALERT, 60.0 if is_walking() else maxf(visual_set.alert_seconds, REACTION_SECONDS))
 	GameSession.note_companion_petted(kind)
 	petted.emit(kind)
+
+
+## The remark for this petting (in the current language), or "" while the
+## last one is recent. Each call that returns a remark moves to the next line.
+func take_remark() -> String:
+	var now := Time.get_ticks_msec()
+	if now - _last_remark_ms < REMARK_COOLDOWN_MS:
+		return ""
+	_last_remark_ms = now
+	_remark_turn += 1
+	return CompanionRemarks.remark(CompanionRemarks.identity(GameSession.get_companion()), _remark_turn - 1)
+
+
+## Lets the next petting have its remark at once (tests).
+static func reset_remark_cooldown() -> void:
+	_last_remark_ms = Time.get_ticks_msec() - REMARK_COOLDOWN_MS
 
 
 ## The boat became settled at anchor (or stopped being so). Settling shows:

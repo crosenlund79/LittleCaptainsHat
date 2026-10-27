@@ -76,6 +76,7 @@ const SUITES: Array[Script] = [
 	preload("res://tests/suites/test_captains_watch.gd"),
 	preload("res://tests/suites/test_localization.gd"),
 	preload("res://tests/suites/test_boat_of_your_own.gd"),
+	preload("res://tests/suites/test_companion_remarks.gd"),
 	preload("res://tests/suites/test_galley_and_anchor.gd"),
 	preload("res://tests/suites/test_eight_directions.gd"),
 	preload("res://tests/suites/test_catch_and_cove_journey.gd"),

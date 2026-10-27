@@ -881,14 +881,14 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_area.gd`
 
 - **Role:** class_name `BoatArea`, extends Node2D; root script of every vessel's `deck.tscn` / `cabin.tscn`; places the player, builds aboard presentation, routes interactions to signals.
-- **Depends on:** `GameSession`, `Simulation` (heading, weather), `SettingsManager`, `AudioManager`, `SessionLog`, `Loc`, `Player`, `Interactable`, `VesselVisual`, `VesselVisualProfile`, `VesselDefinition`, `SailRig`, `FenderStowage`, `HarbourDressing`, `WaterLife`, `AnchorAmbience`, `BoatLighting`, `WeatherVisuals`, `AnchorSignals`, `DeckCompanionSpots`, `ShipCompanion`, `ShoreAccess`, `HarbourFacilities`, `RodHolder`, `Windlass`, `CoffeeMug`, `GalleyStove`, `TrophyBoard`, `CabinDecor`, `HarbourTrades`, `HighlightProvider`, `HighlightResolver`, `HatHook`, `HatBlowAway`, `HatState`, `BoatFixture`.
+- **Depends on:** `GameSession`, `Simulation` (heading, weather), `SettingsManager`, `AudioManager`, `SessionLog`, `Loc`, `Player`, `Interactable`, `VesselVisual`, `VesselVisualProfile`, `VesselDefinition`, `SailRig`, `FenderStowage`, `HarbourDressing`, `WaterLife`, `AnchorAmbience`, `BoatLighting`, `WeatherVisuals`, `AnchorSignals`, `DeckCompanionSpots`, `ShipCompanion`, `CompanionRemarks` (pet: `take_remark()` → `message_requested`; hands full: `hands_full()`), `ShoreAccess`, `HarbourFacilities`, `RodHolder`, `Windlass`, `CoffeeMug`, `GalleyStove`, `TrophyBoard`, `CabinDecor`, `HarbourTrades`, `HighlightProvider`, `HighlightResolver`, `HatHook`, `HatBlowAway`, `HatState`, `BoatFixture`.
 - **Signals:** Declares `area_change_requested(area, spawn_point)`, `chart_requested`, `world_map_requested`, `sleep_requested`, `helm_requested`, `boatyard_requested`, `provisions_requested`, `work_requested`, `grocery_requested`, `go_ashore_requested`, `fishing_requested`, `anchor_requested`, `cooking_requested`, `trophies_requested`, `message_requested(text)`, `interaction_prompt_changed(prompt)`, `docking_finished` — emitted from `_on_interacted` by `interaction_id`, prompt changes, and the end of `play_docking_arrival`. Connected in `App._connect_boat_area`. Connects to many GameSession signals (`condition_changed`, `voyage_started`, `voyage_arrived`, `voyage_course_changed`, `state_replaced`, `rescued`, `hat_changed`, `hat_lost`, `home_changed`, `coffee_changed`) and `SettingsManager.art_style_changed` / `course_view_changed`.
 - **State:** Writes `SessionState.player_position` via `GameSession.set_player_position` every physics frame (unless leaving); reads spawn point / restored position on `_place_player`. Hat/coffee actions go through `GameSession.use_hat_hook`, `put_coffee_down`, `pick_up_coffee`. Owns camera tween, shore station map, docking tween.
 - **Lifecycle:** Instanced scene (per vessel, via `VesselDefinition.get_area_scene`) by App's screen router. `_ready` order matters: visual profile -> shore (before player placement) -> aboard gear -> player -> interactable connections -> mooring -> harbour dressing -> water life -> anchor ambience -> camera -> lighting (+weather, anchor signals, deck companion) -> overhead z -> hat hook; highlights resolved deferred.
 - **Persistence:** Player position is area-relative; `is_valid_player_position` rejects positions outside `walkable_bounds`, outside the Lifeline polygon (deck) unless on an active pontoon — falls back to spawn.
 - **Performance:** `_process`: view-key compare each frame (re-turns camera when octant changes without a signal), course-view follow lerp, shore camera lerp. Placement helpers scan the hull polygon in 2–6 px steps once at setup.
 - **Invariants:** Presentation only: never changes scenes or opens UI itself; docking arrival changes no game state and is skippable by any key. Octant view uses `OCTANT_HYSTERESIS_DEG` 8°. Gear placement derived from each boat's own Lifeline/Hull polygons and fixtures (no per-boat offsets). Stations added at runtime after `_ready` (e.g. deck companion's "Pet") must be connected to `_on_interacted` manually.
-- **Tests:** Very broad; principal suites: `tests/suites/test_gameplay_flow.gd`, `test_galley_and_anchor.gd`, `test_fishing.gd`, `test_cozy_polish.gd`, `test_cozy_patch.gd`, `test_eight_directions.gd`, `test_navigation_views.gd`, `test_harbour_life.gd`, `test_hat.gd`, `test_boat_of_your_own.gd`, `test_vessels.gd`, `test_catamaran_cabin.gd`, `test_lighting.gd`, `test_atmosphere.gd`, `test_anchor_life.gd`, `test_companion_deck.gd`, `test_presentation.gd`, `test_upkeep_ui.gd` (plus screenshot/benchmark scripts in `tests/`).
+- **Tests:** Very broad; principal suites: `tests/suites/test_gameplay_flow.gd`, `test_galley_and_anchor.gd`, `test_fishing.gd`, `test_cozy_polish.gd`, `test_cozy_patch.gd`, `test_companion_remarks.gd`, `test_eight_directions.gd`, `test_navigation_views.gd`, `test_harbour_life.gd`, `test_hat.gd`, `test_boat_of_your_own.gd`, `test_vessels.gd`, `test_catamaran_cabin.gd`, `test_lighting.gd`, `test_atmosphere.gd`, `test_anchor_life.gd`, `test_companion_deck.gd`, `test_presentation.gd`, `test_upkeep_ui.gd` (plus screenshot/benchmark scripts in `tests/`).
 - **Change risks:** `_ready` ordering (shore before `_place_player`; lighting before anchor signals); node-path conventions (`Visual`, `Layout/Collision/Hull|Lifeline/CollisionPolygon2D`, `Layout/Stations`, `Layout/SpawnPoints`, `Layout/HatSpot`, `Layout/CupHolderSpot`, `Surroundings/Water`, `SailRig`, `Camera2D`) are relied on by many helpers and tests; `get_lighting()` looks up `^"Lighting"` while BoatLighting names itself `Loc.t("Lighting")`; interaction ids are a string contract with scenes.
 
 ### `src/boat/boat_fixture.gd`
@@ -1245,6 +1245,16 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** indirectly via `tests/suites/test_companion_art.gd`, `test_sprite_workshop.gd` (no direct reference found).
 - **Change risks:** renaming exported properties breaks the existing `.tres` files.
 
+### `src/companion/companion_remarks.gd`
+
+- **Role:** class_name `CompanionRemarks`, extends RefCounted; static catalogue and selection of petting remarks (Engine Room & companion polish).
+- **Depends on:** `CompanionState` (`KINDS`, `kind`; optional `name`/`gender` read with `"name" in companion`), `Loc.t`.
+- **State:** none. `identity(companion)` → `{kind, name, gender}` read from the authoritative `CompanionState` (fields it lacks are empty: today only `kind` exists).
+- **Lifecycle:** static helper; called by `ShipCompanion.take_remark()` and `BoatArea._on_interacted` (hands full).
+- **Invariants:** `lines(who)` is ordered and deterministic; `remark(who, turn)` returns line `turn mod n`, so consecutive turns differ (every list has ≥ 2 lines); English line = msgid, translated at call time (a language switch applies to the next remark); a name is inserted with `%` unchanged; no line names a specific animal.
+- **Tests:** `tests/suites/test_companion_remarks.gd`.
+- **Change risks:** new lines must be added to `locale/da.po` (`tools/i18n/check.py`); a list with one line would repeat; the `%s` lines must only be used when a name exists (`lines()` chooses `NAMED` only then).
+
 ### `src/companion/companion_state.gd`
 
 - **Role:** class_name `CompanionState`, extends RefCounted; saved companion data (kind, cabin spot, deterministic move schedule, cabin/deck area and deck spot).
@@ -1283,12 +1293,13 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 - **Role:** class_name `ShipCompanion`, extends Node2D; presentation of the cat/dog in the cabin or on deck: pose sprites or procedural drawing, petting, walking between areas, highlight outline.
 - **Depends on:** `GameSession` (`get_companion`, `note_companion_petted`, `is_settled_at_anchor`), `CompanionState`, `CompanionVisualSet`, `DeckCompanionSpots`, `AudioManager.play_sfx`, `Interactable`, `HighlightResolver`, `SessionLog.write`, `Loc`; preloads `assets/audio/placeholder/companion_purr.wav`, `companion_dog_pant.wav`.
+- **Remarks:** `take_remark()` returns `CompanionRemarks.remark(identity, turn)` or "" within `REMARK_COOLDOWN_MS` (15 s, real time, `Time.get_ticks_msec`); static `_remark_turn`/`_last_remark_ms` are shared by all companion nodes in the run (not saved); `reset_remark_cooldown()` for tests.
 - **Signals:** declares `petted(kind)` (on `pet()`), `pose_changed(pose)`, `settled_changed(settled)`; connects `GameSession.companion_area_changed`, `companion_moved`, `state_replaced`, `anchor_life_changed`.
 - **State:** presentation only (pose, timers, walk path, `settled`, `on_deck`); reads but never writes `CompanionState` (petting goes through `GameSession`). Static `_hulls` silhouette cache per texture.
 - **Lifecycle:** instanced in each vessel's `cabin.tscn` and `NewGameMenu` (`preview = true`, no session); deck instance created by `BoatArea._setup_deck_companion()` with `on_deck`, `deck_spots`, `spots_path`.
 - **Performance:** `queue_redraw()` every frame; walking is a glide along a precomputed path (no per-frame pathfinding); silhouettes cached.
 - **Invariants:** exactly one cabin companion per cabin scene; visible only in the area matching `CompanionState.area`; sprite mode requires a `resting` texture, else procedural fallback; idle RNG is cosmetic (seeded from kind + spot).
-- **Tests:** `tests/suites/test_life_aboard.gd`, `test_companion_art.gd`, `test_companion_deck.gd`, `test_cozy_patch.gd`, `test_anchor_life.gd`, `test_catamaran_cabin.gd`, `test_hat.gd`, `test_sprite_workshop.gd`, `test_upkeep_ui.gd`, `test_vessels.gd`.
+- **Tests:** `tests/suites/test_life_aboard.gd`, `test_companion_art.gd`, `test_companion_deck.gd`, `test_companion_remarks.gd`, `test_cozy_patch.gd`, `test_anchor_life.gd`, `test_catamaran_cabin.gd`, `test_hat.gd`, `test_sprite_workshop.gd`, `test_upkeep_ui.gd`, `test_vessels.gd`.
 - **Change risks:** `_sync` dereferences `interactable` (null in preview mode, which never calls it); the deck instance's `Pet` interactable must be connected by `BoatArea` after creation; missing spot markers only warn and keep the current position.
 
 ### `src/dev/dev_guides.gd`
@@ -2354,6 +2365,13 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** —
 - **Change risks:** walk loops are bounded by wall-clock time (30 s). The camera-rotation wait. Depends on reaching an anchorage on the way to Malmö. Screenshots `18_*`.
 
+### `tests/suites/test_companion_remarks.gd`
+
+- **Role:** test suite: petting remarks: per-kind lines, no immediate repeat, gender/name variants (injected identities, since `CompanionState` has no name or gender yet), names with Danish letters and punctuation, Danish translations and a language switch, cabin petting for cat and dog through `BoatArea._on_interacted` (reaction, one remark, cooldown, next line), hands full (hat carried + coffee carried), save round trip unchanged.
+- **Depends on:** `CompanionRemarks`, `ShipCompanion` (`take_remark`, `reset_remark_cooldown`, `is_reacting`), `BoatArea`, `GameSession`, `SettingsManager`, `SessionState`, `App` scene.
+- **Tests:** —.
+- **Change risks:** uses `ShipCompanion.reset_remark_cooldown()` instead of waiting the 15 s real-time cooldown; restores English, hat worn and no coffee at the end.
+
 ### `tests/suites/test_cozy_patch.gd`
 
 - **Role:** extends RefCounted; test suite for the post-0.105b patch. Covers petting the deck companion while it walks in, just after it arrives, and while it walks out (pause, one `petted`, walk resumes, reaches the spot), `TrophyBoard` pictures (`FishArt.thumbnail` per species, empty slots null, `Sprite2D` width = `TrophyBoard.PICTURE.x`), 0.105a trophy dicts loading, a new kept catch added once and shown, and Dreamer's Map style (`is_dream_style`) vs the navigation chart.
@@ -3050,7 +3068,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/test_runner.gd`
 
-- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 72 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed.
+- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 73 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed.
 - **Depends on:** all `tests/suites/test_*.gd`; `SaveManager`, `SessionLog`, `SettingsManager`, `TimePassage`, `WindField`, `Simulation`, `GameSession`, `PortCatalog`, `SeaRouter`.
 - **State:** redirects `SaveManager.save_dir = user://test_saves`, `SessionLog.log_dir = user://test_diagnostics`, `SettingsManager.settings_path = user://test_settings.cfg`; `TimePassage.enabled = false`; language forced to `en` before each suite; before each suite `use_calm_wind()` and `Simulation.sea_encounters` true only for `test_captains_watch.gd` and `test_localization.gd`; scratch saves/settings deleted at start and end; `_exit_tree` calls `WindField.clear_default()`.
 - **Lifecycle:** `godot --headless --path . res://tests/test_runner.tscn [-- --only=a,b] [--skip=a,b] [--screenshots=DIR]` (filters match suite file-name substrings; screenshots only when rendered). `process_mode = ALWAYS`.

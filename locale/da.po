@@ -7411,3 +7411,69 @@ msgstr "sjælden"
 
 msgid "very rare"
 msgstr "meget sjælden"
+
+msgid "%s gets a friendly look: your hands are full (hat and coffee)."
+msgstr "%s får et venligt blik: dine hænder er fulde (hue og kaffe)."
+
+msgid "The dog gets a friendly look: your hands are full (hat and coffee)."
+msgstr "Hunden får et venligt blik: dine hænder er fulde (hue og kaffe)."
+
+msgid "The cat gets a friendly look: your hands are full (hat and coffee)."
+msgstr "Katten får et venligt blik: dine hænder er fulde (hue og kaffe)."
+
+msgid "You're looking especially cozy today."
+msgstr "Du ser særligt hyggelig ud i dag."
+
+msgid "What a lovely little purr."
+msgstr "Sikke en dejlig lille spinden."
+
+msgid "There's my favourite little sailor."
+msgstr "Dér er min lille yndlingsmatros."
+
+msgid "The ship's cat, on watch as ever."
+msgstr "Skibskatten, på vagt som altid."
+
+msgid "Who's a good dog?"
+msgstr "Hvem er en dygtig hund?"
+
+msgid "There's my faithful first mate!"
+msgstr "Dér er min trofaste styrmand!"
+
+msgid "Best crew on the seven seas, that's you."
+msgstr "Bedste besætning på de syv have, det er dig."
+
+msgid "That tail could power the boat."
+msgstr "Den hale kunne drive båden frem."
+
+msgid "You're looking especially cozy today, %s."
+msgstr "Du ser særligt hyggelig ud i dag, %s."
+
+msgid "What a lovely little purr, %s."
+msgstr "Sikke en dejlig spinden, %s!"
+
+msgid "The ship's cat, on watch as ever. Good %s."
+msgstr "Skibskatten, på vagt som altid. Dygtige %s."
+
+msgid "Who's the best companion, %s?"
+msgstr "Hvem er den bedste ledsager, %s?"
+
+msgid "That tail could power the boat, %s."
+msgstr "Den hale kunne drive båden frem, %s."
+
+msgid "There's my lovely little sailor, %s."
+msgstr "Dér er min søde lille matros, %s."
+
+msgid "There's my handsome little sailor, %s."
+msgstr "Dér er min flotte lille matros, %s."
+
+msgid "Who's a good girl, %s?"
+msgstr "Hvem er en dygtig pige, %s?"
+
+msgid "There's my good boy, %s!"
+msgstr "Dér er min dygtige dreng, %s!"
+
+msgid "Who's a good girl?"
+msgstr "Hvem er en dygtig pige?"
+
+msgid "Who's a good boy?"
+msgstr "Hvem er en dygtig dreng?"

@@ -680,7 +680,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_area.gd`
 
 **Purpose:** The heart of each deck and cabin scene: it places the Captain, sets up everything aboard and turns "pressing E at something" into requests for the game.
-- **What it does:** On load it applies the boat's art, adds lighting, weather, water life, anchor signs, the companion on deck, the fishing rod, windlass, stove, trophy board, coffee spots and cabin decor. It handles the camera (wider underway, turned to the course, following you ashore), the walk onto the pontoon in harbour and the short docking arrival. When you use a station it sends a request (open chart, sleep, cook…) for the app to handle; it never opens menus itself.
+- **What it does:** On load it applies the boat's art, adds lighting, weather, water life, anchor signs, the companion on deck, the fishing rod, windlass, stove, trophy board, coffee spots and cabin decor. It handles the camera (wider underway, turned to the course, following you ashore), the walk onto the pontoon in harbour and the short docking arrival. When you use a station it sends a request (open chart, sleep, cook…) for the app to handle; it never opens menus itself. Petting the companion shows the occasional kind word (`CompanionRemarks`), or a friendly look when your hands are full.
 - **Works with:** `GameSession`, `Player`, `Interactable`, `VesselVisual`, `SailRig`, `BoatLighting`, `ShoreAccess`, `HarbourDressing`, `WaterLife`, `App` (which listens to its requests).
 - **Keeps:** Camera settings, the shore stations and the docking animation; it writes the Captain's position back to the game state.
 - **When it runs:** Whenever you are on deck or in the cabin.
@@ -985,6 +985,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** When the companion's pictures are loaded.
 - **If you change it:** Which picture shows for a pose and how it is placed; a missing file simply makes that pose fall back.
 
+### `src/companion/companion_remarks.gd`
+
+**Purpose:** The kind words the Captain says when petting the ship's cat or dog.
+- **What it does:** Holds a few short remarks for a cat and for a dog ("What a lovely little purr."), picks the next one so the same line never comes twice in a row, and translates it into the current language. It is ready for a companion with a name and a gender: then it uses lines with the name ("Who's a good girl, Freja?"), with the name put in exactly as written. Also gives the "your hands are full" line.
+- **Works with:** `CompanionState` (who the companion is), `Loc` (English or Danish), `ShipCompanion` (which asks for a remark when petted) and `BoatArea` (which shows it).
+- **Keeps:** Nothing; the lines are fixed in the script.
+- **When it runs:** When you pet the companion (at most one remark every 15 seconds) or try to with your hands full.
+- **If you change it:** What the Captain says when petting; new lines need a Danish translation in `locale/da.po`.
+
 ### `src/companion/companion_state.gd`
 
 **Purpose:** The saved facts about the ship's companion: cat or dog, where it is resting, and whether it is in the cabin or on deck.
@@ -1015,7 +1024,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/companion/ship_companion.gd`
 
 **Purpose:** The cat or dog you see and can pet, in the cabin or on deck.
-- **What it does:** Shows the companion at its resting spot, with pose pictures (resting, napping, stretching, looking up) or a simple drawn animal if no pictures exist. Pressing E pets it: a purr and hearts for the cat, panting and a wagging tail for the dog. When it changes between cabin and deck while you watch, it walks there. At a quiet anchorage it curls up for long naps.
+- **What it does:** Shows the companion at its resting spot, with pose pictures (resting, napping, stretching, looking up) or a simple drawn animal if no pictures exist. Pressing E pets it: a purr and hearts for the cat, panting and a wagging tail for the dog, and now and then (at most every 15 seconds) a kind word from the Captain, chosen by `CompanionRemarks`. When it changes between cabin and deck while you watch, it walks there. At a quiet anchorage it curls up for long naps.
 - **Works with:** `GameSession` and `CompanionState` (where it should be), `CompanionVisualSet` (pictures), `DeckCompanionSpots` (deck places and paths), `AudioManager` (sounds), `Interactable` and `HighlightResolver` (petting and glow), `SessionLog`. Placed in each cabin scene and built on deck by `BoatArea`; also used as a preview in the New Game menu.
 - **Keeps:** Only how it looks right now (pose, walk, reaction); nothing is saved.
 - **When it runs:** Whenever the cabin or deck is on screen.
@@ -1925,6 +1934,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** Only in tests.
 - **If you change it:** Only the checks change. Moving deck fittings or the deck outline can make it fail.
 
+### `tests/suites/test_companion_remarks.gd`
+
+**Purpose:** Checks the kind words when petting the companion.
+- **What it does:** Checks that cats and dogs have their own lines, that the same line never comes twice in a row, the "good girl"/"good boy" lines for a named dog, that a name with Danish letters is kept exactly, the Danish lines and switching language, petting a cat and a dog in the cabin (the reaction still plays, a remark comes, not again at once, a different one later), the hands-full rule, and that saves are unchanged.
+- **Works with:** `CompanionRemarks`, `ShipCompanion`, `BoatArea`, `GameSession`, `SettingsManager`.
+- **Keeps:** Nothing.
+- **When it runs:** In the test runner (`--only=companion_remarks`).
+- **If you change it:** Only the test; the remarks' wording is checked by its English keys.
+
 ### `tests/suites/test_cozy_patch.gd`
 
 **Purpose:** Checks the small patch after 0.105b: petting the cat while she walks, fish pictures on the trophy board, and the Dreamer's Map colours.
@@ -2595,7 +2613,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/test_runner.gd`
 
-**Purpose:** The game's automatic test runner: it runs all 72 test suites and says how many checks passed.
+**Purpose:** The game's automatic test runner: it runs all 73 test suites and says how many checks passed.
 - **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots.
 - **Works with:** Every suite in `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Keeps:** The pass/fail counts and the list of failures.

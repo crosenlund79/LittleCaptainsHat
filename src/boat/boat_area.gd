@@ -570,12 +570,16 @@ func _on_interacted(interactable: Interactable, _actor: Node) -> void:
 				message_requested.emit(Loc.t("The cup holder, just the size of a mug. Make a coffee in the galley."))
 		&"pet":
 			if GameSession.free_hands() == 0:
-				message_requested.emit(Loc.t("Snøvs gets a friendly look: your hands are full (hat and coffee)."))
+				message_requested.emit(CompanionRemarks.hands_full(CompanionRemarks.identity(GameSession.get_companion())))
 				return
 			var companion := interactable.get_parent() as ShipCompanion
 			if companion:
 				companion.pet()
 				SessionLog.write("companion_pet", {"kind": String(companion.kind), "pose": String(companion.pose)})
+				# A kind word now and then (not every time: see ShipCompanion.take_remark).
+				var remark := companion.take_remark()
+				if remark != "":
+					message_requested.emit(remark)
 		_:
 			if not interactable.message.is_empty():
 				message_requested.emit(interactable.message)
