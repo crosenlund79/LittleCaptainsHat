@@ -3,8 +3,9 @@ extends CanvasLayer
 ## The game's own start (Cozy Polish): after Godot's boot splash (an image
 ## the engine shows while it starts; nothing of the game can draw then), this
 ## screen shows the logo over a calm sea horizon - a small boat, a lighthouse,
-## the light of the day or of the night (Vintage Chartroom / Harbor Dusk) -
-## while the game loads what it needs, naming each real step as it runs.
+## always in the main menu's deep navy (I022: it no longer follows the
+## time of day, so the start looks like the menu it fades into) - while the
+## game loads what it needs, naming each real step as it runs.
 ## The heaviest step (the routing charts) runs on a worker thread, so the
 ## screen keeps moving. It fades into the main menu as soon as the loading
 ## is done; there is no artificial wait. Purely visual: clicks and keys reach
@@ -13,8 +14,13 @@ extends CanvasLayer
 signal finished
 
 const FADE_SECONDS := 0.45
-const LOGO_DAY := preload("res://assets/branding/png/little_captains_hat_logo_on_light_480.png")
-const LOGO_NIGHT := preload("res://assets/branding/png/little_captains_hat_logo_480.png")
+const LOGO := preload("res://assets/branding/png/little_captains_hat_logo_480.png")
+## The main menu's sky and sea (src/ui/main_menu.tscn, Gradient_sky) and its horizon.
+const SKY_TOP := Color(0.043, 0.133, 0.18)
+const SKY_LOW := Color(0.075, 0.2, 0.26)
+const SEA_TOP := Color(0.09, 0.235, 0.29)
+const SEA_LOW := Color(0.063, 0.176, 0.231)
+const HORIZON := 0.62
 
 ## Shown already in this run of the game.
 static var shown := false
@@ -38,7 +44,7 @@ func _ready() -> void:
 	shown = true
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_night = UiTheme.is_night()
+	_night = true  # the main menu's night look, whatever the hour
 	_canvas = Control.new()
 	_canvas.name = "Canvas"
 	_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -55,8 +61,8 @@ func _ready() -> void:
 	column.position.y -= 80.0
 	_canvas.add_child(column)
 	var logo := TextureRect.new()
-	logo.texture = LOGO_NIGHT if _night else LOGO_DAY
-	logo.custom_minimum_size = Vector2(440, 206)
+	logo.texture = LOGO
+	logo.custom_minimum_size = Vector2(400, 188)
 	logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -64,11 +70,13 @@ func _ready() -> void:
 	var tagline := Label.new()
 	tagline.text = "Small boat. Wide world. Hold onto your hat."
 	tagline.theme_type_variation = &"DisplayTagline"
+	tagline.add_theme_color_override(&"font_color", UiTheme.color_at(&"ink_soft", 1.0))
 	tagline.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(tagline)
 	_status = Label.new()
 	_status.name = "Status"
 	_status.theme_type_variation = &"MutedLabel"
+	_status.add_theme_color_override(&"font_color", Color(UiTheme.color_at(&"ink_soft", 1.0), 0.8))
 	_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_status.custom_minimum_size = Vector2(520, 0)
 	column.add_child(_status)
@@ -127,12 +135,13 @@ func is_done() -> bool:
 ## boat bobbing and a lighthouse whose light turns (brighter by night).
 func _draw_scene() -> void:
 	var size := _canvas.size
-	var sky := UiTheme.color(&"surface")
-	var sea := Color("#2E6E80") if not _night else Color("#163447")
-	var ink := UiTheme.color(&"ink")
-	_canvas.draw_rect(Rect2(Vector2.ZERO, size), sky)
-	var horizon := size.y * 0.72
-	_canvas.draw_rect(Rect2(0, horizon, size.x, size.y - horizon), Color(sea, 0.92))
+	var ink := UiTheme.color_at(&"ink", 1.0)
+	var horizon := size.y * HORIZON
+	_canvas.draw_polygon(PackedVector2Array([Vector2.ZERO, Vector2(size.x, 0), Vector2(size.x, horizon), Vector2(0, horizon)]),
+		PackedColorArray([SKY_TOP, SKY_TOP, SKY_LOW, SKY_LOW]))
+	_canvas.draw_polygon(PackedVector2Array([Vector2(0, horizon), Vector2(size.x, horizon), size, Vector2(0, size.y)]),
+		PackedColorArray([SEA_TOP, SEA_TOP, SEA_LOW, SEA_LOW]))
+	_canvas.draw_rect(Rect2(0, horizon, size.x, 2.0), Color(0.651, 0.769, 0.788, 0.18))
 	# Slow waves.
 	for row in 6:
 		var y := horizon + 18.0 + row * 34.0

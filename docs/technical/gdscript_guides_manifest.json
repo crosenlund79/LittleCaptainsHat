@@ -708,9 +708,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/loading_screen.gd": {
-   "sha": "28149d1e928f8389",
+   "sha": "26b7a70fe9312e57",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 navy loading screen"
   },
   "src/ui/main_menu.gd": {
    "sha": "d0658dd78d228e31",
@@ -1398,9 +1398,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tools/export_branding.gd": {
-   "sha": "e55e8cb85b55e441",
+   "sha": "856217357ad25dbb",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 240 px logo"
   },
   "tools/navigation/world_land_to_res.gd": {
    "sha": "b75a5694c042570c",

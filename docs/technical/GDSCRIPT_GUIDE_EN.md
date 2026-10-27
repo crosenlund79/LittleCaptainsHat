@@ -1522,8 +1522,8 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/loading_screen.gd`
 
 **Purpose:** The game's own loading screen with the logo over a calm sea.
-- **What it does:** Shows the logo, a tagline and an animated scene (waves, a lighthouse with a turning light, a bobbing sailboat) while it loads the harbour list, the routing charts (on a background thread) and the boat catalogue. It names each step, then fades into the main menu.
-- **Works with:** `UiTheme` (day or night look), `PortCatalog`, `SeaRouter`, `VesselCatalog`, `App` (creates it).
+- **What it does:** Shows the logo, a tagline and an animated scene (waves, a lighthouse with a turning light, a bobbing sailboat) while it loads the harbour list, the routing charts (on a background thread) and the boat catalogue. It names each step, then fades into the main menu. Since I022 it always uses the main menu's deep navy, so the start matches the menu it fades into; Godot's boot splash before it is navy too, with the logo at its own size (sharp, not stretched).
+- **Works with:** `UiTheme` (its night colours, whatever the hour), `PortCatalog`, `SeaRouter`, `VesselCatalog`, `App` (creates it).
 - **Keeps:** Which step it is on and whether it has already been shown this run.
 - **When it runs:** Once per launch, right after start-up (never without a screen, so never in tests).
 - **If you change it:** Start-up time and the first impression of the game change.
@@ -2678,7 +2678,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tools/export_branding.gd`
 
 **Purpose:** Turns the game's logo and icon drawings (SVG) into PNG pictures in several sizes.
-- **What it does:** Renders each branding SVG at the listed heights and saves them in `assets/branding/png/`.
+- **What it does:** Renders each branding SVG at the listed heights and saves them in `assets/branding/png/`. Since I022 the logo is also exported 240 pixels high, for Godot's boot splash.
 - **Works with:** The SVGs in `assets/branding/`; the loading screen uses two of the PNGs.
 - **Keeps:** Nothing; writes PNG files.
 - **When it runs:** Only by hand: `godot --headless --path . -s res://tools/export_branding.gd`.

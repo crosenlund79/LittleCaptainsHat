@@ -1524,8 +1524,8 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/loading_screen.gd`
 
 **Formål:** Spillets egen indlæsningsskærm med logoet over et roligt hav.
-- **Hvad det gør:** Viser logoet, en undertitel og en animeret scene (bølger, et fyrtårn med drejende lys, en vuggende sejlbåd), mens havnelisten, rutekortene (i en baggrundstråd, dvs. sideløbende arbejde) og bådkataloget indlæses. Den nævner hvert trin og glider derefter over i hovedmenuen.
-- **Arbejder sammen med:** `UiTheme` (dag- eller natudseende), `PortCatalog`, `SeaRouter`, `VesselCatalog`, `App` (opretter den).
+- **Hvad det gør:** Viser logoet, en undertitel og en animeret scene (bølger, et fyrtårn med drejende lys, en vuggende sejlbåd), mens havnelisten, rutekortene (i en baggrundstråd, dvs. sideløbende arbejde) og bådkataloget indlæses. Den nævner hvert trin og glider derefter over i hovedmenuen. Siden I022 bruger den altid hovedmenuens dybe marineblå, så starten ligner den menu, den glider over i; Godots opstartsbillede før den er også marineblåt, med logoet i dets egen størrelse (skarpt, ikke strakt).
+- **Arbejder sammen med:** `UiTheme` (dens natfarver, uanset tidspunktet), `PortCatalog`, `SeaRouter`, `VesselCatalog`, `App` (opretter den).
 - **Holder styr på:** Hvilket trin den er nået til, og om den allerede er vist i denne kørsel.
 - **Hvornår det kører:** Én gang pr. opstart, lige efter start (aldrig uden skærm, så aldrig i test).
 - **Hvis du ændrer det:** Opstartstiden og spillets første indtryk ændres.
@@ -2680,7 +2680,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tools/export_branding.gd`
 
 **Formål:** Laver spillets logo- og ikontegninger (SVG) om til PNG-billeder i flere størrelser.
-- **Hvad det gør:** Tegner hver branding-SVG i de angivne højder og gemmer dem i `assets/branding/png/`.
+- **Hvad det gør:** Tegner hver branding-SVG i de angivne højder og gemmer dem i `assets/branding/png/`. Siden I022 eksporteres logoet også i 240 pixels højde til Godots opstartsbillede.
 - **Arbejder sammen med:** SVG'erne i `assets/branding/`; indlæsningsskærmen bruger to af PNG'erne.
 - **Holder styr på:** Intet; skriver PNG-filer.
 - **Hvornår det kører:** Kun når du starter det: `godot --headless --path . -s res://tools/export_branding.gd`.

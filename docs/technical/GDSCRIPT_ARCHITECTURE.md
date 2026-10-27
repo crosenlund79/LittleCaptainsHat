@@ -1892,8 +1892,8 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/loading_screen.gd`
 
-- **Role:** `class_name LoadingScreen`, extends CanvasLayer (layer 100, `PROCESS_MODE_ALWAYS`); start-up splash that warms caches.
-- **Depends on:** `UiTheme` (`is_night`, `color`), `PortCatalog.get_default()`, `SeaRouter.get_default()` (on `WorkerThreadPool`), `VesselCatalog.get_default()`, branding PNGs (preloaded), `Loc`.
+- **Role:** `class_name LoadingScreen`, extends CanvasLayer (layer 100, `PROCESS_MODE_ALWAYS`); start-up splash that warms caches. I022: `_night` is always true; the sky and sea are drawn as two vertex-coloured polygons with the main menu's gradient (`SKY_TOP/SKY_LOW/SEA_TOP/SEA_LOW`, horizon `HORIZON` 0.62) and the night logo `LOGO` (480) at 400×188; tagline and status take `ink_soft` night colours. project.godot's boot splash: navy `bg_color`, `stretch_mode=0` (native size), `little_captains_hat_logo_240.png`.
+- **Depends on:** `UiTheme.color_at(role, 1.0)` (night colours only), `PortCatalog.get_default()`, `SeaRouter.get_default()` (on `WorkerThreadPool`), `VesselCatalog.get_default()`, branding PNGs (preloaded), `Loc`.
 - **Signals:** declares `finished` (after fade, before `queue_free`).
 - **State:** static `shown` (once per process); `_step`, `_task`, `_done`.
 - **Lifecycle:** created by `App._ready()` when `LoadingScreen.wanted()` (not shown yet and display is not headless); frees itself.
@@ -3134,7 +3134,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tools/export_branding.gd`
 
-- **Role:** extends SceneTree; rasterises `res://assets/branding/<name>.svg` to `res://assets/branding/png/<name>_<height>.png` for the heights in `EXPORTS` (logo, logo on light, symbol, icon) with Godot's SVG renderer.
+- **Role:** extends SceneTree; rasterises `res://assets/branding/<name>.svg` to `res://assets/branding/png/<name>_<height>.png` for the heights in `EXPORTS` (logo, logo on light, symbol, icon) with Godot's SVG renderer. I022: `little_captains_hat_logo` also at 240 (the boot splash image); the existing PNGs re-export byte-identically.
 - **Depends on:** the branding SVGs.
 - **Lifecycle:** tool: `godot --headless --path . -s res://tools/export_branding.gd`; exit 1 on any missing/failed SVG.
 - **Tests:** `tests/suites/test_branding.gd` checks `png/little_captains_hat_logo_480.png` exists (indirect); `src/ui/loading_screen.gd` preloads `little_captains_hat_logo_480.png` and `little_captains_hat_logo_on_light_480.png`.
