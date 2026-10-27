@@ -53,9 +53,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/app/app.gd": {
-   "sha": "07d87884a6bfd4c4",
+   "sha": "7d79645c72244e7f",
    "reviewed": "2026-10-27",
-   "note": "I022 pastimes and the one clock for hours-long tasks"
+   "note": "I022 Captain's Academy"
   },
   "src/app/game_version.gd": {
    "sha": "8392004ca99d3110",
@@ -201,6 +201,11 @@
    "sha": "a57819c1d9f31bbb",
    "reviewed": "2026-10-27",
    "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
+  },
+  "src/core/academy.gd": {
+   "sha": "382366535e0b01c1",
+   "reviewed": "2026-10-27",
+   "note": "I022 Captain's Academy"
   },
   "src/core/anchor_state.gd": {
    "sha": "fca549a2299f57e0",
@@ -593,9 +598,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/settings/settings_manager.gd": {
-   "sha": "7c010f8eea01fe87",
+   "sha": "04c83e38b8fc4fcd",
    "reviewed": "2026-10-27",
-   "note": "I022 wind volume"
+   "note": "I022 Captain's Academy"
   },
   "src/skills/timing_check.gd": {
    "sha": "9128e4ade8419976",
@@ -606,6 +611,11 @@
    "sha": "6e4c251ca656e9a5",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/academy_guide.gd": {
+   "sha": "aab82ccffc44ac4c",
+   "reviewed": "2026-10-27",
+   "note": "I022 Captain's Academy"
   },
   "src/ui/action_wheel.gd": {
    "sha": "77d784d9635b9903",
@@ -712,6 +722,11 @@
    "reviewed": "2026-10-27",
    "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
+  "src/ui/handbook_menu.gd": {
+   "sha": "1aa0717d485405f0",
+   "reviewed": "2026-10-27",
+   "note": "I022 Captain's Academy"
+  },
   "src/ui/hat_badge.gd": {
    "sha": "debcc2db31dc2766",
    "reviewed": "2026-10-27",
@@ -773,9 +788,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/pause_menu.gd": {
-   "sha": "873bf575f0e2644c",
+   "sha": "e1a4ea8c4aaf849d",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 Captain's Academy"
   },
   "src/ui/postcard_menu.gd": {
    "sha": "8d7e54203418ec86",
@@ -838,9 +853,9 @@
    "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/ui/settings_menu.gd": {
-   "sha": "2b637b15637b0b10",
+   "sha": "7e0eab61443a25a4",
    "reviewed": "2026-10-27",
-   "note": "I022 wind volume"
+   "note": "I022 Captain's Academy"
   },
   "src/ui/simple_panel.gd": {
    "sha": "fd078dfabae6e16d",
@@ -1056,6 +1071,11 @@
    "sha": "4d3ac015a0b94d0e",
    "reviewed": "2026-10-27",
    "note": "I021 screenshots"
+  },
+  "tests/suites/test_academy.gd": {
+   "sha": "959de442accfcba7",
+   "reviewed": "2026-10-27",
+   "note": "I022 Captain's Academy"
   },
   "tests/suites/test_anchor_life.gd": {
    "sha": "74cec34564e9983a",
@@ -1433,9 +1453,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/test_runner.gd": {
-   "sha": "0ecfbe65bca56203",
+   "sha": "b436d34c025bddbc",
    "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "note": "I022 Captain's Academy"
   },
   "tools/art/capture_previews.gd": {
    "sha": "5519443f78ad3805",

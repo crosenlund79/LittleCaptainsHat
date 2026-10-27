@@ -156,7 +156,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Formål:** Spillets "dirigent": det forbinder menuerne, skærmene og spillets systemer, så de arbejder sammen.
-- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen. I022: lange gøremål om bord (fjernarbejde, et postkort, en økt på det lille spil) går på det ene ur gennem `pass_time`: en overgang til sort, simulationen kørt én gang mens uret tæller, en linje hvis noget afbrød, og tilbage i ×1; kahyttens Q-hjul tilbyder Skriv et postkort og Arbejd på dit lille spil.
+- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen. I022: lange gøremål om bord (fjernarbejde, et postkort, en økt på det lille spil) går på det ene ur gennem `pass_time`: en overgang til sort, simulationen kørt én gang mens uret tæller, en linje hvis noget afbrød, og tilbage i ×1; kahyttens Q-hjul tilbyder Skriv et postkort og Arbejd på dit lille spil. I022 Skipperskolen: den har Skipperskolens kort på sit eget lag, tilbyder den første sejlads én gang ved det første nye spil på denne computer og åbner Skipperens håndbog med F1 eller fra pausemenuen.
 - **Arbejder sammen med:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Holder styr på:** Kun skærmens bogføring: om redningsrapporten er åben, et VHF-radioopkald eller et spørgsmål om ankerpladsen, der venter på at blive vist, sekunderne før en fisk på krogen slipper væk, og hvornår ledsageren næste gang følger dig mellem kahyt og dæk. Selve spillet ligger i `GameSession`.
 - **Hvornår det kører:** Altid: det er hovedscenen, der starter med spillet.
@@ -179,6 +179,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Den aktuelle skærm, og om et skift er i gang ("optaget").
 - **Hvornår det kører:** Hver gang skærmen skifter.
 - **Hvis du ændrer det:** Skærmskift, overtoningens tid og "optaget"-tjekket, som mange vinduer venter på.
+
+### `src/core/academy.gd`
+
+**Formål:** Skipperskolens indhold og fremskridt (I022): Skipperens håndbog, den første sejlads og tipsene.
+- **Hvad det gør:** Læser `data/academy/academy.json`: håndbogens kapitler og sider, de otte trin i den første sejlads og tipsene. Taster skrives aldrig i teksterne; `{interact}` og lignende udfyldes fra spillets egne tastebindinger, som tastaturet viser dem, så ingen tekst kan nævne en forkert tast. Den søger i siderne på det valgte sprog og gemmer fremskridtet (første sejlads tilbudt, begyndt, sprunget over eller færdig; trinnet; de viste tips) i indstillingerne på denne computer.
+- **Arbejder sammen med:** `SettingsManager` (fremskridtet), `AcademyGuide`, `HandbookMenu`, `App`, `Loc`.
+- **Holder styr på:** Datafilen, læst én gang.
+- **Hvornår det kører:** Når en side, et trin eller et tip vises, og når fremskridtet ændres.
+- **Hvis du ændrer det:** Tilføj nye tekster i datafilen med `{action}`-pladsholdere; `test_academy` fejler ved en ukendt pladsholder eller en manglende dansk tekst.
 
 ### `src/core/anchor_state.gd`
 
@@ -381,7 +390,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/settings/settings_manager.gd`
 
 **Formål:** Spillerens indstillinger, adskilt fra gemte spil.
-- **Hvad det gør:** Holder og anvender lydstyrker, vinduestilstand, VSync, interfacets størrelse, grafikstil, den drejende sejlvisning, valg for blink og bevægelse, interfacets dag/nat-lys, sprog og den senest valgte søvnlængde. Ændringer virker med det samme; de skrives først til disken, når der gemmes. Siden I022 findes der også en lydstyrke for vind (100 % som standard, præcis lyden fra før).
+- **Hvad det gør:** Holder og anvender lydstyrker, vinduestilstand, VSync, interfacets størrelse, grafikstil, den drejende sejlvisning, valg for blink og bevægelse, interfacets dag/nat-lys, sprog og den senest valgte søvnlængde. Ændringer virker med det samme; de skrives først til disken, når der gemmes. Siden I022 findes der også en lydstyrke for vind (100 % som standard, præcis lyden fra før). I022: den gemmer også indstillingen for tips og Skipperskolens fremskridt på denne computer (Gendan standarder beholder fremskridtet).
 - **Arbejder sammen med:** Godots lyd og skærm, indstillingsmenuen, `App` (valg af sprog ved første opstart), mange skærme der lytter efter ændringer.
 - **Holder styr på:** Alle valgene ovenfor, i `user://settings.cfg`.
 - **Hvornår det kører:** Altid (en autoload); indlæses ved opstart.
@@ -1341,6 +1350,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Altid mens HUD'en er på skærmen, hvert billede.
 - **Hvis du ændrer det:** Advarslerne på skærmen om bid, ankeret der slæber og trolling-fart ændres, og det betyder noget for spillere, der spiller uden lyd.
 
+### `src/ui/academy_guide.gd`
+
+**Formål:** Skipperskolen i spillet (I022): ét lille kort i nederste højre hjørne til den første sejlads og tipsene.
+- **Hvad det gør:** Under den første sejlads viser den det aktuelle trin og krydser det af, når spilleren faktisk gør det (går, åbner hjulet og logbogen, går på dæk, åbner kortet, lægger en kurs, sætter sejl, lader tiden gå), altid med Spring over. Bagefter viser den korte tips første gang, noget sker (første gang undervejs, en havn, en vejradvarsel, et bid, trafik, kahytten ...), hver én gang, med Læs mere og Forstået. Kortet træder til side, når et vindue, en advarsel, en tidspassage eller rejsekortet er fremme, og ved kortet holder det sig fri af kortets knapper.
+- **Arbejder sammen med:** `App` (vinduer, skærme og håndbogen), `Academy`, signaler fra `GameSession` og `Simulation`, `SettingsManager` (tips til eller fra), `HUD` (advarsler).
+- **Holder styr på:** De ventende tips, det viste tip, om spilleren har gået.
+- **Hvornår det kører:** Nogle gange i sekundet, mens spillet kører; ellers intet.
+- **Hvis du ændrer det:** Hold reglen: aldrig over et vindue eller en advarsel, og altid til at lukke.
+
 ### `src/ui/action_wheel.gd`
 
 **Formål:** Ringen af handlinger, der åbner med Q.
@@ -1530,6 +1548,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** I havn, fra pontonens købmandsstation, proviantpanelet eller bådeværftet.
 - **Hvis du ændrer det:** Prisen på proviant og hvor langt du kan sejle, før den slipper op; købene gemmes via `GameSession`.
 
+### `src/ui/handbook_menu.gd`
+
+**Formål:** Vinduet Skipperens håndbog (I022).
+- **Hvad det gør:** Viser alle sider efter kapitel med et søgefelt, viser den valgte side med de rigtige taster udfyldt og tilbyder at begynde den første sejlads igen eller vise tipsene igen. Åbner med F1 eller fra pausemenuen, eller på en bestemt side fra et tips Læs mere.
+- **Arbejder sammen med:** `Academy`, `App` (åbner den), `AcademyGuide` (Læs mere).
+- **Holder styr på:** Den viste side og de viste sider på listen.
+- **Hvornår det kører:** Mens den er åben.
+- **Hvis du ændrer det:** Behold Luk-knappen; Esc og F1 lukker den også.
+
 ### `src/ui/hat_badge.gd`
 
 **Formål:** Et lille mærke i HUD'en (skærmoverlayet under spillet), der viser, når kaptajnshuen er i fare eller er blæst væk.
@@ -1641,7 +1668,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/pause_menu.gd`
 
 **Formål:** Pausemenuen under spillet.
-- **Hvad det gør:** Viser Genoptag, Logbogen, Gem, Indlæs, Indstillinger og Hovedmenu og melder kun, hvad der blev trykket på. I udviklingsbuilds tilføjer den en knap til "Developer tests". Siden I022 har den en knap til Sværhedsgrad….
+- **Hvad det gør:** Viser Genoptag, Logbogen, Gem, Indlæs, Indstillinger og Hovedmenu og melder kun, hvad der blev trykket på. I udviklingsbuilds tilføjer den en knap til "Developer tests". Siden I022 har den en knap til Sværhedsgrad…. I022: den har også Skipperens håndbog (F1).
 - **Arbejder sammen med:** `App` (udfører valget), `DevTools`.
 - **Holder styr på:** Intet.
 - **Hvornår det kører:** Når du trykker Esc eller menuknappen under spillet.
@@ -1758,7 +1785,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/settings_menu.gd`
 
 **Formål:** Indstillingsdialogen, både fra titelskærmen og pausemenuen.
-- **Hvad det gør:** Lader dig ændre lydstyrker (med testlyde), vinduestilstand, VSync, grænsefladens størrelse, grafikstil, sejlvisning, mindre blink, lynets lysstyrke, mindre bevægelse, grænsefladens dag/nat-lys og sprog. Ændringer ses med det samme; Apply gemmer dem, og forlader du uden at gemme, bliver du spurgt, før de fortrydes. Siden I022 har den en skyder for vind med sin egen testlyd (et par sekunders brise).
+- **Hvad det gør:** Lader dig ændre lydstyrker (med testlyde), vinduestilstand, VSync, grænsefladens størrelse, grafikstil, sejlvisning, mindre blink, lynets lysstyrke, mindre bevægelse, grænsefladens dag/nat-lys og sprog. Ændringer ses med det samme; Apply gemmer dem, og forlader du uden at gemme, bliver du spurgt, før de fortrydes. Siden I022 har den en skyder for vind med sin egen testlyd (et par sekunders brise). I022: et Tips-afkrydsningsfelt slår Skipperskolens tips til eller fra.
 - **Arbejder sammen med:** `SettingsManager`, `AudioManager`, `MusicDirector`, `SessionLog` (logmappen), `ModalStack`.
 - **Holder styr på:** En kopi af de senest gemte indstillinger, så den kan se ikke-gemte ændringer.
 - **Hvornår det kører:** Når du åbner indstillinger.
@@ -1873,6 +1900,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvis du ændrer det:** Hvordan spillerne tjener penge ved at arbejde.
 
 ## Automatiske testsuiter
+
+### `tests/suites/test_academy.gd`
+
+**Formål:** Tester Skipperskolen (I022).
+- **Hvad det gør:** Tester håndbogens data (hver side i et kapitel, alle henvisninger gyldige, alle taster rigtige bindinger, ingen tastebogstaver skrevet i teksterne, alt på dansk), søgning på engelsk og dansk, fremskridtet i indstillingerne, tilbuddet ved første nye spil (kan lukkes, spørges én gang, aldrig ved et indlæst spil), den første sejlads krydset af ved rigtige handlinger, tipsene (aldrig over et vindue eller en advarsel, én gang, slået fra i Indstillinger, Læs mere) og håndbogen (F1, pausemenuen, søgning, begynd den første sejlads igen).
+- **Arbejder sammen med:** `Academy`, `AcademyGuide`, `HandbookMenu`, `App`, `SettingsManager`.
+- **Holder styr på:** Intet (den nulstiller Skipperskolens fremskridt bagefter).
+- **Hvornår det kører:** Sammen med de andre testsæt (`test_runner.tscn`).
+- **Hvis du ændrer det:** Kun testene ændres.
 
 ### `tests/suites/test_anchor_life.gd`
 
@@ -2743,7 +2779,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Formål:** Spillets automatiske testkører: den kører alle 74 testsamlinger og fortæller, hvor mange tjek der bestod.
-- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem.
+- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem. I022: den slår Skipperskolens tilbud og tips fra for de andre testsæt.
 - **Arbejder sammen med:** Alle testsamlinger i `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Holder styr på:** Antal beståede/fejlede tjek og listen over fejl.
 - **Hvornår det kører:** Når du starter det, eller i automatik: `godot --headless --path . res://tests/test_runner.tscn` (valgmuligheder efter `--`: `--only=navn`, `--skip=navn`, `--screenshots=MAPPE`).

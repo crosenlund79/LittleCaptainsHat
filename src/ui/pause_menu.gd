@@ -10,6 +10,8 @@ signal settings_requested
 signal main_menu_requested
 ## I022: change the difficulty (DifficultyMenu).
 signal difficulty_requested
+## I022: the Captain's Handbook.
+signal handbook_requested
 ## Development builds only (DevTools): open the developer test panel.
 signal dev_tests_requested
 
@@ -30,6 +32,12 @@ func _ready() -> void:
 	difficulty.custom_minimum_size = (%SettingsButton as Button).custom_minimum_size
 	difficulty.pressed.connect(difficulty_requested.emit)
 	%SettingsButton.add_sibling(difficulty)
+	var handbook := Button.new()
+	handbook.name = "HandbookButton"
+	handbook.text = "Captain's Handbook (F1)"
+	handbook.custom_minimum_size = difficulty.custom_minimum_size
+	handbook.pressed.connect(handbook_requested.emit)
+	difficulty.add_sibling(handbook)
 	# Developer tests: added only where the developer tools are enabled, so
 	# a player's build has no such button at all.
 	if DevTools.is_enabled():

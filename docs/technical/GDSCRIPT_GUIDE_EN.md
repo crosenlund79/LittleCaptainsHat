@@ -154,7 +154,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Purpose:** The game's main "conductor": it connects the menus, the screens and the game systems so they all work together.
-- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game.
+- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game. I022 Academy: it holds the Academy card on its own layer, offers the First Voyage once on the first new game on this computer, and opens the Captain's Handbook with F1 or from the pause menu.
 - **Works with:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Keeps:** Only screen bookkeeping: whether the rescue report is open, a VHF call or anchorage question waiting to be shown, the seconds left before a hooked fish gets away, and when the companion next follows you between cabin and deck. The game itself lives in `GameSession`.
 - **When it runs:** Always: it is the main scene that starts with the game.
@@ -177,6 +177,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Keeps:** The current screen and whether a change is in progress ("busy").
 - **When it runs:** Every time the screen changes.
 - **If you change it:** Screen changes, fade timing and the "busy" check that many windows wait for.
+
+### `src/core/academy.gd`
+
+**Purpose:** The Captain's Academy's content and progress (I022): the Captain's Handbook, the First Voyage and the tips.
+- **What it does:** Reads `data/academy/academy.json`: the Handbook's chapters and pages, the eight First Voyage steps and the tips. Keys are never written in the texts; `{interact}` and the like are filled in from the game's own key bindings as the keyboard labels them, so no text can name a wrong key. It searches the pages in the current language, and keeps the progress (First Voyage offered, begun, skipped or done; the step reached; the tips already shown) in the settings of this computer.
+- **Works with:** `SettingsManager` (the progress), `AcademyGuide`, `HandbookMenu`, `App`, `Loc`.
+- **Keeps:** The data file, read once.
+- **When it runs:** When a page, step or tip is shown, and when the progress changes.
+- **If you change it:** Add new texts to the data file with `{action}` placeholders; `test_academy` fails on an unknown placeholder or a missing Danish text.
 
 ### `src/core/anchor_state.gd`
 
@@ -379,7 +388,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/settings/settings_manager.gd`
 
 **Purpose:** The player's settings, separate from saved games.
-- **What it does:** Keeps and applies volumes, window mode, VSync, interface size, art style, the turning sailing view, flashing and motion options, day/night interface light, language, and the last sleep length. Changes apply at once; they are written to disk only when saved. Since I022 there is also a Wind volume (100 % by default, which is exactly the sound from before).
+- **What it does:** Keeps and applies volumes, window mode, VSync, interface size, art style, the turning sailing view, flashing and motion options, day/night interface light, language, and the last sleep length. Changes apply at once; they are written to disk only when saved. Since I022 there is also a Wind volume (100 % by default, which is exactly the sound from before). I022: it also keeps the tips setting and the Captain's Academy's progress on this computer (Restore defaults keeps the progress).
 - **Works with:** Godot's audio and display, the settings menu, `App` (first-launch language choice), many screens that listen for changes.
 - **Keeps:** All the preferences above, in `user://settings.cfg`.
 - **When it runs:** Always (an autoload); loaded at start-up.
@@ -1339,6 +1348,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** Always while the HUD is on screen, every frame.
 - **If you change it:** The on-screen warnings for bites, anchor dragging and trolling speed change, which matters for players who play without sound.
 
+### `src/ui/academy_guide.gd`
+
+**Purpose:** The Captain's Academy in play (I022): one small card in the lower right corner for the First Voyage and the tips.
+- **What it does:** During the First Voyage it shows the current step and ticks it off when the player really does it (walks, opens the wheel and the log, goes on deck, opens the chart, plans a course, sets sail, lets time run), always with Skip. Afterwards it shows short tips the first time something happens (the first time underway, a harbour, a weather warning, a bite, traffic, the cabin ...), each once, with Read more and Got it. The card steps aside whenever a window, a warning, a time passage or the voyage map is up, and at the chart it stays clear of the chart's buttons.
+- **Works with:** `App` (its windows, screens and Handbook), `Academy`, `GameSession` and `Simulation` signals, `SettingsManager` (tips on or off), `HUD` (warnings).
+- **Keeps:** The tips waiting, the tip shown, whether the player has walked.
+- **When it runs:** A few times a second while the game runs; it does nothing else.
+- **If you change it:** Keep the rule: never over a window or a warning, and always closable.
+
 ### `src/ui/action_wheel.gd`
 
 **Purpose:** The ring of actions that opens with Q.
@@ -1528,6 +1546,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** In harbour, from the pontoon's grocery station, the provisions panel or the boatyard.
 - **If you change it:** Provision prices and how far you can sail before running out; purchases are saved via `GameSession`.
 
+### `src/ui/handbook_menu.gd`
+
+**Purpose:** The Captain's Handbook window (I022).
+- **What it does:** Lists every page by chapter with a search box, shows the chosen page with the real keys filled in, and offers to begin the First Voyage again or to show the tips again. Opens with F1 or from the pause menu, or at a page from a tip's Read more.
+- **Works with:** `Academy`, `App` (opens it), `AcademyGuide` (Read more).
+- **Keeps:** The page shown and the pages listed.
+- **When it runs:** While it is open.
+- **If you change it:** Keep the Close button; Esc and F1 close it too.
+
 ### `src/ui/hat_badge.gd`
 
 **Purpose:** A small HUD badge that shows when your captain's hat is in danger or has been lost.
@@ -1639,7 +1666,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/pause_menu.gd`
 
 **Purpose:** The in-game pause menu.
-- **What it does:** Shows Resume, Captain's Log, Save, Load, Settings and Main menu, and only reports which was pressed. In development builds it adds a "Developer tests" button. Since I022 it has a Difficulty… button.
+- **What it does:** Shows Resume, Captain's Log, Save, Load, Settings and Main menu, and only reports which was pressed. In development builds it adds a "Developer tests" button. Since I022 it has a Difficulty… button. I022: it also has Captain's Handbook (F1).
 - **Works with:** `App` (carries out the choice), `DevTools`.
 - **Keeps:** Nothing.
 - **When it runs:** When you press Esc or the menu button during play.
@@ -1756,7 +1783,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/settings_menu.gd`
 
 **Purpose:** The settings dialog, from both the title screen and the pause menu.
-- **What it does:** Lets you change volumes (with test sounds), window mode, VSync, interface size, artwork style, sailing view, reduce flashing, lightning brightness, reduce motion, day/night interface light and language. Changes show at once; Apply saves them, and leaving without applying asks before undoing them. Since I022 it has a Wind slider with its own test sound (a few seconds of breeze).
+- **What it does:** Lets you change volumes (with test sounds), window mode, VSync, interface size, artwork style, sailing view, reduce flashing, lightning brightness, reduce motion, day/night interface light and language. Changes show at once; Apply saves them, and leaving without applying asks before undoing them. Since I022 it has a Wind slider with its own test sound (a few seconds of breeze). I022: a Tips check box turns the Academy's tips on or off.
 - **Works with:** `SettingsManager`, `AudioManager`, `MusicDirector`, `SessionLog` (logs folder), `ModalStack`.
 - **Keeps:** A copy of the last saved settings, to detect unsaved changes.
 - **When it runs:** When you open Settings.
@@ -1871,6 +1898,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **If you change it:** How players earn money by working.
 
 ## Automated test suites
+
+### `tests/suites/test_academy.gd`
+
+**Purpose:** Checks the Captain's Academy (I022).
+- **What it does:** Checks the Handbook data (every page in a chapter, every link valid, every key a real binding, no key letters written into texts, all of it in Danish), search in English and Danish, the progress in the settings, the first new game's offer (closable, asked once, never on a loaded game), the First Voyage ticked off by real actions, the tips (never over a window or a warning, once, off in Settings, Read more) and the Handbook (F1, the pause menu, search, beginning the First Voyage again).
+- **Works with:** `Academy`, `AcademyGuide`, `HandbookMenu`, `App`, `SettingsManager`.
+- **Keeps:** Nothing (it resets the Academy's progress afterwards).
+- **When it runs:** With the other suites (`test_runner.tscn`).
+- **If you change it:** Only the tests change.
 
 ### `tests/suites/test_anchor_life.gd`
 
@@ -2741,7 +2777,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Purpose:** The game's automatic test runner: it runs all 74 test suites and says how many checks passed.
-- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it.
+- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites.
 - **Works with:** Every suite in `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Keeps:** The pass/fail counts and the list of failures.
 - **When it runs:** By hand or in automation: `godot --headless --path . res://tests/test_runner.tscn` (options after `--`: `--only=name`, `--skip=name`, `--screenshots=DIR`).

@@ -34,6 +34,7 @@ var _course_view: CheckBox
 var _reduce_flashing: CheckBox
 var _flash: HSlider
 var _reduce_motion: CheckBox
+var _tips: CheckBox
 var _ui_light: OptionButton
 var _language: OptionButton
 
@@ -197,6 +198,19 @@ func _build_accessibility_rows() -> void:
 		SettingsManager.set_reduce_motion(pressed)
 		_refresh_status())
 	grid.add_child(_reduce_motion)
+	# I022, the Captain's Academy: the contextual tips on or off.
+	var tips_label := Label.new()
+	tips_label.name = "TipsLabel"
+	tips_label.text = "Tips"
+	grid.add_child(tips_label)
+	_tips = CheckBox.new()
+	_tips.name = "Tips"
+	_tips.text = "Show tips as you play"
+	_tips.tooltip_text = "Short tips the first time you meet something new. The Captain's Handbook (F1) has everything either way."
+	_tips.toggled.connect(func(pressed: bool) -> void:
+		SettingsManager.set_tips_enabled(pressed)
+		_refresh_status())
+	grid.add_child(_tips)
 	# Captain's Chartroom: the interface's day and night look.
 	var light_label := Label.new()
 	light_label.name = "UiLightLabel"
@@ -242,6 +256,7 @@ func _sync_controls() -> void:
 	_reduce_flashing.set_pressed_no_signal(SettingsManager.get_reduce_flashing())
 	_flash.set_value_no_signal(SettingsManager.get_flash_intensity())
 	_reduce_motion.set_pressed_no_signal(SettingsManager.get_reduce_motion())
+	_tips.set_pressed_no_signal(SettingsManager.get_tips_enabled())
 	_ui_light.select(SettingsManager.UI_LIGHTS.find(SettingsManager.get_ui_light()))
 	_language.select(SettingsManager.LANGUAGES.find(SettingsManager.get_language()))
 	_retranslate()

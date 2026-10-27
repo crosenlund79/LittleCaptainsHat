@@ -54,7 +54,7 @@ def sentence_like(text):
         return False
     if re.search(r"\.(png|tres|tscn|gd|json|ogg|wav|cfg|csv|md)\b", text):
         return False
-    if "{" in text and "}" in text and ":" in text:  # json-ish
+    if re.search(r'\{\s*"', text):  # json-ish (a "{action}" key placeholder is fine, I022)
         return False
     return True
 

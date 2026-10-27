@@ -225,7 +225,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/app/app.gd`
 
-- **Role:** no class_name, extends Node; root script of `res://src/app/app.tscn` (project `run/main_scene`). Application shell and flow coordinator: wires screens/menus to services, owns all hotkey/Esc handling, turns service signals into toasts, sounds and modals. I021: `_on_arrived` calls `toasts.show_card(title, PortData.get_description(), HarbourLooks.picture_for(port))` instead of a plain notice (the title keeps the old "Arrived in %s." text, which tests read through `toasts.get_messages()`). I022: `switch_vessel` awaits `modals.confirm` and `GameSession.buy_vessel` for an unowned boat before switching; `start_new_game(companion, level)`; pause menu `difficulty_requested` pushes `DifficultyMenu.new()`. I022: `pass_time(work: Callable) -> Variant` (modals.clear, TimePassage.play_sleep with `interruption_reason(_stopped_by(result))`, snap_light, time scale back to 1; direct in tests), `interruption_reason(stopped_by)`, `open_postcards/make_postcard`, `open_game_dev/work_on_game(task_id, choice)`; `work_for` now awaits `pass_time(Simulation.work)` and names an interruption; wheel ids `postcards`, `game_dev` (interior).
+- **Role:** no class_name, extends Node; root script of `res://src/app/app.tscn` (project `run/main_scene`). Application shell and flow coordinator: wires screens/menus to services, owns all hotkey/Esc handling, turns service signals into toasts, sounds and modals. I021: `_on_arrived` calls `toasts.show_card(title, PortData.get_description(), HarbourLooks.picture_for(port))` instead of a plain notice (the title keeps the old "Arrived in %s." text, which tests read through `toasts.get_messages()`). I022: `switch_vessel` awaits `modals.confirm` and `GameSession.buy_vessel` for an unowned boat before switching; `start_new_game(companion, level)`; pause menu `difficulty_requested` pushes `DifficultyMenu.new()`. I022: `pass_time(work: Callable) -> Variant` (modals.clear, TimePassage.play_sleep with `interruption_reason(_stopped_by(result))`, snap_light, time scale back to 1; direct in tests), `interruption_reason(stopped_by)`, `open_postcards/make_postcard`, `open_game_dev/work_on_game(task_id, choice)`; `work_for` now awaits `pass_time(Simulation.work)` and names an interruption; wheel ids `postcards`, `game_dev` (interior). I022 Academy: `academy: AcademyGuide` on `AcademyLayer` (UiScaleLayer, layer 15); `start_new_game` → `offer_first_voyage` (deferred; waits for router idle and the loading screen; `modals.confirm` Begin/Skip) when `Academy.first_voyage_state() == NEVER_OFFERED` and `AcademyGuide.enabled`; `open_handbook(page)` (also over `PauseMenu`), `toggle_handbook()` on KEY_F1 in `_unhandled_input`; pause menu `handbook_requested`.
 - **Depends on:** autoloads `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `AudioManager`, `SessionLog`, `UiTheme`; scene children `SceneRouter` ($SceneRouter), `Hud`, `ModalStack`, `Toasts`; creates `WeatherAudio`, `DayNightWatch`, `LoadingScreen`, `TimePassage`, `VoyageMap`; pushes modals (`NewGameMenu`, `PauseMenu`, `SleepMenu`, `SaveLoadMenu`, `BoatyardMenu`, `ProvisionsMenu`, `RescueDialog`, `GroceryMenu`, `FishmongerMenu`, `ChandleryMenu`, `SailmakerMenu`, `CabinHomeMenu`, `GoAshoreMenu`, `FishingMenu`, `CookingMenu`, `AnchorMenu`, `AnchoragePrompt`, `VhfDialog`, `TrophyMenu`, `WorkMenu`, `PublishMenu`, `CaptainsLogMenu`, `SailTrimPanel`, `ActionWheel`, `BoatCareMenu`, `HaulOutPanel`, `LanguagePicker`, `DevTestPanel`); static helpers `Loc`, `PortCatalog`, `VesselCatalog`, `PassageReadiness`, `LegacySaves`, `DevTools`, `DevGuides`, `HarbourFacilities`, `BoatCare`, `FishingSounds`, `HatBadge`, `AnchorSite`, `ChartPlotter`, `SailingPanel`, `RadarPanel`, `Interactable`; screen types `MainMenu`, `BoatArea`, `WorldMap`.
 - **Signals:** declares none. Connects to `GameSession` (`notice`, `rescued`, `voyage_logged`, `renown_awarded`, `hat_warning`, `hat_lost`, `fish_bite`, `anchorage_reached`, `anchor_alarm`, `anchor_moment`, `fishing_warning`, `provisions_warning`, `propulsion_changed`, `state_replaced`, `session_started/ended` → `DevTools.on_session_changed`), `Simulation` (`weather_warning`, `traffic_alert`, `vhf_call`, `arrived`, `passage_started`), `router.screen_changed`, `modals.stack_changed`, `hud.*_requested`, `get_tree().node_added` (adds UI click sound to every BaseButton), and every BoatArea/WorldMap/MainMenu request signal in `_connect_*`.
 - **State:** writes no game state directly; all changes go through `GameSession`/`Simulation`/`SaveManager` calls. Owns UI-only fields: `_rescue_open`, `_anchorage_prompt_due`, `_pending_vhf`, `_bite_wait`, companion follow timers, `_last_quick_msec`, `voyage_map`, `time_passage`. Sets `get_tree().paused` in `_on_modal_stack_changed` (paused while any modal is open in gameplay, or while the rescue report is open).
@@ -257,6 +257,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Invariants:** only one screen exists at a time; `setup` callable runs before the instance enters the tree (connections exist before `_ready`); calls while busy are ignored with a warning; calls `begin_exit()` on the outgoing screen if present.
 - **Tests:** none direct; indirect via `app.router` in app-instancing suites (e.g. `tests/suites/test_anchor_life.gd`).
 - **Change risks:** callers rely on `is_busy()` to gate input; ignored changes during a transition are silent (warning only); making it awaitable differently breaks tests that wait on `router.is_busy()`.
+
+### `src/core/academy.gd`
+
+- **Role:** class_name `Academy`, extends RefCounted, static only (I022). Data: `data()`, `categories()`, `pages()`, `page(id)`, `category_title`, `search(query)` (all words in Loc.t title + `fill(text)` + chapter). Keys: `key(action)` (InputMap events → `DisplayServer.keyboard_get_keycode_from_physical` except headless → `OS.get_keycode_string`, arrows/Esc via `ARROWS`; "move" = WASD / arrows; `FIXED_KEYS` handbook F1, quicksave F5, quickload F9, delete_waypoint Delete, anchorage_key M), `fill(text)` (Loc.t then `{name}` → `key(name)`). Progress: states `NEVER_OFFERED` "", `ACTIVE`, `SKIPPED`, `DONE`; `first_voyage_state`, `current_step`, `begin_first_voyage`, `skip_first_voyage`, `complete_step`, `steps()`, `tip(id)`, `is_tip_seen`, `mark_tip_seen`, `reset_tips`.
+- **Depends on:** `data/academy/academy.json`, `SettingsManager.get_academy/set_academy`, `InputMap`, `DisplayServer`, `Loc`.
+- **State:** static `_data` cache.
+- **Lifecycle:** used by `AcademyGuide`, `HandbookMenu`, `App.offer_first_voyage/open_handbook`.
+- **Tests:** `tests/suites/test_academy.gd` (`[handbook]`, `[keys]`, `[search]`, `[dansk]`, `[settings]`).
+- **Change risks:** the extractor keeps strings with `{key}` placeholders (json-ish rule narrowed in `tools/i18n/extract.py`); translations must keep the placeholders. Fixed keys must match the key codes in `App._unhandled_input` / `WorldMap`.
 
 ### `src/core/anchor_state.gd`
 
@@ -491,7 +500,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/settings/settings_manager.gd`
 
-- **Role:** no class_name, extends Node; autoload `SettingsManager`. Player preferences in `user://settings.cfg` (audio volumes, window mode, VSync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, sleep hours). I022: `&"Wind"` in `AUDIO_BUSES` (after Ambience) and `DEFAULT_VOLUMES` (100 = 0 dB, the pre-I022 balance); stored as `[audio] wind`, read with the default (no migration).
+- **Role:** no class_name, extends Node; autoload `SettingsManager`. Player preferences in `user://settings.cfg` (audio volumes, window mode, VSync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, sleep hours). I022: `&"Wind"` in `AUDIO_BUSES` (after Ambience) and `DEFAULT_VOLUMES` (100 = 0 dB, the pre-I022 balance); stored as `[audio] wind`, read with the default (no migration). I022: `get/set_tips_enabled` (snapshot "tips", `[interface] tips`), `get_academy()`/`set_academy(data)` (saves at once; `_sanitize_academy`: first_voyage in ""/active/skipped/done, step ≥ 0, seen strings; `[academy] first_voyage/step/seen`), not part of the snapshot.
 - **Depends on:** `AudioServer`, `DisplayServer`, `TranslationServer`, `ConfigFile`.
 - **Signals:** `settings_applied`, `ui_scale_changed(scale)`, `art_style_changed(style)`, `course_view_changed(enabled)`, `ui_light_changed(mode)`, `language_changed(locale)` — emitted when values change or are re-applied.
 - **State:** private preference fields; `settings_path` (tests redirect it).
@@ -1655,6 +1664,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** `tests/suites/test_galley_and_anchor.gd`, `tests/suites/test_fishing.gd`, `tests/suites/test_fishing2.gd`, `tests/suites/test_anchor_life.gd` (via `aboard_badge` / `lines_for_game`).
 - **Change risks:** Tests compare exact row texts (`get_texts()`, `lines_for_game()`); changing wording or row ids breaks them. Theme role names (`caution`, `warning`) must exist in `UiTheme`.
 
+### `src/ui/academy_guide.gd`
+
+- **Role:** class_name `AcademyGuide`, extends Control (mouse ignored), child of App's `AcademyLayer` (UiScaleLayer, layer 15). static `enabled` (false in `test_runner`). `card` (PanelContainer "AcademyCard", bottom-right; `MARGIN_CHART` 540 at `WorldMap`), Heading/Text labels, SkipButton/MoreButton/CloseButton (focus none). `queue_tip(id)`, `queued_tips()`, `shown_tip()`, `update_card()` (every `CHECK_SECONDS` 0.25 from `_process`), `is_free()` (game active, BoatArea/WorldMap, no modal, router idle, no time_passage/voyage_map/loading, no HUD warning), `step_done(id)`, `dismiss()` (starts `TIP_GAP_SECONDS` 20), `read_more()`, `skip_first_voyage()`, `begin_first_voyage()`. Tips auto-close after `TIP_SECONDS` 25; the farewell "!done" after `DONE_SECONDS`. Night tip polled every 2 s (`Daylight.sun_elevation` < −6°).
+- **Depends on:** `App` (router, modals, hud, time_passage, voyage_map, is_loading, open_handbook, notify), `Academy`, signals `GameSession.voyage_started/fish_bite/anchor_changed/provisions_warning/hat_warning/renown_awarded/boat_area_changed`, `Simulation.arrived/weather_warning/traffic_alert/vhf_call/passage_started`, `HarbourFacilities.BOATYARD`, `ActionWheel`, `CaptainsLogMenu`, `WorldMap`, `BoatArea`.
+- **State:** `_queue`, `_tip`, `_tip_left`, `_gap_left`, `_moved`, timers.
+- **Lifecycle:** created in `App._ready`; lives for the whole run.
+- **Tests:** `tests/suites/test_academy.gd` (`[first voyage]`, `[tips]`).
+- **Change risks:** `_input` only reads move actions (never handles input); a tip id must exist in `academy.json` `tips`.
+
 ### `src/ui/action_wheel.gd`
 
 - **Role:** class_name `ActionWheel`, extends `ModalPanel`; radial modal menu of context actions (Q).
@@ -1887,6 +1905,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** `tests/suites/test_hat.gd`, `tests/suites/test_living.gd`, `tests/suites/test_upkeep_ui.gd`, `tests/suites/test_visual_prototype.gd`, `tests/suites/test_boat_of_your_own.gd` (refresh after a fishmonger sale).
 - **Change risks:** a new figure shown here that other screens can change needs its signal connected too (funds and catch are). Buy/BuyHat/StockUp buttons are exposed via getters used by tests.
 
+### `src/ui/handbook_menu.gd`
+
+- **Role:** class_name `HandbookMenu`, extends `SimplePanel` (1160 wide). Signal `first_voyage_requested`. Nodes: Search (LineEdit), Pages (ItemList: chapter headers disabled with empty metadata, pages with their id), PageTitle, PageText (in a ScrollContainer), FirstVoyageButton, TipsButton, CloseButton. `search(query)`, `listed()`, `show_page(id)`, `shown_page()`.
+- **Depends on:** `Academy.search/page/category_title/fill/begin_first_voyage/reset_tips`.
+- **State:** `_ids`, `_shown`.
+- **Lifecycle:** pushed by `App.open_handbook(page)` (also over the pause menu); `App.toggle_handbook` (F1) closes it when on top.
+- **Tests:** `tests/suites/test_academy.gd` (`[handbook]`).
+- **Change risks:** none beyond the modal stack.
+
 ### `src/ui/hat_badge.gd`
 
 - **Role:** `class_name HatBadge`, extends PanelContainer; HUD indicator for hat state (`STATE_NONE` / `STATE_AT_RISK` / `STATE_MISSING`).
@@ -2022,7 +2049,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/pause_menu.gd`
 
-- **Role:** `class_name PauseMenu`, extends `ModalPanel`; in-game pause menu that only emits intents. I022: `difficulty_requested` signal; a code-built `DifficultyButton` after `SettingsButton`.
+- **Role:** `class_name PauseMenu`, extends `ModalPanel`; in-game pause menu that only emits intents. I022: `difficulty_requested` signal; a code-built `DifficultyButton` after `SettingsButton`. I022: `HandbookButton` built in code after `DifficultyButton`; signal `handbook_requested`.
 - **Depends on:** `pause_menu.tscn`, `DevTools.is_enabled`.
 - **Signals:** declares `save_requested`, `log_requested`, `load_requested`, `settings_requested`, `main_menu_requested`, `dev_tests_requested`; App wires them in `open_pause_menu()`.
 - **Lifecycle:** instantiated from `pause_menu_scene` by `App.open_pause_menu()` (Esc or `Hud.menu_requested`).
@@ -2155,7 +2182,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/settings_menu.gd`
 
-- **Role:** `class_name SettingsMenu`, extends `ModalPanel`; shared settings dialog with live preview and Apply/Discard. I022: `BUS_LABELS` has `Wind`; `_play_test_sound(&"Wind")` plays `WIND_TEST` (wind_breeze.wav, not looping) as a one-shot on the Wind bus.
+- **Role:** `class_name SettingsMenu`, extends `ModalPanel`; shared settings dialog with live preview and Apply/Discard. I022: `BUS_LABELS` has `Wind`; `_play_test_sound(&"Wind")` plays `WIND_TEST` (wind_breeze.wav, not looping) as a one-shot on the Wind bus. I022: `_tips` CheckBox ("Tips" row after Reduce motion) → `SettingsManager.set_tips_enabled`; synced in `_sync_controls`.
 - **Depends on:** `settings_menu.tscn`, `SettingsManager` (snapshot/restore, volumes, window mode, vsync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, save, defaults), `Loc.LANGUAGES`, `SessionLog.get_folder`, `AudioManager`, `MusicDirector`, `ModalStack.confirm`.
 - **State:** `_saved` snapshot for unapplied-change detection; all writes go through SettingsManager.
 - **Lifecycle:** instantiated from `settings_menu_scene` by `App.open_settings()` (from main menu and pause menu).
@@ -2292,6 +2319,13 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Change risks:** displayed pay is computed locally and must match `Simulation.work`'s actual pay.
 
 ## Test suites
+
+### `tests/suites/test_academy.gd`
+
+- **Role:** extends RefCounted; I022 suite. `_test_data` (chapters, page links, `{placeholder}` validity via RegEx, no "press X" letters, 8 steps), `_test_keys_and_search` (E/Esc/L/F1, move, fill, search, Danish completeness and search "anker"), `_test_settings` (sanitizing, save/load, restore_defaults keeps progress), then with `app.tscn` and `AcademyGuide.enabled = true`: `_test_offer` (ConfirmDialog on the first new game, Esc = skip, once, `load_slot` never offers), `_test_first_voyage` (drives each step: InputEventAction move_up into `_input`, wheel, log, deck, chart, `plan_route_to`, `depart`, time scale 5), `_test_tips` (pause menu and HUD warning defer; close + 20 s gap; once; tips off; Read more → `HandbookMenu.shown_page`), `_test_handbook` (F1 via `_unhandled_input`, search, pause menu button, Close back to the pause menu, FirstVoyageButton). Screenshots i022_academy_offer, _first_voyage, _chart_step, _tip, i022_handbook.
+- **Depends on:** `app.tscn`, `SaveManager.save_to_slot(3)`, runner helpers.
+- **Lifecycle:** in `test_runner.gd` `SUITES` after `test_captains_other_life`; resets `AcademyGuide.enabled` and the progress at the end.
+- **Change risks:** sets the private `_queue`/`_gap_left` of the guide to make tip timing deterministic.
 
 ### `tests/suites/test_anchor_life.gd`
 
@@ -3195,7 +3229,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/test_runner.gd`
 
-- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`. I022: `test_captains_other_life` in `SUITES`; sets `GameSession.test_all_boats_owned = true` with `TimePassage.enabled = false`.
+- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`. I022: `test_captains_other_life` in `SUITES`; sets `GameSession.test_all_boats_owned = true` with `TimePassage.enabled = false`. I022: `AcademyGuide.enabled = false` at start; `test_academy` in SUITES after `test_captains_other_life`.
 - **Depends on:** all `tests/suites/test_*.gd`; `SaveManager`, `SessionLog`, `SettingsManager`, `TimePassage`, `WindField`, `Simulation`, `GameSession`, `PortCatalog`, `SeaRouter`.
 - **State:** redirects `SaveManager.save_dir = user://test_saves`, `SessionLog.log_dir = user://test_diagnostics`, `SettingsManager.settings_path = user://test_settings.cfg`; `TimePassage.enabled = false`; language forced to `en` before each suite; before each suite `use_calm_wind()` and `Simulation.sea_encounters` true only for `test_captains_watch.gd` and `test_localization.gd`; scratch saves/settings deleted at start and end; `_exit_tree` calls `WindField.clear_default()`.
 - **Lifecycle:** `godot --headless --path . res://tests/test_runner.tscn [-- --only=a,b] [--skip=a,b] [--screenshots=DIR]` (filters match suite file-name substrings; screenshots only when rendered). `process_mode = ALWAYS`.

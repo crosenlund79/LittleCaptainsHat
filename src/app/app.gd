@@ -163,6 +163,14 @@ func _ready() -> void:
 	day_night_watch.name = "DayNightWatch"
 	day_night_watch.app = self
 	add_child(day_night_watch)
+	var academy_layer := UiScaleLayer.new()
+	academy_layer.name = "AcademyLayer"
+	academy_layer.layer = 15
+	add_child(academy_layer)
+	academy = AcademyGuide.new()
+	academy.name = "AcademyGuide"
+	academy.app = self
+	academy_layer.add_child(academy)
 	show_main_menu()
 	# Cozy Polish: the game's own loading screen over the menu, once per launch.
 	if LoadingScreen.wanted():
@@ -173,6 +181,8 @@ func _ready() -> void:
 
 ## The start-up loading screen while it is up (null afterwards).
 var loading_screen: LoadingScreen
+## The Captain's Academy card (I022): the First Voyage and the tips.
+var academy: AcademyGuide
 
 
 func is_loading() -> bool:
@@ -241,6 +251,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F9:
 		get_viewport().set_input_as_handled()
 		quickload()
+		return
+	if event is InputEventKey and event.pressed and not event.is_echo() and (event as InputEventKey).keycode == KEY_F1:
+		get_viewport().set_input_as_handled()
+		toggle_handbook()
 		return
 	if event.is_action_pressed(&"captains_log") and not event.is_echo():
 		get_viewport().set_input_as_handled()
@@ -325,6 +339,51 @@ func start_new_game(companion_kind: StringName = CompanionState.DEFAULT_KIND, le
 	modals.clear()
 	GameSession.start_new_session(companion_kind, level)
 	_show_current_boat_area()
+	if AcademyGuide.enabled and Academy.first_voyage_state() == Academy.NEVER_OFFERED:
+		offer_first_voyage.call_deferred()
+
+
+# --- The Captain's Academy (I022) ----------------------------------------------------
+
+## The first new game on this computer asks once: a First Voyage, or not?
+## (Loading a saved game never asks.) Either answer is remembered; the
+## Handbook can begin it again.
+func offer_first_voyage() -> void:
+	await get_tree().process_frame
+	while router.is_busy() or is_loading():
+		await get_tree().process_frame
+	if not is_in_gameplay():
+		return
+	var begin: bool = await modals.confirm(Loc.t("Your first voyage"),
+		Loc.t("Would you like a short First Voyage? A small card shows one step at a time, from walking about to setting sail, and you can skip it whenever you like. The Captain's Handbook (%s) is always there either way.") % Academy.key("handbook"),
+		Loc.t("Begin"), Loc.t("Skip"))
+	if begin:
+		academy.begin_first_voyage()
+	else:
+		Academy.skip_first_voyage()
+
+
+## The Captain's Handbook, at `page` (or its first page). Opens over the
+## pause menu too; anywhere else only when nothing is open.
+func open_handbook(page := "") -> HandbookMenu:
+	if router.is_busy() or (not modals.is_empty() and not modals.get_top() is PauseMenu):
+		return null
+	var menu := HandbookMenu.new()
+	menu.first_voyage_requested.connect(func() -> void:
+		modals.clear()
+		academy.begin_first_voyage())
+	modals.push(menu)
+	if not page.is_empty():
+		menu.show_page(page)
+	return menu
+
+
+## F1: opens the Handbook, or closes it when it is on top.
+func toggle_handbook() -> void:
+	if modals.get_top() is HandbookMenu:
+		modals.get_top().close()
+	else:
+		open_handbook()
 
 
 func continue_game() -> void:
@@ -1412,6 +1471,7 @@ func open_pause_menu() -> void:
 	menu.log_requested.connect(open_captains_log)
 	menu.settings_requested.connect(open_settings)
 	menu.difficulty_requested.connect(func() -> void: modals.push(DifficultyMenu.new()))
+	menu.handbook_requested.connect(func() -> void: open_handbook())
 	menu.main_menu_requested.connect(request_main_menu)
 	menu.dev_tests_requested.connect(func() -> void:
 		modals.clear()
