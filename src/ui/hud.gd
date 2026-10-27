@@ -37,8 +37,8 @@ signal save_requested
 ## The shortcut strip at the bottom left (Iteration 12): key caps on a slim,
 ## translucent bar (the theme's KeyBar, day or night) so it reads over any
 ## deck, pontoon or quay.
-const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["Q", "actions"], ["R", "rod"], ["H", "hat"], ["L", "Captain's Log"],
-	["Esc", "menu"]]
+const SHORTCUTS: Array = [["WASD / ↑↓←→", "move"], ["E", "interact"], ["Q", "actions"], ["R", "rod"], ["H", "hat"], ["L", "Captain's Log"],  # i18n
+	["Esc", "menu"]]  # i18n
 
 var hat_badge: HatBadge
 ## Fishing, anchor and galley indicators (Iteration 13), under the hat badge.

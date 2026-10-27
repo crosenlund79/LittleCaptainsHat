@@ -260,8 +260,8 @@ static func history_text(entry: Dictionary) -> String:
 	elif kind.begins_with("haul_out_extra:"):
 		var extra := kind.get_slice(":", 1)
 		what = Loc.t("While out: %s") % (String(get_upgrade(extra).get("name", extra)) if not get_upgrade(extra).is_empty()
-			else String(SERVICE_NAMES.get(StringName(extra), extra)).to_lower())
+			else Loc.t(String(SERVICE_NAMES.get(StringName(extra), extra))).to_lower())
 	else:
-		what = String(SERVICE_NAMES.get(StringName(kind), kind))
+		what = Loc.t(String(SERVICE_NAMES.get(StringName(kind), kind)))
 	var port := PortCatalog.get_default().get_display_name(StringName(entry.get("port", "")))
 	return "%s, %s, %s" % [what, port, GameSession.format_money(int(entry.get("cost", 0)))]

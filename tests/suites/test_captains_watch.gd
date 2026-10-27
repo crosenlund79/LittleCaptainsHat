@@ -104,16 +104,18 @@ func _test_cpa() -> void:
 func _test_alerts_on_passage() -> void:
 	t.use_calm_wind()
 	t.set_wind(240.0, 12.0)
-	var error := _depart(&"copenhagen", &"gothenburg")
-	if not t.check(error == "", "(setup) underway Copenhagen to Gothenburg (%s)" % error):
-		return
 	var alerts: Array[Dictionary] = []
 	var listener := func(info: Dictionary) -> void: alerts.append(info)
 	Simulation.traffic_alert.connect(listener)
 	var hours := 0.0
-	while GameSession.is_underway() and hours < 80.0:
-		Simulation.advance(1800.0)
-		hours += 0.5
+	for route in [[&"copenhagen", &"gothenburg"], [&"kiel", &"copenhagen"], [&"malmo", &"reykjavik"]]:
+		if not t.check(_depart(route[0], route[1]) == "", "(setup) underway %s to %s" % route):
+			continue
+		var leg := 0.0
+		while GameSession.is_underway() and leg < 150.0:
+			Simulation.advance(1800.0)
+			leg += 0.5
+		hours += leg
 	Simulation.traffic_alert.disconnect(listener)
 	var ids := {}
 	var fair := true
@@ -122,10 +124,11 @@ func _test_alerts_on_passage() -> void:
 		duplicate = duplicate or ids.has(info.id)
 		ids[info.id] = true
 		fair = fair and float(info.tcpa_h) >= 0.15 and String(info.text).begins_with("Collision risk")
+	t.check(not alerts.is_empty(), "[alerts] (setup) busy and long routes bring collision risks (%d in %.0f h)" % [alerts.size(), hours])
 	t.check(not duplicate, "[alerts] each ship is announced once (%d alerts in %.1f h)" % [alerts.size(), hours])
 	t.check(fair, "[alerts] every alert comes with time to act (at least 9 minutes before the closest point): %s" % [
 		alerts.map(func(i: Dictionary) -> int: return roundi(float(i.tcpa_h) * 60.0))])
-	t.check(alerts.size() <= 12, "[alerts] warnings are rare, not a nuisance (%d on %.0f h)" % [alerts.size(), hours])
+	t.check(alerts.size() <= hours / 10.0, "[alerts] warnings are rare, not a nuisance (%d in %.0f h)" % [alerts.size(), hours])
 
 
 ## Sleep and Long Passage stop for a collision risk; after a load the same

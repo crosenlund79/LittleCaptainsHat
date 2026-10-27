@@ -68,7 +68,7 @@ static func point_of_sail_name(angle: float) -> String:
 static func wind_side(angle: float) -> String:
 	if absf(angle) < 1.0 or absf(angle) > 179.0:
 		return ""
-	return "starboard" if angle > 0.0 else "port"
+	return Loc.t("starboard") if angle > 0.0 else Loc.t("port")
 
 
 ## One-line description for the HUD: "Under sail · broad reach · 6.8 kn".

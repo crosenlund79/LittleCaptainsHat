@@ -31,7 +31,8 @@ def literals(code):
         if m.group(1) == "" and not (m.start() > 0 and (code[m.start() - 1].isalnum() or code[m.start() - 1] == "_")):
             yield m.group(2)
 LOC_T = re.compile(r'Loc\.t\(\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*"((?:[^"\\]|\\.)*)")?\s*\)')
-LOC_N = re.compile(r'Loc\.n\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"(?:\s*,[^,)]*(?:\([^)]*\))?[^,)]*,\s*"((?:[^"\\]|\\.)*)")?')
+LOC_FORMAT = re.compile(r'Loc\.format\(\s*"((?:[^"\\]|\\.)*)"')
+LOC_N = re.compile(r'Loc\.(?:n|format_plural)\(\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"(?:\s*,[^,)]*(?:\([^)]*\))?[^,)]*,\s*"((?:[^"\\]|\\.)*)")?')
 DATA_KEYS = ("name", "text", "title", "description", "label", "display_name", "short", "story", "hint", "flavour", "message",
              "body", "choice", "outcome")
 
@@ -79,6 +80,8 @@ def collect():
         # Loc.t / Loc.n calls, also across lines.
         for m in LOC_T.finditer(source):
             add(unescape(m.group(1)), f"{rel}:{source.count(chr(10), 0, m.start()) + 1}", unescape(m.group(2) or ""))
+        for m in LOC_FORMAT.finditer(source):
+            add(unescape(m.group(1)), f"{rel}:{source.count(chr(10), 0, m.start()) + 1}")
         for m in LOC_N.finditer(source):
             add(unescape(m.group(1)), f"{rel}:{source.count(chr(10), 0, m.start()) + 1}", unescape(m.group(3) or ""), unescape(m.group(2)))
         for number, line in enumerate(source.split("\n"), 1):
@@ -86,6 +89,11 @@ def collect():
             if stripped.startswith("#"):
                 continue
             code = line.split(" #")[0] if '"' not in line.split(" #")[-1] else line
+            if line.rstrip().endswith("# i18n"):  # every text on the line is shown (a table of labels)
+                for raw in literals(code):
+                    if re.search(r"[A-Za-z]{2,}", raw):
+                        add(unescape(raw), f"{rel}:{number}")
+                continue
             if SKIP_LINE.search(code) or "Loc." in code:
                 continue
             for raw in literals(code):

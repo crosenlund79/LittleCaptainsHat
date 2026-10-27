@@ -27,5 +27,5 @@ func _draw() -> void:
 		draw_colored_polygon(box, Color(style.color, maxf(float(style.fill), 0.08)))
 		WeatherStyle.draw_outline(self, box, style.outline, Color(style.color, 0.95), 2.0)
 		WeatherStyle.draw_glyph(self, kind, Vector2(24, y), 16.0, style.color)
-		draw_string(_font, Vector2(56, y + font_size * 0.35), NAMES[i], HORIZONTAL_ALIGNMENT_LEFT, size.x - 60.0, font_size,
+		draw_string(_font, Vector2(56, y + font_size * 0.35), Loc.t(NAMES[i]), HORIZONTAL_ALIGNMENT_LEFT, size.x - 60.0, font_size,
 			Color(0.82, 0.86, 0.86, 0.95))

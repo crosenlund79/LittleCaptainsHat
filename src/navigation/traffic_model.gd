@@ -32,7 +32,7 @@ const HIDDEN_START_NM := 12.0
 ## Track shape: up to TRACK_ATTEMPTS tries, checked on water every
 ## LIFETIME_SECONDS / 2 / TRACK_STEPS each way, at least MIN_TRACK_SECONDS long.
 const TRACK_ATTEMPTS := 4
-const TRACK_STEPS := 8
+const TRACK_STEPS := 4
 const MIN_TRACK_SECONDS := 3600.0
 
 ## [id, display name (Loc), [min kn, max kn], needs harbours nearby]
@@ -82,6 +82,12 @@ func vessels_near(geo: Vector2, time: float, seed: int, range_nm: float) -> Arra
 				for track: Dictionary in _cell_tracks(ci, j, w, seed):
 					var dt: float = time - float(track.passes_at)
 					if dt < float(track.from) or dt > float(track.to):
+						continue
+					# Cheap flat pre-check: a track that cannot be within `range_nm`
+					# of here now is skipped before its exact (spherical) position.
+					var run := float(track.speed_kn) * absf(dt) / 3600.0
+					if absf(float(track.point.y) - geo.y) * 60.0 - run > range_nm + 2.0 \
+							or absf(wrapf(float(track.point.x) - geo.x, -180.0, 180.0)) * 60.0 * lat_cos - run > range_nm * 1.2 + 2.0:
 						continue
 					var vessel_geo := ChartPlotter._geo_at(track.point, track.velocity * dt / 3600.0)
 					var offset := ChartPlotter._nm_offset(geo, vessel_geo)

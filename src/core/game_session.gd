@@ -920,7 +920,7 @@ func _wear(elapsed: float, nm: float) -> void:
 		for i in 2:
 			if after[i] == BoatCare.LEVEL_RECOMMENDED and before[i] != after[i]:
 				notice.emit.call_deferred(Loc.t("Boat care: %s could do with a service at the next boatyard. (Captain's Log, Boat tab)") % \
-					BoatCare.AREA_NAMES[[BoatCare.AREA_RIG, BoatCare.AREA_ENGINE][i]].to_lower())
+					Loc.t(BoatCare.AREA_NAMES[[BoatCare.AREA_RIG, BoatCare.AREA_ENGINE][i]]).to_lower())
 
 
 ## Which yard a service or upgrade needs: the boatyard, or a yard that can
@@ -1025,12 +1025,12 @@ func get_haul_out_extras() -> Array[StringName]:
 ## The extras are done while the boat is out, so they add cost, not time.
 func haul_out_quote(extras: Array[StringName]) -> Dictionary:
 	var quote := service_quote(BoatCare.SERVICE_HAUL_OUT)
-	var items: Array = [[BoatCare.SERVICE_NAMES[BoatCare.SERVICE_HAUL_OUT], int(quote.cost)]]
+	var items: Array = [[Loc.t(BoatCare.SERVICE_NAMES[BoatCare.SERVICE_HAUL_OUT]), int(quote.cost)]]
 	var cost := int(quote.cost)
 	for extra in extras:
 		var price := upgrade_price(String(extra)) if extra == &"hard_antifouling" else int(service_quote(extra).cost)
 		var name: String = BoatCare.get_upgrade(String(extra)).get("name", "") if extra == &"hard_antifouling" \
-			else BoatCare.SERVICE_NAMES.get(extra, String(extra))
+			else Loc.t(BoatCare.SERVICE_NAMES.get(extra, String(extra)))
 		items.append([name, price])
 		cost += price
 	return {"cost": cost, "minutes": float(quote.minutes), "items": items}

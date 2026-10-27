@@ -190,7 +190,7 @@ func _care_note() -> String:
 	for area in BoatCare.AREAS:
 		var level := GameSession.get_care_level(area)
 		if level == BoatCare.LEVEL_RECOMMENDED or level == BoatCare.LEVEL_NEEDED:
-			notes.append("%s: %s" % [String(BoatCare.AREA_NAMES[area]).to_lower(), String(BoatCare.LEVEL_NAMES[level]).to_lower()])
+			notes.append("%s: %s" % [Loc.t(BoatCare.AREA_NAMES[area]).to_lower(), Loc.t(BoatCare.LEVEL_NAMES[level]).to_lower()])
 	return "  ·  " + ", ".join(notes) if not notes.is_empty() else ""
 
 

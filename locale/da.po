@@ -7056,3 +7056,136 @@ msgstr[1] "%d perfekte træf: lidt tungere for din omhu."
 
 msgid "Missed - it skips over the bottom (%d min). %d tries left."
 msgstr "Forbi - det springer hen over bunden (%d min). %d forsøg tilbage."
+
+
+msgid "%sA good anchorage: sheltered from this wind (depth %s; land %.1f nm away)."
+msgstr "%sEn god ankerplads: i læ for denne vind (dybde %s; land %.1f sm væk)."
+
+msgid "%sA fair anchorage: partly sheltered from this wind (depth %s; land %.1f nm away)."
+msgstr "%sEn rimelig ankerplads: delvis i læ for denne vind (dybde %s; land %.1f sm væk)."
+
+msgid "%sAn exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor (depth %s)."
+msgstr "%sEn åben ankerplads: vinden blæser lige ind over %.0f+ sm åbent vand. Ankeret kan holde dårligt (dybde %s)."
+
+msgid "%.1f kn possible under sail in %d kn of wind"
+msgstr "%.1f kn mulig for sejl i %d kn vind"
+
+msgid "is %dx%d, but should have the shape of %dx%d (aspect %.3f, not %.3f)"
+msgstr "er %dx%d, men bør have formen %dx%d (forhold %.3f, ikke %.3f)"
+
+msgid "Too fast to troll: %.1f kn. A trolled lure only works below %d kn; wait for a gentler stretch or anchor."
+msgstr "For hurtigt til slæbefiskeri: %.1f kn. Et slæbt blink virker kun under %d kn; vent på roligere vand eller ankr."
+
+msgid "The line is skipping on the surface at %.1f kn: too fast to troll. Bring it in, or wait for a gentler stretch."
+msgstr "Linen hopper i overfladen ved %.1f kn: for hurtigt til slæb. Hal den ind, eller vent på roligere vand."
+
+msgid "An exceptional fish: %s, %.1f kg"
+msgstr "En enestående fisk: %s, %.1f kg"
+
+msgid "%s, %.1f kg"
+msgstr "%s, %.1f kg"
+
+msgid "Good for the normal anchor (%s, %s; land %.1f nm away). How sheltered it is depends on the wind when you arrive."
+msgstr "Godt for det normale anker (%s, %s; land %.1f sm væk). Hvor meget læ der er, afhænger af vinden ved ankomst."
+
+msgid "New personal best: %s, %.1f kg"
+msgstr "Ny personlig rekord: %s, %.1f kg"
+
+msgid "The chart has been updated. The boat has been moved %.1f nm to nearby open water."
+msgstr "Søkortet er opdateret. Båden er flyttet %.1f sm til åbent vand i nærheden."
+
+msgid "Collision risk: the %s %s will pass %.1f nm off in about %d min, from the %s. Keep a sharp lookout and give way if needed."
+msgstr "Kollisionsrisiko: %s %s passerer %.1f sm væk om ca. %d min, fra %s. Hold godt udkig, og vig om nødvendigt."
+
+msgid " The nearest suitable spot is %.1f nm away."
+msgstr " Nærmeste egnede sted er %.1f sm væk."
+
+msgid "Underway to %s  ·  %.1f kn %s"
+msgstr "Undervejs mod %s  ·  %.1f kn %s"
+
+msgid "\nSteering %03d°  ·  %s in %.1f nm"
+msgstr "\nStyrer %03d°  ·  %s om %.1f sm"
+
+msgid "Motoring · %s · %.1f kn"
+msgstr "For motor · %s · %.1f kn"
+
+msgid "Under sail · %s · %.1f kn"
+msgstr "For sejl · %s · %.1f kn"
+
+msgid "  Dragged %.2f nm so far."
+msgstr "  Glidet %.2f sm indtil nu."
+
+msgid "%.1f kn"
+msgstr "%.1f kn"
+
+msgid "Destination %.1f nm  ·  course %03d°"
+msgstr "Destination %.1f sm  ·  kurs %03d°"
+
+msgid "Next turn %.1f nm  ·  then %03d°"
+msgstr "Næste drej %.1f sm  ·  så %03d°"
+
+msgid "Trolling behind the boat at %.1f kn"
+msgstr "Slæbefiskeri efter båden ved %.1f kn"
+
+msgid "Aboard: food %s, water %s. Missing: %.1f days in all."
+msgstr "Om bord: mad %s, vand %s. Mangler: %.1f dage i alt."
+
+msgid "Underway  ·  %.1f kn"
+msgstr "Undervejs  ·  %.1f kn"
+
+msgid "Hull %s   %s   Food %.1f d · Water %.1f d"
+msgstr "Skrog %s   %s   Mad %.1f d · Vand %.1f d"
+
+msgid "%.1f kn  ·  %s"
+msgstr "%.1f kn  ·  %s"
+
+msgid ", %.1f nm"
+msgstr ", %.1f sm"
+
+msgid "Anchorage %.1f nm ahead"
+msgstr "Ankerplads %.1f sm forude"
+
+msgid "Anchorage in %s, %.1f nm"
+msgstr "Ankerplads om %s, %.1f sm"
+
+msgid "in %s, %.1f nm"
+msgstr "om %s, %.1f sm"
+
+msgid "%.1f nm ahead"
+msgstr "%.1f sm forude"
+
+msgid "%d.  %s, %.1f kg  ·  %s  ·  %d %s%s"
+msgstr "%d.  %s, %.1f kg  ·  %s  ·  %d. %s%s"
+
+msgid " (best %.1f kg)"
+msgstr " (bedst %.1f kg)"
+
+msgid "%.1f nm"
+msgstr "%.1f sm"
+
+msgid "port"
+msgstr "bagbord"
+
+msgid "starboard"
+msgstr "styrbord"
+
+msgid "%.1f kg  ·  %s specimen"
+msgstr "%.1f kg  ·  %s eksemplar"
+
+msgid "actions"
+msgstr "handlinger"
+
+msgid "hat"
+msgstr "hue"
+
+msgid "interact"
+msgstr "brug"
+
+msgid "move"
+msgstr "gå"
+
+msgid "rod"
+msgstr "stang"
+
+msgid "menu"
+msgstr "menu"

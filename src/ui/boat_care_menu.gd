@@ -145,7 +145,7 @@ func refresh() -> void:
 	var facilities := GameSession.get_harbour_facilities()
 	var location := GameSession.get_location()
 	_header.text = Loc.t("The %s in %s · %s%s · %s available") % [GameSession.get_vessel_definition().display_name,
-		location.display_name if location else "harbour", HarbourFacilities.TIER_NAMES[facilities.get_tier()],
+		location.display_name if location else "harbour", Loc.t(HarbourFacilities.TIER_NAMES[facilities.get_tier()]),
 		Loc.t(" (this yard can haul boats out)") if facilities.has(HarbourFacilities.HAUL_OUT) else "",
 		GameSession.format_money(GameSession.get_funds())]
 	_view.refresh()

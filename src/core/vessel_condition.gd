@@ -28,7 +28,7 @@ static func band_of(percent: float) -> StringName:
 
 
 static func band_name(percent: float) -> String:
-	return NAMES[band_of(percent)]
+	return Loc.t(NAMES[band_of(percent)])
 
 
 ## "87 % · Sound". Rounded up, so a boat only shows 0 % when it is lost.

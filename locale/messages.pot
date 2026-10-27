@@ -3058,6 +3058,18 @@ msgstr ""
 msgid "Magic Anchor, open sea (%s): it will hold the boat's position, but there is no shelter out here from wind or waves."
 msgstr ""
 
+#: src/anchor/anchor_site.gd:199
+msgid "%sA good anchorage: sheltered from this wind (depth %s; land %.1f nm away)."
+msgstr ""
+
+#: src/anchor/anchor_site.gd:201
+msgid "%sA fair anchorage: partly sheltered from this wind (depth %s; land %.1f nm away)."
+msgstr ""
+
+#: src/anchor/anchor_site.gd:203
+msgid "%sAn exposed anchorage: this wind blows straight in over %.0f+ nm of open water. Holding may be poor (depth %s)."
+msgstr ""
+
 #: src/anchor/anchor_site.gd:212 src/anchor/anchor_site.gd:85
 msgid "Land or unsuitable water."
 msgstr ""
@@ -3114,7 +3126,7 @@ msgstr ""
 msgid "Sailing on along the course."
 msgstr ""
 
-#: src/app/app.gd:1052 src/core/simulation.gd:558
+#: src/app/app.gd:1052 src/core/simulation.gd:562
 msgid "Remote work needs a steady connection: moor in a harbour first."
 msgstr ""
 
@@ -3398,6 +3410,10 @@ msgstr ""
 msgid "At anchor. Raise the anchor at the windlass on the foredeck before sailing on."
 msgstr ""
 
+#: src/app/app.gd:629
+msgid "%.1f kn possible under sail in %d kn of wind"
+msgstr ""
+
 #: src/app/app.gd:632
 msgid "Sailing conditions favourable (%s). Sails set%s, engine stopped."
 msgstr ""
@@ -3552,6 +3568,10 @@ msgstr ""
 
 #: src/art/artwork_resolver.gd:187
 msgid "%s: %s %s; the original art is kept."
+msgstr ""
+
+#: src/art/artwork_resolver.gd:204
+msgid "is %dx%d, but should have the shape of %dx%d (aspect %.3f, not %.3f)"
 msgstr ""
 
 #: src/art/artwork_resolver.gd:207
@@ -4052,6 +4072,14 @@ msgstr ""
 msgid "You have no %s left. The harbour grocery store sells lures."
 msgstr ""
 
+#: src/core/game_session.gd:1329
+msgid "Too fast to troll: %.1f kn. A trolled lure only works below %d kn; wait for a gentler stretch or anchor."
+msgstr ""
+
+#: src/core/game_session.gd:1378
+msgid "The line is skipping on the surface at %.1f kn: too fast to troll. Bring it in, or wait for a gentler stretch."
+msgstr ""
+
 #: src/core/game_session.gd:1467
 msgid "Snap! The line broke and the %s went with the fish."
 msgstr ""
@@ -4070,6 +4098,14 @@ msgstr ""
 
 #: src/core/game_session.gd:1527
 msgid "A new species: %s"
+msgstr ""
+
+#: src/core/game_session.gd:1529
+msgid "An exceptional fish: %s, %.1f kg"
+msgstr ""
+
+#: src/core/game_session.gd:1534 src/ui/fishing_menu.gd:306
+msgid "%s, %.1f kg"
 msgstr ""
 
 #: src/core/game_session.gd:1537
@@ -4268,6 +4304,10 @@ msgstr ""
 msgid " Open sea: no shelter from wind or waves."
 msgstr ""
 
+#: src/core/game_session.gd:2185
+msgid "Good for the normal anchor (%s, %s; land %.1f nm away). How sheltered it is depends on the wind when you arrive."
+msgstr ""
+
 #: src/core/game_session.gd:2218
 msgid "The anchor is not down."
 msgstr ""
@@ -4298,6 +4338,10 @@ msgstr ""
 
 #: src/core/game_session.gd:2321
 msgid "An exceptional %s"
+msgstr ""
+
+#: src/core/game_session.gd:2324
+msgid "New personal best: %s, %.1f kg"
 msgstr ""
 
 #: src/core/game_session.gd:2327
@@ -4427,6 +4471,10 @@ msgstr ""
 
 #: src/core/game_session.gd:2912
 msgid "The chart has been updated. Please plot your course again."
+msgstr ""
+
+#: src/core/game_session.gd:2914
+msgid "The chart has been updated. The boat has been moved %.1f nm to nearby open water."
 msgstr ""
 
 #: src/core/game_session.gd:361
@@ -4866,6 +4914,10 @@ msgstr ""
 msgid "Wed"
 msgstr ""
 
+#: src/core/loc.gd:56
+msgid "%.1f nm"
+msgstr ""
+
 #: src/core/objective_catalog.gd:101
 msgid "unknown type '%s'"
 msgstr ""
@@ -4914,135 +4966,139 @@ msgstr ""
 msgid "%.1f days"
 msgstr ""
 
-#: src/core/simulation.gd:153
+#: src/core/simulation.gd:157
 msgid "Boat care:"
 msgstr ""
 
-#: src/core/simulation.gd:186
+#: src/core/simulation.gd:190
 msgid "Long Passage time is for voyages: set sail first."
 msgstr ""
 
-#: src/core/simulation.gd:188
+#: src/core/simulation.gd:192
 msgid "Raise the anchor first: at anchor the voyage is paused."
 msgstr ""
 
-#: src/core/simulation.gd:190
+#: src/core/simulation.gd:194
 msgid "The boat is waiting at the anchorage: drop the anchor, or sail on first."
 msgstr ""
 
-#: src/core/simulation.gd:192
+#: src/core/simulation.gd:196
 msgid "Unknown passage speed."
 msgstr ""
 
-#: src/core/simulation.gd:220
+#: src/core/simulation.gd:224
 msgid "The passage is over."
 msgstr ""
 
-#: src/core/simulation.gd:227
+#: src/core/simulation.gd:231
 msgid "Land ho! You have arrived at %s."
 msgstr ""
 
-#: src/core/simulation.gd:229
+#: src/core/simulation.gd:233
 msgid "Weather ahead: %s"
 msgstr ""
 
-#: src/core/simulation.gd:231
+#: src/core/simulation.gd:235
 msgid "A fish is on the line!"
 msgstr ""
 
-#: src/core/simulation.gd:233
+#: src/core/simulation.gd:237
 msgid "The voyage ended with a rescue."
 msgstr ""
 
-#: src/core/simulation.gd:235
+#: src/core/simulation.gd:239
 msgid "The anchor alarm went."
 msgstr ""
 
-#: src/core/simulation.gd:237
+#: src/core/simulation.gd:241
 msgid "We've arrived at our anchorage."
 msgstr ""
 
-#: src/core/simulation.gd:241
+#: src/core/simulation.gd:245
 msgid "A call for assistance on the radio, channel 16."
 msgstr ""
 
-#: src/core/simulation.gd:244
+#: src/core/simulation.gd:248
 msgid "Hold on to your hat: the wind is getting up."
 msgstr ""
 
-#: src/core/simulation.gd:297
+#: src/core/simulation.gd:301
 msgid "The coastguard's boat has the yacht in tow. You sail on."
 msgstr ""
 
-#: src/core/simulation.gd:692
+#: src/core/simulation.gd:696
 msgid "Collision risk: the %s %s will pass very close in about %d min, from the %s. Keep a sharp lookout and give way if needed."
 msgstr ""
 
-#: src/core/simulation.gd:876
-msgid "%s at the boat: wind %s, gusts %d kn."
-msgstr ""
-
-#: src/core/simulation.gd:878
-msgid "Dangerous conditions at the boat (%s): wind %s, gusts %d kn."
+#: src/core/simulation.gd:699
+msgid "Collision risk: the %s %s will pass %.1f nm off in about %d min, from the %s. Keep a sharp lookout and give way if needed."
 msgstr ""
 
 #: src/core/simulation.gd:880
-msgid "Severe conditions at the boat (%s): wind %s, gusts %d kn."
+msgid "%s at the boat: wind %s, gusts %d kn."
 msgstr ""
 
 #: src/core/simulation.gd:882
+msgid "Dangerous conditions at the boat (%s): wind %s, gusts %d kn."
+msgstr ""
+
+#: src/core/simulation.gd:884
+msgid "Severe conditions at the boat (%s): wind %s, gusts %d kn."
+msgstr ""
+
+#: src/core/simulation.gd:886
 msgid "Thunderstorm risk at the boat: thunderstorms may develop nearby."
 msgstr ""
 
-#: src/core/simulation.gd:895
+#: src/core/simulation.gd:899
 msgid "%s %d nm to the %s, moving %s."
 msgstr ""
 
-#: src/core/simulation.gd:895
+#: src/core/simulation.gd:899
 msgid "Severe squalls nearby:"
 msgstr ""
 
-#: src/core/simulation.gd:895
+#: src/core/simulation.gd:899
 msgid "Thunderstorm nearby:"
 msgstr ""
 
-#: src/core/simulation.gd:908
+#: src/core/simulation.gd:912
 msgid "%s ahead on your route %s: wind up to %d kn, gusts %d kn."
 msgstr ""
 
-#: src/core/simulation.gd:911
+#: src/core/simulation.gd:915
 msgid "Thunderstorm risk ahead on your route %s."
 msgstr ""
 
-#: src/core/simulation.gd:940 src/ui/sailing_panel.gd:195
+#: src/core/simulation.gd:944 src/ui/sailing_panel.gd:195
 msgid "%s %d kn"
 msgstr ""
 
-#: src/core/simulation.gd:949
+#: src/core/simulation.gd:953
 msgid "within the hour"
 msgstr ""
 
-#: src/core/simulation.gd:950
+#: src/core/simulation.gd:954
 msgid "in about %d–%d h"
 msgstr ""
 
-#: src/core/simulation.gd:957 src/ui/go_ashore_menu.gd:110
+#: src/core/simulation.gd:961 src/ui/go_ashore_menu.gd:110
 msgid "%d min"
 msgstr ""
 
-#: src/core/simulation.gd:960
+#: src/core/simulation.gd:964
 msgid "%d h"
 msgstr ""
 
-#: src/core/simulation.gd:960
+#: src/core/simulation.gd:964
 msgid "%d h %02d min"
 msgstr ""
 
-#: src/core/simulation.gd:961
+#: src/core/simulation.gd:965
 msgid "%d d %d h"
 msgstr ""
 
-#: src/core/simulation.gd:967
+#: src/core/simulation.gd:971
 msgctxt "date"
 msgid "%s %d %s %d, %02d:%02d%s"
 msgstr ""
@@ -5707,7 +5763,7 @@ msgstr ""
 msgid "No sea route found%s. The waters may not be connected in the chart data."
 msgstr ""
 
-#: src/navigation/traffic_model.gd:170
+#: src/navigation/traffic_model.gd:176
 msgid "Vessel"
 msgstr ""
 
@@ -6222,6 +6278,10 @@ msgid "Waypoint %d is an ordinary waypoint again."
 msgstr ""
 
 #: src/navigation/world_map.gd:731
+msgid " The nearest suitable spot is %.1f nm away."
+msgstr ""
+
+#: src/navigation/world_map.gd:731
 msgid " There is no suitable spot nearby."
 msgstr ""
 
@@ -6239,6 +6299,10 @@ msgstr ""
 
 #: src/navigation/world_map.gd:856
 msgid "At anchor on the way to %s"
+msgstr ""
+
+#: src/navigation/world_map.gd:858
+msgid "Underway to %s  ·  %.1f kn %s"
 msgstr ""
 
 #: src/navigation/world_map.gd:859 src/ui/sailing_panel.gd:134
@@ -6299,6 +6363,10 @@ msgstr ""
 
 #: src/navigation/world_map.gd:907
 msgid "  ·  %d nm course"
+msgstr ""
+
+#: src/navigation/world_map.gd:910
+msgid "\nSteering %03d°  ·  %s in %.1f nm"
 msgstr ""
 
 #: src/navigation/world_map.gd:910
@@ -6581,12 +6649,28 @@ msgstr ""
 msgid "broad reach"
 msgstr ""
 
+#: src/sailing/propulsion_state.gd:71
+msgid "port"
+msgstr ""
+
+#: src/sailing/propulsion_state.gd:71
+msgid "starboard"
+msgstr ""
+
 #: src/sailing/propulsion_state.gd:77
 msgid "becalmed or head to wind"
 msgstr ""
 
 #: src/sailing/propulsion_state.gd:77
 msgid "insufficient sailing performance"
+msgstr ""
+
+#: src/sailing/propulsion_state.gd:78
+msgid "Motoring · %s · %.1f kn"
+msgstr ""
+
+#: src/sailing/propulsion_state.gd:79
+msgid "Under sail · %s · %.1f kn"
 msgstr ""
 
 #: src/sailing/propulsion_state.gd:80
@@ -6707,6 +6791,10 @@ msgstr ""
 
 #: src/ui/anchor_menu.gd:122
 msgid "At anchor on %d × the depth of chain, %s. %s"
+msgstr ""
+
+#: src/ui/anchor_menu.gd:125
+msgid "  Dragged %.2f nm so far."
 msgstr ""
 
 #: src/ui/anchor_menu.gd:126
@@ -7015,6 +7103,10 @@ msgstr ""
 
 #: src/ui/boatyard_menu.gd:165
 msgid "Move aboard the %s"
+msgstr ""
+
+#: src/ui/boatyard_menu.gd:172 src/ui/boatyard_menu.gd:175 src/ui/boatyard_menu.gd:176
+msgid "%.1f kn"
 msgstr ""
 
 #: src/ui/boatyard_menu.gd:172
@@ -7353,6 +7445,14 @@ msgstr ""
 msgid "No course"
 msgstr ""
 
+#: src/ui/chart_plotter.gd:223
+msgid "Destination %.1f nm  ·  course %03d°"
+msgstr ""
+
+#: src/ui/chart_plotter.gd:225
+msgid "Next turn %.1f nm  ·  then %03d°"
+msgstr ""
+
 #: src/ui/chart_plotter.gd:226
 msgid "Course now %03d°"
 msgstr ""
@@ -7585,6 +7685,10 @@ msgstr ""
 msgid "Let it go"
 msgstr ""
 
+#: src/ui/fishing_menu.gd:257
+msgid "Trolling behind the boat at %.1f kn"
+msgstr ""
+
 #: src/ui/fishing_menu.gd:258
 msgid "Rod fishing from the anchored boat"
 msgstr ""
@@ -7699,6 +7803,10 @@ msgstr ""
 
 #: src/ui/fishing_menu.gd:484
 msgid "Not a fish, and worth nothing. It goes in the bin."
+msgstr ""
+
+#: src/ui/fishing_menu.gd:486
+msgid "%.1f kg  ·  %s specimen"
 msgstr ""
 
 #: src/ui/fishing_menu.gd:488
@@ -7821,6 +7929,10 @@ msgstr ""
 
 #: src/ui/go_ashore_menu.gd:93
 msgid "%s  ·  %s  ·  %d min"
+msgstr ""
+
+#: src/ui/grocery_menu.gd:119
+msgid "Aboard: food %s, water %s. Missing: %.1f days in all."
 msgstr ""
 
 #: src/ui/grocery_menu.gd:121
@@ -8031,6 +8143,10 @@ msgstr ""
 msgid "At anchor  ·  voyage paused"
 msgstr ""
 
+#: src/ui/hud.gd:262
+msgid "Underway  ·  %.1f kn"
+msgstr ""
+
 #: src/ui/hud.gd:263
 msgid "To %s  ·  %d nm to go"
 msgstr ""
@@ -8071,6 +8187,10 @@ msgstr ""
 msgid "Plot a course at the chart table"
 msgstr ""
 
+#: src/ui/hud.gd:327
+msgid "Hull %s   %s   Food %.1f d · Water %.1f d"
+msgstr ""
+
 #: src/ui/hud.gd:337
 msgid "Wind calm"
 msgstr ""
@@ -8087,8 +8207,32 @@ msgstr ""
 msgid "WASD / ↑↓←→"
 msgstr ""
 
+#: src/ui/hud.gd:40
+msgid "actions"
+msgstr ""
+
+#: src/ui/hud.gd:40
+msgid "hat"
+msgstr ""
+
+#: src/ui/hud.gd:40
+msgid "interact"
+msgstr ""
+
+#: src/ui/hud.gd:40
+msgid "move"
+msgstr ""
+
+#: src/ui/hud.gd:40
+msgid "rod"
+msgstr ""
+
 #: src/ui/hud.gd:41
 msgid "Esc"
+msgstr ""
+
+#: src/ui/hud.gd:41
+msgid "menu"
 msgstr ""
 
 #: src/ui/hud.tscn:164
@@ -8269,6 +8413,10 @@ msgstr ""
 
 #: src/ui/passage_panel.gd:148
 msgid "%s nm to go  ·  ETA about %s"
+msgstr ""
+
+#: src/ui/passage_panel.gd:151 src/ui/sailing_panel.gd:134
+msgid "%.1f kn  ·  %s"
 msgstr ""
 
 #: src/ui/passage_panel.gd:155
@@ -8548,6 +8696,26 @@ msgstr ""
 
 #: src/ui/sailing_panel.gd:148
 msgid "No more turns: %s ahead"
+msgstr ""
+
+#: src/ui/sailing_panel.gd:150
+msgid ", %.1f nm"
+msgstr ""
+
+#: src/ui/sailing_panel.gd:156
+msgid "Anchorage %.1f nm ahead"
+msgstr ""
+
+#: src/ui/sailing_panel.gd:156
+msgid "Anchorage in %s, %.1f nm"
+msgstr ""
+
+#: src/ui/sailing_panel.gd:159
+msgid "in %s, %.1f nm"
+msgstr ""
+
+#: src/ui/sailing_panel.gd:160
+msgid "%.1f nm ahead"
 msgstr ""
 
 #: src/ui/sailing_panel.gd:163
@@ -8965,6 +9133,14 @@ msgstr ""
 
 #: src/ui/trophy_menu.gd:71
 msgid "No catches yet. The rod is on the stern rail."
+msgstr ""
+
+#: src/ui/trophy_menu.gd:76
+msgid "%d.  %s, %.1f kg  ·  %s  ·  %d %s%s"
+msgstr ""
+
+#: src/ui/trophy_menu.gd:88
+msgid " (best %.1f kg)"
 msgstr ""
 
 #: src/ui/trophy_menu.gd:89

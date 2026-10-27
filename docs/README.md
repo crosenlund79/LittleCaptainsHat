@@ -24,6 +24,7 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 | [16](iterations/i016/) The World Awaits | 0.103a | [report](iterations/i016/ITERATION_16_REPORT.md), [Windows acceptance](iterations/i016/WINDOWS_ACCEPTANCE_16.md), [Shipyard Efficiency](iterations/i016/SHIPYARD_EFFICIENCY_16.md) |
 | [17](iterations/i017/) Let There Be Light | 0.104a | [assignment](iterations/i017/ITERATION_17_ASSIGNMENT.md), [report](iterations/i017/ITERATION_17_REPORT.md), [requirements](iterations/i017/ITERATION_17_REQUIREMENTS.md), [Windows acceptance](iterations/i017/WINDOWS_ACCEPTANCE_17.md) |
 | [18](iterations/i018/) The Joy of the Journey | 0.105a | [assignment](iterations/i018/ITERATION_18_ASSIGNMENT.md), [report](iterations/i018/ITERATION_18_REPORT.md), [requirements](iterations/i018/ITERATION_18_REQUIREMENTS.md), [Windows acceptance](iterations/i018/WINDOWS_ACCEPTANCE_18.md) (pending) |
+| [19](iterations/i019/) The Captain's Watch | 0.106a | [report](iterations/i019/ITERATION_19_REPORT.md) (traffic, radar, anchor alarms, VHF, English and Dansk; Windows acceptance pending) |
 
 Iterations 7–11 have no separate documents in this repository. Iteration 15 (the performance pass) was skipped at the Captain's instruction.
 
@@ -43,6 +44,7 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 - [Cozy Polish injection report](technical/COZY_POLISH_INJECTION_REPORT.md): floating things at sea, the chart's zoom limit, the Kiel and Suez canals, the Q menu, coffee and the hat in hand, the remembered sleep, visited-harbour pins, compact panels and the loading screen.
 - [The Well-Run Ship performance report](technical/THE_WELL_RUN_SHIP_PERFORMANCE_REPORT.md): where the time went (the day/night theme stall), what is kept in memory and what is written to disk, the sleep, dawn and dusk cards, and Long Passage on the voyage map.
 - [Turbocharge performance report](technical/TURBOCHARGE_PERFORMANCE_REPORT.md) and the permanent [Performance Opportunity Register](technical/PERFORMANCE_OPPORTUNITIES.md): what was measured, what was optimized, and the ranked list of what could be done next.
+- [Localization](technical/LOCALIZATION.md): English and Dansk, how text is translated, the tools and the glossary.
 - [Developer guides](../DEV_GUIDES/README.md): step-by-step guides for art, companions, audio, weather, harbours, boat care, chart regions and life aboard, plus design principles for future user content ([MODDING_FUTURE.md](../DEV_GUIDES/MODDING_FUTURE.md)). They stay in `DEV_GUIDES/` because the game's in-game guide viewer reads them from there.
 
 ## Testing

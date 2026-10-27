@@ -133,4 +133,4 @@ static func describe_services(port_id: StringName, brief := false) -> String:
 		if facilities.has(entry[0]):
 			parts.append(entry[1] if brief or String(entry[2]).is_empty() else "%s (%s)" % [entry[1], entry[2]])
 	var services := "  ·  ".join(parts) if not parts.is_empty() else Loc.t("no services")
-	return "%s: %s" % [TIER_NAMES[facilities.get_tier()], services]
+	return "%s: %s" % [Loc.t(TIER_NAMES[facilities.get_tier()]), services]

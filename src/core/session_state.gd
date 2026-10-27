@@ -127,7 +127,7 @@ static func get_start_time() -> float:
 
 
 static func get_area_display_name(area: StringName) -> String:
-	return AREA_NAMES.get(area, String(area).capitalize())
+	return Loc.t(AREA_NAMES.get(area, String(area).capitalize()))
 
 
 func duplicate_state() -> SessionState:

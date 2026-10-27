@@ -129,6 +129,33 @@ godot --headless --path . res://tests/test_runner.tscn -- --only=turbocharge
 - **Next action:** measure on Windows first. Harbor Dusk's lighting is not
   compromised for software-rendering numbers.
 
+### 9. Traffic queries on the evaluation grid (I019)
+
+- **System:** `TrafficModel.vessels_near` (`_cell_tracks`), called by
+  `Simulation._assess_traffic` at every 5-minute evaluation point underway
+  and by the radar five times a second.
+- **Inefficiency:** a query visits about 45 (cell, window) pairs; a new cell
+  generates up to 8 tracks, each checked on water at several points.
+- **Evidence:** headless probe (`tests/scratch/probe_sleep_traffic.gd`,
+  not committed): an 8-hour sleep underway (Copenhagen to Reykjavik) costs
+  about 115–150 ms with traffic off and about 150–215 ms with it on before
+  tuning; a cold query 18 ms, a warm one 0.31 ms. After a flat pre-check per
+  track and 4 instead of 8 water checks each way: cold 8 ms, warm 0.19 ms,
+  sleep about +25–30 % instead of +45 %. Rendered `--turbo` probe
+  (`docs/benchmarks/i019_after1_rendered.json`, before this tuning): sleep
+  8 h underway 48–106 ms against 56–58 ms for Turbocharge; every frame-time
+  scenario equal or a little lower.
+- **Proposed improvement:** keep the last query's candidate tracks and
+  only re-collect when the boat or the 3-hour window moves on (the query
+  position moves about 0.5 nm per evaluation point).
+- **Expected benefit:** most of the remaining traffic cost in sleep and Long
+  Passage (tens of ms per 8 h). **Confidence:** medium. **Effort:** small.
+  **Regression risk:** low (pure function; compare with the uncached query).
+- **Status:** measured; first step implemented (I019, pre-check and fewer
+  water checks); candidate cache deferred.
+- **Next action:** implement the candidate cache if Long Passage or sleep
+  feels slower on Windows.
+
 ## Measured and rejected (no worthwhile gain)
 
 | System | Evidence | Why rejected |
