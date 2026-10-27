@@ -103,9 +103,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/boat/boat_lighting.gd": {
-   "sha": "d7bfcf573f6689e5",
+   "sha": "bc4df275891ccb27",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "src/boat/cabin_world_map.gd": {
    "sha": "7af0d7e4aa6154f0",
@@ -673,9 +673,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/grocery_menu.gd": {
-   "sha": "5ebec79cb4d7bf5e",
+   "sha": "c77c59a58c948c77",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "src/ui/hat_badge.gd": {
    "sha": "debcc2db31dc2766",
@@ -948,9 +948,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/pacing_18.gd": {
-   "sha": "5e9a9dd75f08d9b1",
+   "sha": "03d6bd428a01645e",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "tests/restart_105b.gd": {
    "sha": "707c421868ed9dff",
@@ -1023,9 +1023,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_boat_of_your_own.gd": {
-   "sha": "94bfaa298ee59fc8",
+   "sha": "51f1d4ebf4881f59",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "tests/suites/test_branding.gd": {
    "sha": "1cfc07ae42343c6a",
@@ -1088,9 +1088,9 @@
    "note": "Companion remarks: new helper and suite; petting branch and ShipCompanion.take_remark reviewed"
   },
   "tests/suites/test_cozy_patch.gd": {
-   "sha": "ae3214a9ef1cb04b",
+   "sha": "129afee3a93726c5",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "tests/suites/test_cozy_polish.gd": {
    "sha": "59d63a1bbf0b53a2",
@@ -1128,9 +1128,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_fishing2.gd": {
-   "sha": "d7c340da556734bf",
+   "sha": "1e8156b77ef85774",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "tests/suites/test_galley_and_anchor.gd": {
    "sha": "e1cc9333f806f8b5",
@@ -1188,9 +1188,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_localization.gd": {
-   "sha": "784334e2e42b6df4",
+   "sha": "9e12c7c2b89c2885",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
   },
   "tests/suites/test_long_passage.gd": {
    "sha": "31bb52492358b058",

@@ -73,6 +73,10 @@ func _ready() -> void:
 	_build_tackle()
 	_button("CloseButton", "Close", close)
 	_buy = _button("BuyButton", "Buy", _on_buy, 240.0)
+	# Selling the catch at the fishmonger (opened on top of this menu) changes
+	# the funds and the catch shown here.
+	GameSession.funds_changed.connect(_on_funds_changed)
+	GameSession.fishing_changed.connect(refresh)
 	refresh()
 
 
@@ -115,6 +119,10 @@ func _build_tackle() -> void:
 	_sell_catch.custom_minimum_size = Vector2(240, 0)
 	_sell_catch.pressed.connect(fishmonger_requested.emit)
 	catch_row.add_child(_sell_catch)
+
+
+func _on_funds_changed(_funds: int) -> void:
+	refresh()
 
 
 func refresh() -> void:

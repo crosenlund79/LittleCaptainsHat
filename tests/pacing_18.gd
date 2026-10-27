@@ -24,6 +24,7 @@ func _sail(posture: StringName, line: bool) -> Dictionary:
 	GameSession.depart()
 	Simulation.advance(1800.0)
 	if line:
+		GameSession.set_line(true, "spinner")
 	var ticks := 0
 	var start := GameSession.get_game_time()
 	while GameSession.is_underway() and GameSession.get_game_time() - start < 12.0 * 86400.0 and ticks < 200000:

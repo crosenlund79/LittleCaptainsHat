@@ -194,6 +194,9 @@ func _test_danish_screens_fit() -> void:
 	app.start_new_game()
 	await _settle()
 	problems.append_array(_overflowing(app.hud, screen, "HUD"))
+	var aboard := app.router.current_screen as BoatArea
+	t.check(aboard != null and aboard.get_lighting() != null,
+		"[dansk] aboard in Danish the boat's lighting is found (its node is not named in the language)")
 	app.open_pause_menu()
 	await t.frames(3)
 	problems.append_array(_overflowing(app.modals.get_top(), screen, "pause menu"))

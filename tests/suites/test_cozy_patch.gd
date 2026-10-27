@@ -64,6 +64,17 @@ func _pet_by_hand(area: BoatArea, companion: ShipCompanion) -> bool:
 	return true
 
 
+## Lets the companion finish her walk in simulated time, at 60 steps a
+## second, with no frames in between (at most a minute of walking). Waiting
+## real frames instead let the game's follow-the-captain timer (a random
+## 2.5-5 s) call her back up on deck halfway out, so the result depended on
+## the machine's speed.
+static func _walk_on(companion: ShipCompanion) -> void:
+	for i in 3600:
+		if not companion.is_walking():
+			return
+		companion._process(1.0 / 60.0)
+
 # --- Petting while walking --------------------------------------------------------------------
 
 func _test_petting() -> void:
@@ -89,9 +100,7 @@ func _test_petting() -> void:
 	t.check(cat.is_walking() and cat.position.is_equal_approx(at), "[pet] the walk pauses while she enjoys it")
 	await t.get_tree().create_timer(ShipCompanion.REACTION_SECONDS).timeout
 	t.check(not cat.position.is_equal_approx(at) or not cat.is_walking(), "[pet] then she walks on")
-	var started := Time.get_ticks_msec()
-	while cat.is_walking() and Time.get_ticks_msec() - started < 20000:
-		await t.frames(1)
+	_walk_on(cat)
 	var spots := deck.get_node("Layout/DeckCompanionSpots") as DeckCompanionSpots
 	t.check(not cat.is_walking() and cat.position.distance_to(spots.get_spot(GameSession.get_companion().deck_spot)) < 1.0,
 		"[pet] and still arrives at her resting place")
@@ -103,6 +112,9 @@ func _test_petting() -> void:
 	await t.get_tree().create_timer(ShipCompanion.REACTION_SECONDS + 0.6).timeout
 	t.check(pets[0] == 1 and not cat.is_reacting(), "[pet] the reaction plays once and ends")
 	# Walking out (following the captain below): still pettable, then gone.
+	# The captain stays on deck here, so the game's follow timer would call
+	# her back up after a few seconds; it is held still while she walks out.
+	app.set_process(false)
 	GameSession.set_companion_area(CompanionState.AREA_CABIN)
 	await t.frames(2)
 	t.check(cat.is_walking() and cat.interactable.enabled, "[pet] on her way out she can still be petted")
@@ -110,11 +122,10 @@ func _test_petting() -> void:
 	await t.get_tree().create_timer(0.3).timeout
 	ok = await _pet_by_hand(deck, cat)
 	t.check(ok and pets[0] == 1, "[pet] petted on the way out")
-	started = Time.get_ticks_msec()
-	while cat.is_walking() and Time.get_ticks_msec() - started < 20000:
-		await t.frames(1)
+	_walk_on(cat)
 	t.check(not cat.visible and not cat.interactable.enabled and GameSession.get_companion().area == CompanionState.AREA_CABIN,
 		"[pet] then she goes below as before (hidden, not pettable on deck)")
+	app.set_process(true)
 
 
 # --- Trophy board -----------------------------------------------------------------------------

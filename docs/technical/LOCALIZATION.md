@@ -37,6 +37,74 @@ Language**; the switch applies at once.
   (`[interface] language`), never in a save. Empty until chosen: the first
   launch asks.
 
+## Language switching: what refreshes when
+
+An audit made for the Engine Room pass (after I020). The language is changed
+in Settings, which opens from the main menu and from the pause menu, so a
+switch always happens with a menu open over whatever was on screen.
+
+**Immediately, by itself**
+- Every control whose whole text is a message (the English literal): button
+  and label captions, tooltips, OptionButton items, panel titles. Godot
+  translates them again when the locale changes.
+- The Settings menu's own built texts (`_retranslate()` on
+  `SettingsManager.language_changed`), and the main menu's list of saves
+  (`refresh_saves()` on the same signal).
+
+**At the next refresh, without reopening**
+- The HUD (clock, wind, passage panel, the readouts): it refreshes every
+  frame while visible, so it is in the new language as soon as Settings
+  closes.
+- Panels that refresh on a game signal or on each action (the grocery store,
+  boat care, the trades): their built sentences (`Loc.t(...) % ...`,
+  `Loc.format`) follow on their next refresh.
+- The companion's petting remarks: chosen and translated when they are shown.
+
+**Only when reopened**
+- Menus open underneath Settings whose texts are built from sentences
+  (`Loc.t("Price %s · Funds %s") % ...`, catalogue descriptions): their
+  plain captions switch at once, the built lines on their next refresh or
+  when opened again.
+
+**Kept in the language they were written in (rendered text)**
+- Notices and toasts already on screen, and a weather warning already shown
+  on the HUD (the next warning is in the new language).
+- Award titles stored with an award (`ProgressState.award(key, title, …)`,
+  for example "Ashore in Skagen: …"): the title is saved as text.
+- Lines already written into the Captain's Log voyages.
+
+**Language-neutral keys (shown in the current language every time)**
+- Ids and keys in the save (harbours, boats, fish, lures, decor, condition
+  areas), the companion's kind, objectives and memorable moments (the list of
+  moments is rebuilt from keys such as `fish:species:cod` each time it is
+  shown), the language setting itself (in `user://settings.cfg`, never in a
+  save).
+
+**Fixed in this pass**
+- The boat's lighting node was named with `Loc.t("Lighting")`, so in Danish
+  it was called "Belysning" and `BoatArea.get_lighting()` (which looks it up
+  by name) found nothing: the contact shadows were not added aboard, lightning
+  did not flash the boat's light (WeatherAudio), and `App.snap_light()` (after
+  a sleep or a load) could not snap the light at once. A node name is now
+  never translated (test: `test_localization`, "[dansk] aboard in
+  Danish the boat's lighting is found").
+- The grocery store did not refresh after a sale at the fishmonger opened on
+  top of it (an I020 path; stale funds and catch). It now refreshes on
+  `funds_changed` and `fishing_changed` (test: `test_boat_of_your_own`,
+  "[grocery] back at the grocery store, the funds shown include the sale").
+
+**Candidates (recorded, not changed here)**
+- Award titles saved as rendered text: storing a key with arguments would
+  let old titles follow the language. Touches the save data, so it belongs
+  to a planned iteration.
+- `AnchorSite.describe_for_chart` tests `reason.begins_with("Too close")` on
+  text that is already translated; in Danish the check never matches.
+- A few texts are still English only: the propulsion state "running", the
+  hat story's loss messages (`hat_story.gd`), and the Passage Readiness
+  summaries (`passage_readiness.gd`).
+- Open menus under Settings could listen to `language_changed` and refresh
+  their built lines at once (today: on their next refresh or reopening).
+
 ## Tools
 
 - `python3 tools/i18n/wrap_strings.py` wraps player-facing phrases in game

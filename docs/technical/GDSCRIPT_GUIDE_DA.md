@@ -704,6 +704,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Arbejder sammen med:** `BoatArea`, `Daylight`, `GameSession`, `Simulation` (vejret ved båden), `SailRig` (masten), `HarbourDressing`, `Interactable` (holder fremhævninger lyse om natten), `SettingsManager` (glimtets styrke).
 - **Holder styr på:** Listen over lys, lysets nuværende farve og mørke, hvor overskyet det er, og glimtets styrke.
 - **Hvornår det kører:** Når du er på dækket eller i kahytten.
+- **Godt at vide:** Noden hedder altid "Lighting", på alle sprog, fordi båden finder den ved det navn.
 - **Hvis du ændrer det:** Hele spillets stemning dag og nat; fejl kan gøre scener for mørke eller tænde lys på forkerte tidspunkter.
 
 ### `src/boat/cabin_world_map.gd`
@@ -1462,7 +1463,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 **Formål:** Havnens købmand: mad og vand, ekstra proviant til en Lang passage, en ny kaptajnshue og fiskeblink.
 - **Hvad det gør:** Fylder mad og vand op til 14 dage hver i ét køb eller ud over det til en lang passage (op til hvad båden kan stuve). Sælger også en ny kaptajnshue og blink og har en knap til fiskehandleren ved siden af.
 - **Arbejder sammen med:** `GameSession`, `Provisions`, `FishingCatalog`, `HarbourFacilities`, `App` (åbner den og fiskehandleren).
-- **Holder styr på:** Intet selv.
+- **Holder styr på:** Intet selv. Den opdaterer sig selv, når dine penge eller din fangst ændrer sig (for eksempel efter et salg hos fiskehandleren ovenpå).
 - **Hvornår det kører:** I havn, fra pontonens købmandsstation, proviantpanelet eller bådeværftet.
 - **Hvis du ændrer det:** Prisen på proviant og hvor langt du kan sejle, før den slipper op; købene gemmes via `GameSession`.
 
@@ -1831,7 +1832,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_boat_of_your_own.gd`
 
 **Formål:** Tjekker havnens forretninger, og at man kan gøre båden til sin egen (I020).
-- **Hvad det gør:** Den tjekker, hvilke havne der har fiskehandler, skibshandel eller sejlmager. Den sælger fisk (aldrig to gange), køber udstyr og ting til kahytten (aldrig så pengene går under nul) og bestiller sejl i en ny farve (kun udseendet ændres). Ting til kahytten bliver stillet ind på alle fire både uden at spærre for noget. Den tjekker også, at gamle og mærkelige gemte spil kan indlæses, og at de danske tekster kan være på skærmen.
+- **Hvad det gør:** Den tjekker, hvilke havne der har fiskehandler, skibshandel eller sejlmager. Den sælger fisk (aldrig to gange, og købmanden nedenunder viser straks de nye penge), køber udstyr og ting til kahytten (aldrig så pengene går under nul) og bestiller sejl i en ny farve (kun udseendet ændres). Ting til kahytten bliver stillet ind på alle fire både uden at spærre for noget. Den tjekker også, at gamle og mærkelige gemte spil kan indlæses, og at de danske tekster kan være på skærmen.
 - **Arbejder sammen med:** `HarbourFacilities`, `HarbourTrades`, `TradePanel`, `GameSession`, `CabinDecor`, `SessionState`, `SettingsManager`.
 - **Holder styr på:** Intet af sit eget.
 - **Hvornår det kører:** Kun i test.
@@ -1952,7 +1953,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Arbejder sammen med:** `ShipCompanion`, `DeckCompanionSpots`, `TrophyBoard`, `FishArt`, `FishingState`, `WorldMap`, `GameSession`.
 - **Holder styr på:** Intet af sit eget.
 - **Hvornår det kører:** Kun i test.
-- **Hvis du ændrer det:** Kun tjekkene ændrer sig. Nogle tjek venter i rigtig tid, så en meget langsom computer kan gøre dem ustabile.
+- **Hvis du ændrer det:** Kun tjekkene ændrer sig. Turene køres i spiltid uden at vente på rigtige billeder, og timeren, der får hende til at følge kaptajnen, står stille, mens hun går ned, så resultatet ikke længere afhænger af computerens fart.
 
 ### `tests/suites/test_cozy_polish.gd`
 
@@ -2020,7 +2021,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_fishing2.gd`
 
 **Formål:** Tjekker "Fiskeri 2.0": hjulet til at hale fangsten ind, fiskenes størrelse og klasse, fiskebillederne, reglerne for at beholde fisk, hajer og skrald (Iteration 18).
-- **Hvad det gør:** Den tjekker reglerne for hjulet: hvor mange gode tryk hver sjældenhed kræver, Perfect-tryk, tilgivende bom, og at det er fair for både omhyggelige og sjuskede spillere. Den tjekker vægt og klasserne Bronze/Silver/Gold, og at hver fisk og hvert stykke skrald har sit eget billede, som blinker og slår med halen (men står stille med Reduce motion). Den tjekker også reglerne for at beholde fisk, at hajer altid sættes fri og skrald smides ud, at man kan nå fiskestangen med R overalt om bord, gemte spil og fiskeri for anker og i hurtig tid.
+- **Hvad det gør:** Den tjekker reglerne for hjulet: hvor mange gode tryk hver sjældenhed kræver, Perfect-tryk, tilgivende bom, og at det er fair for både omhyggelige og sjuskede spillere. Den tjekker vægt og klasserne Bronze/Silver/Gold, og at hver fisk og hvert stykke skrald har sit eget billede, som blinker og slår med halen (men står stille med Reduce motion), og at to fisk aldrig blinker i takt over tredive sekunder. Den tjekker også reglerne for at beholde fisk, at hajer altid sættes fri og skrald smides ud, at man kan nå fiskestangen med R overalt om bord, gemte spil og fiskeri for anker og i hurtig tid.
 - **Arbejder sammen med:** `ReelTiming`, `FishingCatalog`, `FishArt`, `FishPortrait`, `FishingMenu`, `CatchBadge`, `GameSession`, `Simulation`, `SettingsManager` og testhjælperen til fiskehjulet.
 - **Holder styr på:** Intet af sit eget.
 - **Hvornår det kører:** Kun i test.
@@ -2128,7 +2129,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_localization.gd`
 
 **Formål:** Tester sprogene engelsk og dansk.
-- **Hvad det gør:** Tester, at hver engelsk tekst har en dansk oversættelse, der bevarer sine pladsholdere (steder, hvor tal eller navne sættes ind). Det tester også tal, penge, datoer og kompasretninger på hvert sprog, og at første opstart kun spørger om sproget én gang. Til sidst tester det, at skiftet i indstillinger virker med det samme, at dansk tekst kan være på skærmen, og at gemte spil er ens på begge sprog.
+- **Hvad det gør:** Tester, at hver engelsk tekst har en dansk oversættelse, der bevarer sine pladsholdere (steder, hvor tal eller navne sættes ind). Det tester også tal, penge, datoer og kompasretninger på hvert sprog, og at første opstart kun spørger om sproget én gang. Til sidst tester det, at skiftet i indstillinger virker med det samme, at dansk tekst kan være på skærmen, at bådens lys findes om bord på dansk, og at gemte spil er ens på begge sprog.
 - **Arbejder sammen med:** `Loc`, `SettingsManager`, `LanguagePicker`, `GameSession`, `Simulation`, `SaveManager`, `locale/messages.pot`, `locale/da.po` og app-scenen.
 - **Holder styr på:** Intet selv.
 - **Hvornår det kører:** Kun i testene (testkøreren slår møder til søs til for denne test).
@@ -2529,7 +2530,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvad det gør:** Sejler København til Las Palmas i op til 12 spildage tre gange (uden fiskeri; med slæbefiskeri og stop ved hvert bid; stop kun for fisk, der er værd at beholde) og skriver en `PACE`-linje med årsagerne til stop.
 - **Arbejder sammen med:** `GameSession`, `Simulation`, `FishingState`, `WindField`.
 - **Holder styr på:** Intet.
-- **Hvornår det kører:** Kun når du starter det: `godot --headless --path . res://tests/pacing_18.tscn`. (Som filen står nu, har den et tomt `if line:` og kan måske ikke indlæses.)
+- **Hvornår det kører:** Kun når du starter det: `godot --headless --path . res://tests/pacing_18.tscn`.
 - **Hvis du ændrer det:** Intet i spillet ændres.
 
 ### `tests/restart_105b.gd`

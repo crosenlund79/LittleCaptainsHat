@@ -89,8 +89,12 @@ func _test_fishmonger() -> void:
 	var expected := 0
 	for fish: Dictionary in GameSession.get_fishing().hold:
 		expected += catalog.price(fish.species, float(fish.kg))
+	# The way the Captain goes: the grocery store first, the fishmonger next door.
+	app.open_grocery()
+	await t.frames(2)
+	var grocery := app.modals.get_top() as GroceryMenu
 	var menu: TradePanel = app.open_fishmonger()
-	if not t.check(menu != null, "[fishmonger] opens in Copenhagen"):
+	if not t.check(grocery != null and menu != null, "[fishmonger] opens in Copenhagen (from the grocery store)"):
 		return
 	await t.frames(2)
 	t.check(menu.get_row_ids().size() == 3, "[fishmonger] every fish in the cool box is shown with its price (%d rows)" % menu.get_row_ids().size())
@@ -100,6 +104,9 @@ func _test_fishmonger() -> void:
 	var one := catalog.price("cod", 2.0)
 	t.check(GameSession.get_funds() == funds + one and GameSession.get_fishing().find_in_hold(9000) < 0, "[fishmonger] one fish sold: paid %s once" % GameSession.format_money(one))
 	t.check(GameSession.sell_fish(9000).error != "" and GameSession.get_funds() == funds + one, "[fishmonger] the same fish cannot be sold twice")
+	var price_label := grocery.find_child("Price", true, false) as Label
+	t.check(price_label != null and price_label.text.contains(GameSession.format_money(funds + one)),
+		"[grocery] back at the grocery store, the funds shown include the sale (%s)" % (price_label.text if price_label else "no label"))
 	var saved := GameSession.get_state_snapshot()
 	var trophies := GameSession.get_fishing().trophies.size()
 	var all := GameSession.sell_catch()

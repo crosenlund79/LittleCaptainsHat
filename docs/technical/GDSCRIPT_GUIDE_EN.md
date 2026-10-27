@@ -702,6 +702,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Works with:** `BoatArea`, `Daylight`, `GameSession`, `Simulation` (weather at the boat), `SailRig` (mast), `HarbourDressing`, `Interactable` (keeps highlights bright at night), `SettingsManager` (flash strength).
 - **Keeps:** The list of lights, the current light colour and darkness, an overcast amount and the flash level.
 - **When it runs:** Whenever you are on deck or in the cabin.
+- **Good to know:** Its node is always called "Lighting", in every language, because the boat looks it up by that name.
 - **If you change it:** The whole mood of the game by day and night; mistakes could make scenes too dark or lights show at the wrong time.
 
 ### `src/boat/cabin_world_map.gd`
@@ -1460,7 +1461,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 **Purpose:** The harbour grocery store: food and water, a long-passage stock-up, a replacement captain's hat and fishing lures.
 - **What it does:** Fills food and water up to 14 days each in one purchase, or stocks up beyond that for a long passage (up to what the boat can stow). Also sells a new captain's hat and lures, and has a button to the fishmonger next door.
 - **Works with:** `GameSession`, `Provisions`, `FishingCatalog`, `HarbourFacilities`, `App` (opens it and the fishmonger).
-- **Keeps:** Nothing of its own.
+- **Keeps:** Nothing of its own. It updates itself when your money or your catch changes (for example after selling fish at the fishmonger on top of it).
 - **When it runs:** In harbour, from the pontoon's grocery station, the provisions panel or the boatyard.
 - **If you change it:** Provision prices and how far you can sail before running out; purchases are saved via `GameSession`.
 
@@ -1829,7 +1830,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_boat_of_your_own.gd`
 
 **Purpose:** Checks the harbour trades and making the boat your own (I020).
-- **What it does:** It checks which harbours have a fishmonger, chandlery or sailmaker. It sells fish (never twice), buys gear and cabin things (never below zero money), and orders sails in a new colour (a look only). Cabin things are placed on all four boats without blocking a station. It also checks that old and odd saves load, and that the Danish texts fit the screen.
+- **What it does:** It checks which harbours have a fishmonger, chandlery or sailmaker. It sells fish (never twice, and the grocery store underneath shows the new money at once), buys gear and cabin things (never below zero money), and orders sails in a new colour (a look only). Cabin things are placed on all four boats without blocking a station. It also checks that old and odd saves load, and that the Danish texts fit the screen.
 - **Works with:** `HarbourFacilities`, `HarbourTrades`, `TradePanel`, `GameSession`, `CabinDecor`, `SessionState`, `SettingsManager`.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.
@@ -1950,7 +1951,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Works with:** `ShipCompanion`, `DeckCompanionSpots`, `TrophyBoard`, `FishArt`, `FishingState`, `WorldMap`, `GameSession`.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.
-- **If you change it:** Only the checks change. Some checks wait in real time, so a very slow computer can make them flaky.
+- **If you change it:** Only the checks change. The walks are stepped in game time, without waiting real frames, and the follow-the-captain timer is held still while she walks out, so the result no longer depends on the computer's speed.
 
 ### `tests/suites/test_cozy_polish.gd`
 
@@ -2018,7 +2019,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_fishing2.gd`
 
 **Purpose:** Checks "Fishing 2.0": the reel-in dial, fish sizes and grades, the fish pictures, keep rules, sharks and junk (Iteration 18).
-- **What it does:** It checks the dial rules: how many good presses each rarity needs, Perfect hits, forgiving misses, and fairness for careful and sloppy players. It checks weights and Bronze/Silver/Gold grades, and that every fish and piece of junk has its own picture, which blinks and flicks its tail (but stays still with Reduce motion). It checks keep preferences, that sharks are always released and junk thrown away, reaching the rod with R from anywhere, saves, and fishing at anchor and in fast time.
+- **What it does:** It checks the dial rules: how many good presses each rarity needs, Perfect hits, forgiving misses, and fairness for careful and sloppy players. It checks weights and Bronze/Silver/Gold grades, and that every fish and piece of junk has its own picture, which blinks and flicks its tail (but stays still with Reduce motion), and that two fish never blink in step over thirty seconds. It checks keep preferences, that sharks are always released and junk thrown away, reaching the rod with R from anywhere, saves, and fishing at anchor and in fast time.
 - **Works with:** `ReelTiming`, `FishingCatalog`, `FishArt`, `FishPortrait`, `FishingMenu`, `CatchBadge`, `GameSession`, `Simulation`, `SettingsManager`, the reel test helper.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.
@@ -2126,7 +2127,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_localization.gd`
 
 **Purpose:** Checks the English and Danish languages.
-- **What it does:** Checks that every English text has a Danish translation that keeps its placeholders (spots where numbers or names are filled in). It also checks numbers, money, dates and compass points in each language, and that the first start asks for the language only once. Finally it checks that the Settings switch works at once, that Danish text fits on screen, and that saves are the same in both languages.
+- **What it does:** Checks that every English text has a Danish translation that keeps its placeholders (spots where numbers or names are filled in). It also checks numbers, money, dates and compass points in each language, and that the first start asks for the language only once. Finally it checks that the Settings switch works at once, that Danish text fits on screen, that the boat's lighting is found aboard in Danish, and that saves are the same in both languages.
 - **Works with:** `Loc`, `SettingsManager`, `LanguagePicker`, `GameSession`, `Simulation`, `SaveManager`, `locale/messages.pot`, `locale/da.po`, the app scene.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests (with sea encounters switched on by the test runner).
@@ -2527,7 +2528,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **What it does:** Sails Copenhagen to Las Palmas for up to 12 game days three times (no fishing; trolling and stopping for every bite; stopping only for fish worth keeping) and prints a `PACE` line with the stop reasons.
 - **Works with:** `GameSession`, `Simulation`, `FishingState`, `WindField`.
 - **Keeps:** Nothing.
-- **When it runs:** Only by hand: `godot --headless --path . res://tests/pacing_18.tscn`. (As the file stands it has an empty `if line:` and may not load.)
+- **When it runs:** Only by hand: `godot --headless --path . res://tests/pacing_18.tscn`.
 - **If you change it:** Nothing in the game changes.
 
 ### `tests/restart_105b.gd`

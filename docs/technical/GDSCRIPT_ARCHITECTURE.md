@@ -904,13 +904,13 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_lighting.gd`
 
 - **Role:** class_name `BoatLighting`, extends Node2D; time-of-day light, lamps, nav/anchor/quay lights and soft shadows for one boat area (Iteration 17/18). Inner classes `Lamps`, `FixtureShadows`, `CornerShade`, `ContactShadow`.
-- **Depends on:** `BoatArea` (`area_id`, `walkable_bounds`, `player`, `get_shore_access`, `get_harbour_dressing`, layout nodes), `BoatFixture`, `Interactable` (companionway lookup; writes static `Interactable.light_compensation`), `SailRig.mast`, `HarbourDressing` (`get_lamp_positions`, `get_pontoon_light_positions`), `ShipCompanion`, `Daylight` (`sun_elevation`, `inside_colour`, `outside_colour`, `daylight`), `GameSession` (time, position, underway, anchored), `Simulation.get_weather_at_vessel`, `WeatherModel` classes, `SettingsManager.get_flash_intensity`, `SessionState.AREA_INTERIOR`, `Loc`.
+- **Depends on:** `BoatArea` (`area_id`, `walkable_bounds`, `player`, `get_shore_access`, `get_harbour_dressing`, layout nodes), `BoatFixture`, `Interactable` (companionway lookup; writes static `Interactable.light_compensation`), `SailRig.mast`, `HarbourDressing` (`get_lamp_positions`, `get_pontoon_light_positions`), `ShipCompanion`, `Daylight` (`sun_elevation`, `inside_colour`, `outside_colour`, `daylight`), `GameSession` (time, position, underway, anchored), `Simulation.get_weather_at_vessel`, `WeatherModel` classes, `SettingsManager.get_flash_intensity`, `SessionState.AREA_INTERIOR`.
 - **State:** `_lights` entries `{light, energy, when, lamp}` with `when` in dark/night/day/harbour/underway/anchor; `_colour`, `_darkness`, `_overcast`, `_flash`. Static shared gradient textures. Adds a `CanvasModulate` "Ambient" to the area.
 - **Lifecycle:** Created by `BoatArea._setup_lighting()` (every area) then `setup(area)`; `GameSession.state_replaced` -> `update_now`. `flash()` called by `WeatherAudio` via App's `lighting_provider`.
 - **Performance:** One colour blend + loop over a handful of PointLight2D per frame; weather sampled when game time moves ≥ `WEATHER_REFRESH` (600 game s). Shadows/corner shade drawn once; only alpha animates.
 - **Invariants:** The only CanvasModulate in the scene (AnchorAmbience is hidden for this). Light follows clock with `FOLLOW_RATE` 2.5/s (no strobe at Long Passage speed); `update_now()` snaps. Nav lights only underway and not anchored; anchor light only anchored; harbour lights only moored. Cabin lamps keyed by fixture names, not art.
 - **Tests:** `tests/suites/test_lighting.gd`, `tests/suites/test_companion_deck.gd`, `tests/suites/test_atmosphere.gd`; `tests/cabin_light_18.gd`.
-- **Change risks:** Node name set via `Loc.t("Lighting")` but `BoatArea.get_lighting()` looks for "Lighting"; renaming fixtures silently drops lamps; changing `light_compensation` affects all highlights; AnchorSignals depends on `boat_bounds()`.
+- **Change risks:** The node name is the literal "Lighting" (never translated: `BoatArea.get_lighting()`, `App.snap_light()` and WeatherAudio's flash find it by name; in Danish it was "Belysning" until the Engine Room pass, checked by `test_localization`); renaming fixtures silently drops lamps; changing `light_compensation` affects all highlights; AnchorSignals depends on `boat_bounds()`.
 
 ### `src/boat/cabin_world_map.gd`
 
@@ -1815,11 +1815,12 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Role:** class_name `GroceryMenu`, extends `SimplePanel`; harbour store for provisions, passage stock-up, replacement hat and lures, with a link to the fishmonger.
 - **Depends on:** `GameSession` (get_location, get_provisions, get_provisions_price, get_funds, get_missing_provision_days, is_moored_in_harbour, buy_provisions, get_passage_store_days, get_vessel_definition, get_hat_price, get_hat, buy_hat, buy_lure, get_fishing, has_facility, format_money, PROVISIONS_PRICE_PER_DAY, REMOTE_WORK_PAY_PER_HOUR), `Provisions` (CAPACITY_DAYS, format_days), `FishingCatalog`, `HarbourFacilities.FISHMONGER`, `Loc`.
 - **Signals:** declares `fishmonger_requested` (FishmongerButton); App connects it to `open_fishmonger`.
+- **Signals (in):** `GameSession.funds_changed` (`_on_funds_changed`) and `fishing_changed` -> `refresh()`.
 - **State:** writes via `GameSession.buy_provisions(days?)`, `buy_hat`, `buy_lure`.
 - **Lifecycle:** `App.open_grocery()` (moored, GROCERY facility), from `ProvisionsMenu.grocery_requested`, `BoatyardMenu.grocery_requested` and `BoatArea.grocery_requested`.
 - **Invariants:** everyday fill to `Provisions.CAPACITY_DAYS`; stock-up to `get_passage_store_days()`; the hat row is separate so provisions figures are unaffected.
-- **Tests:** `tests/suites/test_hat.gd`, `tests/suites/test_living.gd`, `tests/suites/test_upkeep_ui.gd`, `tests/suites/test_visual_prototype.gd`.
-- **Change risks:** `refresh()` is not connected to GameSession signals (only called after its own purchases), so changes made elsewhere while it is open (e.g. selling fish at the fishmonger on top) are not reflected until reopened or refreshed. Buy/BuyHat/StockUp buttons are exposed via getters used by tests.
+- **Tests:** `tests/suites/test_hat.gd`, `tests/suites/test_living.gd`, `tests/suites/test_upkeep_ui.gd`, `tests/suites/test_visual_prototype.gd`, `tests/suites/test_boat_of_your_own.gd` (refresh after a fishmonger sale).
+- **Change risks:** a new figure shown here that other screens can change needs its signal connected too (funds and catch are). Buy/BuyHat/StockUp buttons are exposed via getters used by tests.
 
 ### `src/ui/hat_badge.gd`
 
@@ -2251,7 +2252,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_boat_of_your_own.gd`
 
-- **Role:** extends RefCounted; test suite for I020 "A Boat of Your Own". Covers `HarbourFacilities` trades per port (counts across the catalogue), the fishmonger (single sale, sell all, no double sale, reload undoes a sale, none at sea), the chandlery (upgrade = boat-care upgrade, decor, never below zero funds, none without a yard), the sailmaker (sail cloth per vessel, free to switch back, look only, `SailRig.sail_colour`, the rig service = `BoatCare.SERVICE_RIG`), decor placement on all four vessels (clearance from stations, no collisions), save tolerance (missing `home`, unknown decor or sails dropped), and the Danish UI fitting on screen.
+- **Role:** extends RefCounted; test suite for I020 "A Boat of Your Own". Covers `HarbourFacilities` trades per port (counts across the catalogue), the fishmonger opened from the grocery store (single sale, the `GroceryMenu` under it refreshed with the new funds, sell all, no double sale, reload undoes a sale, none at sea), the chandlery (upgrade = boat-care upgrade, decor, never below zero funds, none without a yard), the sailmaker (sail cloth per vessel, free to switch back, look only, `SailRig.sail_colour`, the rig service = `BoatCare.SERVICE_RIG`), decor placement on all four vessels (clearance from stations, no collisions), save tolerance (missing `home`, unknown decor or sails dropped), and the Danish UI fitting on screen.
 - **Depends on:** `src/app/app.tscn`, `HarbourFacilities`, `HarbourTrades`, `TradePanel`, `GameSession`, `FishingCatalog`, `CabinDecor`, `SailRig`, `BoatCare`, `BoatCareState`, `SessionState`, `SaveManager`, `SettingsManager`, `Loc`, `Interactable`.
 - **State:** injects fish into `state.fishing.hold` (uids 9000+) via `replace_state`; sets funds; sets the language to `da` and back to `en`.
 - **Lifecycle:** test suite run by `tests/test_runner.gd`.
@@ -2380,7 +2381,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **State:** calls the private `area.player._sensor.interact` to pet through the real sensor path.
 - **Lifecycle:** test suite run by `tests/test_runner.gd`.
 - **Tests:** —
-- **Change risks:** real-time timers (0.3–0.6 s plus `REACTION_SECONDS`) and walk loops bounded at 20 s. Screenshots `patch_*`.
+- **Change risks:** real-time timers (0.3–0.6 s plus `REACTION_SECONDS`) remain around the petting; the walks themselves are stepped synchronously by `_walk_on` (`ShipCompanion._process(1/60)`, ≤ 3600 steps), and `app.set_process(false)` holds `App._update_companion_follow` during the walk-out. Before the Engine Room pass the walk-out (2.9–10.4 s by deck spot) raced the 2.5–5 s follow timer while waiting real frames (intermittent "then she goes below"). Screenshots `patch_*`.
 
 ### `tests/suites/test_cozy_polish.gd`
 
@@ -2453,7 +2454,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Lifecycle:** test suite run by `tests/test_runner.gd`.
 - **Persistence:** asserts the fishing keep, posture and counter fields round-trip, a 0.104a save gets the defaults, and `pending_bite` is never saved.
 - **Tests:** —
-- **Change risks:** statistical thresholds depend on the seeds and the catalogue data. Image-overlap metric. Long simulated loops (up to 300×300 s for a bite at anchor).
+- **Change risks:** "not in step" compares the two portraits' blink schedules over 30 simulated seconds (`_note_blink`): fails only if every blink of the second coincides (≤ 0.05 s) with one of the first. The earlier first-blink-only comparison failed by chance about 2 % of runs (44 of 2,000 pairs measured). Statistical thresholds depend on the seeds and the catalogue data. Image-overlap metric. Long simulated loops (up to 300×300 s for a bite at anchor).
 
 ### `tests/suites/test_galley_and_anchor.gd`
 
@@ -2561,7 +2562,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_localization.gd`
 
-- **Role:** extends RefCounted; suite (I019). Parses `locale/messages.pot` and verifies that every msgid (> 2,000) has a Danish entry with identical placeholders, including plurals. Also covers `Loc.decimal`/`thousands`, `format_money`, `format_game_time`, `compass_name`, `format_duration`, `TimePassage.date_text` in en/da, and the first-launch `LanguagePicker` (Esc cannot skip; choice applied and persisted; not asked again). Also: the Settings language option, Danish overflow check of main menu/settings/HUD/pause, and language-neutral saves.
+- **Role:** extends RefCounted; suite (I019). Parses `locale/messages.pot` and verifies that every msgid (> 2,000) has a Danish entry with identical placeholders, including plurals. Also covers `Loc.decimal`/`thousands`, `format_money`, `format_game_time`, `compass_name`, `format_duration`, `TimePassage.date_text` in en/da, and the first-launch `LanguagePicker` (Esc cannot skip; choice applied and persisted; not asked again). Also: the Settings language option, Danish overflow check of main menu/settings/HUD/pause, `BoatArea.get_lighting()` found in Danish (the node name is not translated), and language-neutral saves.
 - **Depends on:** `src/app/app.tscn`, `Loc`, `SettingsManager`, `TranslationServer`, `locale/da.po`, `LanguagePicker`, `MainMenu`, `GameSession`, `Simulation`, `WindField`, `TimePassage`, `SaveManager`.
 - **State:** resets/saves settings language (test settings file); opens and frees the app several times; slot 3.
 - **Lifecycle:** test suite; the runner sets `Simulation.sea_encounters = true` for it.
@@ -2980,7 +2981,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Signals:** connects `Simulation.passage_interrupted`.
 - **Lifecycle:** `godot --headless --path . res://tests/pacing_18.tscn`.
 - **Tests:** —.
-- **Change risks:** as committed, line 26 `if line:` has no body (next line dedented), which is a GDScript parse error, so the scene will not run until fixed; local `var f` unused.
+- **Change risks:** line 26 had an empty `if line:` (a parse error) from I018 until the Engine Room pass; it now puts the line out (`set_line(true, "spinner")`) before departure, as the loop below already does after each stop. Local `var f` unused.
 
 ### `tests/restart_105b.gd`
 

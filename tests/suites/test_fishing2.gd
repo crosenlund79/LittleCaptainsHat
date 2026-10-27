@@ -61,6 +61,11 @@ func _force_bite(species: String, kg: float) -> void:
 		"lure": "spinner", "kind": String(catalog.kind_of(species)), "rarity": catalog.rarity_of(species)}
 
 
+## Records the start of each blink (a closed eye after half a second open).
+static func _note_blink(portrait: FishPortrait, blinks: Array, clock: float) -> void:
+	if portrait.is_eye_closed() and (blinks.is_empty() or clock - float(blinks.back()) > 0.5):
+		blinks.append(clock)
+
 # --- The dial -------------------------------------------------------------------------
 
 func _test_reel_rules() -> void:
@@ -266,6 +271,7 @@ func _test_portrait() -> void:
 	var opened_at := -1.0
 	var flick_max := 0.0
 	var flick_ended := false
+	var p1_blinks := []
 	var p2_blinks := []
 	var clock := 0.0
 	for i in 600:  # ten seconds at 60 frames per second
@@ -276,17 +282,30 @@ func _test_portrait() -> void:
 			blink_at = clock
 		if blink_at >= 0.0 and opened_at < 0.0 and not p1.is_eye_closed():
 			opened_at = clock
-		if p2.is_eye_closed() and (p2_blinks.is_empty() or clock - float(p2_blinks.back()) > 0.5):
-			p2_blinks.append(clock)
+		_note_blink(p1, p1_blinks, clock)
+		_note_blink(p2, p2_blinks, clock)
 		flick_max = maxf(flick_max, absf(p1.get_tail_degrees()))
 		if flick_max > 1.0 and absf(p1.get_tail_degrees()) < 0.01:
 			flick_ended = true
+	# Twenty more seconds of blinking (simulated, not waited for): a whole
+	# schedule to compare, not one moment.
+	for i in 1200:
+		p1.advance(1.0 / 60.0)
+		p2.advance(1.0 / 60.0)
+		clock += 1.0 / 60.0
+		_note_blink(p1, p1_blinks, clock)
+		_note_blink(p2, p2_blinks, clock)
 	t.check(blink_at >= 0.0 and blink_at < 7.0, "[alive] the fish blinks within a few seconds (at %.1f s)" % blink_at)
 	t.check(opened_at > 0.0 and opened_at - blink_at <= 0.2, "[alive] a quick blink (%.2f s)" % (opened_at - blink_at))
 	t.check(flick_max > 5.0 and flick_max <= FishPortrait.FLICK_DEG + 0.1 and flick_ended,
 		"[alive] it flicks its tail now and then, modestly (%.1f degrees), and settles" % flick_max)
-	t.check(p2_blinks.is_empty() or absf(float(p2_blinks[0]) - blink_at) > 0.05,
-		"[alive] two fish do not blink in step (%.2f s vs %s)" % [blink_at, p2_blinks])
+	# In step would mean every blink of the second fish lands with one of the
+	# first's. Two independent schedules may share a blink now and then (that
+	# is chance, not step); over thirty seconds they cannot share them all.
+	var shared := p2_blinks.filter(func(b: float) -> bool:
+		return p1_blinks.any(func(a: float) -> bool: return absf(a - b) <= 0.05))
+	t.check(p1_blinks.size() >= 3 and p2_blinks.size() >= 3 and shared.size() < p2_blinks.size(),
+		"[alive] two fish do not blink in step (%d and %d blinks in 30 s, %d together)" % [p1_blinks.size(), p2_blinks.size(), shared.size()])
 	t.check(p1.find_children("*", "Timer", true, false).is_empty(), "[alive] no timers: one light step per frame")
 	SettingsManager.set_reduce_motion(true)
 	var still_max := 0.0
