@@ -416,6 +416,76 @@ SPECIES = {
         tail=("shark", 100, 46), dorsal=[("top", 0.36, 0.52, 46, "tri", 0, 0.15), ("top", 0.8, 0.85, 12, "tri")],
         anal=[("bot", 0.8, 0.85, 12, "tri")], pectoral=(0.22, 62, 32, 0.34), eye=(0.1, -2, 8), scales=0.0,
         marks=["gills", "countershade"], mouth="shark", shark=True, black_tips=True),
+    # --- I021: A Wider, Warmer World ---
+    "pollack": dict(
+        x0=64, x1=386, top=[(0, 2), (0.06, -20), (0.22, -40), (0.45, -42), (0.75, -28), (1, -13)],
+        bot=[(0, 8), (0.08, 24), (0.3, 40), (0.6, 36), (0.85, 20), (1, 13)],
+        back=(110, 104, 62), belly=(226, 218, 186), fin=(132, 120, 80), tail_col=(112, 104, 64),
+        tail=("notch", 80, 48), dorsal=[("top", 0.26, 0.42, 30, "soft"), ("top", 0.47, 0.64, 26, "soft"), ("top", 0.68, 0.86, 22, "soft")],
+        anal=[("bot", 0.46, 0.64, 22, "soft"), ("bot", 0.68, 0.86, 18, "soft")], pectoral=(0.22, 36), eye=(0.12, -8, 13),
+        scales=0.0, marks=["arched_line"], mouth="up"),
+    "halibut": dict(  # longer and slimmer than the flounder, with a big mouth and a concave tail
+        x0=44, x1=388, top=[(0, 2), (0.04, -14), (0.16, -36), (0.42, -44), (0.75, -34), (0.92, -18), (1, -10)],
+        bot=[(0, 8), (0.05, 18), (0.18, 36), (0.45, 44), (0.75, 34), (0.92, 18), (1, 10)],
+        back=(92, 86, 66), belly=(80, 74, 56), fin=(104, 96, 74), tail_col=(90, 84, 64),
+        tail=("notch", 76, 62), dorsal=[("top", 0.16, 0.9, 14, "long")], anal=[("bot", 0.24, 0.9, 14, "long")],
+        pectoral=(0.24, 0), eye=(0.1, -14, 10), second_eye=(0.16, -22, 9), scales=0.0, marks=["mottle"],
+        mouth="flat", fin_rays=True),
+    "red_mullet": dict(
+        x0=60, x1=388, top=[(0, 10), (0.04, -8), (0.14, -32), (0.3, -42), (0.6, -36), (0.85, -22), (1, -12)],
+        bot=[(0, 12), (0.08, 20), (0.3, 30), (0.6, 28), (0.85, 18), (1, 12)],
+        back=(214, 98, 92), belly=(244, 214, 200), fin=(230, 150, 120), tail_col=(214, 104, 94),
+        tail=("deepfork", 80, 48), dorsal=[("top", 0.28, 0.42, 34, "spiny", 7), ("top", 0.56, 0.7, 24, "soft")],
+        anal=[("bot", 0.6, 0.72, 18, "soft")], pelvic=("bot", 0.3, 0.38, 14), pectoral=(0.22, 30), eye=(0.12, -10, 12),
+        scales=0.55, marks=["yellow_stripes"], mouth="down", barbel=True),
+    "dentex": dict(
+        x0=60, x1=384, top=[(0, 8), (0.04, -10), (0.12, -40), (0.3, -58), (0.55, -54), (0.8, -32), (1, -12)],
+        bot=[(0, 12), (0.1, 26), (0.34, 46), (0.62, 40), (0.86, 22), (1, 12)],
+        back=(176, 140, 150), belly=(236, 222, 222), fin=(190, 150, 160), tail_col=(176, 136, 148),
+        tail=("fork", 84, 54), dorsal=[("top", 0.22, 0.82, 32, "spiny", 12)], anal=[("bot", 0.62, 0.8, 22, "soft")],
+        pelvic=("bot", 0.3, 0.38, 18), pectoral=(0.22, 38), eye=(0.11, -10, 12), scales=0.5, marks=["blue_spots"], mouth="flat"),
+    "bluefish": dict(
+        x0=62, x1=388, top=[(0, 4), (0.06, -20), (0.25, -40), (0.5, -42), (0.8, -24), (1, -9)],
+        bot=[(0, 8), (0.08, 22), (0.3, 38), (0.6, 36), (0.85, 18), (1, 9)],
+        back=(54, 110, 128), belly=(230, 234, 232), fin=(120, 150, 150), tail_col=(66, 112, 126),
+        tail=("fork", 88, 54), dorsal=[("top", 0.3, 0.42, 24, "spiny", 7), ("top", 0.48, 0.8, 26, "soft")],
+        anal=[("bot", 0.54, 0.8, 22, "soft")], pectoral=(0.22, 34), eye=(0.11, -6, 12), scales=0.0,
+        marks=["pectoral_spot"], mouth="up"),
+    "striped_bass": dict(
+        x0=64, x1=386, top=[(0, 6), (0.06, -20), (0.25, -42), (0.5, -44), (0.8, -26), (1, -12)],
+        bot=[(0, 8), (0.08, 22), (0.3, 40), (0.6, 38), (0.85, 20), (1, 12)],
+        back=(92, 104, 108), belly=(238, 238, 232), fin=(140, 146, 148), tail_col=(106, 116, 120),
+        tail=("notch", 80, 48), dorsal=[("top", 0.3, 0.46, 34, "spiny", 8), ("top", 0.52, 0.68, 26, "soft")],
+        anal=[("bot", 0.6, 0.72, 20, "soft")], pelvic=("bot", 0.3, 0.38, 16), pectoral=(0.22, 34), eye=(0.11, -8, 12),
+        scales=0.5, marks=["long_stripes"], mouth="up"),
+    "giant_trevally": dict(
+        x0=60, x1=384, top=[(0, 10), (0.03, -4), (0.1, -34), (0.26, -62), (0.5, -60), (0.78, -30), (1, -8)],
+        bot=[(0, 12), (0.1, 30), (0.34, 50), (0.62, 42), (0.86, 18), (1, 8)],
+        back=(92, 98, 108), belly=(214, 218, 220), fin=(96, 100, 110), tail_col=(84, 90, 100),
+        tail=("deepfork", 100, 70), dorsal=[("top", 0.26, 0.36, 20, "spiny", 6), ("top", 0.4, 0.62, 44, "tri", 0, 0.6)],
+        anal=[("bot", 0.42, 0.62, 40, "tri", 0, 0.6)], pectoral=(0.2, 60), eye=(0.1, -14, 13), scales=0.0,
+        marks=["dark_flecks", "scute_line"], mouth="flat", keel=True),
+    "wahoo": dict(
+        x0=26, x1=404, top=[(0, 6), (0.04, -6), (0.14, -18), (0.4, -26), (0.75, -20), (0.92, -10), (1, -6)],
+        bot=[(0, 8), (0.05, 10), (0.16, 18), (0.45, 24), (0.75, 18), (0.92, 10), (1, 6)],
+        back=(40, 72, 116), belly=(222, 230, 236), fin=(56, 84, 126), tail_col=(44, 74, 116),
+        tail=("deepfork", 70, 54), dorsal=[("top", 0.2, 0.55, 14, "long"), ("top", 0.66, 0.72, 14, "tri")],
+        anal=[("bot", 0.64, 0.72, 14, "tri")], finlets=(0.74, 0.98, 8), pectoral=(0.16, 22), eye=(0.07, -2, 9), scales=0.0,
+        marks=["tiger_bars"], mouth="beak", keel=True),
+    "spanish_mackerel": dict(
+        x0=40, x1=400, top=[(0, 4), (0.05, -10), (0.18, -24), (0.4, -32), (0.75, -24), (0.92, -12), (1, -6)],
+        bot=[(0, 6), (0.06, 12), (0.2, 24), (0.45, 30), (0.75, 20), (0.92, 10), (1, 6)],
+        back=(64, 98, 132), belly=(226, 232, 236), fin=(90, 114, 140), tail_col=(66, 98, 130),
+        tail=("deepfork", 82, 60), dorsal=[("top", 0.22, 0.48, 18, "spiny", 12), ("top", 0.56, 0.64, 20, "tri")],
+        anal=[("bot", 0.58, 0.66, 18, "tri")], finlets=(0.68, 0.98, 8), pectoral=(0.18, 26), eye=(0.08, -4, 10), scales=0.0,
+        marks=["wavy_bars"], mouth="flat", keel=True),
+    "grouper": dict(
+        x0=58, x1=380, top=[(0, 4), (0.04, -14), (0.15, -40), (0.38, -54), (0.65, -46), (0.88, -26), (1, -16)],
+        bot=[(0, 16), (0.1, 32), (0.36, 50), (0.64, 46), (0.88, 26), (1, 16)],
+        back=(104, 74, 54), belly=(206, 170, 120), fin=(116, 82, 60), tail_col=(104, 74, 54),
+        tail=("round", 66, 48), dorsal=[("top", 0.22, 0.56, 30, "spiny", 11), ("top", 0.6, 0.84, 30, "soft")],
+        anal=[("bot", 0.62, 0.82, 26, "soft")], pelvic=("bot", 0.3, 0.38, 20), pectoral=(0.24, 42), eye=(0.12, -10, 12),
+        scales=0.0, marks=["pale_blotches"], mouth="up", fin_tint=(150, 110, 70)),
 }
 
 JUNK = ["old_boot", "tangled_rope", "rusty_tin"]
@@ -563,6 +633,62 @@ def paint_marks(p, shape, spec, body):
             t = 0.3 + k * 0.045
             y = shape.mid_at(t) + 12
             p.ink(clip(tube([(shape.x(t), y), (shape.x(t), y + 14)], 2.2), inner), (196, 204, 220), 170)
+    # --- I021 marks ---
+    if "arched_line" in marks:  # the pollack's dark lateral line, arched over the pectoral fin
+        pts = [(shape.x(t / 24), shape.top_at(t / 24) + (shape.mid_at(t / 24) - shape.top_at(t / 24)) * (0.35 + 0.4 * min(1.0, t / 12)))
+               for t in range(3, 25)]
+        p.ink(clip(tube(pts, 2.2), inner), mix(spec["back"], INK, 0.55), 210)
+    if "mottle" in marks:
+        for k in range(26):
+            t = rng.uniform(0.14, 0.94)
+            y = rng.uniform(shape.top_at(t) + 10, shape.bot_at(t) - 10)
+            p.ink(clip(ell((shape.x(t), y), (rng.uniform(5, 9), rng.uniform(4, 7))).filter(ImageFilter.GaussianBlur(SS * 1.2)), inner),
+                  mix(spec["back"], INK, 0.35), 120)
+    if "yellow_stripes" in marks:
+        for k in range(3):
+            frac = 0.42 + k * 0.14
+            pts = [(shape.x(t / 20), shape.top_at(t / 20) + (shape.bot_at(t / 20) - shape.top_at(t / 20)) * frac) for t in range(3, 19)]
+            p.ink(clip(tube(pts, 2.6), inner), (238, 204, 84), 200)
+    if "blue_spots" in marks:
+        for k in range(30):
+            t = rng.uniform(0.14, 0.86)
+            y = rng.uniform(shape.top_at(t) + 6, shape.mid_at(t))
+            p.ink(clip(ell((shape.x(t), y), (2.2, 2.0)), inner), (70, 120, 190), 200)
+    if "pectoral_spot" in marks:
+        t = spec["pectoral"][0]
+        p.ink(clip(ell((shape.x(t) + 2, shape.mid_at(t) + 3), (5, 4)), inner), (30, 40, 46), 200)
+    if "long_stripes" in marks:
+        for k in range(6):
+            frac = 0.18 + k * 0.1
+            pts = [(shape.x(t / 20), shape.top_at(t / 20) + (shape.bot_at(t / 20) - shape.top_at(t / 20)) * frac) for t in range(4, 20)]
+            p.ink(clip(tube(pts, 1.8), inner), (44, 50, 56), 190)
+    if "dark_flecks" in marks:
+        for k in range(40):
+            t = rng.uniform(0.15, 0.85)
+            y = rng.uniform(shape.top_at(t) + 6, shape.bot_at(t) - 8)
+            p.ink(clip(ell((shape.x(t), y), (1.4, 1.2)), inner), (36, 38, 44), 170)
+    if "scute_line" in marks:
+        pts = [(shape.x(t / 20), shape.mid_at(t / 20) + 2) for t in range(13, 20)]
+        p.ink(clip(tube(pts, 3.2), inner), mix(spec["back"], INK, 0.4), 190)
+    if "tiger_bars" in marks:
+        for k in range(18):
+            t = 0.16 + k * 0.045
+            pts = [(shape.x(t), shape.top_at(t) + 2), (shape.x(t) + 3, shape.mid_at(t) + 4)]
+            p.ink(clip(tube(pts, 2.0), inner), (60, 96, 160), 210)
+    if "wavy_bars" in marks:
+        for k in range(16):
+            t = 0.2 + k * 0.045
+            x = shape.x(t)
+            y_top = shape.top_at(t)
+            y_mid = shape.mid_at(t) + 2
+            p.ink(clip(tube([(x, y_top + 2), (x + 3, y_top + (y_mid - y_top) * 0.4), (x - 2, y_top + (y_mid - y_top) * 0.75),
+                             (x + 2, y_mid)], 1.8), inner), (40, 60, 92), 200)
+    if "pale_blotches" in marks:
+        for k in range(18):
+            t = rng.uniform(0.16, 0.9)
+            y = rng.uniform(shape.top_at(t) + 8, shape.bot_at(t) - 10)
+            p.ink(clip(ell((shape.x(t), y), (rng.uniform(4, 7), rng.uniform(3, 5))).filter(ImageFilter.GaussianBlur(SS * 0.6)), inner),
+                  (214, 196, 160), 170)
     if "gills" in marks:
         for k in range(5):
             t = spec["eye"][0] + 0.1 + k * 0.02
