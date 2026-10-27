@@ -7595,6 +7595,12 @@ msgstr "Barometer i messing"
 msgid "A small brass ship's barometer. The needle says what the sky is about to do."
 msgstr "Et lille skibsbarometer i messing. Viseren fortæller, hvad himlen har i sinde."
 
+msgid "Brass compass"
+msgstr "Kompas i messing"
+
+msgid "An old brass compass in a gimballed bowl, fixed to the bulkhead. Purely for show: the real one is at the helm."
+msgstr "Et gammelt messingkompas i en kardansk ophængt skål, fastgjort på skottet. Kun til pynt: det rigtige sidder ved rattet."
+
 msgid "Dingle, a small fishing harbour at the head of its bay in Ireland's far south-west, with painted shopfronts above the quay."
 msgstr "Dingle, en lille fiskerhavn inderst i sin bugt i Irlands yderste sydvest, med malede butiksfacader over kajen."
 

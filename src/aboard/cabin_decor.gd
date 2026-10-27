@@ -3,7 +3,7 @@ extends Node2D
 ## One of the Captain's cabin things (I020, A Boat of Your Own): a braided
 ## rug, a pot of herbs, a framed old chart, a brass oil lamp, a shelf of sea
 ## stories, signal-flag bunting; and since I021 a model ship, a jar of sea
-## glass and a brass barometer.
+## glass and a brass barometer; and a brass compass (Operation Paperwork).
 ## Drawn in the cabin's own hand-drawn manner
 ## (a few shapes and an outline, no sprites), purely a look: no collision, no
 ## station, nothing to walk around.
@@ -33,6 +33,8 @@ const SEA_GLASS: Array[Color] = [Color("#8FC2B0"), Color("#A9CBD8"), Color("#C9D
 ## Keep this far from stations and companion spots (px), and this far apart.
 const CLEARANCE := 46.0
 const SPACING := 70.0
+## The closest things may hang when a cabin is full (the second look).
+const SECOND_SPACING := 56.0
 const RUG_RADIUS := 36.0
 ## Drawn a little larger than the sizes below (they read at cabin zoom).
 const DRAW_SCALE := 1.4
@@ -66,6 +68,8 @@ func _draw() -> void:
 			_draw_sea_glass()
 		"barometer":
 			_draw_barometer()
+		"compass":
+			_draw_compass()
 
 
 ## Local "inward" direction (from the wall into the cabin).
@@ -176,6 +180,25 @@ func _draw_barometer() -> void:
 	draw_arc(centre, 9.0, 0.0, TAU, 24, INK, 1.3, true)
 
 
+## A brass compass in a gimballed bowl on the bulkhead: the gimbal ring, the
+## card with its four points and a red north.
+func _draw_compass() -> void:
+	var into := _in()
+	var centre := into * 12.0
+	for s: float in [-1.0, 1.0]:
+		var pin := centre + Vector2(s * 11.0, 0.0)
+		draw_line(pin, pin - into * 9.0, BRASS.darkened(0.3), 1.6)  # the gimbal's arms to the wall
+	draw_arc(centre, 11.0, 0.0, TAU, 28, BRASS, 2.0, true)  # the gimbal ring
+	draw_circle(centre, 8.0, BRASS)
+	draw_circle(centre, 6.0, PAPER)
+	for k in 4:
+		var d := Vector2.from_angle(k * PI * 0.5)
+		draw_line(centre + d * 2.0, centre + d * 5.5, INK, 0.9)
+	draw_colored_polygon(PackedVector2Array([centre + Vector2(0, -5.5), centre + Vector2(1.6, 0), centre + Vector2(-1.6, 0)]),
+			FLAGS[0])
+	draw_arc(centre, 8.0, 0.0, TAU, 24, INK, 1.3, true)
+
+
 # --- Where things go ----------------------------------------------------------------------
 
 ## The places for `items` (decor ids, in catalogue order) in a cabin:
@@ -183,7 +206,10 @@ func _draw_barometer() -> void:
 ## furniture outlines (global polygons); `avoid`: stations, companion spots
 ## and fitted gear. Things for the walls go on the hull side, alternating
 ## starboard and port, spread along the boat; the rug on open floor nearest
-## the cabin's middle. A thing with no clear place is not shown.
+## the cabin's middle. Things that find no wall that way get a second look
+## (Operation Paperwork): from inside each hull as well as the middle (the
+## Clam 40's hull cabins), at the usual spacing and then a little closer; the
+## things already placed never move. A thing with no clear place is not shown.
 static func place_all(items: Array[String], hull: PackedVector2Array, fixtures: Array[PackedVector2Array],
 		avoid: Array[Vector2]) -> Dictionary:
 	var placed := {}
@@ -194,6 +220,7 @@ static func place_all(items: Array[String], hull: PackedVector2Array, fixtures: 
 		bounds = bounds.expand(p)
 	var taken: Array[Vector2] = []
 	var wall_index := 0
+	var left: Array[String] = []
 	for id in items:
 		var where := HarbourTrades.get_decor_item(id).get("place", "wall") as String
 		if where == "floor":
@@ -207,11 +234,29 @@ static func place_all(items: Array[String], hull: PackedVector2Array, fixtures: 
 		if not spot.is_empty():
 			placed[id] = spot
 			taken.append(spot[0])
+		else:
+			left.append(id)
 		wall_index += 1
+	# The second look, only for what is left.
+	var starts := [0.0, bounds.get_center().y + bounds.size.y * 0.35, bounds.get_center().y - bounds.size.y * 0.35]
+	for id in left:
+		for spacing in [SPACING, SECOND_SPACING]:
+			var spot := []
+			for start: float in starts:
+				for side in [1.0, -1.0]:
+					if spot.is_empty():
+						spot = _wall_spot(hull, bounds, avoid, taken, side, start, spacing)
+			if not spot.is_empty():
+				placed[id] = spot
+				taken.append(spot[0])
+				break
 	return placed
 
 
-static func _wall_spot(hull: PackedVector2Array, bounds: Rect2, avoid: Array[Vector2], taken: Array[Vector2], side: float) -> Array:
+## `start`: the line along the boat the wall is looked for from (0: the
+## middle); `spacing`: how far from the things already placed.
+static func _wall_spot(hull: PackedVector2Array, bounds: Rect2, avoid: Array[Vector2], taken: Array[Vector2], side: float,
+		start := 0.0, spacing := SPACING) -> Array:
 	# Candidates from the middle of the cabin outwards, so the things gather
 	# where the Captain lives (the saloon) before the ends.
 	var middle := bounds.get_center().x
@@ -220,21 +265,22 @@ static func _wall_spot(hull: PackedVector2Array, bounds: Rect2, avoid: Array[Vec
 		var x := middle + (k + 1) / 2 * 20.0 * (1.0 if k % 2 == 0 else -1.0)
 		if absf(x - middle) > span:
 			continue
-		var edge := _wall_y(hull, x, side)
+		var edge := _wall_y(hull, x, side, start)
 		if is_nan(edge):
 			continue
 		var at := Vector2(x, edge - side * 6.0)
-		if _clear(at, avoid, CLEARANCE) and _clear(at, taken, SPACING):
+		if _clear(at, avoid, CLEARANCE) and _clear(at, taken, spacing):
 			return [at, side]
 	return []
 
 
-## The hull's wall at `x` on `side` (+1 starboard, larger y), or NAN.
-static func _wall_y(hull: PackedVector2Array, x: float, side: float) -> float:
-	var y := 0.0
-	if not Geometry2D.is_point_in_polygon(Vector2(x, 0.0), hull):
+## The hull's wall at `x` on `side` (+1 starboard, larger y), looking from
+## `start` (a y inside the cabin), or NAN.
+static func _wall_y(hull: PackedVector2Array, x: float, side: float, start := 0.0) -> float:
+	var y := start
+	if not Geometry2D.is_point_in_polygon(Vector2(x, start), hull):
 		return NAN
-	while absf(y) < 600.0 and Geometry2D.is_point_in_polygon(Vector2(x, y + side * 2.0), hull):
+	while absf(y - start) < 600.0 and Geometry2D.is_point_in_polygon(Vector2(x, y + side * 2.0), hull):
 		y += side * 2.0
 	return y
 

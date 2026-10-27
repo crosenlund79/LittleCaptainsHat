@@ -28,7 +28,7 @@ companion, 28 branding (8 SVG and 20 PNG), the Captain's 4 original drawings and
 | [Fish](contact_sheets/fish_contact_sheet.png) | The 26 fish and 3 pieces of junk, English and Danish names, rarity |
 | [Companions](contact_sheets/companions_contact_sheet.png) | The cat's and the dog's four poses |
 | [Harbours](contact_sheets/harbours_contact_sheet.png) | The nine harbour looks with example harbours, and the six special harbours |
-| [Cabin things](contact_sheets/cabin_items_contact_sheet.png) | The nine cabin things, rendered by the game, with names and prices |
+| [Cabin things](contact_sheets/cabin_items_contact_sheet.png) | The ten cabin things, rendered by the game, with names and prices |
 | [Chart symbols](contact_sheets/chart_symbols_contact_sheet.png) | The chart's markers, by day and by night |
 
 Rebuild them with `python3 tools/art/build_contact_sheets.py` (see
@@ -86,7 +86,7 @@ and the cabin column of the boats sheet.
 | Thing | Made |
 |---|---|
 | Cabin floor, furniture and fittings | PNG, Python (the boat's `cabin/` layers, above) |
-| The nine cabin things (rug, herbs, framed chart, oil lamp, books, bunting, model ship, sea glass, barometer) | Code: [`cabin_decor.gd`](../../src/aboard/cabin_decor.gd); list, prices and places in [`trades.json`](../../data/harbours/trades/trades.json) |
+| The ten cabin things (rug, herbs, framed chart, oil lamp, books, bunting, model ship, sea glass, barometer, compass) | Code: [`cabin_decor.gd`](../../src/aboard/cabin_decor.gd); list, prices and places in [`trades.json`](../../data/harbours/trades/trades.json) |
 | Food and water stores | Code: [`provision_display.gd`](../../src/boat/provision_display.gd) |
 | Coffee mug, galley stove, rod holder, trophy board, windlass | Code: [`coffee_mug.gd`](../../src/aboard/coffee_mug.gd), [`galley_stove.gd`](../../src/aboard/galley_stove.gd), [`rod_holder.gd`](../../src/aboard/rod_holder.gd), [`trophy_board.gd`](../../src/aboard/trophy_board.gd), [`windlass.gd`](../../src/aboard/windlass.gd) |
 | The framed world map on the cabin wall | Code: [`cabin_world_map.gd`](../../src/boat/cabin_world_map.gd), from the chart's own land data |

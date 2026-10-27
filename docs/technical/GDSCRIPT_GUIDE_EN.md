@@ -617,7 +617,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/aboard/cabin_decor.gd`
 
 **Purpose:** Draws one of the Captain's cosy cabin things (rug, herbs, framed chart, oil lamp, book shelf, flag bunting) and finds a good place for each.
-- **What it does:** Each item is drawn in simple hand-drawn shapes, with no collision. A placement helper puts wall things along the hull sides, alternating starboard and port, and the rug on open floor near the middle, always clear of stations and the companion's resting spots. The same cabin always gives the same places. Since I021 it also draws a model ship, a jar of sea glass and a brass barometer.
+- **What it does:** Each item is drawn in simple hand-drawn shapes, with no collision. A placement helper puts wall things along the hull sides, alternating starboard and port, and the rug on open floor near the middle, always clear of stations and the companion's resting spots. The same cabin always gives the same places. Since I021 it also draws a model ship, a jar of sea glass and a brass barometer, and since Operation Paperwork a brass compass. Things that find no wall on the first try get a second look, from inside each hull and a little closer together, so all ten fit in every cabin; nothing already placed moves.
 - **Works with:** `BoatArea` (creates and places them), `HarbourTrades` (the list of decor items and whether each goes on wall or floor), `CabinHomeMenu` (where the Captain chooses them).
 - **Keeps:** Which item it is and which wall side it hangs on.
 - **When it runs:** In the cabin, when it loads or when the Captain changes the chosen decor.
@@ -1839,7 +1839,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_boat_of_your_own.gd`
 
 **Purpose:** Checks the harbour trades and making the boat your own (I020).
-- **What it does:** It checks which harbours have a fishmonger, chandlery or sailmaker. It sells fish (never twice, and the grocery store underneath shows the new money at once), buys gear and cabin things (never below zero money), and orders sails in a new colour (a look only). Cabin things are placed on all four boats without blocking a station. It also checks that old and odd saves load, and that the Danish texts fit the screen. Since I021 it accepts that a long shop list scrolls: a row scrolled out of view is not counted as off screen.
+- **What it does:** It checks which harbours have a fishmonger, chandlery or sailmaker. It sells fish (never twice, and the grocery store underneath shows the new money at once), buys gear and cabin things (never below zero money), and orders sails in a new colour (a look only). Cabin things are placed on all four boats without blocking a station. It also checks that old and odd saves load, and that the Danish texts fit the screen. Since I021 it accepts that a long shop list scrolls: a row scrolled out of view is not counted as off screen. Since Operation Paperwork it also checks that the brass compass hangs in every cabin and is called "Kompas i messing" in Danish.
 - **Works with:** `HarbourFacilities`, `HarbourTrades`, `TradePanel`, `GameSession`, `CabinDecor`, `SessionState`, `SettingsManager`.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.

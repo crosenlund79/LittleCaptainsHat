@@ -36,7 +36,7 @@ three GDScript guides (English, Danish, architecture).
 | Category | Pictures | How made |
 |---|---|---|
 | Boats and sails | 4 boats x 7 layers (28 PNG); 12 templates and 1 demo (not shown in play) | PNG painted by Python; sails, mast and rigging drawn in code |
-| Cabin interiors and decorations | 9 cabin things, stores, mug, stove, rod holder, trophy board, windlass, world map, hat | Code (the cabin floor and furniture are the boats' PNG layers) |
+| Cabin interiors and decorations | 9 cabin things (10 since Operation Paperwork), stores, mug, stove, rod holder, trophy board, windlass, world map, hat | Code (the cabin floor and furniture are the boats' PNG layers) |
 | Fish | 26 species x 4 PNG, 3 junk x 2 PNG (110) | PNG painted by Python |
 | Companions | 2 kinds x 4 poses (8) | PNG painted by Python; a code-drawn fallback |
 | Harbours and arrival illustrations | 9 looks, reused by 239 harbours | PNG painted by Python; quay and pontoon drawn in code |

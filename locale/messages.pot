@@ -328,6 +328,10 @@ msgid "A string of small signal flags. Read them right and they say \"welcome ab
 msgstr ""
 
 #: data/harbours/trades/trades.json
+msgid "An old brass compass in a gimballed bowl, fixed to the bulkhead. Purely for show: the real one is at the helm."
+msgstr ""
+
+#: data/harbours/trades/trades.json
 msgid "Basil, thyme and a stubborn chive, in a pot that sits snug against the hull."
 msgstr ""
 
@@ -337,6 +341,10 @@ msgstr ""
 
 #: data/harbours/trades/trades.json
 msgid "Brass barometer"
+msgstr ""
+
+#: data/harbours/trades/trades.json
+msgid "Brass compass"
 msgstr ""
 
 #: data/harbours/trades/trades.json
@@ -6131,11 +6139,11 @@ msgstr ""
 msgid "BLOCKED (not applied)"
 msgstr ""
 
-#: src/navigation/map_view.gd:1650
+#: src/navigation/map_view.gd:1651
 msgid "  (Magic Anchor)"
 msgstr ""
 
-#: src/navigation/map_view.gd:1650
+#: src/navigation/map_view.gd:1651
 msgid "%d  Anchorage%s"
 msgstr ""
 

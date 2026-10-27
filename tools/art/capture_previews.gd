@@ -148,7 +148,7 @@ func _show(area: StringName) -> void:
 
 
 func _capture_boats() -> void:
-	for id: String in ["model_ship", "sea_glass", "barometer", "rug", "herbs", "chart_print", "oil_lamp", "books", "bunting"]:
+	for id: String in ["model_ship", "sea_glass", "barometer", "rug", "herbs", "chart_print", "oil_lamp", "books", "bunting", "compass"]:
 		GameSession.buy_decor(id)
 	for vessel_id in VESSELS:
 		_moor(&"copenhagen", vessel_id, 12.5)

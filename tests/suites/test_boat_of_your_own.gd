@@ -242,10 +242,15 @@ func _test_cabins() -> void:
 		var collision := nodes.any(func(n: Node) -> bool: return not n.find_children("*", "CollisionObject2D", true, false).is_empty())
 		t.check(placed.size() >= all - 1 and too_close.is_empty() and not collision,
 			"[cabin] the %s: %d of %d things placed, none on a station, nothing to bump into (%s)" % [vessel_id, placed.size(), all, too_close])
+		t.check(placed.has("compass"), "[cabin] the brass compass has a place on the %s's wall" % vessel_id)
 		await t.screenshot("i020_cabin_%s" % vessel_id)
 		app.modals.clear()
 		# Stations still work: the chart table and the bed are where they were and enabled.
 		t.check(stations.get_children().all(func(s: Node) -> bool: return not s is Interactable or (s as Interactable).visible), "[cabin] every station is still there")
+	SettingsManager.set_language(&"da")
+	var compass := Loc.t(String(HarbourTrades.get_decor_item("compass").name))
+	SettingsManager.set_language(&"en")
+	t.check(compass == "Kompas i messing", "[dansk] the brass compass: %s" % compass)
 	# Each boat its own: put the rug away on the Clam 40 only.
 	GameSession.set_cabin_decor("rug", false)
 	t.check(not "rug" in GameSession.get_cabin_decor() and "rug" in GameSession.get_cabin_decor(&"starling_33"), "[cabin] each boat keeps its own choice")

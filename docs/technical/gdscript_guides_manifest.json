@@ -13,9 +13,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/aboard/cabin_decor.gd": {
-   "sha": "69f14cfa08724385",
+   "sha": "3035fb8687a36b97",
    "reviewed": "2026-10-27",
-   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
+   "note": "brass compass; second placement pass"
   },
   "src/aboard/coffee_mug.gd": {
    "sha": "7591f61fef11b354",
@@ -1033,9 +1033,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_boat_of_your_own.gd": {
-   "sha": "751037e7e4025f12",
+   "sha": "fb919bdfcc26436f",
    "reviewed": "2026-10-27",
-   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
+   "note": "compass checks"
   },
   "tests/suites/test_branding.gd": {
    "sha": "af080fa22cdd42f2",
@@ -1383,9 +1383,9 @@
    "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
   },
   "tools/art/capture_previews.gd": {
-   "sha": "566318c26d0e7d07",
+   "sha": "5519443f78ad3805",
    "reviewed": "2026-10-27",
-   "note": "Illustrated Catalogue preview capture tool"
+   "note": "compass in the bought list; entry still accurate"
   },
   "tools/build_theme.gd": {
    "sha": "0e5953be619e13ca",
