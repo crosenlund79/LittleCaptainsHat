@@ -186,7 +186,7 @@ func _setup_water_look() -> void:
 	GameSession.anchor_changed.connect(_recolour_water)
 	var shallows := ShallowWater.new()
 	shallows.name = "ShallowWater"
-	water.add_sibling(shallows)
+	water.add_child(shallows)  # over the water, still under WaterLife (its next sibling)
 
 
 func _recolour_water() -> void:

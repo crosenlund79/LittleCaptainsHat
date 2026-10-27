@@ -93,9 +93,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/boat/boat_area.gd": {
-   "sha": "25c086ead66d1d88",
+   "sha": "e0cc46c5d9189453",
    "reviewed": "2026-10-27",
-   "note": "I022 windows and softer water"
+   "note": "I022 ShallowWater under WaterLife"
   },
   "src/boat/boat_fixture.gd": {
    "sha": "cb427e4ff17e7ac7",
@@ -135,7 +135,7 @@
   "src/boat/shallow_water.gd": {
    "sha": "ad93d276dcd70921",
    "reviewed": "2026-10-27",
-   "note": "I022 windows and softer water"
+   "note": "I022 ShallowWater under WaterLife"
   },
   "src/boat/visuals/damage_overlay.gd": {
    "sha": "3c0ac961e220d95d",
