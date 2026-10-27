@@ -838,7 +838,7 @@ func _assess_weather(result: AdvanceResult) -> bool:
 	GameSession.update_weather_exposure(here)
 	var damage := WeatherDamage.damage_between(GameSession.get_damage_applied_until(), now,
 		GameSession.get_vessel_position(), GameSession.get_wind_seed(), GameSession.get_vessel_profile().weather_damage_factor) \
-		* GameSession.get_anchor_damage_factor()
+		* GameSession.get_anchor_damage_factor() * Difficulty.factor("weather_damage")
 	if GameSession.apply_weather_damage(damage, now):
 		if result:
 			result.rescued = true

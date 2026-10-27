@@ -7712,3 +7712,62 @@ msgstr "Langkawi"
 msgctxt "place"
 msgid "Hobart"
 msgstr "Hobart"
+
+# I022: boat prices and difficulty
+
+msgid "Demanding seamanship: less money to start with, the crew eats and drinks more, the boat wears faster and takes heavy weather harder, harbour costs and the rescue fee are higher. The weather itself is the same."
+msgstr "Krævende sømandskab: færre penge at starte med, besætningen spiser og drikker mere, båden slides hurtigere og tager hårdt vejr hårdere, havneudgifter og redningsgebyret er højere. Selve vejret er det samme."
+
+msgid "Forgiving: more money to start with, food and water last longer, the boat wears more slowly, harbour costs and the rescue fee are lower."
+msgstr "Tilgivende: flere penge at starte med, mad og vand holder længere, båden slides langsommere, havneudgifter og redningsgebyret er lavere."
+
+msgid "Relaxed"
+msgstr "Afslappet"
+
+msgid "Seasoned Captain"
+msgstr "Erfaren skipper"
+
+msgid "The intended balance: the game as it was designed."
+msgstr "Den tilsigtede balance: spillet, som det er tænkt."
+
+msgid "Buy the %s?"
+msgstr "Køb %s?"
+
+msgid "The %s costs %s; you have %s. It is yours for good, and you move aboard at once. Your other boats stay yours."
+msgstr "%s koster %s; du har %s. Den er din for altid, og du flytter om bord med det samme. Dine andre både forbliver dine."
+
+msgid "The %s is already yours."
+msgstr "%s er allerede din."
+
+msgid "The %s costs %s; you have %s."
+msgstr "%s koster %s; du har %s."
+
+msgid "The %s is not yours yet: buy it first (%s)."
+msgstr "%s er ikke din endnu: køb den først (%s)."
+
+msgid "This is your boat"
+msgstr "Det er din båd"
+
+msgid "Buy the %s (%s)…"
+msgstr "Køb %s (%s)…"
+
+msgid "%s needed to buy it"
+msgstr "Der skal %s til at købe den"
+
+msgid "(your boat)"
+msgstr "(din båd)"
+
+msgid "Difficulty"
+msgstr "Sværhedsgrad"
+
+msgid "A change counts from now on. Money already spent or earned and the state of your boat stay as they are."
+msgstr "En ændring gælder fra nu af. Penge, der allerede er brugt eller tjent, og din båds tilstand forbliver, som de er."
+
+msgid "Difficulty: %s, from now on."
+msgstr "Sværhedsgrad: %s fra nu af."
+
+msgid "How forgiving should the sea be?"
+msgstr "Hvor tilgivende skal havet være?"
+
+msgid "Difficulty…"
+msgstr "Sværhedsgrad…"

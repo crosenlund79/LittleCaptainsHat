@@ -53,9 +53,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/app/app.gd": {
-   "sha": "1cc990feef3cbfd6",
+   "sha": "8dad5be7dc86ab16",
    "reviewed": "2026-10-27",
-   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
+   "note": "I022 boats and difficulty"
   },
   "src/app/game_version.gd": {
    "sha": "8392004ca99d3110",
@@ -217,6 +217,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "src/core/difficulty.gd": {
+   "sha": "8cb259b32db95129",
+   "reviewed": "2026-10-27",
+   "note": "I022 boats and difficulty"
+  },
   "src/core/fishing_state.gd": {
    "sha": "1727045f3d97deb5",
    "reviewed": "2026-10-27",
@@ -228,9 +233,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/core/game_session.gd": {
-   "sha": "99c3d3d01a211dcc",
+   "sha": "443685c85939d52c",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/core/hat_state.gd": {
    "sha": "5d50d71e51204312",
@@ -263,14 +268,14 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/core/session_state.gd": {
-   "sha": "5241c7b692ca60ef",
+   "sha": "c9e3f4dac42590d9",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/core/simulation.gd": {
-   "sha": "43d8f1626651ac23",
+   "sha": "7b8eb95089996e9c",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/core/vessel_condition.gd": {
    "sha": "d1e2f8e4ae1d2c4b",
@@ -618,9 +623,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/boatyard_menu.gd": {
-   "sha": "54d32d47ce9a99f1",
+   "sha": "6252f89419610a7a",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/ui/cabin_home_menu.gd": {
    "sha": "191f769d207df869",
@@ -661,6 +666,16 @@
    "sha": "bf781211bd6f3dd9",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/difficulty_menu.gd": {
+   "sha": "f18a4ad7aa1bb9a8",
+   "reviewed": "2026-10-27",
+   "note": "I022 boats and difficulty"
+  },
+  "src/ui/difficulty_picker.gd": {
+   "sha": "07bfe4e8e94a7de2",
+   "reviewed": "2026-10-27",
+   "note": "I022 boats and difficulty"
   },
   "src/ui/fishing_menu.gd": {
    "sha": "be4c2d8eb50c5cf6",
@@ -733,9 +748,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/new_game_menu.gd": {
-   "sha": "29570140f252e6ef",
+   "sha": "bea652a299c0ece2",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/ui/passage_panel.gd": {
    "sha": "f70ca42a7c40c5c3",
@@ -743,9 +758,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/pause_menu.gd": {
-   "sha": "9fff1c9562abf1c3",
+   "sha": "873bf575f0e2644c",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/ui/provisions_menu.gd": {
    "sha": "0048b26b1806f0f1",
@@ -863,9 +878,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/vessels/vessel_definition.gd": {
-   "sha": "efd578df5df7b92e",
+   "sha": "f731c4ec9ad1322e",
    "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "note": "I022 boats and difficulty"
   },
   "src/water/water_life.gd": {
    "sha": "5bd4e07881db7e38",
@@ -1051,6 +1066,11 @@
    "sha": "d53166fad920e986",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "tests/suites/test_captains_other_life.gd": {
+   "sha": "d9cc271e39ab6afb",
+   "reviewed": "2026-10-27",
+   "note": "I022 boats and difficulty"
   },
   "tests/suites/test_captains_watch.gd": {
    "sha": "a511747240a65668",
@@ -1383,9 +1403,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/test_runner.gd": {
-   "sha": "113828088df87ceb",
+   "sha": "0ecfbe65bca56203",
    "reviewed": "2026-10-27",
-   "note": "I021: harbour looks and special harbours, arrival card, chart star, decor items, tests"
+   "note": "I022 boats and difficulty"
   },
   "tools/art/capture_previews.gd": {
    "sha": "5519443f78ad3805",

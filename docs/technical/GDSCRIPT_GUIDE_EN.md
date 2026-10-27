@@ -154,7 +154,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Purpose:** The game's main "conductor": it connects the menus, the screens and the game systems so they all work together.
-- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place.
+- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu.
 - **Works with:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Keeps:** Only screen bookkeeping: whether the rescue report is open, a VHF call or anchorage question waiting to be shown, the seconds left before a hooked fish gets away, and when the companion next follows you between cabin and deck. The game itself lives in `GameSession`.
 - **When it runs:** Always: it is the main scene that starts with the game.
@@ -205,6 +205,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** When a voyage ends; when the log is shown, saved or loaded.
 - **If you change it:** The Captain's Log screen, achievements and renown that depend on miles or harbours, and the "log" part of saves.
 
+### `src/core/difficulty.gd`
+
+**Purpose:** The three difficulty levels: Relaxed, Standard and Seasoned Captain (I022).
+- **What it does:** Reads `data/progression/difficulty.json` and gives the factors of the level being played: starting money, how fast food and water are used, wear, weather damage, harbour costs and the rescue fee. Standard is 1.0 everywhere, the game as designed; the weather itself is the same at every level. It also gives each level's name and description in the current language.
+- **Works with:** `GameSession` (the level of the game), `SessionState` (starting money), the places that use the factors (`GameSession` provisions, wear, boat care quotes and rescue; `Simulation` weather damage), `DifficultyPicker`.
+- **Keeps:** The levels from the data file, read once.
+- **When it runs:** Whenever one of those numbers is used.
+- **If you change it:** Every game's balance changes for the levels you edit; Standard should stay 1.0.
+
 ### `src/core/fishing_state.gd`
 
 **Purpose:** Everything about fishing aboard that should be remembered.
@@ -226,7 +235,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/game_session.gd`
 
 **Purpose:** The keeper of the running game: the only place where the game's state is changed.
-- **What it does:** Starts, ends and loads games, and offers every game action: planning a course, setting sail, arriving, rescue, money, provisions, boat care, fishing, cooking, the anchor, the captain's hat, companion moves, renown and travel updates. It announces each change with signals (messages other parts of the game listen for) and never touches screens.
+- **What it does:** Starts, ends and loads games, and offers every game action: planning a course, setting sail, arriving, rescue, money, provisions, boat care, fishing, cooking, the anchor, the captain's hat, companion moves, renown and travel updates. It announces each change with signals (messages other parts of the game listen for) and never touches screens. Since I022 boats are bought (`buy_vessel`, once, at a boatyard, never below zero money) and only boats you own can be sailed; it also keeps the difficulty, which scales food and water use, wear, boat care and provisions prices and the rescue fee.
 - **Works with:** `SessionState` (the data it owns), `Simulation` (moves time forward and calls back into it), `SaveManager`, `App`, the HUD and menus, many catalogues (`PortCatalog`, `SeaRouter`, `VesselCatalog`, `ObjectiveCatalog`, `BoatCare`, `FishingCatalog`).
 - **Keeps:** The current `SessionState`, whether there are unsaved changes, and a few things that are not saved (a fish on the line, whether the captain is asleep, whether the boat is settled at anchor).
 - **When it runs:** Always (an autoload: a script Godot starts automatically and that always exists).
@@ -289,7 +298,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/session_state.gd`
 
 **Purpose:** The complete saved picture of one game, as plain data.
-- **What it does:** Holds everything a save needs (where you are aboard, the clock, the boat and its position, the voyage, money, provisions, condition per boat, the log, renown, the hat, fishing, galley, anchor, boat care, home) and turns it into save data and back, checking every part.
+- **What it does:** Holds everything a save needs (where you are aboard, the clock, the boat and its position, the voyage, money, provisions, condition per boat, the log, renown, the hat, fishing, galley, anchor, boat care, home) and turns it into save data and back, checking every part. Since I022 it also keeps which boats the captain owns and the difficulty; saves from before I022 own every boat and are Standard.
 - **Works with:** `GameSession` (owns and changes it), `SaveManager` (writes and reads it), all the smaller state records in `src/core/`.
 - **Keeps:** The whole game state.
 - **When it runs:** At new game, every save and load, and as the data behind all of play.
@@ -298,7 +307,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/simulation.gd`
 
 **Purpose:** The game clock and the engine that moves the boat through time.
-- **What it does:** Every frame turns real time into game time (1 real second = 1 game minute at 1×) and moves the boat along its course, choosing sail or engine from the wind. It checks the weather, the hat, fish bites, the anchor, traffic and VHF radio calls on a fixed time grid, so the result is the same at any speed, while sleeping or during a Long Passage.
+- **What it does:** Every frame turns real time into game time (1 real second = 1 game minute at 1×) and moves the boat along its course, choosing sail or engine from the wind. It checks the weather, the hat, fish bites, the anchor, traffic and VHF radio calls on a fixed time grid, so the result is the same at any speed, while sleeping or during a Long Passage. Since I022 weather damage is scaled by the difficulty (the weather itself is not).
 - **Works with:** `GameSession` (reads and updates the game), `WeatherModel`, `PropulsionController`, `WeatherDamage`, `HatConfig`, `FishingCatalog`, `TrafficModel`, `VhfRadio`; `App` listens to its warnings.
 - **Keeps:** Not saved: the Long Passage speed, a cached arrival estimate, and whether the captain is below deck.
 - **When it runs:** Always (an autoload); it stops while the game is paused.
@@ -870,7 +879,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/vessels/vessel_definition.gd`
 
 **Purpose:** Describes one boat: its id, name, description, sailing performance, deck and cabin scenes and art.
-- **What it does:** Pure data, one file per boat. It picks the illustrated art when the Artwork setting asks for it, gives the right scene for deck or cabin, and checks that the boat is complete.
+- **What it does:** Pure data, one file per boat. It picks the illustrated art when the Artwork setting asks for it, gives the right scene for deck or cabin, and checks that the boat is complete. Since I022 each boat has a price in euros.
 - **Works with:** `VesselCatalog`, `GameSession`, `VesselVisualProfile`, `BoatArea`, `BoatyardMenu`, `Provisions` (passage stores), `SettingsManager`.
 - **Keeps:** The boat's facts (stored in `data/vessels/*.tres`).
 - **When it runs:** Whenever the game asks about the active boat.
@@ -1360,7 +1369,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/boatyard_menu.gd`
 
 **Purpose:** The boatyard window, where you browse the boats and move aboard another one.
-- **What it does:** Lists every boat with a picture of its deck, its specs and a speed comparison table, and lets you switch boats (free; time, harbour, companion and progress are kept). It also has buttons to Boat care, the grocery store, the chandlery and the sailmaker.
+- **What it does:** Lists every boat with a picture of its deck, its specs and a speed comparison table, and lets you switch boats (free; time, harbour, companion and progress are kept). It also has buttons to Boat care, the grocery store, the chandlery and the sailmaker. Since I022 it shows each boat's price or that it is yours, and offers to buy a boat you do not own yet.
 - **Works with:** `App`, `VesselCatalog`, `VesselDefinition`, `VesselVisual`, `GameSession`, `BoatCare`, `Provisions`, `HarbourFacilities`; its layout comes from `boatyard_menu.tscn`.
 - **Keeps:** Only which boat is selected in the list.
 - **When it runs:** When you use the boatyard while moored in harbour.
@@ -1437,6 +1446,24 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Keeps:** Which guide is open.
 - **When it runs:** Only in development builds, from the main menu.
 - **If you change it:** Only how developers read the guides; the game is not affected.
+
+### `src/ui/difficulty_menu.gd`
+
+**Purpose:** The Difficulty dialog of the pause menu (I022).
+- **What it does:** Shows the three levels with what each changes and a note that a change counts from now on; Apply sets the new level and says so, Cancel leaves it.
+- **Works with:** `DifficultyPicker`, `GameSession.set_difficulty`, `PauseMenu` (opens it), `App`.
+- **Keeps:** Nothing of its own.
+- **When it runs:** When "Difficulty…" is chosen in the pause menu.
+- **If you change it:** Only how the level is changed during a game.
+
+### `src/ui/difficulty_picker.gd`
+
+**Purpose:** Three buttons (Relaxed, Standard, Seasoned Captain) and a line that says what the chosen level changes (I022).
+- **What it does:** Shows the choice in the current language, keeps the chosen level and announces changes.
+- **Works with:** `Difficulty`, `NewGameMenu`, `DifficultyMenu`.
+- **Keeps:** The chosen level.
+- **When it runs:** In the New Game menu and the Difficulty dialog.
+- **If you change it:** Both places change.
 
 ### `src/ui/fishing_menu.gd`
 
@@ -1567,7 +1594,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/new_game_menu.gd`
 
 **Purpose:** The new-game dialog where you choose your companion, the cat or the dog.
-- **What it does:** Shows a preview and a short description of the chosen companion (the cat is preselected) and reports Start with the choice.
+- **What it does:** Shows a preview and a short description of the chosen companion (the cat is preselected) and reports Start with the choice. Since I022 it also asks how forgiving the sea should be (the difficulty).
 - **Works with:** `CompanionState`, `ShipCompanion` (the preview), `App` (starts the game).
 - **Keeps:** The chosen companion kind until you press Start.
 - **When it runs:** When you press New game on the title screen.
@@ -1585,7 +1612,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/pause_menu.gd`
 
 **Purpose:** The in-game pause menu.
-- **What it does:** Shows Resume, Captain's Log, Save, Load, Settings and Main menu, and only reports which was pressed. In development builds it adds a "Developer tests" button.
+- **What it does:** Shows Resume, Captain's Log, Save, Load, Settings and Main menu, and only reports which was pressed. In development builds it adds a "Developer tests" button. Since I022 it has a Difficulty… button.
 - **Works with:** `App` (carries out the choice), `DevTools`.
 - **Keeps:** Nothing.
 - **When it runs:** When you press Esc or the menu button during play.
@@ -1862,6 +1889,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Keeps:** Nothing of its own; it records the "voyage logged" messages it hears.
 - **When it runs:** Only in tests.
 - **If you change it:** Only the checks change. A failure points at the Logbook numbers or how they are saved.
+
+### `tests/suites/test_captains_other_life.gd`
+
+**Purpose:** Checks I022, The Captain's Other Life.
+- **What it does:** Checks boat prices, that a new game owns only the starter boat, buying a boat (never twice, never below zero money, only at a boatyard), that old saves keep every boat, the three difficulty levels (starting money, food, costs, Danish names), changing the level during a game, and the New Game and pause menus that offer it.
+- **Works with:** `GameSession`, `SessionState`, `VesselCatalog`, `Difficulty`, `NewGameMenu`, `DifficultyMenu`, `App`.
+- **Keeps:** Nothing.
+- **When it runs:** With the other suites (`test_runner.tscn`).
+- **If you change it:** Only the tests change.
 
 ### `tests/suites/test_captains_watch.gd`
 
@@ -2651,7 +2687,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Purpose:** The game's automatic test runner: it runs all 74 test suites and says how many checks passed.
-- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite.
+- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it.
 - **Works with:** Every suite in `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Keeps:** The pass/fail counts and the list of failures.
 - **When it runs:** By hand or in automation: `godot --headless --path . res://tests/test_runner.tscn` (options after `--`: `--only=name`, `--skip=name`, `--screenshots=DIR`).

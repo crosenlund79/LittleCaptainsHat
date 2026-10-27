@@ -321,9 +321,9 @@ func open_new_game_menu() -> void:
 	modals.push(menu)
 
 
-func start_new_game(companion_kind: StringName = CompanionState.DEFAULT_KIND) -> void:
+func start_new_game(companion_kind: StringName = CompanionState.DEFAULT_KIND, level: StringName = Difficulty.STANDARD) -> void:
 	modals.clear()
-	GameSession.start_new_session(companion_kind)
+	GameSession.start_new_session(companion_kind, level)
 	_show_current_boat_area()
 
 
@@ -1279,6 +1279,7 @@ func open_pause_menu() -> void:
 	menu.load_requested.connect(open_load_menu)
 	menu.log_requested.connect(open_captains_log)
 	menu.settings_requested.connect(open_settings)
+	menu.difficulty_requested.connect(func() -> void: modals.push(DifficultyMenu.new()))
 	menu.main_menu_requested.connect(request_main_menu)
 	menu.dev_tests_requested.connect(func() -> void:
 		modals.clear()
@@ -1421,9 +1422,22 @@ func _find_modal(type: Variant) -> ModalPanel:
 ## Moves aboard `vessel_id` (from the boatyard): the session, companion, time
 ## and harbour are kept; the player steps aboard on deck by the boatyard.
 func switch_vessel(vessel_id: StringName) -> void:
-	modals.clear()
 	if vessel_id == GameSession.get_vessel_id():
+		modals.clear()
 		return
+	# I022: a boat not yet yours is bought first (asked, once).
+	var vessel := VesselCatalog.get_default().get_vessel(vessel_id)
+	if vessel and not GameSession.owns_vessel(vessel_id):
+		var buy: bool = await modals.confirm(Loc.t("Buy the %s?") % vessel.display_name,
+			Loc.t("The %s costs %s; you have %s. It is yours for good, and you move aboard at once. Your other boats stay yours.") % [
+				vessel.display_name, GameSession.format_money(vessel.price), GameSession.format_money(GameSession.get_funds())], "Buy")
+		if not buy:
+			return
+		var refusal := GameSession.buy_vessel(vessel_id)
+		if refusal != "":
+			notify(refusal)
+			return
+	modals.clear()
 	var error := GameSession.switch_vessel(vessel_id)
 	if error != "":
 		notify(error)

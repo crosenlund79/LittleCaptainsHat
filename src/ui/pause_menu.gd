@@ -8,6 +8,8 @@ signal log_requested
 signal load_requested
 signal settings_requested
 signal main_menu_requested
+## I022: change the difficulty (DifficultyMenu).
+signal difficulty_requested
 ## Development builds only (DevTools): open the developer test panel.
 signal dev_tests_requested
 
@@ -21,6 +23,13 @@ func _ready() -> void:
 	%LoadButton.pressed.connect(load_requested.emit)
 	%SettingsButton.pressed.connect(settings_requested.emit)
 	%MainMenuButton.pressed.connect(main_menu_requested.emit)
+	# I022: the difficulty, after Settings.
+	var difficulty := Button.new()
+	difficulty.name = "DifficultyButton"
+	difficulty.text = "Difficulty…"
+	difficulty.custom_minimum_size = (%SettingsButton as Button).custom_minimum_size
+	difficulty.pressed.connect(difficulty_requested.emit)
+	%SettingsButton.add_sibling(difficulty)
 	# Developer tests: added only where the developer tools are enabled, so
 	# a player's build has no such button at all.
 	if DevTools.is_enabled():

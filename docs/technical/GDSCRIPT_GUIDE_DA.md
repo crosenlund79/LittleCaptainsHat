@@ -156,7 +156,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Formål:** Spillets "dirigent": det forbinder menuerne, skærmene og spillets systemer, så de arbejder sammen.
-- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet.
+- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen.
 - **Arbejder sammen med:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Holder styr på:** Kun skærmens bogføring: om redningsrapporten er åben, et VHF-radioopkald eller et spørgsmål om ankerpladsen, der venter på at blive vist, sekunderne før en fisk på krogen slipper væk, og hvornår ledsageren næste gang følger dig mellem kahyt og dæk. Selve spillet ligger i `GameSession`.
 - **Hvornår det kører:** Altid: det er hovedscenen, der starter med spillet.
@@ -207,6 +207,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Når en rejse slutter; når Logbogen vises, gemmes eller indlæses.
 - **Hvis du ændrer det:** Logbogens skærm, præstationer og ry, der afhænger af sømil eller havne, og "log"-delen af gemte spil.
 
+### `src/core/difficulty.gd`
+
+**Formål:** De tre sværhedsgrader: Afslappet, Standard og Erfaren skipper (I022).
+- **Hvad det gør:** Læser `data/progression/difficulty.json` og giver faktorerne for det niveau, der spilles: startpenge, hvor hurtigt mad og vand bruges, slid, vejrskader, havneudgifter og redningsgebyret. Standard er 1,0 overalt, spillet som det er tænkt; selve vejret er det samme på alle niveauer. Den giver også hvert niveaus navn og beskrivelse på det valgte sprog.
+- **Arbejder sammen med:** `GameSession` (spillets niveau), `SessionState` (startpenge), stederne der bruger faktorerne (`GameSession` proviant, slid, priser på bådpleje og redning; `Simulation` vejrskader), `DifficultyPicker`.
+- **Holder styr på:** Niveauerne fra datafilen, læst én gang.
+- **Hvornår det kører:** Hver gang et af de tal bruges.
+- **Hvis du ændrer det:** Balancen ændres for de niveauer, du redigerer; Standard bør forblive 1,0.
+
 ### `src/core/fishing_state.gd`
 
 **Formål:** Alt om fiskeri om bord, som skal huskes.
@@ -228,7 +237,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/game_session.gd`
 
 **Formål:** Vogteren af det kørende spil: det eneste sted, hvor spillets tilstand ændres.
-- **Hvad det gør:** Starter, afslutter og indlæser spil og tilbyder alle spillets handlinger: lægge en kurs, sætte sejl, ankomme, redning, penge, proviant, bådpleje, fiskeri, madlavning, ankeret, kaptajnshuen, ledsagerens flytninger, ry og rejseopdateringer. Det melder hver ændring ud med signaler (beskeder et objekt sender, som andre kan lytte efter) og rører aldrig skærmene.
+- **Hvad det gør:** Starter, afslutter og indlæser spil og tilbyder alle spillets handlinger: lægge en kurs, sætte sejl, ankomme, redning, penge, proviant, bådpleje, fiskeri, madlavning, ankeret, kaptajnshuen, ledsagerens flytninger, ry og rejseopdateringer. Det melder hver ændring ud med signaler (beskeder et objekt sender, som andre kan lytte efter) og rører aldrig skærmene. Siden I022 købes både (`buy_vessel`, én gang, på et værft, aldrig under nul), og kun både, du ejer, kan sejles; den holder også sværhedsgraden, som skalerer forbrug af mad og vand, slid, priser på bådpleje og proviant og redningsgebyret.
 - **Arbejder sammen med:** `SessionState` (de data, det ejer), `Simulation` (flytter tiden frem og kalder tilbage), `SaveManager`, `App`, HUD og menuer, mange kataloger (`PortCatalog`, `SeaRouter`, `VesselCatalog`, `ObjectiveCatalog`, `BoatCare`, `FishingCatalog`).
 - **Holder styr på:** Den aktuelle `SessionState`, om der er ændringer, der ikke er gemt, og et par ting, der ikke gemmes (en fisk på linen, om kaptajnen sover, om båden ligger roligt for anker).
 - **Hvornår det kører:** Altid (en autoload: et script Godot starter automatisk, og som altid findes).
@@ -291,7 +300,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/session_state.gd`
 
 **Formål:** Det komplette gemte billede af ét spil, som rene data.
-- **Hvad det gør:** Holder alt, et gemt spil skal bruge (hvor du er om bord, uret, båden og dens position, rejsen, penge, proviant, stand for hver båd, Logbogen, ry, huen, fiskeri, kabys, anker, bådpleje, hjem), og laver det om til gemme-data og tilbage, mens hver del kontrolleres.
+- **Hvad det gør:** Holder alt, et gemt spil skal bruge (hvor du er om bord, uret, båden og dens position, rejsen, penge, proviant, stand for hver båd, Logbogen, ry, huen, fiskeri, kabys, anker, bådpleje, hjem), og laver det om til gemme-data og tilbage, mens hver del kontrolleres. Siden I022 husker den også, hvilke både kaptajnen ejer, og sværhedsgraden; gemte spil fra før I022 ejer alle både og er Standard.
 - **Arbejder sammen med:** `GameSession` (ejer og ændrer det), `SaveManager` (skriver og læser det), alle de mindre tilstands-optegnelser i `src/core/`.
 - **Holder styr på:** Hele spillets tilstand.
 - **Hvornår det kører:** Ved nyt spil, hver gang der gemmes og indlæses, og som data bag hele spillet.
@@ -300,7 +309,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/core/simulation.gd`
 
 **Formål:** Spillets ur og den motor, der flytter båden gennem tiden.
-- **Hvad det gør:** Hvert billede laver det rigtig tid om til spiltid (1 rigtigt sekund = 1 spilminut ved 1×) og flytter båden langs kursen, med sejl eller motor efter vinden. Det tjekker vejret, huen, fiskebid, ankeret, trafik og opkald på VHF-radioen på et fast tidsgitter, så resultatet bliver det samme ved enhver hastighed, under søvn og under en Lang passage.
+- **Hvad det gør:** Hvert billede laver det rigtig tid om til spiltid (1 rigtigt sekund = 1 spilminut ved 1×) og flytter båden langs kursen, med sejl eller motor efter vinden. Det tjekker vejret, huen, fiskebid, ankeret, trafik og opkald på VHF-radioen på et fast tidsgitter, så resultatet bliver det samme ved enhver hastighed, under søvn og under en Lang passage. Siden I022 skaleres vejrskader efter sværhedsgraden (selve vejret ikke).
 - **Arbejder sammen med:** `GameSession` (læser og opdaterer spillet), `WeatherModel`, `PropulsionController`, `WeatherDamage`, `HatConfig`, `FishingCatalog`, `TrafficModel`, `VhfRadio`; `App` lytter efter dens advarsler.
 - **Holder styr på:** Ikke gemt: farten for Lang passage, et gemt (cachet) skøn over ankomsttiden, og om kaptajnen er under dæk.
 - **Hvornår det kører:** Altid (en autoload); det står stille, mens spillet er sat på pause.
@@ -872,7 +881,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/vessels/vessel_definition.gd`
 
 **Formål:** Beskriver én båd: dens id, navn, beskrivelse, sejlegenskaber, dæks- og kahytsscener og grafik.
-- **Hvad det gør:** Rene data, én fil pr. båd. Den vælger den illustrerede grafik, når grafik-indstillingen beder om det, giver den rigtige scene for dæk eller kahyt og tjekker, at båden er komplet.
+- **Hvad det gør:** Rene data, én fil pr. båd. Den vælger den illustrerede grafik, når grafik-indstillingen beder om det, giver den rigtige scene for dæk eller kahyt og tjekker, at båden er komplet. Siden I022 har hver båd en pris i euro.
 - **Arbejder sammen med:** `VesselCatalog`, `GameSession`, `VesselVisualProfile`, `BoatArea`, `BoatyardMenu`, `Provisions` (forråd til Lang passage), `SettingsManager`.
 - **Holder styr på:** Bådens fakta (gemt i `data/vessels/*.tres`).
 - **Hvornår det kører:** Når spillet spørger om den aktive båd.
@@ -1362,7 +1371,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/boatyard_menu.gd`
 
 **Formål:** Bådeværftets vindue, hvor du ser bådene igennem og flytter om bord på en anden.
-- **Hvad det gør:** Viser hver båd med et billede af dækket, dens data og en tabel, der sammenligner farten, og lader dig skifte båd (gratis; tid, havn, ledsager og fremskridt bevares). Det har også knapper til Boat care, købmanden, skibshandelen og sejlmageren.
+- **Hvad det gør:** Viser hver båd med et billede af dækket, dens data og en tabel, der sammenligner farten, og lader dig skifte båd (gratis; tid, havn, ledsager og fremskridt bevares). Det har også knapper til Boat care, købmanden, skibshandelen og sejlmageren. Siden I022 viser den hver båds pris, eller at den er din, og tilbyder at købe en båd, du ikke ejer endnu.
 - **Arbejder sammen med:** `App`, `VesselCatalog`, `VesselDefinition`, `VesselVisual`, `GameSession`, `BoatCare`, `Provisions`, `HarbourFacilities`; layoutet kommer fra `boatyard_menu.tscn`.
 - **Holder styr på:** Kun hvilken båd der er valgt i listen.
 - **Hvornår det kører:** Når du bruger bådeværftet, mens du ligger fortøjet i havn.
@@ -1439,6 +1448,24 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Hvilken guide der er åben.
 - **Hvornår det kører:** Kun i udviklerudgaver af spillet, fra hovedmenuen.
 - **Hvis du ændrer det:** Kun hvordan udviklere læser guiderne; spillet påvirkes ikke.
+
+### `src/ui/difficulty_menu.gd`
+
+**Formål:** Pausemenuens dialog for sværhedsgrad (I022).
+- **Hvad det gør:** Viser de tre niveauer med, hvad hvert ændrer, og en bemærkning om, at en ændring gælder fra nu af; Anvend sætter det nye niveau og siger det, Annuller lader det være.
+- **Arbejder sammen med:** `DifficultyPicker`, `GameSession.set_difficulty`, `PauseMenu` (åbner den), `App`.
+- **Holder styr på:** Intet selv.
+- **Hvornår det kører:** Når "Sværhedsgrad…" vælges i pausemenuen.
+- **Hvis du ændrer det:** Kun hvordan niveauet ændres undervejs i et spil.
+
+### `src/ui/difficulty_picker.gd`
+
+**Formål:** Tre knapper (Afslappet, Standard, Erfaren skipper) og en linje, der siger, hvad det valgte niveau ændrer (I022).
+- **Hvad det gør:** Viser valget på det aktuelle sprog, husker det valgte niveau og melder ændringer.
+- **Arbejder sammen med:** `Difficulty`, `NewGameMenu`, `DifficultyMenu`.
+- **Holder styr på:** Det valgte niveau.
+- **Hvornår det kører:** I menuen Nyt spil og i dialogen for sværhedsgrad.
+- **Hvis du ændrer det:** Begge steder ændres.
 
 ### `src/ui/fishing_menu.gd`
 
@@ -1569,7 +1596,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/new_game_menu.gd`
 
 **Formål:** Dialogen til nyt spil, hvor du vælger din ledsager, katten eller hunden.
-- **Hvad det gør:** Viser et billede og en kort beskrivelse af den valgte ledsager (katten er valgt på forhånd) og melder Start med valget.
+- **Hvad det gør:** Viser et billede og en kort beskrivelse af den valgte ledsager (katten er valgt på forhånd) og melder Start med valget. Siden I022 spørger den også, hvor tilgivende havet skal være (sværhedsgraden).
 - **Arbejder sammen med:** `CompanionState`, `ShipCompanion` (forhåndsvisningen), `App` (starter spillet).
 - **Holder styr på:** Den valgte slags ledsager, indtil du trykker Start.
 - **Hvornår det kører:** Når du trykker Nyt spil på titelskærmen.
@@ -1587,7 +1614,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/pause_menu.gd`
 
 **Formål:** Pausemenuen under spillet.
-- **Hvad det gør:** Viser Genoptag, Logbogen, Gem, Indlæs, Indstillinger og Hovedmenu og melder kun, hvad der blev trykket på. I udviklingsbuilds tilføjer den en knap til "Developer tests".
+- **Hvad det gør:** Viser Genoptag, Logbogen, Gem, Indlæs, Indstillinger og Hovedmenu og melder kun, hvad der blev trykket på. I udviklingsbuilds tilføjer den en knap til "Developer tests". Siden I022 har den en knap til Sværhedsgrad….
 - **Arbejder sammen med:** `App` (udfører valget), `DevTools`.
 - **Holder styr på:** Intet.
 - **Hvornår det kører:** Når du trykker Esc eller menuknappen under spillet.
@@ -1864,6 +1891,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Holder styr på:** Intet af sit eget; den noterer de "sejlads logget"-beskeder, den hører.
 - **Hvornår det kører:** Kun i test.
 - **Hvis du ændrer det:** Kun tjekkene ændrer sig. En fejl peger på tallene i Logbogen eller på, hvordan de bliver gemt.
+
+### `tests/suites/test_captains_other_life.gd`
+
+**Formål:** Tjekker I022, Kaptajnens andet liv.
+- **Hvad det gør:** Tjekker bådpriser, at et nyt spil kun ejer startbåden, køb af en båd (aldrig to gange, aldrig under nul kroner, kun på et værft), at gamle gemte spil beholder alle både, de tre sværhedsgrader (startpenge, mad, udgifter, danske navne), ændring af niveauet undervejs og menuerne Nyt spil og pause, der tilbyder det.
+- **Arbejder sammen med:** `GameSession`, `SessionState`, `VesselCatalog`, `Difficulty`, `NewGameMenu`, `DifficultyMenu`, `App`.
+- **Holder styr på:** Intet.
+- **Hvornår det kører:** Sammen med de andre testsæt (`test_runner.tscn`).
+- **Hvis du ændrer det:** Kun testene ændres.
 
 ### `tests/suites/test_captains_watch.gd`
 
@@ -2653,7 +2689,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Formål:** Spillets automatiske testkører: den kører alle 74 testsamlinger og fortæller, hvor mange tjek der bestod.
-- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden.
+- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem.
 - **Arbejder sammen med:** Alle testsamlinger i `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Holder styr på:** Antal beståede/fejlede tjek og listen over fejl.
 - **Hvornår det kører:** Når du starter det, eller i automatik: `godot --headless --path . res://tests/test_runner.tscn` (valgmuligheder efter `--`: `--only=navn`, `--skip=navn`, `--screenshots=MAPPE`).

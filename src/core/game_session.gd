@@ -89,6 +89,10 @@ signal anchor_alarm(info: Dictionary)
 signal boat_care_changed
 ## A boat of your own (I020): cabin things or sailcloth changed.
 signal home_changed
+## I022: a boat was bought (the owned boats changed).
+signal fleet_changed
+## I022: the difficulty was changed during the game.
+signal difficulty_changed(level: StringName)
 ## A loaded position or course was invalid under the current chart and was
 ## moved or re-planned (Iteration 14): {kind, from, to, moved_nm, replanned}.
 signal location_recovered(info: Dictionary)
@@ -136,8 +140,8 @@ func _exit_tree() -> void:
 # --- Lifecycle ----------------------------------------------------------------
 
 ## Starts a new game with the chosen ship's companion ("cat" or "dog").
-func start_new_session(companion_kind: StringName = CompanionState.DEFAULT_KIND) -> void:
-	_state = SessionState.create_new(START_LOCATION, START_AREA, START_SPAWN, companion_kind)
+func start_new_session(companion_kind: StringName = CompanionState.DEFAULT_KIND, level: StringName = Difficulty.STANDARD) -> void:
+	_state = SessionState.create_new(START_LOCATION, START_AREA, START_SPAWN, companion_kind, level)
 	_has_unsaved_changes = false
 	_asleep = false
 	if _settled:
@@ -366,6 +370,61 @@ func facility_refusal(facility: StringName) -> String:
 	return ""
 
 
+## The difficulty of the game being played (Difficulty; Standard without a game).
+func get_difficulty() -> StringName:
+	return _state.difficulty if _state else Difficulty.STANDARD
+
+
+## Changes the difficulty during the game (I022): it counts from now on; money
+## already spent or earned and the boat's state stay as they are.
+func set_difficulty(level: StringName) -> void:
+	if _state == null or Difficulty.valid(level) == _state.difficulty:
+		return
+	_state.difficulty = Difficulty.valid(level)
+	_has_unsaved_changes = true
+	SessionLog.write("difficulty", {"level": String(_state.difficulty)})
+	difficulty_changed.emit(_state.difficulty)
+
+
+## Tests only (the test runner): every boat counts as owned, so the many
+## suites that sail each boat need not buy them first. Ownership tests turn
+## it off.
+var test_all_boats_owned := false
+
+
+## True when the captain owns `vessel_id` (I022).
+func owns_vessel(vessel_id: StringName) -> bool:
+	return _state != null and (vessel_id in _state.owned_vessels or test_all_boats_owned)
+
+
+func get_owned_vessels() -> Array[StringName]:
+	return _state.owned_vessels.duplicate() if _state else ([] as Array[StringName])
+
+
+## Buys a boat at the boatyard (I022): never twice, never below zero money.
+## Returns "" or why not. Moving aboard is then switch_vessel().
+func buy_vessel(vessel_id: StringName) -> String:
+	if _state == null:
+		return Loc.t("No game is running.")
+	if not can_change_vessel():
+		return facility_refusal(HarbourFacilities.BOATYARD)
+	var vessel := VesselCatalog.get_default().get_vessel(vessel_id)
+	if vessel == null:
+		return Loc.t("Unknown boat '%s'.") % vessel_id
+	if owns_vessel(vessel_id):
+		return Loc.t("The %s is already yours.") % vessel.display_name
+	if vessel.price > _state.funds:
+		return Loc.t("The %s costs %s; you have %s.") % [vessel.display_name, format_money(vessel.price), format_money(_state.funds)]
+	_state.funds -= vessel.price
+	_state.owned_vessels.append(vessel_id)
+	_state.get_boat_care(vessel_id)
+	_has_unsaved_changes = true
+	SessionLog.write("vessel_bought", {"vessel": String(vessel_id), "price": vessel.price, "funds": _state.funds})
+	funds_changed.emit(_state.funds)
+	fleet_changed.emit()
+	return ""
+
+
 ## Switches to another boat at the boatyard. Only in harbour; refused (with a
 ## reason) underway. Everything long-term stays: time, location, planned
 ## course, companion, saves. The player goes on deck of the new boat at its
@@ -386,6 +445,8 @@ func switch_vessel(vessel_id: StringName) -> String:
 		return Loc.t("Unknown boat '%s'.") % vessel_id
 	if vessel_id == _state.vessel_id:
 		return ""
+	if not owns_vessel(vessel_id):
+		return Loc.t("The %s is not yours yet: buy it first (%s).") % [vessel.display_name, format_money(vessel.price)]
 	_state.vessel_id = vessel_id
 	_state.get_boat_care(vessel_id)
 	# Stores beyond what the new boat can stow stay ashore.
@@ -408,6 +469,8 @@ func _check_vessel() -> void:
 		return
 	var unknown := _state.vessel_id
 	_state.vessel_id = catalog.get_starter().id
+	if not _state.vessel_id in _state.owned_vessels:
+		_state.owned_vessels.append(_state.vessel_id)
 	_state.spawn_point = &"start"
 	_state.has_player_position = false
 	push_warning("Unknown vessel id '%s' in the loaded game; using '%s'." % [unknown, _state.vessel_id])
@@ -652,7 +715,7 @@ func apply_simulation_step(game_time: float, progress_nm: float) -> void:
 		# A well-fed crew eats a little less (only the well-fed part of the step).
 		var well_fed := clampf(_state.galley.well_fed_until - (game_time - elapsed), 0.0, elapsed)
 		var factor := lerpf(1.0, WELL_FED_FOOD_FACTOR, well_fed / elapsed)
-		_state.provisions.consume(elapsed / Provisions.DAY_SECONDS, factor)
+		_state.provisions.consume(elapsed / Provisions.DAY_SECONDS * Difficulty.factor("provisions_use"), factor)
 		_check_provisions()
 	# The companion's resting schedule runs on the same clock (pure function of time).
 	if _state.companion.advance_to(game_time):
@@ -851,7 +914,7 @@ func rescue() -> void:
 	_state.anchor.alarm = false
 	_state.fishing.line_out = false
 	_pending_bite = {}
-	var fee := mini(SessionState.RESCUE_FEE, _state.funds)
+	var fee := mini(roundi(SessionState.RESCUE_FEE * Difficulty.factor("rescue_fee")), _state.funds)
 	_state.funds -= fee
 	var record := CaptainsLog.make_record(_state.voyage, _state.game_time, _state.vessel_id, CaptainsLog.OUTCOME_RESCUED)
 	_state.captains_log.record_voyage(record)
@@ -911,10 +974,11 @@ func _wear(elapsed: float, nm: float) -> void:
 	var care := _state.get_boat_care(_state.vessel_id)
 	var before := [BoatCare.area_level(BoatCare.AREA_RIG, care, get_condition(), _state.game_time),
 		BoatCare.area_level(BoatCare.AREA_ENGINE, care, get_condition(), _state.game_time)]
+	var wear := Difficulty.factor("wear")  # I022 (Standard: 1.0)
 	if _state.propulsion.is_motoring():
-		care.engine_hours += elapsed / 3600.0
+		care.engine_hours += elapsed / 3600.0 * wear
 	else:
-		care.rig_wear = minf(care.rig_wear + BoatCare.rig_wear_for(nm, _state.propulsion.wind_speed_kn, care), 100.0)
+		care.rig_wear = minf(care.rig_wear + BoatCare.rig_wear_for(nm, _state.propulsion.wind_speed_kn, care) * wear, 100.0)
 	var after := [BoatCare.area_level(BoatCare.AREA_RIG, care, get_condition(), _state.game_time),
 		BoatCare.area_level(BoatCare.AREA_ENGINE, care, get_condition(), _state.game_time)]
 	if after != before:
@@ -961,7 +1025,9 @@ func service_refusal(service: StringName) -> String:
 func service_quote(service: StringName) -> Dictionary:
 	if _state == null:
 		return {"cost": 0, "minutes": 0.0}
-	return BoatCare.quote(service, _state.get_boat_care(_state.vessel_id), get_condition(), get_base_vessel_profile().length_ft)
+	var quote := BoatCare.quote(service, _state.get_boat_care(_state.vessel_id), get_condition(), get_base_vessel_profile().length_ft)
+	quote.cost = ceili(int(quote.cost) * Difficulty.factor("costs") - 1e-6)  # I022 difficulty (Standard: unchanged)
+	return quote
 
 
 ## Has a service done: one transaction that pays, restores and records it.
@@ -2646,7 +2712,7 @@ func get_missing_provision_days(target := Provisions.CAPACITY_DAYS) -> float:
 ## What filling food and water to `target` days costs now (whole euros,
 ## rounded up, so a fraction of a day is never free).
 func get_provisions_price(target := Provisions.CAPACITY_DAYS) -> int:
-	return ceili(get_missing_provision_days(target) * PROVISIONS_PRICE_PER_DAY - 1e-6)
+	return ceili(get_missing_provision_days(target) * PROVISIONS_PRICE_PER_DAY * Difficulty.factor("costs") - 1e-6)
 
 
 ## Days of food and water the active boat can stow for a long passage
