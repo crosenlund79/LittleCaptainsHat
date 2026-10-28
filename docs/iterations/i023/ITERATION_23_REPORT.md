@@ -1,9 +1,15 @@
-# Operation Steady Hands & Golden Harbours: report
+# I023 — Steady Hands & Golden Harbours (0.109a)
 
-A polish injection after Iteration 22, not a numbered iteration. Mission A
-(The Unshakeable Chartroom) came first and Mission B (Golden Harbour Moments)
-followed once A was green. Mission A did find serious problems, but they were
-fixed inside A, so B was delivered, not deferred.
+Commissioned as the polish injection *Operation Steady Hands & Golden
+Harbours* and developed on the integration branch. After delivery, the
+Captain reclassified it as **Iteration 23**. Its branches were created
+afterwards at the delivered commit: `iteration/i023` and the frozen
+recovery snapshot `release/i023`, both at
+`d4e2e7e56206b220f8839323186e0c06d2a4c589`. The next numbered iteration is I024.
+
+Mission A (The Unshakeable Chartroom) came first, and Mission B (Golden
+Harbour Moments) followed once A was green. Mission A found serious
+problems, but they were fixed inside A, so B was delivered, not deferred.
 
 | | |
 |---|---|
@@ -11,9 +17,9 @@ fixed inside A, so B was delivered, not deferred.
 | Start | `2baa01034fbaa956018c58e013b555be8213d77d` (I022 complete; `release/i022` and `iteration/i022` at the same commit, both left untouched) |
 | Mission A | `190ae21dc6ee6858744dc3fef608fa24b9c37c76` |
 | Mission B | `0672a05ef542a8dadb48dad654a063feea56d977` |
-| Final | the commit that completes this report with the full-suite result and the arm-swing fix (its full SHA is given in the delivery message) |
+| Final (delivered) | `d4e2e7e56206b220f8839323186e0c06d2a4c589` |
+| Branches | `iteration/i023` and `release/i023` at the delivered commit (created on reclassification) |
 | Version / save format | 0.109a / 12, unchanged (no save fields added) |
-| Not created | `iteration/i023`, as ordered |
 
 ## Mission A: The Unshakeable Chartroom
 
@@ -35,7 +41,7 @@ The 37 modal classes and the HUD pieces are listed in `test_steady_hands`
 - **Cause:** `Hud.refresh` placed Trip Details (the sailing panel) under the weather warning whenever one showed, with a fixed 124 px warning height. Every warning pushed Trip Details down by about 136 px, and a long Danish warning ran over it and hid its buttons.
 - **Fix:** Trip Details now hangs only from the route panel. The warning sits below it and is as tall as its text needs (`Hud._stack_right_column`).
 - **Proof:** `[trip details]` shows, updates and hides a warning 12 times per combination: English and Danish, day and night, Trip Details collapsed and expanded, short and very long texts. Trip Details never moves (0 px), and the warning never covers it.
-- **Screenshots:** before and after are in [`steady_hands/`](../screenshots/steady_hands/) (`before_/after_trip_details_with_warning_da.png`).
+- **Screenshots:** before and after are in [`steady_hands/`](../../screenshots/steady_hands/) (`before_/after_trip_details_with_warning_da.png`).
 
 ### Other bugs found and fixed
 
@@ -102,7 +108,7 @@ Limitations, stated plainly:
 - Harbours without a picture keep their plain arrival as before.
 
 Screenshots, all in the real game interface at 1280×720, in
-[`steady_hands/`](../screenshots/steady_hands/):
+[`steady_hands/`](../../screenshots/steady_hands/):
 
 | Screenshot | Time | Archetype | Language |
 |---|---|---|---|
@@ -117,7 +123,7 @@ Screenshots, all in the real game interface at 1280×720, in
 - **HUD layout:** reflows only when a value changes.
 - **FitScroll:** recomputes only on a window, interface-size or content change.
 
-The [Performance Opportunity Register](PERFORMANCE_OPPORTUNITIES.md) is
+The [Performance Opportunity Register](../../technical/PERFORMANCE_OPPORTUNITIES.md) is
 updated (#2, and a row under *Measured and rejected*).
 
 ## Tests and checks

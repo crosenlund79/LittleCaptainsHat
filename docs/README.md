@@ -4,8 +4,8 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 
 ## Where we are
 
-- **Current development version: 0.109a**, save format 12. This is [Iteration 22, The Captain's Other Life](iterations/i022/).
-- **Latest iteration:** [report](iterations/i021/ITERATION_21_REPORT.md), [harbour looks](iterations/i021/HARBOUR_LOOKS.md) and the [Windows acceptance checklist](iterations/i021/WINDOWS_ACCEPTANCE_21.md) (pending).
+- **Current development version: 0.109a**, save format 12. The latest iteration is [Iteration 23, Steady Hands & Golden Harbours](iterations/i023/); the next numbered iteration is I024.
+- **Latest iteration:** [I023 report](iterations/i023/ITERATION_23_REPORT.md) (its Windows checks are pending); before it [I022](iterations/i022/ITERATION_22_REPORT.md) and [I021](iterations/i021/ITERATION_21_REPORT.md).
 - **Before it:** [Revision 0.105b](revisions/v0.105b/), Iterations [19](iterations/i019/) and [20](iterations/i020/), and the Engine Room maintenance pass ([report](technical/ENGINE_ROOM_AND_COMPANION_POLISH_REPORT.md)). Windows acceptance of 0.105b, I018–I021 is pending. Future scope is set by the Captain; see [CAPTAINS_ORDERS.md](../CAPTAINS_ORDERS.md).
 
 ## Iterations
@@ -28,6 +28,7 @@ Every report, assignment, requirement tracker and Windows checklist in the game'
 | [20](iterations/i020/) A Boat of Your Own | 0.107a | [report](iterations/i020/ITERATION_20_REPORT.md) (fishmonger, chandlery, sailmaker, cabin things; Windows acceptance pending) |
 | [21](iterations/i021/) A Wider, Warmer World | 0.108a | [report](iterations/i021/ITERATION_21_REPORT.md), [harbour looks](iterations/i021/HARBOUR_LOOKS.md), [Windows acceptance](iterations/i021/WINDOWS_ACCEPTANCE_21.md) (pending) |
 | [22](iterations/i022/) The Captain's Other Life | 0.109a | [report](iterations/i022/ITERATION_22_REPORT.md), [Academy coverage](iterations/i022/CAPTAINS_ACADEMY_COVERAGE.md), [Windows acceptance](iterations/i022/WINDOWS_ACCEPTANCE_22.md) (pending) |
+| [23](iterations/i023/) Steady Hands & Golden Harbours | 0.109a | [report](iterations/i023/ITERATION_23_REPORT.md) (Windows checks in the report, pending), [screenshots](screenshots/steady_hands/) |
 
 Iterations 7–11 have no separate documents in this repository. Iteration 15 (the performance pass) was skipped at the Captain's instruction.
 
@@ -45,7 +46,6 @@ Iterations 7–11 have no separate documents in this repository. Iteration 15 (t
 - [Architecture](technical/ARCHITECTURE.md): how the game is built, including route calculation.
 - [The Captain's Chartroom UI pass](technical/CAPTAINS_CHARTROOM_UI_PASS.md): the shared day/night interface theme (Vintage Chartroom and Harbor Dusk), what the HUD and chart show by default, and the *Interface light* setting.
 - [Cozy Polish injection report](technical/COZY_POLISH_INJECTION_REPORT.md): floating things at sea, the chart's zoom limit, the Kiel and Suez canals, the Q menu, coffee and the hat in hand, the remembered sleep, visited-harbour pins, compact panels and the loading screen.
-- [Operation Steady Hands & Golden Harbours report](technical/STEADY_HANDS_AND_GOLDEN_HARBOURS_REPORT.md): the weather warning no longer moves Trip Details; every window fits the screen, closes with Esc and speaks Danish (a sweep test at several sizes); the interface stays readable at dusk and dawn; and the illustrated Golden Harbour Moment on a first arrival. Screenshots in [steady_hands](screenshots/steady_hands/).
 - [The Well-Run Ship performance report](technical/THE_WELL_RUN_SHIP_PERFORMANCE_REPORT.md): where the time went (the day/night theme stall), what is kept in memory and what is written to disk, the sleep, dawn and dusk cards, and Long Passage on the voyage map.
 - [Turbocharge performance report](technical/TURBOCHARGE_PERFORMANCE_REPORT.md) and the permanent [Performance Opportunity Register](technical/PERFORMANCE_OPPORTUNITIES.md): what was measured, what was optimized, and the ranked list of what could be done next.
 - [Operation One Clock](technical/ONE_CLOCK_PERFORMANCE_INVESTIGATION.md): fast time, dawn and dusk; where the frame time goes, three options, and the Windows sea trial.

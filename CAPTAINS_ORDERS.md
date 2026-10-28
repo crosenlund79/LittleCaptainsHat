@@ -577,3 +577,17 @@ Two; the wording was again not found in the repository in Iteration 18.
   `docs/iterations/i021/HARBOUR_LOOKS.md` and
   `docs/iterations/i021/WINDOWS_ACCEPTANCE_21.md`. Recovery branch:
   `release/i021` (`04a76231581f5a6d0af22ce2c2c138842b869453`).
+- **Iteration 22, The Captain's Other Life**, version 0.109a, save format 12:
+  see `docs/iterations/i022/ITERATION_22_REPORT.md` and
+  `docs/iterations/i022/WINDOWS_ACCEPTANCE_22.md`. Recovery branch:
+  `release/i022` (`2baa01034fbaa956018c58e013b555be8213d77d`).
+- **Iteration 23, Steady Hands & Golden Harbours**, version 0.109a
+  (unchanged), save format 12: commissioned as a polish injection and
+  reclassified as I023 by the Captain after delivery. Trip Details no
+  longer moves under a weather warning; every window fits the screen,
+  closes with Esc and speaks Danish (a UI sweep test); the interface stays
+  readable at dusk and dawn; and the illustrated Golden Harbour Moment on a
+  first arrival. See `docs/iterations/i023/ITERATION_23_REPORT.md`. Branches
+  `iteration/i023` and recovery branch `release/i023`, both at the
+  delivered commit (`d4e2e7e56206b220f8839323186e0c06d2a4c589`).
+- **Next numbered major iteration: I024.**
