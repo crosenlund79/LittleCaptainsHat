@@ -1349,8 +1349,13 @@ func _on_arrived(port_id: StringName) -> void:
 	# The arrival card (I021): the harbour's picture, the arrival and one line
 	# about the place. Notices go to the same corner, so it never blocks.
 	var port := PortCatalog.get_default().get_port(port_id)
-	toasts.show_card(Loc.t("Arrived in %s.") % PortCatalog.get_default().get_display_name(port_id),
-		port.get_description() if port else "", HarbourLooks.get_default().picture_for(port_id))
+	var picture := HarbourLooks.get_default().picture_for(port_id)
+	if port_id == _new_harbour_id and picture:
+		show_harbour_moment(port_id, picture)
+	else:
+		toasts.show_card(Loc.t("Arrived in %s.") % PortCatalog.get_default().get_display_name(port_id),
+			port.get_description() if port else "", picture)
+	_new_harbour_id = &""
 	# Sleeping through the arrival, the captain wakes in the cabin as always.
 	if is_instance_valid(voyage_map):
 		_dock_after_map = true  # after the voyage map, when the captain comes aboard
@@ -1386,9 +1391,40 @@ func _start_docking(deck: BoatArea) -> void:
 func _on_voyage_logged(record: Dictionary, new_harbour: bool) -> void:
 	if new_harbour:
 		var log := GameSession.get_captains_log()
-		notify(Loc.t("New harbour in the Captain's Log: %s (%d of %d visited).") % [
+		var line := Loc.t("New harbour in the Captain's Log: %s (%d of %d visited).") % [
 			PortCatalog.get_default().get_display_name(StringName(record.to)), log.get_distinct_harbours(),
-			PortCatalog.get_default().ports.size()])
+			PortCatalog.get_default().ports.size()]
+		# A first arrival with a picture gets a Golden Harbour Moment, which
+		# carries this line itself (one card, not two notices).
+		if HarbourLooks.get_default().picture_for(StringName(record.to)):
+			_new_harbour_id = StringName(record.to)
+			_new_harbour_line = line
+		else:
+			notify(line)
+
+
+# --- Golden Harbour Moments -------------------------------------------------------
+
+## The harbour just logged for the first time (until its arrival is shown).
+var _new_harbour_id: StringName = &""
+var _new_harbour_line := ""
+
+
+## The first arrival in a harbour with a picture: a small illustrated travel
+## memory (HarbourMoment) in the notice column, lit for the hour. Never a
+## window: it does not pause or take the keyboard, a click puts it away, and
+## it fades by itself. Returning to a known harbour keeps the small card.
+func show_harbour_moment(port_id: StringName, picture: Texture2D) -> HarbourMoment:
+	var moment := HarbourMoment.new()
+	moment.port_id = port_id
+	moment.picture = picture
+	moment.special = HarbourLooks.get_default().is_special(port_id)
+	moment.elevation = Daylight.sun_elevation(GameSession.get_vessel_position(), GameSession.get_game_time())
+	moment.overcast = BoatLighting.overcast_of(Simulation.get_weather_at_vessel())
+	moment.log_line = _new_harbour_line
+	toasts.show_moment(moment)
+	SessionLog.write("harbour_moment", {"port": String(port_id), "special": moment.special, "elevation": snappedf(moment.elevation, 0.1)})
+	return moment
 
 
 ## Renown earned on a voyage: one short message for all of it. A secret
@@ -1399,11 +1435,11 @@ func _on_renown_awarded(awards: Array) -> void:
 	var titles: Array[String] = []
 	for award: Dictionary in awards:
 		if award.get("secret", false):
-			notify(Loc.t("Secret achievement: %s. %s  +%d renown") % [award.title, award.text, int(award.reward)])
+			notify(Loc.t("Secret achievement: %s. %s  +%d renown") % [Loc.t(String(award.title)), Loc.t(String(award.text)), int(award.reward)])
 			AudioManager.play_sfx(achievement_sound, ACHIEVEMENT_DB)
 			continue
 		total += int(award.reward)
-		titles.append(award.title)
+		titles.append(Loc.t(String(award.title)))
 	if not titles.is_empty():
 		notify(Loc.t("+%d renown: %s.") % [total, ", ".join(titles)])
 

@@ -156,7 +156,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Formål:** Spillets "dirigent": det forbinder menuerne, skærmene og spillets systemer, så de arbejder sammen.
-- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen. I022: lange gøremål om bord (fjernarbejde, et postkort, en økt på det lille spil) går på det ene ur gennem `pass_time`: en overgang til sort, simulationen kørt én gang mens uret tæller, en linje hvis noget afbrød, og tilbage i ×1; kahyttens Q-hjul tilbyder Skriv et postkort og Arbejd på dit lille spil. I022 Skipperskolen: den har Skipperskolens kort på sit eget lag, tilbyder den første sejlads én gang ved det første nye spil på denne computer og åbner Skipperens håndbog med F1 eller fra pausemenuen. Steady Hands: hver knap får sin kliklyd én gang, også når den flyttes til en anden forælder.
+- **Hvad det gør:** Viser hovedmenuen, starter og indlæser spil, åbner alle vinduer (pausemenu, søvn, fiskestang, ankerspil, bådeværft, butikker, Logbogen og flere) og gør spillets hændelser til korte beskeder og lyde på skærmen. Det er det ene sted, der håndterer Esc og genvejstasterne (F5 hurtig-gem, F9 hurtig-indlæs, H kaptajnshue, L Logbogen, R hal ind), så to vinduer aldrig reagerer på det samme tastetryk. Ved ankomst (I021) viser den ankomstkortet: havnens billede, "Ankommet til …" og én sætning om stedet. Siden I022 spørger den, før en båd købes på værftet, starter nye spil på den valgte sværhedsgrad og åbner dialogen for sværhedsgrad fra pausemenuen. I022: lange gøremål om bord (fjernarbejde, et postkort, en økt på det lille spil) går på det ene ur gennem `pass_time`: en overgang til sort, simulationen kørt én gang mens uret tæller, en linje hvis noget afbrød, og tilbage i ×1; kahyttens Q-hjul tilbyder Skriv et postkort og Arbejd på dit lille spil. I022 Skipperskolen: den har Skipperskolens kort på sit eget lag, tilbyder den første sejlads én gang ved det første nye spil på denne computer og åbner Skipperens håndbog med F1 eller fra pausemenuen. Steady Hands: hver knap får sin kliklyd én gang, også når den flyttes til en anden forælder. Golden Harbours: første ankomst til en havn med et billede viser det gyldne havneøjeblik (havnens billede belyst efter tidspunktet, med logbogslinjen på) i stedet for det lille kort og en særskilt logbogsbesked; en kendt havn beholder det lille kort. Beskeder om omdømme viser nu milepælenes navne på det valgte sprog.
 - **Arbejder sammen med:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Holder styr på:** Kun skærmens bogføring: om redningsrapporten er åben, et VHF-radioopkald eller et spørgsmål om ankerpladsen, der venter på at blive vist, sekunderne før en fisk på krogen slipper væk, og hvornår ledsageren næste gang følger dig mellem kahyt og dæk. Selve spillet ligger i `GameSession`.
 - **Hvornår det kører:** Altid: det er hovedscenen, der starter med spillet.
@@ -736,7 +736,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_lighting.gd`
 
 **Formål:** Dag og nat om bord: lysets farve, kahytslamperne, lanterner og ankerlys samt bløde skygger.
-- **Hvad det gør:** Følger spillets ur og bådens position og farver scenen (himmellys på dækket, dagslys gennem lugerne nedenunder). Tænder varme lamper ved bådens egne møbler, røde/grønne/hvide lanterner om natten under sejlads, et hvidt ankerlys for anker og kajlamper i havn. Tilføjer bløde skygger under møbler, Kaptajnen og ledsageren; stormvejr gør alt mørkere, og lyn giver et blidt glimt.
+- **Hvad det gør:** Følger spillets ur og bådens position og farver scenen (himmellys på dækket, dagslys gennem lugerne nedenunder). Tænder varme lamper ved bådens egne møbler, røde/grønne/hvide lanterner om natten under sejlads, et hvidt ankerlys for anker og kajlamper i havn. Tilføjer bløde skygger under møbler, Kaptajnen og ledsageren; stormvejr gør alt mørkere, og lyn giver et blidt glimt. Steady Hands / Golden Harbours: hvor overskyet vejret er, kommer nu fra én fælles funktion, som også bruges af kahyttens vinduer og havneøjeblikket.
 - **Arbejder sammen med:** `BoatArea`, `Daylight`, `GameSession`, `Simulation` (vejret ved båden), `SailRig` (masten), `HarbourDressing`, `Interactable` (holder fremhævninger lyse om natten), `SettingsManager` (glimtets styrke).
 - **Holder styr på:** Listen over lys, lysets nuværende farve og mørke, hvor overskyet det er, og glimtets styrke.
 - **Hvornår det kører:** Når du er på dækket eller i kahytten.
@@ -746,7 +746,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/cabin_windows.gd`
 
 **Formål:** Verden uden for kahytsvinduerne (I022), indtil videre i Starling 33's kahyt.
-- **Hvad det gør:** Tegner vinduesåbninger i den tegnede kahyts vægge. Hver åbning viser et lille udsnit af verden omkring båden: himlen i timens og vejrets farver, solen hvor den virkelig står, stjerner om natten, havet med toppe der vokser med vinden, havnens eget billede på kajsiden, når båden er fortøjet, og regn på glasset. Hvilket udsnit afhænger af bådens kurs, hvilken side vinduet sidder på, og hvor skipperen står: går man forbi et vindue, drejer udsigten, og tæt på viser det mere. Vinduesrammerne tegnes over udsigten, og møblerne forbliver foran.
+- **Hvad det gør:** Tegner vinduesåbninger i den tegnede kahyts vægge. Hver åbning viser et lille udsnit af verden omkring båden: himlen i timens og vejrets farver, solen hvor den virkelig står, stjerner om natten, havet med toppe der vokser med vinden, havnens eget billede på kajsiden, når båden er fortøjet, og regn på glasset. Hvilket udsnit afhænger af bådens kurs, hvilken side vinduet sidder på, og hvor skipperen står: går man forbi et vindue, drejer udsigten, og tæt på viser det mere. Vinduesrammerne tegnes over udsigten, og møblerne forbliver foran. Den spørger nu bådens lys, hvor overskyet det er (én fælles regel).
 - **Arbejder sammen med:** `BoatArea` (tilføjer den), `WaterLook` (havets farve), `HarbourLooks` (havnebilledet), `Daylight`, `Simulation` (vejr, kurs), `data/vessels/cabin_windows.json` (hvor vinduerne sidder).
 - **Holder styr på:** Vinduerne, verden som sidst aflæst, hvor skipperen stod.
 - **Hvornår det kører:** Den tegner kun igen, når skipperen flytter sig, eller hvert andet sekund (omkring 0,35 ms pr. gang).
@@ -1593,6 +1593,15 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Hvornår det kører:** Mens den er åben.
 - **Hvis du ændrer det:** Behold Luk-knappen; Esc og F1 lukker den også.
 
+### `src/ui/harbour_moment.gd`
+
+**Formål:** Det gyldne havneøjeblik: et lille illustreret rejseminde ved første ankomst til en havn, der har et billede.
+- **Hvad det gør:** Viser et kort i beskedkolonnen med havnens eget billede sat ind i en himmel og et hav, der passer til tidspunktet. Om dagen er billedet, som det er tegnet; ved daggry er himlen bleg med lidt dis; i skumringen er himlen varm, billedets egne vinduer begynder at gløde, og lanterner står langs kajen; om natten er billedet dæmpet, og vinduerne er tændt. Under billedet står havnens navn, dens beskrivelse, linjen fra logbogen og et "Første besøg"-stempel ("Særlig havn" for havnene med deres egen tegning). Et klik lægger det væk, og det toner selv ud; det sætter aldrig spillet på pause og tager aldrig tastaturet. De tændte vinduer er maleriets egne mørke vinduesformer, fundet én gang pr. billede og husket.
+- **Arbejder sammen med:** `App` (bestemmer, hvornår det vises), `Toasts` (viser det), `HarbourLooks` (billedet), `Daylight`, `BoatLighting` (overskyet), `WaterLook` (havets farve).
+- **Holder styr på:** Havnen, solens højde og skydækket ved ankomsten; et lager af vinduespletter pr. billede.
+- **Hvornår det kører:** Kun mens kortet er på skærmen; det tegnes én gang (og ved ændret størrelse), ikke i hvert billede.
+- **Hvis du ændrer det:** Hold det stille og kort; at vende tilbage til en kendt havn skal stadig give det lille kort, og at indlæse et spil eller gå under dæk må ikke vise det.
+
 ### `src/ui/hat_badge.gd`
 
 **Formål:** Et lille mærke i HUD'en (skærmoverlayet under spillet), der viser, når kaptajnshuen er i fare eller er blæst væk.
@@ -1848,7 +1857,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/theme/ui_theme.gd`
 
 **Formål:** Spillets udseende for alle menuer og paneler, med en dagstemning og en natstemning.
-- **Hvad det gør:** Bygger farver og former for knapper, paneler og tekst ud fra en palet (pergament og messing om dagen, midnatsblåt og ravgult lanternelys om natten). Det glider langsomt mellem dem efter solen, der hvor båden er, eller bliver ved dag eller nat, hvis indstillingerne siger det. Andre skærme spørger det om farver.
+- **Hvad det gør:** Bygger farver og former for knapper, paneler og tekst ud fra en palet (pergament og messing om dagen, midnatsblåt og ravgult lanternelys om natten). Det følger solen, der hvor båden er: dag indtil midten af aftenens tusmørke, nat indtil midten af morgenens, med et roligt skift på et par sekunder imellem (eller det bliver ved dag eller nat, hvis indstillingerne siger det). Det står ikke længere halvvejs gennem hele tusmørket, hvor tekst og panel blev samme grå, og tekstfarver blandes aldrig: de skifter midt i skiftet (Steady Hands). Andre skærme spørger det om farver.
 - **Arbejder sammen med:** `SettingsManager` (grænsefladens lys), `GameSession`, `Daylight` og næsten alle skærme, der tegner deres egne billeder.
 - **Holder styr på:** Den nuværende blanding af dag og nat og de temadele, det har bygget.
 - **Hvornår det kører:** Altid (en autoload: et script Godot starter automatisk, og som altid findes).
@@ -1875,7 +1884,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/toasts.gd`
 
 **Formål:** De korte beskeder, der dukker op og forsvinder af sig selv.
-- **Hvad det gør:** Viser en besked i et lille panel, højst tre ad gangen, og toner den ud efter et par sekunder. Det virker også, mens spillet er på pause, så menuer kan melde resultater. Siden I021 kan den også vise ankomstkortet: et billede af havnen med to linjer, som forsvinder af sig selv.
+- **Hvad det gør:** Viser en besked i et lille panel, højst tre ad gangen, og toner den ud efter et par sekunder. Det virker også, mens spillet er på pause, så menuer kan melde resultater. Siden I021 kan den også vise ankomstkortet: et billede af havnen med to linjer, som forsvinder af sig selv. Steady Hands / Golden Harbours: den viser også kortet med det gyldne havneøjeblik i et stykke tid (længere end en besked), før det toner ud.
 - **Arbejder sammen med:** `App` (sender alle beskeder igennem den).
 - **Holder styr på:** De beskeder, der er på skærmen lige nu.
 - **Hvornår det kører:** Altid (en del af appens hovedscene).
@@ -2021,7 +2030,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_captains_log.gd`
 
 **Formål:** Tjekker Logbogens statistik og dens panel (Iteration 006).
-- **Hvad det gør:** Den tjekker besøgte havne, sejlet distance og optegnelser over sejladser ved ankomst, kursskift og redning. Sømilene skal blive de samme, uanset om tiden går i ét stort spring eller i mange små, kun de nyeste sejladser bliver gemt, og gemme/indlæse og meget gamle gemte spil (version 7) skal virke. Bagefter åbner den Logbogen med L, prøver fanerne og havnefiltrene og åbner den fra pausemenuen.
+- **Hvad det gør:** Den tjekker besøgte havne, sejlet distance og optegnelser over sejladser ved ankomst, kursskift og redning. Sømilene skal blive de samme, uanset om tiden går i ét stort spring eller i mange små, kun de nyeste sejladser bliver gemt, og gemme/indlæse og meget gamle gemte spil (version 7) skal virke. Bagefter åbner den Logbogen med L, prøver fanerne og havnefiltrene og åbner den fra pausemenuen. Golden Harbours: linjen om første besøg kan være en del af kortet med havneøjeblikket; den skal vises præcis én gang.
 - **Arbejder sammen med:** `GameSession`, `CaptainsLog`, `Simulation`, `SaveManager`, `CaptainsLogMenu`, `WeatherFixtures`.
 - **Holder styr på:** Intet af sit eget; den noterer de "sejlads logget"-beskeder, den hører.
 - **Hvornår det kører:** Kun i test.
@@ -2219,11 +2228,20 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_gameplay_flow.gd`
 
 **Formål:** Spiller hele spillet fra start til slut, som en spiller med tastatur og mus.
-- **Hvad det gør:** Tester hovedmenuen, et nyt spil, at gå rundt og støde ind i ting, og de små hjælpetekster ved tingene. Det tester også søkortet (zoom, panorering, kurs og rutepunkter), trappen mellem kahyt og dæk, pausemenuen, indstillinger, gemme/indlæse og Fortsæt. Så sejler det en første tur til Kiel med et kulingvarsel og en ny kurs og slutter med at trykke Afslut. Steady Hands: tjekket af ture gennem nedgangen fortæller, hvor spilleren stod, og hvad prompten sagde, for at finde en sjælden fejl.
+- **Hvad det gør:** Tester hovedmenuen, et nyt spil, at gå rundt og støde ind i ting, og de små hjælpetekster ved tingene. Det tester også søkortet (zoom, panorering, kurs og rutepunkter), trappen mellem kahyt og dæk, pausemenuen, indstillinger, gemme/indlæse og Fortsæt. Så sejler det en første tur til Kiel med et kulingvarsel og en ny kurs og slutter med at trykke Afslut. Steady Hands: tjekket af ture gennem nedgangen fortæller, hvor spilleren stod, og hvad prompten sagde, for at finde en sjælden fejl. Rundturene ad nedgangen flytter skibets kammerat til side, når den sidder ved lugen (den blev før klappet i stedet, en fejl der kom og gik), og tjekket for "ingen teleportering" tillader den afstand, båden faktisk sejler, mens søkortet åbner.
 - **Arbejder sammen med:** app-scenen, `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `SeaRouter`, `WeatherFixtures`, `MainMenu`, `WorldMap`, `PauseMenu` og `SaveLoadMenu`.
 - **Holder styr på:** Intet selv (testgemmepladser og en testfil til indstillinger).
 - **Hvornår det kører:** Kun i testene, og som den allersidste test, fordi den lukker programmet.
 - **Hvis du ændrer det:** Spillet ændres ikke. Det er den bredeste test, så næsten enhver ændring i menuer, styring, søkort eller gemte spil kan få den til at fejle.
+
+### `tests/suites/test_golden_harbours.gd`
+
+**Formål:** Tester de gyldne havneøjeblikke.
+- **Hvad det gør:** Sejler rigtige ture til havne, der aldrig er besøgt før, og tjekker, at den første ankomst viser ét illustreret kort (med navnet, "Første besøg" og logbogslinjen og ingen særskilt logbogsbesked), at et klik lægger det væk, at en kendt havn beholder det lille kort, og at et andet besøg ikke viser noget kort. At indlæse et spil i en ny havn og at gå under dæk og op igen viser intet. Den tjekker også lyset for tidspunktet (dag, skumring på dansk med stemplet på dansk, nat), at kortet bliver inden for skærmen, og at maleriets vinduer findes hurtigt og huskes. Den tager skærmbillederne for dag, skumring og nat.
+- **Arbejder sammen med:** `App`, `HarbourMoment`, `Toasts`, `GameSession`, `Simulation`, `SaveManager`.
+- **Holder styr på:** Intet (vinduesstørrelse, sprog og automatisk tid gendannes).
+- **Hvornår det kører:** Sammen med de andre testsæt (`test_runner.tscn`).
+- **Hvis du ændrer det:** Kun testene ændres.
 
 ### `tests/suites/test_harbour_chart.gd`
 
@@ -2300,7 +2318,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_living_world.gd`
 
 **Formål:** Tester udseendet i "en levende lille verden": sømanden, vandet og de tegnede både.
-- **Hvad det gør:** Tester, at sømanden svinger armene, når han går, og at havnevandet bevæger sig roligt, med den rette slags vand for hver havn. Det tester også de illustrerede dæk og kahytter på hver båd, at bølgerne følger vinden under sejlads, og at kameraet glider ud, når båden forlader havnen, og ind igen ved ankomst.
+- **Hvad det gør:** Tester, at sømanden svinger armene, når han går, og at havnevandet bevæger sig roligt, med den rette slags vand for hver havn. Det tester også de illustrerede dæk og kahytter på hver båd, at bølgerne følger vinden under sejlads, og at kameraet glider ud, når båden forlader havnen, og ind igen ved ankomst. Tjekket af armsvinget går to skridt målt i afstand i stedet for i 0,6 sekunder, så et langsomt første billede ikke længere får det til at fejle en gang imellem.
 - **Arbejder sammen med:** `WaterLife`, `HarbourArt`, `SailorDrawing`, `VesselVisual`, `BoatArea`, `SettingsManager` og app-scenen.
 - **Holder styr på:** Intet selv.
 - **Hvornår det kører:** Kun i testene.
@@ -2507,7 +2525,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_steady_hands.gd`
 
 **Formål:** Tester, at brugerfladen bliver på plads, på skærmen, kan lukkes og er oversat (Steady Hands).
-- **Hvad det gør:** Viser, opdaterer og skjuler vejradvarsler mange gange (engelsk og dansk, dag og nat, Turdetaljer sammenklappet og udfoldet) og tjekker, at Turdetaljer aldrig flytter sig, og at advarslen aldrig dækker den. Derefter åbner den alle vinduer, spillet tilbyder, fra spillets egne indgange, ved flere skærmformater og brugerfladestørrelser på begge sprog. Hvert vindue skal blive inden for skærmen, lukke med Esc og ikke vise rå pladsholdere eller engelsk tekst på dansk. Testen tjekker også HUD'ens paneler mod hinanden, hovedskærmene, det længste havnenavn med lange beskeder, hvad der sker, når situationen ændres under et åbent vindue, og at intet usynligt fanger musen.
+- **Hvad det gør:** Viser, opdaterer og skjuler vejradvarsler mange gange (engelsk og dansk, dag og nat, Turdetaljer sammenklappet og udfoldet) og tjekker, at Turdetaljer aldrig flytter sig, og at advarslen aldrig dækker den. Derefter åbner den alle vinduer, spillet tilbyder, fra spillets egne indgange, ved flere skærmformater og brugerfladestørrelser på begge sprog. Hvert vindue skal blive inden for skærmen, lukke med Esc og ikke vise rå pladsholdere eller engelsk tekst på dansk. Testen tjekker også HUD'ens paneler mod hinanden, hovedskærmene, det længste havnenavn med lange beskeder, hvad der sker, når situationen ændres under et åbent vindue, og at intet usynligt fanger musen. Den tjekker også skumring og daggry: over et helt døgn er brugerfladen enten dag eller nat (aldrig parkeret halvvejs) og skifter to gange, og teksten kan læses på sine paneler hele vejen gennem skiftet.
 - **Arbejder sammen med:** `App`, `Hud`, alle vinduesklasser, `SettingsManager`.
 - **Holder styr på:** Intet (vinduesstørrelse og indstillinger gendannes).
 - **Hvornår det kører:** Sammen med de andre testsæt (`test_runner.tscn`).
@@ -2833,7 +2851,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Formål:** Spillets automatiske testkører: den kører alle 74 testsamlinger og fortæller, hvor mange tjek der bestod.
-- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem. I022: den slår Skipperskolens tilbud og tips fra for de andre testsæt. Den kører også testsættet for kahytsvinduerne. Den kører også Steady Hands-testsættet for brugerfladen.
+- **Hvad det gør:** Flytter gemte spil, indstillinger og logs over i midlertidige testfiler, slår søvn- og daggry-animationerne fra, vælger engelsk og vindstille, og kører hver testsamling efter tur. Den giver også testsamlingerne fælles værktøjer: tjek, ventetid, tastetryk, museklik, at gå om bord på en båd, at sætte vinden, at planlægge ruter og skærmbilleder. Siden I021 kører den også suiten om den større verden. Siden I022 kører den I022-testsættet og lader testsættene sejle alle både uden at købe dem. I022: den slår Skipperskolens tilbud og tips fra for de andre testsæt. Den kører også testsættet for kahytsvinduerne. Den kører også Steady Hands-testsættet for brugerfladen. Den kører også testsættet for de gyldne havne.
 - **Arbejder sammen med:** Alle testsamlinger i `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Holder styr på:** Antal beståede/fejlede tjek og listen over fejl.
 - **Hvornår det kører:** Når du starter det, eller i automatik: `godot --headless --path . res://tests/test_runner.tscn` (valgmuligheder efter `--`: `--only=navn`, `--skip=navn`, `--screenshots=MAPPE`).

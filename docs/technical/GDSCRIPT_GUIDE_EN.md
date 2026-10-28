@@ -154,7 +154,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Purpose:** The game's main "conductor": it connects the menus, the screens and the game systems so they all work together.
-- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game. I022 Academy: it holds the Academy card on its own layer, offers the First Voyage once on the first new game on this computer, and opens the Captain's Handbook with F1 or from the pause menu. Steady Hands: each button gets its click sound once, also when it is moved to another parent.
+- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game. I022 Academy: it holds the Academy card on its own layer, offers the First Voyage once on the first new game on this computer, and opens the Captain's Handbook with F1 or from the pause menu. Steady Hands: each button gets its click sound once, also when it is moved to another parent. Golden Harbours: the first arrival in a harbour that has a picture shows the Golden Harbour Moment (the harbour's picture lit for the hour, with the Captain's Log line on it) instead of the small card and a separate Log message; a known harbour keeps the small card. Renown messages now show the milestone names in the chosen language.
 - **Works with:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Keeps:** Only screen bookkeeping: whether the rescue report is open, a VHF call or anchorage question waiting to be shown, the seconds left before a hooked fish gets away, and when the companion next follows you between cabin and deck. The game itself lives in `GameSession`.
 - **When it runs:** Always: it is the main scene that starts with the game.
@@ -734,7 +734,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/boat_lighting.gd`
 
 **Purpose:** Day and night aboard: the colour of the light, the cabin lamps, the navigation and anchor lights, and soft shadows.
-- **What it does:** Follows the game clock and the boat's position to tint the scene (sky light on deck, daylight through hatches below). Lights warm lamps at the boat's own furniture, red/green/white navigation lights at night underway, a white anchor light at anchor, and quay lamps in harbour. Adds soft shadows under furniture, the Captain and the companion; stormy weather darkens things and lightning gives a gentle flash.
+- **What it does:** Follows the game clock and the boat's position to tint the scene (sky light on deck, daylight through hatches below). Lights warm lamps at the boat's own furniture, red/green/white navigation lights at night underway, a white anchor light at anchor, and quay lamps in harbour. Adds soft shadows under furniture, the Captain and the companion; stormy weather darkens things and lightning gives a gentle flash. Steady Hands / Golden Harbours: how overcast the weather is now comes from one shared function, also used by the cabin windows and the harbour moment.
 - **Works with:** `BoatArea`, `Daylight`, `GameSession`, `Simulation` (weather at the boat), `SailRig` (mast), `HarbourDressing`, `Interactable` (keeps highlights bright at night), `SettingsManager` (flash strength).
 - **Keeps:** The list of lights, the current light colour and darkness, an overcast amount and the flash level.
 - **When it runs:** Whenever you are on deck or in the cabin.
@@ -744,7 +744,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/boat/cabin_windows.gd`
 
 **Purpose:** The world beyond the cabin windows (I022), so far in the Starling 33's cabin.
-- **What it does:** Draws window openings in the illustrated cabin's walls. Each opening shows a small slice of the world around the boat: sky in the colours of the hour and the weather, the sun where it really is, stars at night, the sea with crests that grow with the wind, the harbour's own picture on the quay side when moored, and rain on the glass. Which slice depends on the boat's heading, which side the window is on, and where the captain stands: walking past a window turns the view, and up close it shows more. The window frames are drawn over the scenery, and the furniture stays in front.
+- **What it does:** Draws window openings in the illustrated cabin's walls. Each opening shows a small slice of the world around the boat: sky in the colours of the hour and the weather, the sun where it really is, stars at night, the sea with crests that grow with the wind, the harbour's own picture on the quay side when moored, and rain on the glass. Which slice depends on the boat's heading, which side the window is on, and where the captain stands: walking past a window turns the view, and up close it shows more. The window frames are drawn over the scenery, and the furniture stays in front. It now asks the boat lighting how overcast it is (one shared rule).
 - **Works with:** `BoatArea` (adds it), `WaterLook` (the sea's colour), `HarbourLooks` (the harbour art), `Daylight`, `Simulation` (weather, heading), `data/vessels/cabin_windows.json` (where the windows are).
 - **Keeps:** The windows, the world as last sampled, where the captain stood.
 - **When it runs:** It redraws only when the captain moves or every two seconds (about 0.35 ms per redraw).
@@ -1591,6 +1591,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** While it is open.
 - **If you change it:** Keep the Close button; Esc and F1 close it too.
 
+### `src/ui/harbour_moment.gd`
+
+**Purpose:** The Golden Harbour Moment: a small illustrated travel memory on the first arrival in a harbour that has a picture.
+- **What it does:** Shows a card in the notice column with the harbour's own picture set in a sky and a sea for the hour. By day the picture is as drawn; at dawn there is a pale sky and a little mist; at dusk the sky is warm, the picture's own windows begin to glow and lanterns line the quay; at night the picture is dimmed and its windows are lit. Under the picture come the harbour's name, its description, the Captain's Log line and a "First visit" stamp ("Special harbour" for the harbours with their own art). A click puts it away, and it fades by itself; it never pauses the game or takes the keyboard. The lit windows are the painting's own dark window shapes, found once per picture and remembered.
+- **Works with:** `App` (decides when to show it), `Toasts` (shows it), `HarbourLooks` (the picture), `Daylight`, `BoatLighting` (overcast), `WaterLook` (the sea colour).
+- **Keeps:** The harbour, the sun's height and the overcast at arrival; a cache of window spots per picture.
+- **When it runs:** Only while the card is on screen; it is drawn once (and on resize), not every frame.
+- **If you change it:** Keep it quiet and short; returning to a known harbour must keep the small card, and loading a game or going below must not show it.
+
 ### `src/ui/hat_badge.gd`
 
 **Purpose:** A small HUD badge that shows when your captain's hat is in danger or has been lost.
@@ -1846,7 +1855,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/theme/ui_theme.gd`
 
 **Purpose:** The game's look for all menus and panels, with a day mood and a night mood.
-- **What it does:** Builds the colours and shapes of buttons, panels and text from a palette (parchment and brass by day, midnight blue and lantern amber by night). It slowly blends between them following the sun where the boat is, or stays day or night if the settings say so. Other screens ask it for colours.
+- **What it does:** Builds the colours and shapes of buttons, panels and text from a palette (parchment and brass by day, midnight blue and lantern amber by night). It follows the sun where the boat is: day until the middle of the evening twilight, night until the middle of the morning twilight, with an easy change of a few seconds in between (or it stays day or night if the settings say so). It no longer sits half-way through the whole twilight, where text and panel became the same grey, and text colours never mix: they switch at the middle of the change (Steady Hands). Other screens ask it for colours.
 - **Works with:** `SettingsManager` (interface light), `GameSession`, `Daylight`, and nearly every screen that draws its own pictures.
 - **Keeps:** The current day/night blend and the theme pieces it has built.
 - **When it runs:** Always (an autoload: a script Godot starts automatically and that always exists).
@@ -1873,7 +1882,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/toasts.gd`
 
 **Purpose:** The short notifications that pop up and fade away by themselves.
-- **What it does:** Shows a message in a small panel, at most three at a time, and fades it out after a few seconds. It works even while the game is paused, so menus can report results. Since I021 it can also show the arrival card: a picture of the harbour with two lines, fading on its own.
+- **What it does:** Shows a message in a small panel, at most three at a time, and fades it out after a few seconds. It works even while the game is paused, so menus can report results. Since I021 it can also show the arrival card: a picture of the harbour with two lines, fading on its own. Steady Hands / Golden Harbours: it also shows the Golden Harbour Moment card for a while (longer than a notice) before it fades.
 - **Works with:** `App` (sends all notifications through it).
 - **Keeps:** The messages currently on screen.
 - **When it runs:** Always (part of the main app scene).
@@ -2019,7 +2028,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_captains_log.gd`
 
 **Purpose:** Checks the Captain's Log statistics and its panel (Iteration 006).
-- **What it does:** It checks visited harbours, distance sailed and voyage records for arrivals, changes of course and rescues. The miles must come out the same in one big time step or many small ones, only the latest voyages are kept, and save/load and very old (version 7) saves must work. Then it opens the Log panel with L, tries its tabs and harbour filters, and opens it from the pause menu.
+- **What it does:** It checks visited harbours, distance sailed and voyage records for arrivals, changes of course and rescues. The miles must come out the same in one big time step or many small ones, only the latest voyages are kept, and save/load and very old (version 7) saves must work. Then it opens the Log panel with L, tries its tabs and harbour filters, and opens it from the pause menu. Golden Harbours: the first-visit line may be part of the harbour moment card; it must appear exactly once.
 - **Works with:** `GameSession`, `CaptainsLog`, `Simulation`, `SaveManager`, `CaptainsLogMenu`, `WeatherFixtures`.
 - **Keeps:** Nothing of its own; it records the "voyage logged" messages it hears.
 - **When it runs:** Only in tests.
@@ -2217,11 +2226,20 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_gameplay_flow.gd`
 
 **Purpose:** Plays the whole game from start to finish, like a player using keys and mouse clicks.
-- **What it does:** Tests the main menu, a new game, walking and bumping into things, prompts, the chart (zoom, pan, plotting and waypoints), stairs between cabin and deck, the pause menu, settings, saving/loading and Continue. Then it sails a first voyage to Kiel with a gale warning and a change of course, and ends by pressing Quit. Steady Hands: the companionway round trip check reports where the player stood and what the prompt said, to diagnose a rare failure.
+- **What it does:** Tests the main menu, a new game, walking and bumping into things, prompts, the chart (zoom, pan, plotting and waypoints), stairs between cabin and deck, the pause menu, settings, saving/loading and Continue. Then it sails a first voyage to Kiel with a gale warning and a change of course, and ends by pressing Quit. Steady Hands: the companionway round trip check reports where the player stood and what the prompt said, to diagnose a rare failure. The companionway round trips move the ship's companion aside when it sits at the hatch (it used to get petted instead, an intermittent failure), and the "no teleport" check allows the distance the boat really sails while the chart opens.
 - **Works with:** The app scene, `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `SeaRouter`, `WeatherFixtures`, `MainMenu`, `WorldMap`, `PauseMenu`, `SaveLoadMenu`.
 - **Keeps:** Nothing of its own (test save slots and a test settings file).
 - **When it runs:** Only in tests, as the very last suite, because it quits the program.
 - **If you change it:** Nothing in the game changes. It is the widest check, so almost any change to menus, controls, the chart or saves can make it fail.
+
+### `tests/suites/test_golden_harbours.gd`
+
+**Purpose:** Checks the Golden Harbour Moments.
+- **What it does:** Sails real voyages to harbours never visited before and checks that the first arrival shows one illustrated card (with the name, "First visit" and the Captain's Log line, and no separate Log notice), that a click puts it away, that a known harbour keeps the small card, and that a second visit shows no card. Loading a game in a new harbour and going below and back show nothing. It also checks the light for the hour (day, dusk in Danish with the stamp in Danish, night), that the card stays inside the screen, and that the painting's windows are found quickly and remembered. It takes the day, dusk and night screenshots.
+- **Works with:** `App`, `HarbourMoment`, `Toasts`, `GameSession`, `Simulation`, `SaveManager`.
+- **Keeps:** Nothing (window size, language and automatic time are restored).
+- **When it runs:** With the other suites (`test_runner.tscn`).
+- **If you change it:** Only the tests change.
 
 ### `tests/suites/test_harbour_chart.gd`
 
@@ -2298,7 +2316,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_living_world.gd`
 
 **Purpose:** Checks the "living little world" look: the sailor, the water and the drawn boats.
-- **What it does:** Checks that the sailor swings their arms when walking and that harbour water moves gently, with the right water type for each harbour. It checks the illustrated deck and cabin of every boat, waves that follow the wind underway, and that the camera eases out when leaving harbour and back in on arrival.
+- **What it does:** Checks that the sailor swings their arms when walking and that harbour water moves gently, with the right water type for each harbour. It checks the illustrated deck and cabin of every boat, waves that follow the wind underway, and that the camera eases out when leaving harbour and back in on arrival. The arm-swing check walks two strides by distance instead of for 0.6 seconds, so a slow first frame no longer makes it fail now and then.
 - **Works with:** `WaterLife`, `HarbourArt`, `SailorDrawing`, `VesselVisual`, `BoatArea`, `SettingsManager`, the app scene.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.
@@ -2505,7 +2523,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_steady_hands.gd`
 
 **Purpose:** Checks that the interface stays put, on screen, closable and translated (Steady Hands).
-- **What it does:** Shows, updates and hides weather warnings many times (English and Danish, day and night, Trip Details collapsed and expanded) and checks that Trip Details never moves and the warning never covers it. It then opens every window the game offers, from the game's own entry points, at several screen shapes and interface sizes in both languages. Each window must stay inside the screen, close with Esc and show no raw placeholders or English text in Danish. The test also checks the HUD's panels against each other, the main screens, the longest harbour name with long notices, what happens when the situation changes under an open window, and that nothing invisible catches the mouse.
+- **What it does:** Shows, updates and hides weather warnings many times (English and Danish, day and night, Trip Details collapsed and expanded) and checks that Trip Details never moves and the warning never covers it. It then opens every window the game offers, from the game's own entry points, at several screen shapes and interface sizes in both languages. Each window must stay inside the screen, close with Esc and show no raw placeholders or English text in Danish. The test also checks the HUD's panels against each other, the main screens, the longest harbour name with long notices, what happens when the situation changes under an open window, and that nothing invisible catches the mouse. It also checks dusk and dawn: over a whole day the interface is either day or night (never parked half-way) and changes twice, and text stays readable on its panels all through the change.
 - **Works with:** `App`, `Hud`, every window class, `SettingsManager`.
 - **Keeps:** Nothing (the window size and settings are restored).
 - **When it runs:** With the other suites (`test_runner.tscn`).
@@ -2831,7 +2849,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Purpose:** The game's automatic test runner: it runs all 74 test suites and says how many checks passed.
-- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites. It also runs the cabin windows suite. It also runs the Steady Hands interface suite.
+- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites. It also runs the cabin windows suite. It also runs the Steady Hands interface suite. It also runs the Golden Harbours suite.
 - **Works with:** Every suite in `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Keeps:** The pass/fail counts and the list of failures.
 - **When it runs:** By hand or in automation: `godot --headless --path . res://tests/test_runner.tscn` (options after `--`: `--only=name`, `--skip=name`, `--screenshots=DIR`).

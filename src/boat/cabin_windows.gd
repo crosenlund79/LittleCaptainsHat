@@ -115,14 +115,7 @@ func _sample_world() -> void:
 	var now := GameSession.get_game_time()
 	var underway := GameSession.is_underway()
 	var sample := Simulation.get_weather_at_vessel()
-	var overcast := 0.0
-	if sample.thunder_active or sample.classification in [WeatherModel.CLASS_THUNDERSTORM, WeatherModel.CLASS_SQUALL,
-			WeatherModel.CLASS_STORM, WeatherModel.CLASS_TROPICAL_STORM, WeatherModel.CLASS_HURRICANE]:
-		overcast = 0.8
-	elif sample.classification == WeatherModel.CLASS_GALE or sample.thunder_possible:
-		overcast = 0.5
-	elif sample.classification == WeatherModel.CLASS_STRONG_WIND:
-		overcast = 0.25
+	var overcast := BoatLighting.overcast_of(sample)
 	var elevation := Daylight.sun_elevation(geo, now)
 	world = {
 		"heading": Simulation.get_current_heading() if underway else 90.0,

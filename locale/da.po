@@ -8499,3 +8499,14 @@ msgstr "Pontonerne i {harbour} er fulde af både med vindror og dunke surret fas
 
 msgid "free"
 msgstr "gratis"
+
+# Golden Harbour Moments
+
+msgid "Click to put it away"
+msgstr "Klik for at lægge det væk"
+
+msgid "First visit"
+msgstr "Første besøg"
+
+msgid "✦ Special harbour"
+msgstr "✦ Særlig havn"

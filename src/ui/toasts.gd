@@ -7,6 +7,8 @@ const MAX_VISIBLE := 3
 const DEFAULT_DURATION := 3.5
 ## The arrival card (I021) stays a little longer than a notice.
 const CARD_DURATION := 6.0
+## A Golden Harbour Moment stays a little longer (a click puts it away).
+const MOMENT_DURATION := 14.0
 ## Width of the arrival card's picture (the harbour illustration, cropped).
 const CARD_PICTURE_WIDTH := 420.0
 
@@ -88,6 +90,24 @@ func show_card(title: String, text: String, picture: Texture2D, duration := CARD
 	tween.tween_interval(duration)
 	tween.tween_property(panel, "modulate:a", 0.0, 0.5)
 	tween.tween_callback(panel.queue_free)
+
+
+## A Golden Harbour Moment (HarbourMoment): in the same column as the
+## notices, so nothing stacks over anything else; it fades after `duration`
+## seconds unless put away sooner with a click.
+func show_moment(moment: Control, duration := MOMENT_DURATION) -> void:
+	while get_child_count() >= MAX_VISIBLE:
+		var oldest := get_child(0)
+		remove_child(oldest)
+		oldest.queue_free()
+	add_child(moment)
+	var tween := moment.create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	moment.modulate.a = 0.0
+	tween.tween_property(moment, "modulate:a", 1.0, 0.35)
+	tween.tween_interval(duration)
+	tween.tween_property(moment, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(moment.queue_free)
 
 
 func get_messages() -> PackedStringArray:

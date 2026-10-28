@@ -15,6 +15,9 @@ extends RefCounted
 ## 3. The HUD's own pieces stay inside the screen and do not cover each other
 ##    (named pairs only: some layers overlap on purpose, e.g. a modal's dim
 ##    backdrop, the toasts and the time passage).
+## 4. Dusk and dawn: the interface changes mood once, at the middle of the
+##    twilight, instead of sitting half-way (where text and panel were the
+##    same grey); text never mixes its day and night colours.
 ## Overlap is not checked blindly; each check names what it protects.
 
 const APP_SCENE := preload("res://src/app/app.tscn")
@@ -52,6 +55,7 @@ func run(runner: Node) -> void:
 	await _test_weather_does_not_move_trip_details()
 	await _test_long_texts()
 	await _test_transitions()
+	await _test_dusk_readability()
 	for setup: Array in SWEEPS:
 		root.size = setup[0]
 		SettingsManager.set_language(setup[1])
@@ -509,6 +513,48 @@ func _test_transitions() -> void:
 	await _settle()
 	t.check(app.modals.is_empty() and app.is_in_gameplay() and not app.hud.is_warning_visible(), "[context] loading a game from the menu leaves no window or warning behind")
 	SaveManager.delete_slot(3)
+
+
+# --- 7. Readable through dusk and dawn ----------------------------------------------------------------------------
+
+func _test_dusk_readability() -> void:
+	# A whole day moored, in ten-minute steps: the theme's target is always
+	# plainly day or night, and it changes once each way.
+	await _start(false, &"exterior", 0.0)
+	UiTheme.set_blend(UiTheme._target_blend(), true)
+	var in_between := 0
+	var switches := 0
+	for step in 144:
+		Simulation.advance(600.0, true)
+		var target := UiTheme._target_blend()
+		if target not in [0.0, 1.0]:
+			in_between += 1
+		if target != UiTheme.blend:
+			switches += 1
+			UiTheme.set_blend(target, true)
+	t.check(in_between == 0 and switches == 2, "[dusk] over a day the interface is day or night, never parked half-way, and changes twice (%d half-way, %d changes)" % [
+		in_between, switches])
+	# During the few seconds of the change itself, text stays readable on its panel.
+	var worst := 99.0
+	for i in 11:
+		var night := i / 10.0
+		for pair: Array in [[&"ink", &"surface"], [&"ink", &"surface_hud"], [&"ink", &"sidebar"], [&"button_text", &"button"], [&"action_text", &"action"]]:
+			worst = minf(worst, _contrast(UiTheme.color_at(pair[0], night), UiTheme.color_at(pair[1], night)))
+	# (The lowest is the instant text changes over, half-way through a fade of
+	# a few seconds; it was 1.0:1 there, and for the whole twilight.)
+	t.check(worst >= 2.5, "[dusk] text on panels and buttons all through the change: at least %.1f:1" % worst)
+	UiTheme.set_blend(UiTheme._target_blend(), true)
+
+
+static func _contrast(a: Color, b: Color) -> float:
+	var la := _luminance(a)
+	var lb := _luminance(b)
+	return (maxf(la, lb) + 0.05) / (minf(la, lb) + 0.05)
+
+
+static func _luminance(c: Color) -> float:
+	var parts := [c.r, c.g, c.b].map(func(v: float) -> float: return v / 12.92 if v <= 0.03928 else pow((v + 0.055) / 1.055, 2.4))
+	return 0.2126 * parts[0] + 0.7152 * parts[1] + 0.0722 * parts[2]
 
 
 static var _english := PackedStringArray()

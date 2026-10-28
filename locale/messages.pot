@@ -4314,55 +4314,55 @@ msgstr ""
 msgid "It is %s."
 msgstr ""
 
-#: src/app/app.gd:1352
+#: src/app/app.gd:1356 src/ui/harbour_moment.gd:75
 msgid "Arrived in %s."
 msgstr ""
 
-#: src/app/app.gd:1389
+#: src/app/app.gd:1394
 msgid "New harbour in the Captain's Log: %s (%d of %d visited)."
 msgstr ""
 
-#: src/app/app.gd:1402
+#: src/app/app.gd:1438
 msgid "Secret achievement: %s. %s  +%d renown"
 msgstr ""
 
-#: src/app/app.gd:1408
+#: src/app/app.gd:1444
 msgid "+%d renown: %s."
 msgstr ""
 
-#: src/app/app.gd:1440
+#: src/app/app.gd:1476
 msgid "%s %s A new one is sold at the harbour grocery store."
 msgstr ""
 
-#: src/app/app.gd:1524
+#: src/app/app.gd:1560
 msgid "Travel update published: %d renown earned you %s. Funds: %s."
 msgstr ""
 
-#: src/app/app.gd:1531 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1329 src/boat/boat_area.gd:723
+#: src/app/app.gd:1567 src/boat/boat_area.gd:113 src/boat/boat_area.gd:1329 src/boat/boat_area.gd:723
 msgid "Interactable"
 msgstr ""
 
-#: src/app/app.gd:1535
+#: src/app/app.gd:1571
 msgid "Interaction areas: %s"
 msgstr ""
 
-#: src/app/app.gd:1556
+#: src/app/app.gd:1592
 msgid "The boatyard is only open while you are moored in harbour."
 msgstr ""
 
-#: src/app/app.gd:1623
+#: src/app/app.gd:1659
 msgid "Buy the %s?"
 msgstr ""
 
-#: src/app/app.gd:1624
+#: src/app/app.gd:1660
 msgid "The %s costs %s; you have %s. It is yours for good, and you move aboard at once. Your other boats stay yours."
 msgstr ""
 
-#: src/app/app.gd:1625 src/ui/grocery_menu.gd:75
+#: src/app/app.gd:1661 src/ui/grocery_menu.gd:75
 msgid "Buy"
 msgstr ""
 
-#: src/app/app.gd:1638
+#: src/app/app.gd:1674
 msgid "Welcome aboard the %s."
 msgstr ""
 
@@ -9417,6 +9417,18 @@ msgstr ""
 
 #: src/ui/handbook_menu.gd:98
 msgid "No page mentions that. Try another word."
+msgstr ""
+
+#: src/ui/harbour_moment.gd:54
+msgid "Click to put it away"
+msgstr ""
+
+#: src/ui/harbour_moment.gd:64
+msgid "First visit"
+msgstr ""
+
+#: src/ui/harbour_moment.gd:64
+msgid "✦ Special harbour"
 msgstr ""
 
 #: src/ui/hat_badge.gd:16

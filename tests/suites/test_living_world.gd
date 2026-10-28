@@ -85,10 +85,13 @@ func _test_sailor() -> void:
 	var right := SailorDrawing.hand_position(Vector2.RIGHT, 0.0, 1.0)
 	t.check(absf(left.y) > 12.0 and absf(left.y + right.y) < 0.01 and is_equal_approx(left.x, right.x), "[sailor] two hands, one at each shoulder")
 	t.check(not SailorDrawing.hand_position(Vector2.RIGHT, 1.0, 1.0).is_equal_approx(right), "[sailor] the arms swing")
+	# Two strides of walking (by distance, not by the clock: a slow first
+	# frame on a freshly shown deck used to eat a 0.6 s window, intermittently).
 	var swings := []
-	var timer := t.get_tree().create_timer(0.6)
+	var from := player.position
+	var timer := t.get_tree().create_timer(3.0)
 	Input.action_press(&"move_down")
-	while timer.time_left > 0.0:
+	while timer.time_left > 0.0 and player.position.distance_to(from) < Player.STRIDE * 2.0:
 		await t.frames(1)
 		swings.append(player.get_swing())
 	Input.action_release(&"move_down")
