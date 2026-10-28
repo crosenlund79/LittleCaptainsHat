@@ -10,7 +10,8 @@ fixed inside A, so B was delivered, not deferred.
 | Approved branch | `claude/friendly-fermat-dey23f` (the integration branch; injections and polish are committed there, see `CAPTAINS_ORDERS.md`) |
 | Start | `2baa01034fbaa956018c58e013b555be8213d77d` (I022 complete; `release/i022` and `iteration/i022` at the same commit, both left untouched) |
 | Mission A | `190ae21dc6ee6858744dc3fef608fa24b9c37c76` |
-| Mission B and the rest | the commit that adds this report (its full SHA is given in the delivery message) |
+| Mission B | `0672a05ef542a8dadb48dad654a063feea56d977` |
+| Final | the commit that completes this report with the full-suite result and the arm-swing fix (its full SHA is given in the delivery message) |
 | Version / save format | 0.109a / 12, unchanged (no save fields added) |
 | Not created | `iteration/i023`, as ordered |
 
@@ -61,7 +62,7 @@ washed-out HUD and an unreadable notice.
 |---|---|---|
 | `test_gameplay_flow` "ended on deck after round trips" (about 1 run in 7) | The new diagnostics showed it: the ship's cat sometimes sat at the hatch, so E petted it instead of using the companionway and every later trip was off by one | The round trip moves the companion aside when the prompt is not the hatch's |
 | `test_gameplay_flow` "[voyage] no teleport" | Not a teleport. About 43 s of game time passes while the chart opens (the clock check allows 120 s), and the boat honestly sails about 110 m, right at the old fixed 1e-3° limit. It failed 2 of 2 times on the committed Mission A state | Limit = what the boat can sail in the elapsed time (12 kn) + 10 m; the message gives metres and seconds |
-| `test_living_world` "[sailor] walking swings the arms" (0.00 … 0.60 once) | A 0.6 s real-time window; a slow first frame on a freshly shown deck left less than half a stride | Measured over two strides of walking (cap 3 s) |
+| `test_living_world` "[sailor] walking swings the arms" (0.00 … 0.59/0.60, in the full run and every time alone) | Diagnostics showed the walk from the start spot, beside the companionway, stopped at deck fittings after 31 px (less than one 46 px stride), so the swing never passed its first half and topped out right at the 0.6 limit. A first guess (a slow first frame) was wrong and is not the fix | The walk starts on the open foredeck and is measured by distance; the check needs at least one stride walked (now 72 px, swing −0.98 … 0.61, 3/3) |
 | Several suites | `Simulation.auto_advance` left off for the next suite | Restored |
 
 ### The maintainable UI suite: `test_steady_hands`
@@ -123,7 +124,12 @@ updated (#2, and a row under *Measured and rejected*).
 
 - `test_steady_hands`: 63 checks. `test_golden_harbours`: 20 checks.
 - Targeted regression of the arrival and flow suites: 426/426 (`test_wider_world`, `test_captains_log`, `test_steady_hands`, `test_living_world`, `test_gameplay_flow`, `test_golden_harbours`). Theme suites: 95/95 (`test_chartroom_ui`, `test_well_run_ship`, `test_golden_harbours`).
-- Full suite, rendered (xvfb, 1600×900): FULL_RESULT
+- Full suite, rendered (xvfb, 1600×900), on `0672a05`: 5016 passed, 3 failed.
+  - `test_living_world` arm swing: root-caused and fixed (table above), then 3/3 alone.
+  - `test_navigation_views` "[dream] after panning across the Date Line the land is still drawn".
+  - `test_settings_and_audio` "window mode 'fullscreen' is applied (expected 4, got 0)".
+
+  The last two are not caused by this work. They fail the same way at the start commit `2baa010`, checked out separately and run in the same container, although both passed in earlier runs here. They depend on the environment: exclusive fullscreen under xvfb without a window manager, and the dream chart's land after a fast pan. They are left unchanged and reported, not weakened. Fullscreen is part of the Windows checks below.
 - Content checker: no FAIL. Links: OK. i18n: extract and check with 0 errors, Danish 2636/2636. GDScript guides: every script has entries in English, Danish and the architecture reference, all reviewed.
 
 ## Windows acceptance tasks for the Captain
@@ -136,3 +142,4 @@ Nothing here has been tried on Windows; these checks wait for the Captain's own 
 4. Danish: renown notices, groceries, the galley, Go Ashore and the HUD should all be in Danish.
 5. Arrive in a new illustrated harbour by day, and another at dusk or night. Check the card's look and that a click puts it away. Then return to a harbour you know (small card only), load a game, and go below and back (no card).
 6. Resize the game window (smaller than 1280×720, and ultra-wide) with a window open. Nothing should leave the screen, and Esc should still close it.
+7. Settings, Fullscreen: the game should go fullscreen. In the dream chart, pan east across the Date Line: the land should still be drawn (both could not be confirmed under the cloud test display, see above).

@@ -1303,9 +1303,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_living_world.gd": {
-   "sha": "f57e8a1ae68db12b",
+   "sha": "fa00656f95c862c3",
    "reviewed": "2026-10-28",
-   "note": "Arm swing measured over two strides"
+   "note": "Arm swing on the open foredeck, by distance"
   },
   "tests/suites/test_localization.gd": {
    "sha": "9e12c7c2b89c2885",

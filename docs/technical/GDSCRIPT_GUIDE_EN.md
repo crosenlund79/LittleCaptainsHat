@@ -2316,7 +2316,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_living_world.gd`
 
 **Purpose:** Checks the "living little world" look: the sailor, the water and the drawn boats.
-- **What it does:** Checks that the sailor swings their arms when walking and that harbour water moves gently, with the right water type for each harbour. It checks the illustrated deck and cabin of every boat, waves that follow the wind underway, and that the camera eases out when leaving harbour and back in on arrival. The arm-swing check walks two strides by distance instead of for 0.6 seconds, so a slow first frame no longer makes it fail now and then.
+- **What it does:** Checks that the sailor swings their arms when walking and that harbour water moves gently, with the right water type for each harbour. It checks the illustrated deck and cabin of every boat, waves that follow the wind underway, and that the camera eases out when leaving harbour and back in on arrival. The arm-swing check walks on the open foredeck and is measured by distance: from the start spot the sailor walked into deck fittings after less than one stride, which made it fail.
 - **Works with:** `WaterLife`, `HarbourArt`, `SailorDrawing`, `VesselVisual`, `BoatArea`, `SettingsManager`, the app scene.
 - **Keeps:** Nothing of its own.
 - **When it runs:** Only in tests.

@@ -2318,7 +2318,7 @@ Reglerne står i [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_living_world.gd`
 
 **Formål:** Tester udseendet i "en levende lille verden": sømanden, vandet og de tegnede både.
-- **Hvad det gør:** Tester, at sømanden svinger armene, når han går, og at havnevandet bevæger sig roligt, med den rette slags vand for hver havn. Det tester også de illustrerede dæk og kahytter på hver båd, at bølgerne følger vinden under sejlads, og at kameraet glider ud, når båden forlader havnen, og ind igen ved ankomst. Tjekket af armsvinget går to skridt målt i afstand i stedet for i 0,6 sekunder, så et langsomt første billede ikke længere får det til at fejle en gang imellem.
+- **Hvad det gør:** Tester, at sømanden svinger armene, når han går, og at havnevandet bevæger sig roligt, med den rette slags vand for hver havn. Det tester også de illustrerede dæk og kahytter på hver båd, at bølgerne følger vinden under sejlads, og at kameraet glider ud, når båden forlader havnen, og ind igen ved ankomst. Tjekket af armsvinget går på det åbne fordæk og måles i afstand: fra startstedet gik sømanden ind i dækbeslag efter mindre end ét skridt, hvilket fik det til at fejle.
 - **Arbejder sammen med:** `WaterLife`, `HarbourArt`, `SailorDrawing`, `VesselVisual`, `BoatArea`, `SettingsManager` og app-scenen.
 - **Holder styr på:** Intet selv.
 - **Hvornår det kører:** Kun i testene.
