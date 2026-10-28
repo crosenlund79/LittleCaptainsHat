@@ -32,6 +32,7 @@ func run(runner: Node) -> void:
 	await t.frames(2)
 	AcademyGuide.enabled = false
 	SaveManager.delete_slot(3)
+	Simulation.auto_advance = true  # as the other suites leave it
 	SettingsManager.set_academy({})
 	SettingsManager.set_tips_enabled(true)
 

@@ -47,7 +47,7 @@ msgstr ""
 msgid "Click a harbour nearby and plan a course to it."
 msgstr ""
 
-#: data/academy/academy.json src/ui/hud.gd:164
+#: data/academy/academy.json src/ui/hud.gd:188
 msgid "Controls"
 msgstr ""
 
@@ -4588,7 +4588,7 @@ msgstr ""
 msgid "Discard changes"
 msgstr ""
 
-#: src/app/app.gd:641 src/ui/settings_menu.gd:91
+#: src/app/app.gd:641 src/ui/settings_menu.gd:95
 msgid "Keep editing"
 msgstr ""
 
@@ -7383,7 +7383,7 @@ msgstr ""
 msgid "%s\nWind %d° %s"
 msgstr ""
 
-#: src/navigation/world_map.gd:1002 src/ui/hud.gd:281 src/ui/sailing_panel.gd:142
+#: src/navigation/world_map.gd:1002 src/ui/hud.gd:325 src/ui/sailing_panel.gd:142
 msgid "off the bow"
 msgstr ""
 
@@ -7645,11 +7645,11 @@ msgstr ""
 msgid "under sail"
 msgstr ""
 
-#: src/navigation/world_map.gd:861 src/ui/hud.gd:287
+#: src/navigation/world_map.gd:861 src/ui/hud.gd:331
 msgid "Arrived at"
 msgstr ""
 
-#: src/navigation/world_map.gd:861 src/ui/hud.gd:287
+#: src/navigation/world_map.gd:861 src/ui/hud.gd:331
 msgid "Moored at"
 msgstr ""
 
@@ -8397,67 +8397,67 @@ msgstr ""
 msgid "%d fitted"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:123
+#: src/ui/boatyard_menu.gd:127
 msgid "Your boat, the %s: hull %s  ·  %s  ·  food %s, water %s"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:128
+#: src/ui/boatyard_menu.gd:132
 msgid "Boat care (%s)…"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:134 src/ui/provisions_menu.gd:45
+#: src/ui/boatyard_menu.gd:138 src/ui/provisions_menu.gd:45
 msgid "Grocery store (%s)…"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:135 src/ui/boatyard_menu.tscn:168 src/ui/provisions_menu.gd:46 src/ui/provisions_menu.tscn:115
+#: src/ui/boatyard_menu.gd:139 src/ui/boatyard_menu.tscn:168 src/ui/provisions_menu.gd:46 src/ui/provisions_menu.tscn:115
 msgid "Grocery store…"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:172
+#: src/ui/boatyard_menu.gd:176
 msgid "Condition %s"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:186 src/ui/grocery_menu.gd:40
+#: src/ui/boatyard_menu.gd:190 src/ui/grocery_menu.gd:40
 msgid "Price"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:193
+#: src/ui/boatyard_menu.gd:197
 msgid "This is your boat"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:195
+#: src/ui/boatyard_menu.gd:199
 msgid "Move aboard the %s"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:197
+#: src/ui/boatyard_menu.gd:201
 msgid "Buy the %s (%s)…"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:199
+#: src/ui/boatyard_menu.gd:203
 msgid "%s needed to buy it"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:206 src/ui/boatyard_menu.gd:209 src/ui/boatyard_menu.gd:210
+#: src/ui/boatyard_menu.gd:210 src/ui/boatyard_menu.gd:213 src/ui/boatyard_menu.gd:214
 msgid "%.1f kn"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:206
+#: src/ui/boatyard_menu.gd:210
 msgid "Top speed under sail"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:208
+#: src/ui/boatyard_menu.gd:212
 msgid "%d kn wind at %d°"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:210
+#: src/ui/boatyard_menu.gd:214
 msgid "Under engine"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:266
+#: src/ui/boatyard_menu.gd:270
 msgid "(your boat)"
 msgstr ""
 
-#: src/ui/boatyard_menu.gd:267 src/ui/chandlery_menu.gd:57
+#: src/ui/boatyard_menu.gd:271 src/ui/chandlery_menu.gd:57
 msgid "Yours"
 msgstr ""
 
@@ -8485,19 +8485,19 @@ msgstr ""
 msgid "Choose the boat you sail, look after your boat (repairs, services, haul-outs and equipment) or visit the grocery store. Your harbour, the time, your money and your companion stay with you."
 msgstr ""
 
-#: src/ui/cabin_home_menu.gd:13
+#: src/ui/cabin_home_menu.gd:17
 msgid "The small things that make the %s yours. Each appears in the cabin at once; put it away any time."
 msgstr ""
 
-#: src/ui/cabin_home_menu.gd:37
+#: src/ui/cabin_home_menu.gd:57
 msgid "At the chandlery (%s)"
 msgstr ""
 
-#: src/ui/cabin_home_menu.gd:40
+#: src/ui/cabin_home_menu.gd:60
 msgid "Put away"
 msgstr ""
 
-#: src/ui/cabin_home_menu.gd:40
+#: src/ui/cabin_home_menu.gd:60
 msgid "Show it"
 msgstr ""
 
@@ -9295,6 +9295,10 @@ msgstr ""
 msgid "%s  ·  %s  ·  %d min"
 msgstr ""
 
+#: src/ui/go_ashore_menu.gd:93
+msgid "free"
+msgstr ""
+
 #: src/ui/grocery_menu.gd:101
 msgid "Buy lure"
 msgstr ""
@@ -9483,75 +9487,75 @@ msgstr ""
 msgid "Up she comes…"
 msgstr ""
 
-#: src/ui/hud.gd:257
+#: src/ui/hud.gd:301
 msgid "At anchor, %s  ·  bound for %s"
 msgstr ""
 
-#: src/ui/hud.gd:260
+#: src/ui/hud.gd:304
 msgid "Underway to %s"
 msgstr ""
 
-#: src/ui/hud.gd:261
+#: src/ui/hud.gd:305
 msgid "At anchor  ·  voyage paused"
 msgstr ""
 
-#: src/ui/hud.gd:262
+#: src/ui/hud.gd:306
 msgid "Underway  ·  %.1f kn"
 msgstr ""
 
-#: src/ui/hud.gd:263
+#: src/ui/hud.gd:307
 msgid "To %s  ·  %d nm to go"
 msgstr ""
 
-#: src/ui/hud.gd:264
+#: src/ui/hud.gd:308
 msgid "ETA about %s (estimate)"
 msgstr ""
 
-#: src/ui/hud.gd:272
+#: src/ui/hud.gd:316
 msgid "At the anchorage  ·  0.0 kn"
 msgstr ""
 
-#: src/ui/hud.gd:273 src/ui/sailing_panel.gd:130
+#: src/ui/hud.gd:317 src/ui/sailing_panel.gd:130
 msgid "Drop the anchor, or sail on (Q)"
 msgstr ""
 
-#: src/ui/hud.gd:274
+#: src/ui/hud.gd:318
 msgid "Sails down  ·  waiting at the anchorage"
 msgstr ""
 
-#: src/ui/hud.gd:276
+#: src/ui/hud.gd:320
 msgid "Raise the anchor at the windlass to sail on"
 msgstr ""
 
-#: src/ui/hud.gd:277
+#: src/ui/hud.gd:321
 msgid "%s  ·  %d × the depth of chain"
 msgstr ""
 
-#: src/ui/hud.gd:289 src/ui/hud.tscn:122
+#: src/ui/hud.gd:333 src/ui/hud.tscn:122
 msgid "Planned route"
 msgstr ""
 
-#: src/ui/hud.gd:297
+#: src/ui/hud.gd:341
 msgid "About %s with the expected wind  ·  set sail at the helm"
 msgstr ""
 
-#: src/ui/hud.gd:300
+#: src/ui/hud.gd:344
 msgid "Plot a course at the chart table"
 msgstr ""
 
-#: src/ui/hud.gd:327
+#: src/ui/hud.gd:370
 msgid "Hull %s   %s   Food %.1f d · Water %.1f d"
 msgstr ""
 
-#: src/ui/hud.gd:337
+#: src/ui/hud.gd:380
 msgid "Wind calm"
 msgstr ""
 
-#: src/ui/hud.gd:338
+#: src/ui/hud.gd:381
 msgid "Wind %s %d kn"
 msgstr ""
 
-#: src/ui/hud.gd:342
+#: src/ui/hud.gd:385
 msgid ", gusts %d"
 msgstr ""
 
@@ -10250,16 +10254,12 @@ msgstr ""
 msgid "%d of %d · sent %s"
 msgstr ""
 
-#: src/ui/settings_menu.gd:113
+#: src/ui/settings_menu.gd:117
 msgid "Test"
 msgstr ""
 
-#: src/ui/settings_menu.gd:114
+#: src/ui/settings_menu.gd:118
 msgid "Play a temporary test sound on the %s bus"
-msgstr ""
-
-#: src/ui/settings_menu.gd:128
-msgid "Artwork"
 msgstr ""
 
 #: src/ui/settings_menu.gd:13
@@ -10267,6 +10267,10 @@ msgid "Windowed"
 msgstr ""
 
 #: src/ui/settings_menu.gd:132
+msgid "Artwork"
+msgstr ""
+
+#: src/ui/settings_menu.gd:136
 msgid "The illustrated look is a prototype on every boat and in harbour; Classic shows the earlier art."
 msgstr ""
 
@@ -10274,39 +10278,39 @@ msgstr ""
 msgid "Fullscreen"
 msgstr ""
 
-#: src/ui/settings_menu.gd:146
-msgid "Sailing view"
-msgstr ""
-
 #: src/ui/settings_menu.gd:15
 msgid "Borderless fullscreen"
 msgstr ""
 
 #: src/ui/settings_menu.gd:150
+msgid "Sailing view"
+msgstr ""
+
+#: src/ui/settings_menu.gd:154
 msgid "Boat faces its course"
 msgstr ""
 
-#: src/ui/settings_menu.gd:151
+#: src/ui/settings_menu.gd:155
 msgid "Underway the deck turns so the bow points along the course, north up. Off: the boat always points right."
 msgstr ""
 
-#: src/ui/settings_menu.gd:164
+#: src/ui/settings_menu.gd:168
 msgid "Flashing"
 msgstr ""
 
-#: src/ui/settings_menu.gd:168
+#: src/ui/settings_menu.gd:172
 msgid "Reduce flashing"
 msgstr ""
 
-#: src/ui/settings_menu.gd:169
+#: src/ui/settings_menu.gd:173
 msgid "Lightning shows as one soft glow, and highlights pulse once gently instead of blinking."
 msgstr ""
 
-#: src/ui/settings_menu.gd:176
+#: src/ui/settings_menu.gd:180
 msgid "Lightning flash"
 msgstr ""
 
-#: src/ui/settings_menu.gd:184
+#: src/ui/settings_menu.gd:188
 msgid "How bright lightning flashes are (0 %: thunder only)."
 msgstr ""
 
@@ -10314,80 +10318,76 @@ msgstr ""
 msgid "Illustrated (prototype)"
 msgstr ""
 
-#: src/ui/settings_menu.gd:191
+#: src/ui/settings_menu.gd:195
 msgid "Motion"
 msgstr ""
 
-#: src/ui/settings_menu.gd:195
+#: src/ui/settings_menu.gd:199
 msgid "Reduce motion"
 msgstr ""
 
-#: src/ui/settings_menu.gd:196
+#: src/ui/settings_menu.gd:200
 msgid "Small decorative animations stay still (a landed fish's tail flick and bobbing)."
 msgstr ""
 
-#: src/ui/settings_menu.gd:204
+#: src/ui/settings_menu.gd:208
 msgid "Tips"
 msgstr ""
 
-#: src/ui/settings_menu.gd:208
+#: src/ui/settings_menu.gd:212
 msgid "Show tips as you play"
 msgstr ""
 
-#: src/ui/settings_menu.gd:209
+#: src/ui/settings_menu.gd:213
 msgid "Short tips the first time you meet something new. The Captain's Handbook (F1) has everything either way."
 msgstr ""
 
-#: src/ui/settings_menu.gd:217
+#: src/ui/settings_menu.gd:221
 msgid "Interface light"
 msgstr ""
 
-#: src/ui/settings_menu.gd:221
+#: src/ui/settings_menu.gd:225
 msgid "Always day"
 msgstr ""
 
-#: src/ui/settings_menu.gd:221
+#: src/ui/settings_menu.gd:225
 msgid "Always night"
 msgstr ""
 
-#: src/ui/settings_menu.gd:221
+#: src/ui/settings_menu.gd:225
 msgid "Automatic (follows the day)"
 msgstr ""
 
-#: src/ui/settings_menu.gd:223
+#: src/ui/settings_menu.gd:227
 msgid "By day the chartroom's parchment and brass, by night harbour dusk and lantern light. Automatic follows the sun where the boat is."
 msgstr ""
 
-#: src/ui/settings_menu.gd:231
+#: src/ui/settings_menu.gd:235
 msgid "Language"
 msgstr ""
 
-#: src/ui/settings_menu.gd:271 src/ui/settings_menu.gd:70
+#: src/ui/settings_menu.gd:275 src/ui/settings_menu.gd:70
 msgid "Opens the folder with the technical session logs (for bug reports): %s"
 msgstr ""
 
-#: src/ui/settings_menu.gd:283
+#: src/ui/settings_menu.gd:287
 msgid "Muted"
 msgstr ""
 
-#: src/ui/settings_menu.gd:313
+#: src/ui/settings_menu.gd:317
 msgid "Settings saved."
 msgstr ""
 
-#: src/ui/settings_menu.gd:315
+#: src/ui/settings_menu.gd:319
 msgid "Settings could not be saved."
 msgstr ""
 
-#: src/ui/settings_menu.gd:323
+#: src/ui/settings_menu.gd:327
 msgid "Unapplied changes — press Apply to keep them."
 msgstr ""
 
 #: src/ui/settings_menu.gd:69
 msgid "Diagnostic logs…"
-msgstr ""
-
-#: src/ui/settings_menu.gd:89
-msgid "Discard changes?"
 msgstr ""
 
 #: src/ui/settings_menu.gd:9
@@ -10402,7 +10402,11 @@ msgstr ""
 msgid "UI Sounds"
 msgstr ""
 
-#: src/ui/settings_menu.gd:90
+#: src/ui/settings_menu.gd:93
+msgid "Discard changes?"
+msgstr ""
+
+#: src/ui/settings_menu.gd:94
 msgid "Some settings have not been applied. Leaving now restores the previous settings."
 msgstr ""
 

@@ -53,9 +53,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/app/app.gd": {
-   "sha": "7d79645c72244e7f",
-   "reviewed": "2026-10-27",
-   "note": "I022 Captain's Academy"
+   "sha": "aef1beb9ff11e4b1",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/app/game_version.gd": {
    "sha": "ee3547eb8d0e13de",
@@ -648,9 +648,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/boat_care_menu.gd": {
-   "sha": "cce19b06c0d3099d",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "884b482761b89a27",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/boat_care_view.gd": {
    "sha": "75f156024fd6a3de",
@@ -658,14 +658,14 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/boatyard_menu.gd": {
-   "sha": "6252f89419610a7a",
-   "reviewed": "2026-10-27",
-   "note": "I022 boats and difficulty"
+   "sha": "4626e0bb1a1b6fe7",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/cabin_home_menu.gd": {
-   "sha": "191f769d207df869",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "b15d7cbd96d4b279",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/captains_log_menu.gd": {
    "sha": "b31e5c66eb208430",
@@ -693,9 +693,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/cooking_menu.gd": {
-   "sha": "b474b6acbf7b676d",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "a1e2c92bb2e72ec1",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/dev_guides_menu.gd": {
    "sha": "bf781211bd6f3dd9",
@@ -713,14 +713,19 @@
    "note": "I022 boats and difficulty"
   },
   "src/ui/fishing_menu.gd": {
-   "sha": "be4c2d8eb50c5cf6",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "76db17020efa7330",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/fishmonger_menu.gd": {
    "sha": "72e2541cfd7c5ad7",
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+  },
+  "src/ui/fit_scroll.gd": {
+   "sha": "52c2eac6b422acec",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/game_dev_menu.gd": {
    "sha": "db182ce2c131300c",
@@ -728,14 +733,14 @@
    "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/ui/go_ashore_menu.gd": {
-   "sha": "e841c575d3dcefe1",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "aec8dedf030fcb58",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/grocery_menu.gd": {
-   "sha": "c77c59a58c948c77",
-   "reviewed": "2026-10-27",
-   "note": "Engine Room C/D: deterministic blink and walk-out tests, lighting node name, grocery refresh, pacing probe fixed"
+   "sha": "99a7046b0e3715df",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/handbook_menu.gd": {
    "sha": "1aa0717d485405f0",
@@ -748,9 +753,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/haul_out_panel.gd": {
-   "sha": "36ba7fa68dbda54d",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "a7feead3de6eacde",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/haul_out_scene.gd": {
    "sha": "ecbfbfa941ccc25b",
@@ -758,9 +763,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "src/ui/hud.gd": {
-   "sha": "1414c3a6525871a3",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "b963edadbe5e9522",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/language_picker.gd": {
    "sha": "5174b4aa42a259ea",
@@ -868,9 +873,9 @@
    "note": "I022 pastimes and the one clock for hours-long tasks"
   },
   "src/ui/settings_menu.gd": {
-   "sha": "7e0eab61443a25a4",
-   "reviewed": "2026-10-27",
-   "note": "I022 Captain's Academy"
+   "sha": "68933c341e68dd82",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "src/ui/simple_panel.gd": {
    "sha": "fd078dfabae6e16d",
@@ -1088,9 +1093,9 @@
    "note": "I021 screenshots"
   },
   "tests/suites/test_academy.gd": {
-   "sha": "be2d1139644d46d9",
-   "reviewed": "2026-10-27",
-   "note": "I022 windows and softer water"
+   "sha": "001e7e3769747ff6",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "tests/suites/test_anchor_life.gd": {
    "sha": "74cec34564e9983a",
@@ -1128,9 +1133,9 @@
    "note": "I022 version 0.109a"
   },
   "tests/suites/test_cabin_windows.gd": {
-   "sha": "1a79512750ae6476",
-   "reviewed": "2026-10-27",
-   "note": "I022 windows and softer water"
+   "sha": "9ce202d5cda1ec1f",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "tests/suites/test_captains_log.gd": {
    "sha": "d53166fad920e986",
@@ -1138,9 +1143,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_captains_other_life.gd": {
-   "sha": "15af68a4f9b4b0bf",
-   "reviewed": "2026-10-27",
-   "note": "I022 pastimes and the one clock for hours-long tasks"
+   "sha": "c1d8621324dc258d",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "tests/suites/test_captains_watch.gd": {
    "sha": "a511747240a65668",
@@ -1243,9 +1248,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/suites/test_gameplay_flow.gd": {
-   "sha": "02d31465c83eecc1",
-   "reviewed": "2026-10-27",
-   "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
+   "sha": "87aea9ffe7e4e340",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "tests/suites/test_harbour_chart.gd": {
    "sha": "5232ff4311a12f54",
@@ -1402,6 +1407,11 @@
    "reviewed": "2026-10-27",
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
+  "tests/suites/test_steady_hands.gd": {
+   "sha": "8eeaf86b2b858a82",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
+  },
   "tests/suites/test_turbocharge.gd": {
    "sha": "24511395031b3df7",
    "reviewed": "2026-10-27",
@@ -1473,9 +1483,9 @@
    "note": "First complete inventory (Engine Room): every entry written from the source and checked against the list"
   },
   "tests/test_runner.gd": {
-   "sha": "24281e0c498c5840",
-   "reviewed": "2026-10-27",
-   "note": "I022 windows and softer water"
+   "sha": "8b6853f6782e9d7b",
+   "reviewed": "2026-10-28",
+   "note": "Steady Hands (UI reliability)"
   },
   "tools/art/capture_previews.gd": {
    "sha": "5519443f78ad3805",

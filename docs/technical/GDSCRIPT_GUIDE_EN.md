@@ -154,7 +154,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/app/app.gd`
 
 **Purpose:** The game's main "conductor": it connects the menus, the screens and the game systems so they all work together.
-- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game. I022 Academy: it holds the Academy card on its own layer, offers the First Voyage once on the first new game on this computer, and opens the Captain's Handbook with F1 or from the pause menu.
+- **What it does:** Shows the main menu, starts and loads games, opens every window (pause menu, sleep, fishing rod, anchor, boatyard, shops, Captain's Log and more) and turns game events into short on-screen messages and sounds. It is the one place that handles Esc and the hotkeys (F5 quicksave, F9 quickload, H hat, L log, R reel in), so two windows never react to the same key press. On arrival (I021) it shows the arrival card: the harbour's picture, "Arrived in …" and one sentence about the place. Since I022 it asks before buying a boat at the boatyard, starts new games at the chosen difficulty and opens the Difficulty dialog from the pause menu. I022: hours-long tasks aboard (remote work, a postcard, a session on the little game) pass on the one clock through `pass_time`: a fade to black, the simulation run once while the clock counts, a line if something interrupted it, and back in at ×1; the cabin's Q wheel offers Write a postcard and Work on your little game. I022 Academy: it holds the Academy card on its own layer, offers the First Voyage once on the first new game on this computer, and opens the Captain's Handbook with F1 or from the pause menu. Steady Hands: each button gets its click sound once, also when it is moved to another parent.
 - **Works with:** `GameSession`, `Simulation`, `SaveManager`, `SceneRouter`, `Hud`, `ModalStack`, `Toasts`, `AudioManager`, `WeatherAudio`, `SessionLog`.
 - **Keeps:** Only screen bookkeeping: whether the rescue report is open, a VHF call or anchorage question waiting to be shown, the seconds left before a hooked fish gets away, and when the companion next follows you between cabin and deck. The game itself lives in `GameSession`.
 - **When it runs:** Always: it is the main scene that starts with the game.
@@ -1414,7 +1414,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/boat_care_menu.gd`
 
 **Purpose:** The "Boat care" panel at the boatyard: repairs, services, haul-out and equipment.
-- **What it does:** Shows the boat's condition, then only the work this yard can do, each with price and time (or why it is not possible). Lists equipment the yard can fit; gear sold over the counter belongs to the chandlery instead.
+- **What it does:** Shows the boat's condition, then only the work this yard can do, each with price and time (or why it is not possible). Lists equipment the yard can fit; gear sold over the counter belongs to the chandlery instead. Steady Hands: the fitted upgrade's name is shown in the chosen language.
 - **Works with:** `BoatCareView`, `GameSession`, `BoatCare`, `HarbourFacilities`, `HarbourTrades`, `App` (spends the time ashore and opens the haul-out panel).
 - **Keeps:** Nothing of its own; every change goes through `GameSession`.
 - **When it runs:** When you choose "Boat care…" in the boatyard while moored in harbour.
@@ -1432,7 +1432,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/boatyard_menu.gd`
 
 **Purpose:** The boatyard window, where you browse the boats and move aboard another one.
-- **What it does:** Lists every boat with a picture of its deck, its specs and a speed comparison table, and lets you switch boats (free; time, harbour, companion and progress are kept). It also has buttons to Boat care, the grocery store, the chandlery and the sailmaker. Since I022 it shows each boat's price or that it is yours, and offers to buy a boat you do not own yet.
+- **What it does:** Lists every boat with a picture of its deck, its specs and a speed comparison table, and lets you switch boats (free; time, harbour, companion and progress are kept). It also has buttons to Boat care, the grocery store, the chandlery and the sailmaker. Since I022 it shows each boat's price or that it is yours, and offers to buy a boat you do not own yet. Steady Hands: the boats, details and comparison scroll when the screen is too short (at a 130 % interface size it was taller than the screen).
 - **Works with:** `App`, `VesselCatalog`, `VesselDefinition`, `VesselVisual`, `GameSession`, `BoatCare`, `Provisions`, `HarbourFacilities`; its layout comes from `boatyard_menu.tscn`.
 - **Keeps:** Only which boat is selected in the list.
 - **When it runs:** When you use the boatyard while moored in harbour.
@@ -1441,7 +1441,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/cabin_home_menu.gd`
 
 **Purpose:** "Make it home": choose which of your cabin things are shown aboard this boat.
-- **What it does:** Lists the cabin decorations; owned ones can be shown or put away and appear at once in the cabin beside the panel (nothing is dimmed). Ones not yet bought say they are at the chandlery.
+- **What it does:** Lists the cabin decorations; owned ones can be shown or put away and appear at once in the cabin beside the panel (nothing is dimmed). Ones not yet bought say they are at the chandlery. Steady Hands: the panel's column on the right is as wide as the panel really is, so it is never partly off screen.
 - **Works with:** `TradePanel` (its shared shop look), `HarbourTrades`, `GameSession`, `App` (opens it from the action wheel in the cabin), `CabinDecor` (indirectly, places the things).
 - **Keeps:** Nothing of its own; each boat's choice is stored by `GameSession`.
 - **When it runs:** In the cabin, from the action wheel.
@@ -1495,7 +1495,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/cooking_menu.gd`
 
 **Purpose:** The galley (kabys): choose a dish and cook it, or make coffee.
-- **What it does:** Shows what each recipe needs (fish from the cool box, groceries) and what it gives (food for the stores, being well fed), plays a short pan or coffee-pot animation, then cooks. The stove works in harbour and at a holding anchor, and underway only in moderate weather.
+- **What it does:** Shows what each recipe needs (fish from the cool box, groceries) and what it gives (food for the stores, being well fed), plays a short pan or coffee-pot animation, then cooks. The stove works in harbour and at a holding anchor, and underway only in moderate weather. Steady Hands: the recipe text and name are shown in the chosen language.
 - **Works with:** `GameSession` (`cook()`, `make_coffee()`), `Recipes`, `Provisions`, `App` (spends the cooking time), `AudioManager`, `SessionLog`.
 - **Keeps:** Only the animation timers and the last result while the panel is open.
 - **When it runs:** When you use the galley stove.
@@ -1531,7 +1531,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/fishing_menu.gd`
 
 **Purpose:** The fishing rod panel, with three faces: the rod, the reel-in, and the catch.
-- **What it does:** At the rod you pick a lure, let the line out or in, wait for a bite, choose which fish to keep and see the cool box (release or sell). When a fish bites, a timing dial reel-in starts; afterwards it shows the catch, its weight, grade and whether it was kept.
+- **What it does:** At the rod you pick a lure, let the line out or in, wait for a bite, choose which fish to keep and see the cool box (release or sell). When a fish bites, a timing dial reel-in starts; afterwards it shows the catch, its weight, grade and whether it was kept. Steady Hands: lure names are shown in the chosen language.
 - **Works with:** `GameSession`, `FishingCatalog`, `FishingState`, `ReelTiming`, `ReelDial`, `FishPortrait`, `FishArt`, `CatchBadge`, `App` (spends waiting time), `AudioManager`, `SessionLog`.
 - **Keeps:** Only the current reel-in and the last result while the panel is open; the catch lives in `GameSession`.
 - **When it runs:** When you use the rod on the stern rail (or press R when a fish is on).
@@ -1546,6 +1546,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **When it runs:** From the grocery store's "To the fishmonger…" button, in harbours that have a fishmonger.
 - **If you change it:** How much money fishing earns and how selling feels.
 
+### `src/ui/fit_scroll.gd`
+
+**Purpose:** A scroll area that keeps a tall window on the screen (Steady Hands).
+- **What it does:** Is exactly as tall as its content when the screen has room, and only as tall as the screen allows when it has not, so the content scrolls while the window's title and buttons stay in view. Used by Settings and the Boatyard, which had grown taller than a 1080-line screen (Settings' title and Apply / Back were cut off).
+- **Works with:** `SettingsMenu`, `BoatyardMenu`, `SettingsManager` (the interface size).
+- **Keeps:** The window panel it belongs to.
+- **When it runs:** When the window size, the interface size or its content changes; never every frame.
+- **If you change it:** Keep the title and buttons outside it; only the middle of a window should scroll.
+
 ### `src/ui/game_dev_menu.gd`
 
 **Purpose:** A Game Developer at Sea: the captain's little game, opened from the cabin's Q wheel (I022).
@@ -1558,7 +1567,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/go_ashore_menu.gd`
 
 **Purpose:** "Go Ashore": a small harbour moment with a little drawn picture and one or two choices.
-- **What it does:** Shows the harbour's event (or a "pleasant stroll" if you were just here), each choice with cost and time, then tells what happened. Choices you cannot afford are greyed out.
+- **What it does:** Shows the harbour's event (or a "pleasant stroll" if you were just here), each choice with cost and time, then tells what happened. Choices you cannot afford are greyed out. Steady Hands: the choices and "free" are shown in the chosen language.
 - **Works with:** `GameSession`, `ShoreEvents`, `App` (settles the choice and spends the time ashore).
 - **Keeps:** Only the event being shown.
 - **When it runs:** When you go ashore in a harbour that offers it.
@@ -1567,7 +1576,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/grocery_menu.gd`
 
 **Purpose:** The harbour grocery store: food and water, a long-passage stock-up, a replacement captain's hat and fishing lures.
-- **What it does:** Fills food and water up to 14 days each in one purchase, or stocks up beyond that for a long passage (up to what the boat can stow). Also sells a new captain's hat and lures, and has a button to the fishmonger next door.
+- **What it does:** Fills food and water up to 14 days each in one purchase, or stocks up beyond that for a long passage (up to what the boat can stow). Also sells a new captain's hat and lures, and has a button to the fishmonger next door. Steady Hands: lure names are shown in the chosen language.
 - **Works with:** `GameSession`, `Provisions`, `FishingCatalog`, `HarbourFacilities`, `App` (opens it and the fishmonger).
 - **Keeps:** Nothing of its own. It updates itself when your money or your catch changes (for example after selling fish at the fishmonger on top of it).
 - **When it runs:** In harbour, from the pontoon's grocery station, the provisions panel or the boatyard.
@@ -1594,7 +1603,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/haul_out_panel.gd`
 
 **Purpose:** The haul-out dialog at a boatyard: lift the boat out, clean the bottom, and choose extra work.
-- **What it does:** Shows the price of a haul-out, plus tick boxes for extra jobs (an engine or rig service when due, hard antifouling). When you confirm, it pays through `GameSession.haul_out()`, plays a short lift-and-scrub animation, asks the game to spend one day, and then says what was done, including +2 renown for your first haul-out.
+- **What it does:** Shows the price of a haul-out, plus tick boxes for extra jobs (an engine or rig service when due, hard antifouling). When you confirm, it pays through `GameSession.haul_out()`, plays a short lift-and-scrub animation, asks the game to spend one day, and then says what was done, including +2 renown for your first haul-out. Steady Hands: the upgrade's name is shown in the chosen language.
 - **Works with:** `GameSession`, `BoatCare`, `HaulOutScene` (the picture), `SessionLog`, `App` (opens it and spends the day).
 - **Keeps:** The selected extras and the result of the haul-out while the dialog is open.
 - **When it runs:** When you choose the haul-out at a yard that can lift boats.
@@ -1612,7 +1621,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/hud.gd`
 
 **Purpose:** The on-screen overlay you see while playing: where you are, the clock, the route, the wind and warnings.
-- **What it does:** Refreshes its text every frame from the game: the area and harbour, the clock and PAUSED badge, the planned route or voyage progress with ETA, the boat's condition, money and stores, and the wind. It shows weather warnings and the "press E" prompt, and it holds the hat badge, the aboard badge, the passage panel, the sailing panel, the chartplotter and the radar. On the chart it shows only the clock bar.
+- **What it does:** Refreshes its text every frame from the game: the area and harbour, the clock and PAUSED badge, the planned route or voyage progress with ETA, the boat's condition, money and stores, and the wind. It shows weather warnings and the "press E" prompt, and it holds the hat badge, the aboard badge, the passage panel, the sailing panel, the chartplotter and the radar. On the chart it shows only the clock bar. Steady Hands: the right-hand column (route panel, Trip Details, weather warning) is stacked so a warning never moves Trip Details and takes the height its text needs; the route panel gives up width rather than run under the clock at a large interface size; the prompt steps right of the chartplotter and radar; "Moored at" / "Arrived at" are translated.
 - **Works with:** `GameSession`, `Simulation`, `PortCatalog`, `HatBadge`, `AboardBadge`, `PassagePanel`, `SailingPanel`, `ChartPlotter`, `RadarPanel`, `App`.
 - **Keeps:** Nothing of its own besides a cached route time estimate and whether it is in chart mode.
 - **When it runs:** Always during play (part of the main app scene).
@@ -1810,7 +1819,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `src/ui/settings_menu.gd`
 
 **Purpose:** The settings dialog, from both the title screen and the pause menu.
-- **What it does:** Lets you change volumes (with test sounds), window mode, VSync, interface size, artwork style, sailing view, reduce flashing, lightning brightness, reduce motion, day/night interface light and language. Changes show at once; Apply saves them, and leaving without applying asks before undoing them. Since I022 it has a Wind slider with its own test sound (a few seconds of breeze). I022: a Tips check box turns the Academy's tips on or off.
+- **What it does:** Lets you change volumes (with test sounds), window mode, VSync, interface size, artwork style, sailing view, reduce flashing, lightning brightness, reduce motion, day/night interface light and language. Changes show at once; Apply saves them, and leaving without applying asks before undoing them. Since I022 it has a Wind slider with its own test sound (a few seconds of breeze). I022: a Tips check box turns the Academy's tips on or off. Steady Hands: the audio and display sections scroll when the screen is too short, so the title, status and buttons always stay in view.
 - **Works with:** `SettingsManager`, `AudioManager`, `MusicDirector`, `SessionLog` (logs folder), `ModalStack`.
 - **Keeps:** A copy of the last saved settings, to detect unsaved changes.
 - **When it runs:** When you open Settings.
@@ -2208,7 +2217,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/suites/test_gameplay_flow.gd`
 
 **Purpose:** Plays the whole game from start to finish, like a player using keys and mouse clicks.
-- **What it does:** Tests the main menu, a new game, walking and bumping into things, prompts, the chart (zoom, pan, plotting and waypoints), stairs between cabin and deck, the pause menu, settings, saving/loading and Continue. Then it sails a first voyage to Kiel with a gale warning and a change of course, and ends by pressing Quit.
+- **What it does:** Tests the main menu, a new game, walking and bumping into things, prompts, the chart (zoom, pan, plotting and waypoints), stairs between cabin and deck, the pause menu, settings, saving/loading and Continue. Then it sails a first voyage to Kiel with a gale warning and a change of course, and ends by pressing Quit. Steady Hands: the companionway round trip check reports where the player stood and what the prompt said, to diagnose a rare failure.
 - **Works with:** The app scene, `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `SeaRouter`, `WeatherFixtures`, `MainMenu`, `WorldMap`, `PauseMenu`, `SaveLoadMenu`.
 - **Keeps:** Nothing of its own (test save slots and a test settings file).
 - **When it runs:** Only in tests, as the very last suite, because it quits the program.
@@ -2492,6 +2501,15 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Keeps:** Nothing of its own; every test picture it installs is removed again.
 - **When it runs:** Only in tests (it saves screenshots when asked).
 - **If you change it:** Only the safety net changes; if it fails, replacement art may not show, or bad art files could break the look.
+
+### `tests/suites/test_steady_hands.gd`
+
+**Purpose:** Checks that the interface stays put, on screen, closable and translated (Steady Hands).
+- **What it does:** Shows, updates and hides weather warnings many times (English and Danish, day and night, Trip Details collapsed and expanded) and checks that Trip Details never moves and the warning never covers it. It then opens every window the game offers, from the game's own entry points, at several screen shapes and interface sizes in both languages. Each window must stay inside the screen, close with Esc and show no raw placeholders or English text in Danish. The test also checks the HUD's panels against each other, the main screens, the longest harbour name with long notices, what happens when the situation changes under an open window, and that nothing invisible catches the mouse.
+- **Works with:** `App`, `Hud`, every window class, `SettingsManager`.
+- **Keeps:** Nothing (the window size and settings are restored).
+- **When it runs:** With the other suites (`test_runner.tscn`).
+- **If you change it:** Only the tests change; a new window belongs in its list of openers.
 
 ### `tests/suites/test_turbocharge.gd`
 
@@ -2813,7 +2831,7 @@ The rules are in [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 ### `tests/test_runner.gd`
 
 **Purpose:** The game's automatic test runner: it runs all 74 test suites and says how many checks passed.
-- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites. It also runs the cabin windows suite.
+- **What it does:** Moves saves, settings and logs to scratch test files, turns off the sleep/dawn animations, sets English and calm wind, and runs each suite in turn. It also gives the suites shared tools: checks, waiting, pressing keys, clicking, boarding a boat, setting the wind, planning routes and screenshots. Since I021 it also runs the wider-world suite. Since I022 it runs the I022 suite and lets the suites sail every boat without buying it. I022: it turns the Academy's offer and tips off for the other suites. It also runs the cabin windows suite. It also runs the Steady Hands interface suite.
 - **Works with:** Every suite in `tests/suites/`, plus `SaveManager`, `SettingsManager`, `SessionLog`, `TimePassage`, `WindField`, `Simulation`, `GameSession`.
 - **Keeps:** The pass/fail counts and the list of failures.
 - **When it runs:** By hand or in automation: `godot --headless --path . res://tests/test_runner.tscn` (options after `--`: `--only=name`, `--skip=name`, `--screenshots=DIR`).

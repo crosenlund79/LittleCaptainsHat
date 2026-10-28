@@ -305,16 +305,20 @@ func _test_companionway_transitions() -> void:
 	t.check(deck.player.position.x < 495.0, "bow pulpit stops the player")
 
 	# Repeated round trips never duplicate the player or the screen.
+	var trail: Array[String] = []
 	for i in 3:
 		await _move_player_to(Vector2(-262, 0))
+		trail.append("%s:%s" % [GameSession.get_boat_area(), app.hud.get_prompt()])
 		await t.press_action(&"interact")
 		await _settle()
 		await _move_player_to(Vector2(-222, 0))
+		trail.append("%s:%s" % [GameSession.get_boat_area(), app.hud.get_prompt()])
 		await t.press_action(&"interact")
 		await _settle()
 	t.check_eq(_player_count(), 1, "repeated transitions keep exactly one player")
 	t.check_eq(app.get_node("Screen").get_child_count(), 1, "only one screen is loaded")
-	t.check_eq(GameSession.get_boat_area(), &"exterior", "ended on deck after round trips")
+	t.check_eq(GameSession.get_boat_area(), &"exterior", "ended on deck after round trips (area:prompt before each E: %s; modals %d, companion %s)" % [
+		trail, app.modals.depth(), GameSession.get_companion().area])
 
 
 func _test_pause_and_settings() -> void:

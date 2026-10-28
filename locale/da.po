@@ -8494,3 +8494,8 @@ msgstr "{captains_hat} tager hatten på eller af. På dækket i hård vind kan d
 
 msgid "The pontoons of {harbour} are full of boats with wind vanes and jerrycans lashed on deck: everyone here is crossing somewhere."
 msgstr "Pontonerne i {harbour} er fulde af både med vindror og dunke surret fast på dækket: alle her skal over et hav et sted hen."
+
+# Steady Hands
+
+msgid "free"
+msgstr "gratis"

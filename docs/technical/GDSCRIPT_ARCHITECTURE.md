@@ -225,7 +225,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/app/app.gd`
 
-- **Role:** no class_name, extends Node; root script of `res://src/app/app.tscn` (project `run/main_scene`). Application shell and flow coordinator: wires screens/menus to services, owns all hotkey/Esc handling, turns service signals into toasts, sounds and modals. I021: `_on_arrived` calls `toasts.show_card(title, PortData.get_description(), HarbourLooks.picture_for(port))` instead of a plain notice (the title keeps the old "Arrived in %s." text, which tests read through `toasts.get_messages()`). I022: `switch_vessel` awaits `modals.confirm` and `GameSession.buy_vessel` for an unowned boat before switching; `start_new_game(companion, level)`; pause menu `difficulty_requested` pushes `DifficultyMenu.new()`. I022: `pass_time(work: Callable) -> Variant` (modals.clear, TimePassage.play_sleep with `interruption_reason(_stopped_by(result))`, snap_light, time scale back to 1; direct in tests), `interruption_reason(stopped_by)`, `open_postcards/make_postcard`, `open_game_dev/work_on_game(task_id, choice)`; `work_for` now awaits `pass_time(Simulation.work)` and names an interruption; wheel ids `postcards`, `game_dev` (interior). I022 Academy: `academy: AcademyGuide` on `AcademyLayer` (UiScaleLayer, layer 15); `start_new_game` → `offer_first_voyage` (deferred; waits for router idle and the loading screen; `modals.confirm` Begin/Skip) when `Academy.first_voyage_state() == NEVER_OFFERED` and `AcademyGuide.enabled`; `open_handbook(page)` (also over `PauseMenu`), `toggle_handbook()` on KEY_F1 in `_unhandled_input`; pause menu `handbook_requested`.
+- **Role:** no class_name, extends Node; root script of `res://src/app/app.tscn` (project `run/main_scene`). Application shell and flow coordinator: wires screens/menus to services, owns all hotkey/Esc handling, turns service signals into toasts, sounds and modals. I021: `_on_arrived` calls `toasts.show_card(title, PortData.get_description(), HarbourLooks.picture_for(port))` instead of a plain notice (the title keeps the old "Arrived in %s." text, which tests read through `toasts.get_messages()`). I022: `switch_vessel` awaits `modals.confirm` and `GameSession.buy_vessel` for an unowned boat before switching; `start_new_game(companion, level)`; pause menu `difficulty_requested` pushes `DifficultyMenu.new()`. I022: `pass_time(work: Callable) -> Variant` (modals.clear, TimePassage.play_sleep with `interruption_reason(_stopped_by(result))`, snap_light, time scale back to 1; direct in tests), `interruption_reason(stopped_by)`, `open_postcards/make_postcard`, `open_game_dev/work_on_game(task_id, choice)`; `work_for` now awaits `pass_time(Simulation.work)` and names an interruption; wheel ids `postcards`, `game_dev` (interior). I022 Academy: `academy: AcademyGuide` on `AcademyLayer` (UiScaleLayer, layer 15); `start_new_game` → `offer_first_voyage` (deferred; waits for router idle and the loading screen; `modals.confirm` Begin/Skip) when `Academy.first_voyage_state() == NEVER_OFFERED` and `AcademyGuide.enabled`; `open_handbook(page)` (also over `PauseMenu`), `toggle_handbook()` on KEY_F1 in `_unhandled_input`; pause menu `handbook_requested`. Steady Hands: `_on_node_added` connects `AudioManager.play_ui` once per button (meta `ui_click`), so reparenting (FitScroll) no longer errors with a duplicate connection.
 - **Depends on:** autoloads `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `AudioManager`, `SessionLog`, `UiTheme`; scene children `SceneRouter` ($SceneRouter), `Hud`, `ModalStack`, `Toasts`; creates `WeatherAudio`, `DayNightWatch`, `LoadingScreen`, `TimePassage`, `VoyageMap`; pushes modals (`NewGameMenu`, `PauseMenu`, `SleepMenu`, `SaveLoadMenu`, `BoatyardMenu`, `ProvisionsMenu`, `RescueDialog`, `GroceryMenu`, `FishmongerMenu`, `ChandleryMenu`, `SailmakerMenu`, `CabinHomeMenu`, `GoAshoreMenu`, `FishingMenu`, `CookingMenu`, `AnchorMenu`, `AnchoragePrompt`, `VhfDialog`, `TrophyMenu`, `WorkMenu`, `PublishMenu`, `CaptainsLogMenu`, `SailTrimPanel`, `ActionWheel`, `BoatCareMenu`, `HaulOutPanel`, `LanguagePicker`, `DevTestPanel`); static helpers `Loc`, `PortCatalog`, `VesselCatalog`, `PassageReadiness`, `LegacySaves`, `DevTools`, `DevGuides`, `HarbourFacilities`, `BoatCare`, `FishingSounds`, `HatBadge`, `AnchorSite`, `ChartPlotter`, `SailingPanel`, `RadarPanel`, `Interactable`; screen types `MainMenu`, `BoatArea`, `WorldMap`.
 - **Signals:** declares none. Connects to `GameSession` (`notice`, `rescued`, `voyage_logged`, `renown_awarded`, `hat_warning`, `hat_lost`, `fish_bite`, `anchorage_reached`, `anchor_alarm`, `anchor_moment`, `fishing_warning`, `provisions_warning`, `propulsion_changed`, `state_replaced`, `session_started/ended` → `DevTools.on_session_changed`), `Simulation` (`weather_warning`, `traffic_alert`, `vhf_call`, `arrived`, `passage_started`), `router.screen_changed`, `modals.stack_changed`, `hud.*_requested`, `get_tree().node_added` (adds UI click sound to every BaseButton), and every BoatArea/WorldMap/MainMenu request signal in `_connect_*`.
 - **State:** writes no game state directly; all changes go through `GameSession`/`Simulation`/`SaveManager` calls. Owns UI-only fields: `_rescue_open`, `_anchorage_prompt_due`, `_pending_vhf`, `_bite_wait`, companion follow timers, `_last_quick_msec`, `voyage_map`, `time_passage`. Sets `get_tree().paused` in `_on_modal_stack_changed` (paused while any modal is open in gameplay, or while the rescue report is open).
@@ -1736,7 +1736,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/boat_care_menu.gd`
 
-- **Role:** class_name `BoatCareMenu`, extends `SimplePanel`; boatyard services (repair, rig, engine, haul-out) and yard-fitted upgrades.
+- **Role:** class_name `BoatCareMenu`, extends `SimplePanel`; boatyard services (repair, rig, engine, haul-out) and yard-fitted upgrades. Steady Hands: `Loc.t` on the upgrade name in the "%s fitted" notice.
 - **Depends on:** `BoatCareView`, `GameSession` (service_quote, service_refusal, perform_service, has_upgrade, upgrade_refusal, upgrade_price, install_upgrade, has_facility, get_harbour_facilities, has_magic_anchor, format_money, MAGIC_ANCHOR_*), `BoatCare` (SERVICE_*, SERVICE_NAMES, get_upgrades, get_upgrade), `HarbourFacilities` (HAUL_OUT, TIER_NAMES), `HarbourTrades.is_chandlery_upgrade`, `SessionLog`, `Loc`.
 - **Signals:** declares `time_requested(minutes)` (after a service or upgrade) and `haul_out_requested` (HaulOutButton). Connects `GameSession.boat_care_changed` -> `refresh`, `GameSession.funds_changed` -> `_on_funds_changed`.
 - **State:** writes only through `GameSession.perform_service` / `install_upgrade`.
@@ -1758,7 +1758,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/boatyard_menu.gd`
 
-- **Role:** class_name `BoatyardMenu`, extends `ModalPanel`; vessel browser/switcher with SubViewport deck preview, spec list, performance comparison and yard-service buttons. I022: list buttons and a `Price` spec row from `_ownership()` ("(your boat)"/"Yours"/price); `_choose` reads "Move aboard…", "Buy the %s (%s)…" or "%s needed to buy it" (disabled when unaffordable); still emits `vessel_chosen`.
+- **Role:** class_name `BoatyardMenu`, extends `ModalPanel`; vessel browser/switcher with SubViewport deck preview, spec list, performance comparison and yard-service buttons. I022: list buttons and a `Price` spec row from `_ownership()` ("(your boat)"/"Yours"/price); `_choose` reads "Move aboard…", "Buy the %s (%s)…" or "%s needed to buy it" (disabled when unaffordable); still emits `vessel_chosen`. Steady Hands: `FitScroll.wrap([Body, CompareTitle, Comparison], _panel)` in `_ready`.
 - **Depends on:** scene `src/ui/boatyard_menu.tscn` (unique nodes `%VesselList`, `%PreviewViewport`, `%NameLabel`, `%HullLabel`, `%Description`, `%Specs`, `%Comparison`, `%ChooseButton`, `%Panel`, `%ConditionLabel`, `%ServiceStatus`, `%CareButton`, `%GroceryButton`, `%CloseButton`), `VesselCatalog`, `VesselDefinition` (performance profile, specs, deck_visual_scene, get_active_visual_profile), `VesselVisual`, `VesselCondition`, `GameSession`, `BoatCare.overall_level`, `Provisions.format_days`, `HarbourFacilities`, `Loc`.
 - **Signals:** declares `vessel_chosen(vessel_id)`, `care_requested`, `grocery_requested`, `chandlery_requested`, `sailmaker_requested`. App connects them to `switch_vessel`, `open_boat_care`, `open_grocery`, `open_chandlery`, `open_sailmaker`.
 - **State:** `selected: VesselDefinition`; no writes (switching is `App.switch_vessel` -> GameSession).
@@ -1770,7 +1770,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/cabin_home_menu.gd`
 
-- **Role:** class_name `CabinHomeMenu`, extends `TradePanel`; toggles which owned cabin decor items are shown on the current boat.
+- **Role:** class_name `CabinHomeMenu`, extends `TradePanel`; toggles which owned cabin decor items are shown on the current boat. Steady Hands: explicit right-column anchors; `_fit_column` sets `offset_left = -(minimum width + SAFE_MARGIN)` deferred and on `minimum_size_changed` (a preset in `_ready` used the unsized modal and a 700 px column for a 737 px panel).
 - **Depends on:** `TradePanel` (`_build_trade`, `_row`, `_rows`), `HarbourTrades.get_decor`, `GameSession` (get_cabin_decor, set_cabin_decor, get_home().owns_decor, get_vessel_definition, get_vessel_id, format_money), `SessionLog`, `Loc`.
 - **Signals:** none declared; inherits TradePanel's connections to `GameSession.funds_changed`, `home_changed`, `boat_care_changed`.
 - **State:** writes per-vessel decor visibility via `GameSession.set_cabin_decor` (persisted in the home state; placement is done by `CabinDecor` in `BoatArea`, indirect).
@@ -1838,7 +1838,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/cooking_menu.gd`
 
-- **Role:** class_name `CookingMenu`, extends `SimplePanel`; galley: recipe list, detail, cook animation, coffee.
+- **Role:** class_name `CookingMenu`, extends `SimplePanel`; galley: recipe list, detail, cook animation, coffee. Steady Hands: `Loc.t` on `recipe.text` and `recipe.name` (Cook %s).
 - **Depends on:** `GameSession` (cooking_refusal, recipe_refusal, coffee_refusal, cook, make_coffee, get_fishing, get_food_days, COFFEE_MINUTES), `Recipes` (LIST, MAX_FISH_DAYS), `Provisions.format_days`, `Simulation.format_game_time`, `AudioManager` + `FishingSounds.sizzle`, `SessionLog`, `UiTheme`, `Loc`.
 - **Signals:** declares `cooked(result)` (after a successful `serve()`) and `coffee_made(result)` (after `pour_coffee()`). App connects both to `Simulation.spend_time_aboard(minutes, true)` (cooked via `_on_meal_cooked`, which reports interruptions).
 - **State:** writes via `GameSession.cook` / `make_coffee` only; local timers `_cooking`, `_brewing`, `_steam_until`, `_last_result`.
@@ -1878,7 +1878,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/fishing_menu.gd`
 
-- **Role:** class_name `FishingMenu`, extends `SimplePanel`; rod panel with three faces (rod, reel, result).
+- **Role:** class_name `FishingMenu`, extends `SimplePanel`; rod panel with three faces (rod, reel, result). Steady Hands: `Loc.t` on `lure.name` in the lure list.
 - **Depends on:** `GameSession` (get_fishing, get_fishing_mode, get_vessel_position, get_vessel_speed_kn, is_anchored, is_line_out, set_line, select_lure, set_keep_preferences, set_passage_posture, release_fish, sell_fish, has_facility, get_pending_bite, finish_fight, get_anchor, format_money; signals `fishing_changed`, `fish_bite`), `FishingCatalog`, `FishingState` (MODE_TROLLING, PASSAGE_*), `ReelTiming`, `ReelDial`, `FishPortrait`, `FishArt.thumbnail`, `CatchBadge`, `Simulation` (AdvanceResult, STOP_*, format_duration), `AnchorSite.holding_text`, `HarbourFacilities.GROCERY`, `AudioManager` + `FishingSounds`, `SessionLog`, `Loc`.
 - **Signals:** declares `wait_requested(minutes)` (Wait button, `WAIT_MINUTES`=60). Connects `GameSession.fishing_changed` -> `refresh`, `GameSession.fish_bite` -> `_start_reel_if_bite`, `ReelDial.pressed` -> `press_reel`.
 - **State:** writes via GameSession only; local `_reel`, `_reel_bite`, `_reel_done`, `_last_result`.
@@ -1899,6 +1899,15 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Tests:** `tests/suites/test_boat_of_your_own.gd`.
 - **Change risks:** `_rebuild` frees rows with `queue_free` and clears `_rows`; the sell-all total is recomputed here from catalog prices and must match GameSession's `sell_catch`.
 
+### `src/ui/fit_scroll.gd`
+
+- **Role:** class_name `FitScroll`, extends ScrollContainer (Steady Hands). static `wrap(nodes, window_panel)` (moves the given siblings into a VBox "Content" inside a new FitScroll placed where the first was; `reparent(keep_global=false)` keeps owners), `fit()` (height = content minimum, capped at viewport height ÷ canvas scale − the rest of the parent box's minimum − the frame's stylebox − 2·`MARGIN`, at least `MIN_HEIGHT`), `is_scrolling()`. `_queue_fit` (deferred, once per change) on `viewport.size_changed`, `SettingsManager.ui_scale_changed` and the content's `minimum_size_changed`.
+- **Depends on:** `SettingsManager.ui_scale_changed`.
+- **State:** `frame`, `_fit_queued`.
+- **Lifecycle:** created by `SettingsMenu._ready` (AudioSection + DisplaySection) and `BoatyardMenu._ready` (Body + CompareTitle + Comparison).
+- **Tests:** `tests/suites/test_steady_hands.gd` (sweep at 1280×720 100/130 %, 1024×768, 2560×1080).
+- **Change risks:** reparenting re-enters buttons into the tree; `App._on_node_added` connects the click sound once per button (meta `ui_click`).
+
 ### `src/ui/game_dev_menu.gd`
 
 - **Role:** class_name `GameDevMenu`, extends `SimplePanel`. Signal `work_requested(task_id, choice)`. Nodes: Progress, Devlog, Task OptionButton ("name (N h)"), Question, Choices (toggle buttons Choice0..2 in `Pastimes.choice_order` order, locked for an interrupted task), Note, CancelButton, WorkButton (disabled until a choice). `selected_task()`, `pick(position)` (tests).
@@ -1910,7 +1919,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/go_ashore_menu.gd`
 
-- **Role:** class_name `GoAshoreMenu`, extends `SimplePanel`; harbour shore event with drawn icon and choices.
+- **Role:** class_name `GoAshoreMenu`, extends `SimplePanel`; harbour shore event with drawn icon and choices. Steady Hands: `_describe_choice` uses `Loc.t(choice.label)` and `Loc.t("free")`.
 - **Depends on:** `GameSession` (get_location, get_shore_event, get_funds, facility_refusal, format_money), `ShoreEvents.fill`, `HarbourFacilities.GO_ASHORE`, `Loc`.
 - **Signals:** declares `choice_made(event_id, choice_index)`; App connects it to `_on_shore_choice` (applies `GameSession.apply_shore_choice`, spends time via `Simulation.spend_time_ashore`, then calls `show_outcome(result)`).
 - **State:** `_offer` (read once in `_ready`); no direct writes.
@@ -1922,7 +1931,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/grocery_menu.gd`
 
-- **Role:** class_name `GroceryMenu`, extends `SimplePanel`; harbour store for provisions, passage stock-up, replacement hat and lures, with a link to the fishmonger.
+- **Role:** class_name `GroceryMenu`, extends `SimplePanel`; harbour store for provisions, passage stock-up, replacement hat and lures, with a link to the fishmonger. Steady Hands: `Loc.t` on `lure.name` in the tackle list.
 - **Depends on:** `GameSession` (get_location, get_provisions, get_provisions_price, get_funds, get_missing_provision_days, is_moored_in_harbour, buy_provisions, get_passage_store_days, get_vessel_definition, get_hat_price, get_hat, buy_hat, buy_lure, get_fishing, has_facility, format_money, PROVISIONS_PRICE_PER_DAY, REMOTE_WORK_PAY_PER_HOUR), `Provisions` (CAPACITY_DAYS, format_days), `FishingCatalog`, `HarbourFacilities.FISHMONGER`, `Loc`.
 - **Signals:** declares `fishmonger_requested` (FishmongerButton); App connects it to `open_fishmonger`.
 - **Signals (in):** `GameSession.funds_changed` (`_on_funds_changed`) and `fishing_changed` -> `refresh()`.
@@ -1955,7 +1964,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/haul_out_panel.gd`
 
-- **Role:** `class_name HaulOutPanel`, extends `SimplePanel`; haul-out choice + animation + result dialog.
+- **Role:** `class_name HaulOutPanel`, extends `SimplePanel`; haul-out choice + animation + result dialog. Steady Hands: `Loc.t` on the upgrade name in the option list.
 - **Depends on:** `GameSession` (`get_location`, `get_vessel_definition`, `get_boat_care`, `get_haul_out_extras`, `upgrade_price`, `service_quote`, `haul_out_quote`, `haul_out`, `format_money`, `get_funds`), `BoatCare` (`fouling`, `FOULING_NEEDED`, `get_upgrade`, `SERVICE_NAMES`), `VesselDefinition.HULL_CATAMARAN`, `HaulOutScene`, `SessionLog`, `Loc`.
 - **Signals:** declares `time_requested(minutes)` (emitted in `_finish` with `_result.minutes`); App connects it to `_spend_yard_time` (→ `Simulation.spend_time_ashore`).
 - **State:** writes game state only through `GameSession.haul_out(extras)` (the single transaction); logs `haul_out` to SessionLog. Owns `_options`, `_result`, `_finished`.
@@ -1976,7 +1985,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/hud.gd`
 
-- **Role:** `class_name Hud`, extends Control; gameplay overlay (area/location, clock + PAUSED, route/voyage, status line, wind, warning panel, prompt, shortcut strip) and host of sub-panels.
+- **Role:** `class_name Hud`, extends Control; gameplay overlay (area/location, clock + PAUSED, route/voyage, status line, wind, warning panel, prompt, shortcut strip) and host of sub-panels. Steady Hands: `_stack_right_column()` (from `refresh` and `_set_route_lines`): route width = `ROUTE_PANEL_WIDTH` with a course else `ROUTE_PANEL_COMPACT`, capped by the room right of `ClockPanel`; `sailing_panel.offset_top` = route bottom + `COLUMN_GAP` (independent of the warning); `WarningPanel` below Trip Details (or the route panel) with `offset_bottom = offset_top` (sizes to content; was a fixed 124 px under which Trip Details was pushed). `_keep_prompt_clear()` (from `_process`) shifts `PromptPanel` by the overlap with `ChartPlotter`/`RadarPanel`. Offsets are written only when they change.
 - **Depends on:** `hud.tscn` (unique-name nodes, `TimeControls` inside `ClockPanel`), `GameSession`, `Simulation` (`format_game_time`, `get_wind_at`, `get_eta`, `estimate_route_seconds`, `format_duration`), `PortCatalog`, `PlannedRoute.describe`, `AnchorSite.holding_text`, `PropulsionState.wind_side`, `VesselCondition`, `Provisions`, `WindField`, `WeatherSample`/`WeatherModel.HAZARD_CAUTION`, `SessionState`, `Loc`; creates `HatBadge`, `AboardBadge`, `PassagePanel`, `SailingPanel`, `ChartPlotter`, `RadarPanel`.
 - **Signals:** declares `menu_requested`, `chart_requested` (warning chart button or PassagePanel), `save_requested` (PassagePanel Save). App connects them to `open_pause_menu`, `open_chart_from_warning`, `open_save_menu`.
 - **State:** read-only on game state; caches `_planned_seconds` (re-estimated when route key changes or after 1800 game-seconds), `_chart_mode`, `_warning_pending`.
@@ -2209,7 +2218,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `src/ui/settings_menu.gd`
 
-- **Role:** `class_name SettingsMenu`, extends `ModalPanel`; shared settings dialog with live preview and Apply/Discard. I022: `BUS_LABELS` has `Wind`; `_play_test_sound(&"Wind")` plays `WIND_TEST` (wind_breeze.wav, not looping) as a one-shot on the Wind bus. I022: `_tips` CheckBox ("Tips" row after Reduce motion) → `SettingsManager.set_tips_enabled`; synced in `_sync_controls`.
+- **Role:** `class_name SettingsMenu`, extends `ModalPanel`; shared settings dialog with live preview and Apply/Discard. I022: `BUS_LABELS` has `Wind`; `_play_test_sound(&"Wind")` plays `WIND_TEST` (wind_breeze.wav, not looping) as a one-shot on the Wind bus. I022: `_tips` CheckBox ("Tips" row after Reduce motion) → `SettingsManager.set_tips_enabled`; synced in `_sync_controls`. Steady Hands: `FitScroll.wrap([AudioSection, DisplaySection], $Center/Panel)` at the end of `_ready`.
 - **Depends on:** `settings_menu.tscn`, `SettingsManager` (snapshot/restore, volumes, window mode, vsync, UI scale, art style, course view, reduce flashing, flash intensity, reduce motion, UI light, language, save, defaults), `Loc.LANGUAGES`, `SessionLog.get_folder`, `AudioManager`, `MusicDirector`, `ModalStack.confirm`.
 - **State:** `_saved` snapshot for unapplied-change detection; all writes go through SettingsManager.
 - **Lifecycle:** instantiated from `settings_menu_scene` by `App.open_settings()` (from main menu and pause menu).
@@ -2635,7 +2644,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/suites/test_gameplay_flow.gd`
 
-- **Role:** extends RefCounted; end-to-end suite through real input (`press_action`, `click`, pushed mouse drags). Covers the main menu, new game (Arctic Wanderer 26), movement normalisation and collisions, interaction focus/prompts, the sleep menu, the chart (zoom/pan, port pick, plot/clear, waypoint drag/invalid/remove, unapplied-changes confirm), companionway round trips and the helm confirm. Also covers the pause menu with UI scale, settings apply/discard, save/overwrite/load, a damaged-save load, return to menu/Continue, and a first voyage to Kiel (20× time, sleep, save underway, gale warning via `WeatherFixtures.gale`, reroute at sea with no teleport, arrival). Ends with `_test_quit`.
+- **Role:** extends RefCounted; end-to-end suite through real input (`press_action`, `click`, pushed mouse drags). Covers the main menu, new game (Arctic Wanderer 26), movement normalisation and collisions, interaction focus/prompts, the sleep menu, the chart (zoom/pan, port pick, plot/clear, waypoint drag/invalid/remove, unapplied-changes confirm), companionway round trips and the helm confirm. Also covers the pause menu with UI scale, settings apply/discard, save/overwrite/load, a damaged-save load, return to menu/Continue, and a first voyage to Kiel (20× time, sleep, save underway, gale warning via `WeatherFixtures.gale`, reroute at sea with no teleport, arrival). Ends with `_test_quit`. Steady Hands: the round-trip check records area and prompt before each E (diagnostics only).
 - **Depends on:** `src/app/app.tscn`, `GameSession`, `Simulation`, `SaveManager`, `SettingsManager`, `SeaRouter`, `WeatherFixtures`, `HatConfig`, `Provisions`, `MainMenu`, `NewGameMenu`, `SleepMenu`, `WorldMap`, `MapView`, `PauseMenu`, `SettingsMenu`, `SaveLoadMenu`, `ConfirmDialog`, `AudioServer`.
 - **State:** writes `t.TEST_SETTINGS_PATH` and save slots 1–3 under the test save dir; toggles `Simulation.auto_advance` for exact comparisons.
 - **Lifecycle:** test suite; last entry in the runner's `SUITES` because pressing Quit ends the process (only when `t.failed == 0`).
@@ -2930,6 +2939,13 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 - **Lifecycle:** test suite in `tests/test_runner.gd`.
 - **Tests:** —
 - **Change risks:** A crash mid-suite can leave fixture PNGs installed (final check catches it next run); depends on entry ids and slot names (`Coachroof`, `DeckBase`); screenshots `rb_16_*`–`rb_21_*`.
+
+### `tests/suites/test_steady_hands.gd`
+
+- **Role:** extends RefCounted; Steady Hands suite. Sets `get_tree().root.size` (the runner's 64 px window otherwise "expands" to a 1920×1920 canvas; restored at the end). `_test_weather_does_not_move_trip_details` (4 texts × 3 rounds, en/da, 10:00/23:00, `SailingPanel.collapsed`), `_test_long_texts` (les_sables→boulogne, 130 %), `_test_transitions` (sail trim then moored, wheel + warning, settings + language switch, load with pause menu open), then `SWEEPS` (1280×720 en/da 100/130 %, 1024×768 da, 2560×1080 da) → `_sweep` (openers list; `check_window`: interface controls only (`get_canvas_layer_node()`), skip contents of ScrollContainer/ItemList/RichTextLabel and `Dim`; on screen ± `EPS`; Esc via `modals.handle_back` (`NO_ESC`: LanguagePicker); raw `%s`/`%d`/`{…}`; Danish: non-auto-translated text with a translation, and `english_phrase` for composed text), `_check_hud` (`HUD_PAIRS`, Danish English-phrase check, screenshots), `_check_screens` (main menu, new game, language, load, chart, dream map), `_check_no_hidden_click_catchers` (STOP controls > 20 % of the screen).
+- **Depends on:** `app.tscn`, `VhfRadio.call_for_slot`, `SaveManager`, runner helpers.
+- **Lifecycle:** in `test_runner.gd` `SUITES` after `test_cabin_windows`.
+- **Change risks:** `english_phrase` uses the Danish catalogue's two-word-plus messages; a deliberate English proper name of that shape would need an exemption.
 
 ### `tests/suites/test_turbocharge.gd`
 
@@ -3263,7 +3279,7 @@ review. Rules: [CAPTAINS_ORDERS.md](../../CAPTAINS_ORDERS.md) (Working rules).
 
 ### `tests/test_runner.gd`
 
-- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`. I022: `test_captains_other_life` in `SUITES`; sets `GameSession.test_all_boats_owned = true` with `TimePassage.enabled = false`. I022: `AcademyGuide.enabled = false` at start; `test_academy` in SUITES after `test_captains_other_life`. `test_cabin_windows` in SUITES after `test_academy`.
+- **Role:** extends Node (root of `tests/test_runner.tscn`); self-contained test framework. Runs the 74 preloaded suites in `SUITES` (each `script.new()`, `await suite.run(self)`), counts checks, prints failures, exits 1 if any failed. I021: registers `test_wider_world.gd` after `test_companion_remarks.gd`. I022: `test_captains_other_life` in `SUITES`; sets `GameSession.test_all_boats_owned = true` with `TimePassage.enabled = false`. I022: `AcademyGuide.enabled = false` at start; `test_academy` in SUITES after `test_captains_other_life`. `test_cabin_windows` in SUITES after `test_academy`. `test_steady_hands` in SUITES after `test_cabin_windows`.
 - **Depends on:** all `tests/suites/test_*.gd`; `SaveManager`, `SessionLog`, `SettingsManager`, `TimePassage`, `WindField`, `Simulation`, `GameSession`, `PortCatalog`, `SeaRouter`.
 - **State:** redirects `SaveManager.save_dir = user://test_saves`, `SessionLog.log_dir = user://test_diagnostics`, `SettingsManager.settings_path = user://test_settings.cfg`; `TimePassage.enabled = false`; language forced to `en` before each suite; before each suite `use_calm_wind()` and `Simulation.sea_encounters` true only for `test_captains_watch.gd` and `test_localization.gd`; scratch saves/settings deleted at start and end; `_exit_tree` calls `WindField.clear_default()`.
 - **Lifecycle:** `godot --headless --path . res://tests/test_runner.tscn [-- --only=a,b] [--skip=a,b] [--screenshots=DIR]` (filters match suite file-name substrings; screenshots only when rendered). `process_mode = ALWAYS`.

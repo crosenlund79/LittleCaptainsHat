@@ -29,6 +29,7 @@ func run(runner: Node) -> void:
 	await t.frames(2)
 	WaterLook.translucency = 1.0
 	CabinWindows.glass_strength = 0.2
+	Simulation.auto_advance = true  # as the other suites leave it
 
 
 func _settle() -> void:

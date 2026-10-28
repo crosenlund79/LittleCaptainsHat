@@ -84,6 +84,10 @@ func _ready() -> void:
 	# I020: the yard's neighbours, beside Boat care.
 	_sailmaker = _trade_button("SailmakerButton", "Sailmaker…", sailmaker_requested.emit)
 	_chandlery = _trade_button("ChandleryButton", "Chandlery…", chandlery_requested.emit)
+	# Steady Hands: the boats, details and comparison scroll when the screen
+	# is too short (title, services and buttons always stay in view).
+	var box := _panel.get_node(^"VBox")
+	FitScroll.wrap([box.get_node(^"Body"), box.get_node(^"CompareTitle"), box.get_node(^"Comparison")] as Array[Control], _panel)
 	resized.connect(_fit_panel)
 	_fit_panel()
 	select(GameSession.get_vessel_id())

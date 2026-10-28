@@ -31,6 +31,7 @@ func run(runner: Node) -> void:
 	app.queue_free()
 	await t.frames(2)
 	GameSession.test_all_boats_owned = true
+	Simulation.auto_advance = true  # as the other suites leave it
 
 
 func _settle() -> void:

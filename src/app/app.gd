@@ -1762,5 +1762,7 @@ func _on_modal_stack_changed(depth: int) -> void:
 
 func _on_node_added(node: Node) -> void:
 	var button := node as BaseButton
-	if button and ui_click_sound:
+	# Once per button: a button moved to another parent enters the tree again.
+	if button and ui_click_sound and not button.has_meta(&"ui_click"):
+		button.set_meta(&"ui_click", true)
 		button.pressed.connect(AudioManager.play_ui.bind(ui_click_sound))

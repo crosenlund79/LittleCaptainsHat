@@ -75,6 +75,10 @@ func _ready() -> void:
 	%DefaultsButton.pressed.connect(_on_defaults_pressed)
 	%ApplyButton.pressed.connect(_on_apply_pressed)
 	_back.pressed.connect(handle_back)
+	# Steady Hands: the sections scroll when the screen is too short for them
+	# (title, status and buttons always stay in view).
+	var box := $Center/Panel/VBox
+	FitScroll.wrap([box.get_node(^"AudioSection"), box.get_node(^"DisplaySection")] as Array[Control], $Center/Panel)
 	_sync_controls()
 
 
